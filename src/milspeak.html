@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Civilian's Guide to Milspeak (DV12)</title>
+    <style>
+        :root {
+            --bg-primary: #1a1e24;
+            --bg-secondary: #242a33;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent-main: #f97316; 
+            --accent-alt: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+            --accent-yellow: #facc15;
+            --border: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #242a33, #0f172a);
+            padding: 4rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-main);
+        }
+
+        header h1 { margin: 0; font-size: 2.5rem; font-weight: 800; color: #fff; }
+        header p { color: var(--text-secondary); font-size: 1.1rem; max-width: 900px; margin: 1rem auto 0 auto; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+
+        nav {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        }
+
+        nav h2 { margin-top: 0; font-size: 1rem; color: var(--accent-main); text-transform: uppercase; }
+        nav ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; }
+        nav a { color: var(--text-primary); text-decoration: none; font-size: 0.85rem; transition: 0.2s; }
+        nav a:hover { color: var(--accent-main); padding-left: 5px; }
+
+        section {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2.5rem; margin-bottom: 2rem; scroll-margin-top: 150px;
+        }
+
+        h2 { color: var(--accent-main); font-size: 1.8rem; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { color: var(--accent-alt); font-size: 1.4rem; margin-top: 2rem; border-left: 4px solid var(--accent-main); padding-left: 1rem; }
+        
+        .jargon-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .jargon-term { color: var(--accent-main); font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .jargon-def { color: var(--text-primary); margin-bottom: 0.5rem; }
+        .jargon-context { font-size: 0.9em; color: var(--text-secondary); font-style: italic; }
+
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: var(--bg-primary); color: var(--accent-main); text-transform: uppercase; font-size: 0.8rem; }
+        tr:hover { background-color: var(--bg-primary); }
+        
+        td strong { color: var(--accent-alt); }
+
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border: 1px solid currentColor; margin-right: 10px; }
+        .badge-nipr { color: var(--accent-green); }
+        .badge-sipr { color: var(--accent-red); }
+        .badge-jwics { color: #facc15; }
+        .badge-wargame { color: var(--accent-purple); }
+        .badge-cyber { color: var(--accent-cyan); }
+        .badge-infra { color: var(--accent-yellow); }
+
+        a.ext-link { color: var(--accent-alt); text-decoration: underline; }
+        
+        footer { text-align: center; padding: 4rem; color: var(--text-secondary); border-top: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The Civilian's Guide to Milspeak (DV12)</h1>
+        <p>THE FULL ACCUMULATIVE MASTER: Zero-Loss Restoration of Doctrine, Admin, Operations, Wargaming, Cyber Security, and Critical Infrastructure.</p>
+    </header>
+
+    <div class="container">
+        
+        <nav>
+            <h2>Milspeak Index</h2>
+            <ul>
+                <li><a href="#official">1. The Official Rulebook</a></li>
+                <li><a href="#alphanumeric">2. Alphanumeric Soup</a></li>
+                <li><a href="#c2">3. Command & Control Verbs</a></li>
+                <li><a href="#networks">4. Servers & Comms</a></li>
+                <li><a href="#orgs">5. Organizations</a></li>
+                <li><a href="#operational">6. Operational Slang</a></li>
+                <li><a href="#onesource">7. OneSource Master Glossary</a></li>
+                <li><a href="#joint">8. Joint Force Commands</a></li>
+                <li><a href="#nato">9. NATO Ally Codes</a></li>
+                <li><a href="#radio">10. Radio Procedures</a></li>
+                <li><a href="#service-slang">11. Service Slang</a></li>
+                <li><a href="#wargame">12. Wargame & Gaming</a></li>
+                <li><a href="#cyber" style="color: var(--accent-cyan); font-weight: bold;">13. Cyber Security</a></li>
+                <li><a href="#infra" style="color: var(--accent-yellow); font-weight: bold;">14. Critical Infrastructure</a></li>
+            </ul>
+        </nav>
+
+        <section id="official">
+            <h2>1. The Official Rulebook: The DoD Terminology Program</h2>
+            <p>The U.S. military doesn't just invent acronyms for fun; they are highly regulated. The <strong>Chairman of the Joint Chiefs of Staff (CJCS)</strong> oversees the <a href="https://www.jcs.mil/doctrine/dod-terminology-program/" class="ext-link">DoD Terminology Program</a>.</p>
+            
+            <div class="jargon-card">
+                <div class="jargon-term">The DoD Dictionary</div>
+                <div class="jargon-def">The official, continuously updated repository of approved military and associated terms.</div>
+                <div class="jargon-context">"If it's not in the DoD Dictionary, it's not official doctrine. Policy writers are required to check this database before inventing a new acronym."</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">JEL+ (Joint Electronic Library Plus)</div>
+                <div class="jargon-def">The restricted database where the Terminology Repository and all Joint Publications (JPs) live.</div>
+                <div class="jargon-context">"I'll pull down the latest JP 3-0 from JEL+ to verify the definition of 'Targeting'."</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Joint Doctrine (JP Series)</div>
+                <div class="jargon-def">The fundamental principles that guide the employment of U.S. military forces. Numbered 1 through 6.</div>
+                <div class="jargon-context">"According to JP 4-0 (Joint Logistics), TRANSCOM has the lead on this."</div>
+            </div>
+        </section>
+
+        <section id="alphanumeric">
+            <h2>2. Alphanumeric Soup (Staff Codes & Pay Grades)</h2>
+            <p>If you hear someone say, "Take this to the J-3, the O-6 wants it by tomorrow," you are dealing with the military's strict alphanumeric organizational structure.</p>
+
+            <h3>The Prefix: Who are we talking about?</h3>
+            <table>
+                <tr><th>Prefix</th><th>Meaning</th><th>Context</th></tr>
+                <tr><td><strong>J</strong></td><td>Joint Staff</td><td>Used at Combatant Commands (like CENTCOM) or the Pentagon where multiple branches work together.</td></tr>
+                <tr><td><strong>G</strong></td><td>General Staff</td><td>Used by the Army or Marines for high-level commands (Divisions, Corps).</td></tr>
+                <tr><td><strong>S</strong></td><td>Staff</td><td>Used by the Army or Marines for lower-level units (Battalions, Brigades).</td></tr>
+                <tr><td><strong>A / N</strong></td><td>Air / Navy Staff</td><td>Used strictly within Air Force (A) or Navy (N) specific commands.</td></tr>
+            </table>
+
+            <h3>The Number: What is their job?</h3>
+            <ul>
+                <li><strong>1 (Personnel):</strong> Human resources, troop readiness.</li>
+                <li><strong>2 (Intelligence):</strong> Threat assessment, satellite imagery, targeting. (e.g., The "J-2" is the Intel boss).</li>
+                <li><strong>3 (Operations):</strong> The people who actually execute the mission. (e.g., The "G-3" runs the war).</li>
+                <li><strong>4 (Logistics):</strong> Beans, bullets, and bandages. Transportation and supply.</li>
+                <li><strong>5 (Plans):</strong> Future strategy. Writing the operational plans (OPLANs) for next year.</li>
+                <li><strong>6 (Cyber/C4):</strong> IT, network defense, computers, and comms.</li>
+            </ul>
+
+            <h3>The Pay Grades & Ranks</h3>
+            <div class="jargon-card">
+                <div class="jargon-term">"O" (Officer)</div>
+                <div class="jargon-def">Commissioned leaders. Ranges from O-1 (2nd Lieutenant/Ensign) to O-10 (4-Star General/Admiral).</div>
+                <div class="jargon-context">"We have an O-6 (Colonel/Captain) running this Directorate."</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">"E" (Enlisted)</div>
+                <div class="jargon-def">The backbone of the force. Ranges from E-1 (Private/Seaman) to E-9 (Sergeant Major/Master Chief).</div>
+                <div class="jargon-context">"Have the E-5s prep the vehicles for tomorrow."</div>
+            </div>
+            <table>
+                <tr><th>Code/Acronym</th><th>Definition</th></tr>
+                <tr><td><strong>E-5 / E-9</strong></td><td>Sergeant through Sergeant Major. The NCO leadership tiers.</td></tr>
+                <tr><td><strong>PFC</strong></td><td>Private First Class.</td></tr>
+                <tr><td><strong>RA</strong></td><td>Regular Army. Refers to the professional, full-time force.</td></tr>
+            </table>
+        </section>
+
+        <section id="c2">
+            <h2>3. Command & Control (C2) Verbs</h2>
+            <p>In the civilian world, someone is just "your boss." In the military, <em>how</em> they are your boss dictates what they can legally tell you to do.</p>
+
+            <div class="jargon-card">
+                <div class="jargon-term">OPCON (Operational Control)</div>
+                <div class="jargon-def">The authority to organize commands, employ forces, and assign tasks to accomplish a mission.</div>
+                <div class="jargon-context">"The Army unit was assigned to INDOPACOM, so the Admiral now has OPCON over them for the fight."</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">ADCON (Administrative Control)</div>
+                <div class="jargon-def">The authority over organization, training, equipping, logistics, and personnel management.</div>
+                <div class="jargon-context">"Even though the Admiral has OPCON to fight the war, the Army retains ADCON to pay the soldiers and fix their tanks."</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">TACON (Tactical Control)</div>
+                <div class="jargon-def">The localized, detailed direction and control of movements or maneuvers within a specific operational area.</div>
+                <div class="jargon-context">"The Air Force jets are under the TACON of the local ground commander for this specific airstrike."</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">C&C (Charlie Charlie)</div>
+                <div class="jargon-def">Command and Control. Often refers to the lead vehicle or helicopter directing the fight.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">SOP (Standard Operating Procedure)</div>
+                <div class="jargon-def">The established rules for how a unit performs specific tasks.</div>
+            </div>
+        </section>
+
+        <section id="networks">
+            <h2>4. Servers, Networks & Comms</h2>
+            <p>Information is physically separated by classification level. You cannot send an email from one color network to another.</p>
+
+            <div class="jargon-card">
+                <div class="jargon-term"><span class="badge badge-nipr">NIPRNET</span> (Non-Classified Internet Protocol Router Network)</div>
+                <div class="jargon-def">The "Green" network. Used for unclassified, day-to-day business, public internet access, and standard military email (john.doe.mil@army.mil).</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term"><span class="badge badge-sipr">SIPRNET</span> (Secret Internet Protocol Router Network)</div>
+                <div class="jargon-def">The "Red" network. Completely isolated from the public internet. Used for transmitting classified information up to the SECRET level, including operational plans and tactical messages.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term"><span class="badge badge-jwics">JWICS</span> (Joint Worldwide Intelligence Communications System)</div>
+                <div class="jargon-def">The "Yellow" network. Highly restricted. Used for Top Secret and Sensitive Compartmented Information (SCI). Found primarily inside secure vaults.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">SCIF (Sensitive Compartmented Information Facility)</div>
+                <div class="jargon-def">Pronounced "skiff." A highly secure, soundproofed room or building where classified JWICS information can be viewed or discussed. No cell phones allowed.</div>
+            </div>
+        </section>
+
+        <section id="orgs">
+            <h2>5. Organizations & Broad Acronyms</h2>
+            <div class="jargon-card">
+                <div class="jargon-term">CCMD (Combatant Command)</div>
+                <div class="jargon-def">The 11 major operational hubs of the military (e.g., CENTCOM, TRANSCOM, CYBERCOM). They are the warfighters.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">FFRDC (Federally Funded Research and Development Center)</div>
+                <div class="jargon-def">Think tanks and labs (like RAND, MITRE, Lincoln Lab) that operate free from commercial bias to advise the DoD and build advanced tech.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">PME (Professional Military Education)</div>
+                <div class="jargon-def">The continuous schooling officers go through to get promoted (e.g., War College, Staff College).</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">IC (Intelligence Community)</div>
+                <div class="jargon-def">The 18 agencies (CIA, NSA, DIA, etc.) that gather and analyze intelligence for the government.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">C.I.D. (Criminal Investigations Division)</div>
+                <div class="jargon-def">The military's internal felony investigative agency (Army's version of the FBI).</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">Seabees</div>
+                <div class="jargon-def">Navy Construction Battalions (CBs). The engineers who build bases in combat zones.</div>
+            </div>
+        </section>
+
+        <section id="operational">
+            <h2>6. Everyday Operational Slang (The Normie Translations)</h2>
+            <p>These terms populate military PowerPoint slides, emails, and briefings daily.</p>
+            <table>
+                <tr><th>Jargon</th><th>What it actually means</th></tr>
+                <tr><td><strong>AAR</strong></td><td><em>After Action Report.</em> A formal review of a mission to analyze what went right and wrong.</td></tr>
+                <tr><td><strong>AO</strong></td><td><em>Area of Operations.</em> The specific zone where a unit is assigned to work.</td></tr>
+                <tr><td><strong>AOR</strong></td><td><em>Area of Responsibility.</em> A specific geographic region of the world assigned to a commander (e.g., "CENTCOM's AOR is the Middle East").</td></tr>
+                <tr><td><strong>AWOL</strong></td><td><em>Absent Without Leave.</em> Leaving a post without permission (but without intent to desert).</td></tr>
+                <tr><td><strong>BLUF</strong></td><td><em>Bottom Line Up Front.</em> Put your main point in the first sentence so the General doesn't have to read the whole email.</td></tr>
+                <tr><td><strong>BOGSAT</strong></td><td><em>Bunch of Guys Sitting Around a Table.</em> An informal planning meeting or low-tech wargame.</td></tr>
+                <tr><td><strong>Boonies</strong></td><td>Any remote, undeveloped area far from a base or civilization.</td></tr>
+                <tr><td><strong>Cache</strong></td><td>A hidden supply of weapons, ammo, or equipment.</td></tr>
+                <tr><td><strong>CONOPS</strong></td><td><em>Concept of Operations.</em> A document describing exactly how a commander plans to execute a specific mission.</td></tr>
+                <tr><td><strong>COP</strong></td><td><em>Common Operational Picture.</em> A single display (like a digital map on a screen) that shows everyone where friendly and enemy units are.</td></tr>
+                <tr><td><strong>DEROS</strong></td><td><em>Date of Expected Return from Overseas.</em> The day a soldier's deployment ends.</td></tr>
+                <tr><td><strong>DMZ</strong></td><td><em>De-Militarized Zone.</em> A buffer zone between two warring nations where military activity is banned.</td></tr>
+                <tr><td><strong>LZ / PZ</strong></td><td><em>Landing Zone / Pickup Zone.</em> Specific coordinates for helicopter insertions or extractions.</td></tr>
+                <tr><td><strong>OPTEMPO</strong></td><td><em>Operational Tempo.</em> The pace and intensity of a unit's workload.</td></tr>
+                <tr><td><strong>Red Team</strong></td><td>The group of people assigned to play the "Enemy" during a wargame, TTX, or cyber test to challenge the plan.</td></tr>
+                <tr><td><strong>S.N.A.F.U.</strong></td><td><em>Situation Normal: All F***ed Up.</em> An acknowledgment that things are going wrong as expected.</td></tr>
+                <tr><td><strong>SITREP</strong></td><td><em>Situation Report.</em> A quick update sent up the chain of command detailing what is happening right now.</td></tr>
+                <tr><td><strong>SME</strong></td><td><em>Subject Matter Expert.</em> Pronounced "smee." The person who actually knows how the software or weapon works.</td></tr>
+                <tr><td><strong>TTX</strong></td><td><em>Table Top Exercise.</em> A seminar-style wargame where commanders talk through a hypothetical crisis.</td></tr>
+                <tr><td><strong>Willy Pete</strong></td><td>White Phosphorous. A chemical used for smoke screens or incendiary effects.</td></tr>
+            </table>
+        </section>
+
+        <section id="onesource">
+            <h2>7. The Military OneSource Master Glossary</h2>
+            <p>This section is pulled directly from the Military OneSource Database and combined with Datafortress admin entries.</p>
+            <table>
+                <tr><th>Acronym</th><th>Meaning & Details</th></tr>
+                <tr><td><strong>A&FRC</strong></td><td>Airman and Family Readiness Center. The Air Force equivalent of ACS.</td></tr>
+                <tr><td><strong>AAFES</strong></td><td>Army and Air Force Exchange Service. The retailer that operates post exchanges (PX/BX).</td></tr>
+                <tr><td><strong>Absentee Ballot</strong></td><td>The mechanism allowing service members to vote while deployed or stationed overseas.</td></tr>
+                <tr><td><strong>ACS</strong></td><td>Army Community Service. Provides support services, education, and resources to Army families.</td></tr>
+                <tr><td><strong>AFB</strong></td><td>Air Force Base.</td></tr>
+                <tr><td><strong>BAH</strong></td><td>Basic Allowance for Housing. A non-taxable allowance for housing costs.</td></tr>
+                <tr><td><strong>BAS</strong></td><td>Basic Allowance for Subsistence. A non-taxable allowance to offset the cost of meals.</td></tr>
+                <tr><td><strong>BRS</strong></td><td>Blended Retirement System. The current military retirement system.</td></tr>
+                <tr><td><strong>BX / PX</strong></td><td>Base Exchange / Post Exchange. The military installation's department store.</td></tr>
+                <tr><td><strong>CAC</strong></td><td>Common Access Card. Standard smart-card ID for active-duty military.</td></tr>
+                <tr><td><strong>CDC</strong></td><td>Child Development Center. On-base childcare facilities.</td></tr>
+                <tr><td><strong>CO</strong></td><td>Commanding Officer.</td></tr>
+                <tr><td><strong>CONUS</strong></td><td>Continental United States. The 48 contiguous states.</td></tr>
+                <tr><td><strong>DEERS</strong></td><td>Defense Enrollment Eligibility Reporting System. Database for TRICARE benefits.</td></tr>
+                <tr><td><strong>DFAS</strong></td><td>Defense Finance and Accounting Service. Agency responsible for paying DoD personnel.</td></tr>
+                <tr><td><strong>DOD</strong></td><td>Department of Defense.</td></tr>
+                <tr><td><strong>EFMP</strong></td><td>Exceptional Family Member Program. Support for families with special needs.</td></tr>
+                <tr><td><strong>ETS</strong></td><td>Expiration Term of Service. Date a contract expires.</td></tr>
+                <tr><td><strong>FFSC</strong></td><td>Fleet and Family Support Center. Navy's equivalent of ACS.</td></tr>
+                <tr><td><strong>FSA</strong></td><td>Family Separation Allowance. Additional pay when separated from dependents.</td></tr>
+                <tr><td><strong>ITT</strong></td><td>Information, Tickets and Travel. On-base discount office.</td></tr>
+                <tr><td><strong>LES</strong></td><td>Leave and Earnings Statement. The military pay stub.</td></tr>
+                <tr><td><strong>MCCS</strong></td><td>Marine Corps Community Services.</td></tr>
+                <tr><td><strong>MEPS</strong></td><td>Military Entrance Processing Station.</td></tr>
+                <tr><td><strong>MTF</strong></td><td>Military Treatment Facility. On-base clinic or hospital.</td></tr>
+                <tr><td><strong>MWR</strong></td><td>Morale, Welfare and Recreation. Support and leisure services.</td></tr>
+                <tr><td><strong>NCO</strong></td><td>Noncommissioned Officer. Enlisted leader.</td></tr>
+                <tr><td><strong>OCONUS</strong></td><td>Outside the Continental United States.</td></tr>
+                <tr><td><strong>OPSEC</strong></td><td>Operations Security.</td></tr>
+                <tr><td><strong>PCS</strong></td><td>Permanent Change of Station. Official relocation.</td></tr>
+                <tr><td><strong>PII</strong></td><td>Personally Identifiable Information.</td></tr>
+                <tr><td><strong>POA</strong></td><td>Power of Attorney.</td></tr>
+                <tr><td><strong>PPV</strong></td><td>Public-Private Venture. Privatized housing.</td></tr>
+                <tr><td><strong>PTSD</strong></td><td>Post-Traumatic Stress Disorder.</td></tr>
+                <tr><td><strong>R & R</strong></td><td>Rest and Relaxation. Vacation during/after deployment.</td></tr>
+                <tr><td><strong>RAPIDS</strong></td><td>Real-Time Automated Personnel Identification System.</td></tr>
+                <tr><td><strong>SBP</strong></td><td>Survivor Benefit Plan. Annuity for retirees' beneficiaries.</td></tr>
+                <tr><td><strong>SGLI</strong></td><td>Servicemembers' Group Life Insurance.</td></tr>
+                <tr><td><strong>TAD / TDY</strong></td><td>Temporary Additional Duty / Temporary Duty.</td></tr>
+                <tr><td><strong>TAMP</strong></td><td>Transitional Assistance Management Program.</td></tr>
+                <tr><td><strong>TRICARE</strong></td><td>Health care program for uniformed service members.</td></tr>
+                <tr><td><strong>TSP</strong></td><td>Thrift Savings Plan. Retirement investment plan (401k equivalent).</td></tr>
+                <tr><td><strong>USO</strong></td><td>United Service Organizations.</td></tr>
+                <tr><td><strong>VA</strong></td><td>Department of Veterans Affairs.</td></tr>
+            </table>
+        </section>
+
+        <section id="joint">
+            <h2>8. Joint Force Commands (CCMD Sub-Structure)</h2>
+            <div class="jargon-card">
+                <div class="jargon-term">JTF (Joint Task Force)</div>
+                <div class="jargon-def">A temporary "pop-up" command center created to handle a specific crisis or mission.</div>
+                <div class="jargon-context">"JTF-Haiti was stood up for disaster relief."</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">JFACC (Joint Force Air Component Commander)</div>
+                <div class="jargon-def">Pronounced "jay-fack." The person in charge of all air assets in a theater, regardless of branch.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">JFMCC (Joint Force Maritime Component Commander)</div>
+                <div class="jargon-def">Pronounced "jay-fick." The person in charge of all sea assets.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">JFLCC (Joint Force Land Component Commander)</div>
+                <div class="jargon-def">Pronounced "jay-flick." The person in charge of all ground assets.</div>
+            </div>
+        </section>
+
+        <section id="nato">
+            <h2>9. NATO & Ally-Specific Codes</h2>
+            <p>International operations use NATO standards (STANAGs) to ensure Americans, Brits, and French can fight together.</p>
+            <div class="jargon-card">
+                <div class="jargon-term">STANAG (Standardization Agreement)</div>
+                <div class="jargon-def">NATO documents that define everything from ammunition sizes to radio protocols.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">Five Eyes (FVEY)</div>
+                <div class="jargon-def">The intelligence alliance between the US, UK, Canada, Australia, and New Zealand.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">NATO Rank Codes (OF and OR)</div>
+                <div class="jargon-def">Standardized ranks to compare a US Colonel to a French Colonel. <strong>OF</strong> = Officer (OF-1 to OF-10), <strong>OR</strong> = Other Ranks (Enlisted).</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">ACO / ACT</div>
+                <div class="jargon-def">Allied Command Operations (Strategic Command Europe) and Allied Command Transformation.</div>
+            </div>
+        </section>
+
+        <section id="radio">
+            <h2>10. Radio/Comms Procedures</h2>
+            <p>Voice procedure is designed to provide the fastest, most reliable transfer of information while minimizing misunderstandings.</p>
+            <table>
+                <tr><th>Pro-Word</th><th>Meaning</th><th>Protocol Note</th></tr>
+                <tr><td><strong>Authenticate</strong></td><td>A challenge issued to verify the identity of a radio caller using a code.</td><td>Essential for operational security (OPSEC).</td></tr>
+                <tr><td><strong>Break</strong></td><td>Used to indicate a pause in a long message or to separate different parts.</td><td>Prevents the transmission from timing out.</td></tr>
+                <tr><td><strong>Flash-Priority</strong></td><td>Highest precedence.</td><td>Reserved for initial enemy contact. Interrupts all other traffic.</td></tr>
+                <tr><td><strong>I Say Again</strong></td><td>Used to clarify a message that may have been misunderstood.</td><td>Never say "repeat."</td></tr>
+                <tr><td><strong>Out</strong></td><td>I have finished speaking and no reply is expected.</td><td>Never say "Over and Out." They are contradictory.</td></tr>
+                <tr><td><strong>Over</strong></td><td>I have finished speaking and am awaiting a reply.</td><td>Used to "pass the ball" to the other speaker.</td></tr>
+                <tr><td><strong>Read Back</strong></td><td>A command for the receiver to repeat the message exactly to ensure accuracy.</td><td>Used for coordinates and 9-line MEDEVACs.</td></tr>
+                <tr><td><strong>Roger</strong></td><td>I have received all of your last transmission.</td><td>Does NOT mean "Yes" or "I will do it"—only that it was heard.</td></tr>
+                <tr><td><strong>Say Again</strong></td><td>Repeat your last transmission.</td><td>Never say "Repeat." "Repeat" is a specific request for more artillery fire.</td></tr>
+                <tr><td><strong>Wilco</strong></td><td>I have received your message, understand it, and <strong>will comply</strong>.</td><td>Never say "Roger Wilco." "Wilco" already includes "Roger."</td></tr>
+            </table>
+        </section>
+
+        <section id="service-slang">
+            <h2>11. Service-Specific Lingo & Branch Slang</h2>
+            <p>The specialized dialects of the "Ground Pounders," "Jarheads," and "Chair Force."</p>
+
+            <h3>United States Army ("Ground Pounders")</h3>
+            <div class="jargon-card"><div class="jargon-term">11 Bush (11B)</div><div class="jargon-def">Radio shorthand for an Infantryman (derived from the MOS code 11B).</div></div>
+            <div class="jargon-card"><div class="jargon-term">Grunt</div><div class="jargon-def">The infantry. The front-line combat soldier.</div></div>
+            <div class="jargon-card"><div class="jargon-term">High Speed</div><div class="jargon-def">An exceptionally motivated or skilled soldier; a "top performer."</div></div>
+            <div class="jargon-card"><div class="jargon-term">Hooah</div><div class="jargon-def">All-encompassing Army affirmative (Yes, Understand, Good, etc.).</div></div>
+            <div class="jargon-card"><div class="jargon-term">POG (Person Other than Grunt)</div><div class="jargon-def">Pronounced "pogue." Non-infantry soldiers (support, desk, logistics).</div></div>
+
+            <h3>United States Marine Corps ("Jarheads")</h3>
+            <div class="jargon-card"><div class="jargon-term">Boot</div><div class="jargon-def">A new Marine fresh from Parris Island or San Diego training.</div></div>
+            <div class="jargon-card"><div class="jargon-term">Devil Dog</div><div class="jargon-def">Nickname for Marines, originated in WWI by German soldiers (Teufelhunde).</div></div>
+            <div class="jargon-card"><div class="jargon-term">Motivator</div><div class="jargon-def">A Marine who is overly enthusiastic or "loud and proud" about the Corps.</div></div>
+            <div class="jargon-card"><div class="jargon-term">Ooh-rah</div><div class="jargon-def">The Marine version of 'Hooah'; a battle cry and affirmative.</div></div>
+
+            <h3>United States Air Force ("Chair Force")</h3>
+            <div class="jargon-card"><div class="jargon-term">Blue Suit</div><div class="jargon-def">Refers to the Air Force institution, career mindset, or standard regulations.</div></div>
+            <div class="jargon-card"><div class="jargon-term">Chair Force</div><div class="jargon-def">Self-deprecating (or derogatory) term for Air Force desk-bound personnel.</div></div>
+            <div class="jargon-card"><div class="jargon-term">TDY (Temporary Duty)</div><div class="jargon-def">The quintessential Air Force term for work-related travel.</div></div>
+
+            <h3>United States Space Force ("Guardians")</h3>
+            <div class="jargon-card"><div class="jargon-term">Guardian</div><div class="jargon-def">The official title for members of the Space Force (equivalent to Soldier or Marine).</div></div>
+            <div class="jargon-card"><div class="jargon-term">Semper Supra</div><div class="jargon-def">"Always Above." The official motto of the Space Force.</div></div>
+
+            <h3>Naval & Aviation Lingo</h3>
+            <div class="jargon-card"><div class="jargon-term">Angels / Cherubs</div><div class="jargon-def">Aviation shorthand for altitude. Angels = Thousands of feet. Cherubs = Hundreds of feet.</div><div class="jargon-context">"Inbound at Angels 15 (15,000 ft)."</div></div>
+            <div class="jargon-card"><div class="jargon-term">Bird / Chopper</div><div class="jargon-def">Generic terms for any aircraft or helicopter.</div></div>
+            <div class="jargon-card"><div class="jargon-term">Bogeys / Bandits / Chicks</div><div class="jargon-def">Unidentified aircraft (Bogey) vs. Confirmed enemy aircraft (Bandit) vs. Friendlies (Chicks).</div></div>
+            <div class="jargon-card"><div class="jargon-term">Deck / Flight Deck</div><div class="jargon-def">The floor (on a ship) or the specific surface for aircraft operations.</div></div>
+            <div class="jargon-card"><div class="jargon-term">Slick</div><div class="jargon-def">A helicopter used for troop transport that does not have external weapon pods.</div></div>
+            <div class="jargon-card"><div class="jargon-term">Sortie</div><div class="jargon-def">A single operational flight by one aircraft.</div><div class="jargon-context">"The squadron generated 40 sorties over the target area today."</div></div>
+            <div class="jargon-card"><div class="jargon-term">The Head / The Galley</div><div class="jargon-def">The bathroom (Head) and the kitchen (Galley) on a ship.</div><div class="jargon-context">"Go clean the head before the Skipper does an inspection."</div></div>
+        </section>
+
+        <section id="wargame">
+            <h2>12. The Complete Wargame & Gaming Encyclopedia <span class="badge badge-wargame">Expanded</span></h2>
+            <p>From professional military adjudication to 160+ gaming terms from the Uswitch Master Glossary.</p>
+
+            <h3>Professional Wargaming & Analysis</h3>
+            <div class="jargon-card">
+                <div class="jargon-term">After Action Report (AAR)</div>
+                <div class="jargon-def">A formal document detailing the events, outcomes, and lessons learned from a wargame or operation.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">Hot Wash</div>
+                <div class="jargon-def">An immediate debrief held as soon as the wargame ends to capture raw, high-level insights before participants leave the room.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">Do-outs</div>
+                <div class="jargon-def">Specific action items or tasks assigned during or after the wargame that require follow-up work or research.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">Adjudication</div>
+                <div class="jargon-def">The process by which an umpire or computer determines the outcome of player actions and transitions the game state.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">COA Wargame (Course of Action)</div>
+                <div class="jargon-def">A specific step in the military decision-making process where plans are tested against a thinking Red Cell.</div>
+            </div>
+            <div class="jargon-card">
+                <div class="jargon-term">ROC Drill (Rehearsal of Concept)</div>
+                <div class="jargon-def">Not a wargame. It is a walkthrough of a plan already decided upon to ensure everyone knows their role.</div>
+            </div>
+
+            <h3>The Uswitch Gaming Glossary (160+ Terms)</h3>
+            <table>
+                <tr><th>Term</th><th>Literal Meaning & Context</th></tr>
+                <tr><td><strong>8, 16, 32, 64-bit</strong></td><td>Architecture of hardware/software from various console generations.</td></tr>
+                <tr><td><strong>AA / Auto-attack</strong></td><td>Attacks that repeat at fixed intervals (common in MOBAs/RTS).</td></tr>
+                <tr><td><strong>AAA</strong></td><td>"Triple-A": High-budget publishers/games.</td></tr>
+                <tr><td><strong>AFK</strong></td><td>Away from Keyboard.</td></tr>
+                <tr><td><strong>Aggro</strong></td><td>Enemy attention/hostility drawn by a player.</td></tr>
+                <tr><td><strong>AI</strong></td><td>Artificial Intelligence; behavior of computer-controlled characters.</td></tr>
+                <tr><td><strong>Aimbot</strong></td><td>Illegal software hack that aims for the player.</td></tr>
+                <tr><td><strong>AOE</strong></td><td>Area of Effect; abilities felt over a specific zone.</td></tr>
+                <tr><td><strong>Ban</strong></td><td>Removal from a game (Temporary or Permanent/Permaban).</td></tr>
+                <tr><td><strong>Battle Royale</strong></td><td>Last-one-standing game format (e.g., Fortnite).</td></tr>
+                <tr><td><strong>Buff / Nerf</strong></td><td>Improving / Reducing the power of a game element.</td></tr>
+                <tr><td><strong>Camping</strong></td><td>Holding a static, advantageous position.</td></tr>
+                <tr><td><strong>Carry</strong></td><td>When one player significantly outperforms the rest of the team to achieve victory.</td></tr>
+                <tr><td><strong>CC</strong></td><td>Crowd Control; abilities that restrict movement/action.</td></tr>
+                <tr><td><strong>Cheese</strong></td><td>An unconventional, high-risk strategy that relies on surprise for an easy/fast win (e.g., Helo Rush).</td></tr>
+                <tr><td><strong>Clutch</strong></td><td>Pulling off a high-stakes success under extreme pressure.</td></tr>
+                <tr><td><strong>Cooldown</strong></td><td>Period where a skill cannot be reused.</td></tr>
+                <tr><td><strong>DPS</strong></td><td>Damage Per Second.</td></tr>
+                <tr><td><strong>F2P</strong></td><td>Free to Play.</td></tr>
+                <tr><td><strong>Gank</strong></td><td>Amushing or ganging up on an opponent.</td></tr>
+                <tr><td><strong>GG / GG EZ</strong></td><td>Good Game / Good Game Easy (often insulting).</td></tr>
+                <tr><td><strong>Glitch</strong></td><td>Software error used for advantage or hindrance.</td></tr>
+                <tr><td><strong>Hitscan</strong></td><td>Weapons that deal damage instantly along a line of sight.</td></tr>
+                <tr><td><strong>HUD</strong></td><td>Heads-up Display.</td></tr>
+                <tr><td><strong>Meat Grinder</strong></td><td>A battle of high attrition where infantry or units are sacrificed in masses to hold or take a position.</td></tr>
+                <tr><td><strong>Meta</strong></td><td>"Most Effective Tactic Available." The current dominant strategy or unit composition used by most players.</td></tr>
+                <tr><td><strong>NPC</strong></td><td>Non-Playable Character.</td></tr>
+                <tr><td><strong>OP</strong></td><td>Overpowered.</td></tr>
+                <tr><td><strong>PVE / PVP</strong></td><td>Player vs Environment / Player vs Player.</td></tr>
+                <tr><td><strong>Ragequit</strong></td><td>Leaving a game due to extreme frustration.</td></tr>
+                <tr><td><strong>RNG</strong></td><td>Random Number Generator (Chance-based outcomes).</td></tr>
+                <tr><td><strong>Sandbox</strong></td><td>Games focused on free-form creativity and exploration.</td></tr>
+                <tr><td><strong>Smurfing</strong></td><td>A high-skilled player using a new/low-ranked account to play against beginners.</td></tr>
+                <tr><td><strong>Spawn</strong></td><td>The place where players or items appear.</td></tr>
+                <tr><td><strong>Tank</strong></td><td>Character designed to take damage and draw aggro.</td></tr>
+                <tr><td><strong>Tilted</strong></td><td>When a player becomes so emotionally frustrated by a loss or mistake that their performance degrades.</td></tr>
+                <tr><td><strong>Unicorn</strong></td><td>A rare unit with a unique stat line or ability that has no direct equivalent in other factions.</td></tr>
+                <tr><td><strong>XP</strong></td><td>Experience Points.</td></tr>
+            </table>
+        </section>
+
+        <section id="cyber">
+            <h2>13. Cyber Security Terminology <span class="badge badge-cyber">NARUC & XM Cyber</span></h2>
+            <p>Navigating the "Eighth Domain" of warfare: terminology from the SOC to the SCIF, based on DHS/CISA guidelines.</p>
+
+            <div class="jargon-card">
+                <div class="jargon-term">APT (Advanced Persistent Threat)</div>
+                <div class="jargon-def">An adversary that possesses sophisticated levels of expertise and significant resources used to establish footholds within IT infrastructure repeatedly over an extended period.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">CIA Triad</div>
+                <div class="jargon-def">The three most crucial components of information security: <strong>C</strong>onfidentiality, <strong>I</strong>ntegrity, and <strong>A</strong>vailability. IT focuses on balancing these without impacting operations.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Air-Gapped / Network Isolation</div>
+                <div class="jargon-def">A security measure ensuring that a computer or network is physically isolated from unsecured networks, such as the public internet, to prevent remote attacks.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Botnet & Command and Control (C2)</div>
+                <div class="jargon-def">A network of computers infected with malware that allows a central malicious server (C&C) to issue directives (like executing a DDoS attack) to the infected "zombie" devices.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Boundary Protection / Firewall</div>
+                <div class="jargon-def">Monitoring and control of digital communications at the external perimeter to prevent unauthorized access (e.g., using firewalls, proxies, and gateways).</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Exploit</div>
+                <div class="jargon-def">A piece of software or sequence of commands that takes advantage of a vulnerability to cause unintended or unanticipated behavior on a system.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">CTEM, EDR, & DLP</div>
+                <div class="jargon-def">Real-time monitoring tools. <strong>CTEM:</strong> Continuous Threat Exposure Management. <strong>EDR:</strong> Endpoint Detection and Response. <strong>DLP:</strong> Data Loss Prevention.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">CRISP</div>
+                <div class="jargon-def">Cybersecurity Risk Information Sharing Program. A public-private data sharing platform that facilitates the sharing of threat information among energy sector stakeholders.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">NIST CSF</div>
+                <div class="jargon-def">National Institute of Standards and Technology Cybersecurity Framework. A voluntary framework consisting of standards, guidelines, and best practices to manage cybersecurity risk.</div>
+            </div>
+            
+            <div class="jargon-card">
+                <div class="jargon-term">NCCIC</div>
+                <div class="jargon-def">National Cybersecurity and Communications Integration Center. The cyber defense and incident response center for the Department of Homeland Security (DHS).</div>
+            </div>
+        </section>
+
+        <section id="infra">
+            <h2>14. Critical Infrastructure & OT <span class="badge badge-infra">NARUC & XM Cyber</span></h2>
+            <p>The "Lifeline Functions" of the nation and the operational technology that keeps the physical world running.</p>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Critical Infrastructure</div>
+                <div class="jargon-def">Assets, systems, and networks so vital to the United States that their incapacitation would have a debilitating effect on security, national economic security, or public health.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">IT vs. OT (Information vs. Operational Technology)</div>
+                <div class="jargon-def"><strong>IT</strong> deals with systems that manage digital data. <strong>OT</strong> involves programmable systems that monitor or control the physical environment (e.g., turbines, factory belts). IT prioritizes data confidentiality, while OT prioritizes human safety and continuous operation.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">SCADA / ICS</div>
+                <div class="jargon-def">Supervisory Control and Data Acquisition / Industrial Control Systems. The hardware and software used to control massive physical infrastructure like the power grid or water plants.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Stuxnet</div>
+                <div class="jargon-def">A highly sophisticated cyberattack (malware) that specifically targeted OT systems, causing centrifuges to spin beyond design capabilities until failure, bridging the gap between cyber and physical destruction.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">IIoT (Industrial Internet of Things)</div>
+                <div class="jargon-def">The growing network of connected devices in industrial settings, which increases the cyber attack surface by connecting historically air-gapped OT systems to internet-connected IT networks.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Bulk Electric System (BES) Cyber Asset</div>
+                <div class="jargon-def">A cyber asset that, if degraded or misused, would adversely impact facilities crucial to the reliable operation of the bulk electric grid within 15 minutes.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">CEII</div>
+                <div class="jargon-def">Critical Electric Infrastructure Information. Highly sensitive information related to critical infrastructure that is guarded by the Federal Energy Regulatory Commission.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Black Start</div>
+                <div class="jargon-def">The complex process of restoring a power station to operation without relying on the external power transmission system, usually utilizing co-located diesel generators.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">Black Sky Hazard / Event</div>
+                <div class="jargon-def">A catastrophic event (natural or manmade) that severely disrupts the normal functioning of critical infrastructures across multiple regions for long durations.</div>
+            </div>
+
+            <div class="jargon-card">
+                <div class="jargon-term">All-Hazards & Resilience</div>
+                <div class="jargon-def"><strong>All-Hazards</strong> refers to any threat (hurricane, terror attack, cyber incident) warranting response. <strong>Resilience</strong> is the system's ability to absorb, adapt to, and quickly recover from these disruptions.</div>
+            </div>
+        </section>
+
+        <footer>
+            <p>The Civilian's Guide to Milspeak (DV12) • Full Restored Master Reference</p>
+        </footer>
+
+    </div>
+</body>
+</html>

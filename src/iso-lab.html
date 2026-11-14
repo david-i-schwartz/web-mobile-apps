@@ -1,0 +1,1218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pegboard Iso Lab</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  --bg:#E7EDE8; --mat:rgba(34,86,64,.075); --surface:#F8FAF7; --ink:#17231D; --muted:#55665C;
+  --line:#C8D4CB; --accent:#F2C230; --accent-ink:#2A2208; --board:#D8E1E7; --peg:#B4C1CA;
+  --guide:rgba(40,62,84,.14); --chip:#EDF2EE; --sel:#17231D; --sel-ink:#F8FAF7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#132C26; --mat:rgba(255,255,255,.045); --surface:#1A3730; --ink:#E5EEE9; --muted:#9CB3A8;
+    --line:#2D4E45; --accent:#F2C230; --accent-ink:#2A2208; --board:#21302F; --peg:#374947;
+    --guide:rgba(255,255,255,.085); --chip:#16322B; --sel:#E5EEE9; --sel-ink:#16322B;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#132C26; --mat:rgba(255,255,255,.045); --surface:#1A3730; --ink:#E5EEE9; --muted:#9CB3A8;
+  --line:#2D4E45; --accent:#F2C230; --accent-ink:#2A2208; --board:#21302F; --peg:#374947;
+  --guide:rgba(255,255,255,.085); --chip:#16322B; --sel:#E5EEE9; --sel-ink:#16322B;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; color:var(--ink); background-color:var(--bg);
+  background-image:linear-gradient(var(--mat) 1px,transparent 1px),linear-gradient(90deg,var(--mat) 1px,transparent 1px);
+  background-size:20px 20px;
+  font-family:"Familjen Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px; line-height:1.45;
+}
+.wrap{max-width:1060px;margin:0 auto;padding:18px 14px 48px}
+h1{font-family:"Silkscreen","Courier New",monospace;font-weight:400;font-size:clamp(1.55rem,6vw,2.3rem);line-height:1.05;margin:4px 0 6px;letter-spacing:.01em}
+.sub{margin:0 0 16px;color:var(--muted);max-width:58ch}
+.layout{display:grid;gap:18px}
+@media (min-width:860px){
+  .layout{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}
+  .boardcol{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+}
+.boardbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+#readout{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.95rem}
+#board{width:100%;aspect-ratio:1/1;display:block;border-radius:14px;touch-action:manipulation;cursor:crosshair;background:var(--board);box-shadow:inset 0 0 0 1px var(--line)}
+#summary{margin:8px 0 0;color:var(--muted);font-size:.92rem}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--surface);padding:9px 15px;border-radius:999px;cursor:pointer;font-weight:600;font-size:.95rem}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;padding:10px 20px}
+.btn:focus-visible,.chip:focus-visible,.tabs button:focus-visible,.editor .c:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px 16px}
+.tabs{display:flex;gap:4px;padding:4px;background:var(--chip);border-radius:999px;margin-bottom:6px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;border:0;background:transparent;padding:8px 12px;border-radius:999px;font-weight:600;cursor:pointer;color:var(--muted);font-size:.9rem;white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.row{margin:14px 0 0}
+.lab{display:block;font-size:.86rem;color:var(--muted);margin-bottom:6px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--chip);padding:6px 12px;border-radius:999px;cursor:pointer;font-size:.9rem;font-weight:500;line-height:1.3}
+.chip[aria-pressed="true"]{background:var(--sel);color:var(--sel-ink);border-color:var(--sel)}
+.chip.fam{display:inline-flex;align-items:center;gap:7px;padding-left:9px}
+.dots{display:inline-flex;padding-left:3px}
+.dots i{display:block;width:13px;height:13px;border-radius:50%;margin-left:-3px;box-shadow:0 0 0 1.5px var(--chip)}
+.chip[aria-pressed="true"] .dots i{box-shadow:0 0 0 1.5px var(--sel)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:.92rem;margin-left:8px;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--sel)}
+.editor{display:grid;gap:3px;touch-action:none;user-select:none;-webkit-user-select:none}
+.editor .c{aspect-ratio:1/1;border-radius:50%;border:0;background:var(--peg);padding:0;cursor:pointer;min-width:0}
+.editor .c.below{background:transparent;box-shadow:inset 0 0 0 2px var(--muted)}
+.slider{display:grid;grid-template-columns:7.5em 1fr 2.2em;align-items:center;gap:10px;margin:6px 0}
+.slider span{font-size:.9rem}
+.slider output{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.slider input{width:100%;accent-color:var(--sel)}
+.seedrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seedrow input{width:7.5em;font:inherit;font-variant-numeric:tabular-nums;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink)}
+.hint{font-size:.9rem;color:var(--muted);margin:14px 0 0}
+details{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:600}
+details p{margin:8px 0;max-width:62ch}
+.counts{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:4px}
+.counts li{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--line)}
+.counts b{font-variant-numeric:tabular-nums;font-weight:600}
+#out{margin-top:12px}
+#out img{width:100%;max-width:520px;border-radius:12px;display:block}
+#out textarea{width:100%;min-height:220px;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
+#out .cap{font-size:.88rem;color:var(--muted);margin:6px 0}
+.labbox textarea{width:100%;min-height:150px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;background:var(--chip);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px}
+.msg{font-size:.9rem;margin:8px 0 0}
+.note{font-size:.88rem;color:var(--muted);margin-top:12px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Pegboard Iso Lab</h1>
+  <p class="sub">Build 3D shapes and tessellate them, grow seeded terrain, tile Truchet pipes, shade distance fields, or import new categories. Every random pattern has a seed number you can reuse.</p>
+  <div class="layout">
+    <section class="boardcol" aria-label="Pegboard">
+      <div class="boardbar">
+        <span id="readout">Tap a peg</span>
+        <div class="seg" id="boardopts"></div>
+      </div>
+      <canvas id="board" aria-label="Bead pattern preview"></canvas>
+      <p id="summary"></p>
+      <div class="actions">
+        <button type="button" class="btn primary" id="tessBtn">Tessellate</button>
+        <button type="button" class="btn" id="snapBtn">Snapshot</button>
+        <button type="button" class="btn" id="textBtn">Pattern as text</button>
+      </div>
+      <details id="boardpanel" style="margin-top:12px;border-top:0;padding-top:0"><summary id="boardsum">Board</summary><div id="sizeopts" style="margin-top:10px"></div></details>
+      <div id="out"></div>
+    </section>
+    <section class="panel" aria-label="Controls">
+      <div class="tabs" role="tablist" id="tabs">
+        <button type="button" role="tab" data-tab="shapes">Shapes</button>
+        <button type="button" role="tab" data-tab="tess">Tessellate</button>
+        <button type="button" role="tab" data-tab="terrain">Terrain</button>
+        <button type="button" role="tab" data-tab="truchet">Truchet</button>
+        <button type="button" role="tab" data-tab="fields">Fields</button>
+        <button type="button" role="tab" data-tab="lab">Lab</button>
+        <button type="button" role="tab" data-tab="beads">Beads</button>
+      </div>
+      <div id="controls"></div>
+    </section>
+  </div>
+</main>
+<script>
+"use strict";
+const BEADS={
+  white:["White","#F4F4F1"],lgrey:["Light Grey","#C2C6C9"],grey:["Grey","#8C9195"],dgrey:["Dark Grey","#50555A"],black:["Black","#262729"],
+  coral:["Hot Coral","#F2625D"],red:["Red","#C42F37"],cran:["Cranapple","#7B2430"],
+  cheddar:["Cheddar","#F6A83A"],orange:["Orange","#E5622A"],rust:["Rust","#9A4529"],
+  pyellow:["Pastel Yellow","#F6EB9B"],yellow:["Yellow","#F4CC2D"],butter:["Butterscotch","#C2863A"],
+  kiwi:["Kiwi Lime","#A2D04A"],bgreen:["Bright Green","#39A74C"],dgreen:["Dark Green","#1E6338"],
+  tooth:["Toothpaste","#ADE3D9"],turq:["Turquoise","#23AEAB"],parrot:["Parrot Green","#12796E"],
+  pblue:["Pastel Blue","#9CC7EB"],lblue:["Light Blue","#3D8ED2"],dblue:["Dark Blue","#243E87"],
+  lav:["Pastel Lavender","#BAA5DA"],purple:["Purple","#7545A2"],plum:["Plum","#4C2665"],
+  lpink:["Light Pink","#F6C5D3"],bubble:["Bubblegum","#E96BA2"],magenta:["Magenta","#AE2777"],
+  sand:["Sand","#DCBD8E"],lbrown:["Light Brown","#9B693F"],brown:["Brown","#553625"]
+};
+// Each family is [top / light, left / mid, right / dark]
+const FAM={
+  red:{n:"Red",b:["coral","red","cran"]},
+  orange:{n:"Orange",b:["cheddar","orange","rust"]},
+  yellow:{n:"Yellow",b:["pyellow","yellow","butter"]},
+  green:{n:"Green",b:["kiwi","bgreen","dgreen"]},
+  teal:{n:"Teal",b:["tooth","turq","parrot"]},
+  blue:{n:"Blue",b:["pblue","lblue","dblue"]},
+  purple:{n:"Purple",b:["lav","purple","plum"]},
+  pink:{n:"Pink",b:["lpink","bubble","magenta"]},
+  brown:{n:"Brown",b:["sand","lbrown","brown"]},
+  greyL:{n:"Pale greys",b:["white","lgrey","grey"]},
+  greyM:{n:"Mid greys",b:["lgrey","grey","dgrey"]},
+  greyD:{n:"Dark greys",b:["grey","dgrey","black"]}
+};
+const MOODS={
+  Halloween:["orange","purple","greyD","green"],
+  Ocean:["teal","blue","greyL"],
+  Sunset:["yellow","orange","red","pink","purple"],
+  Forest:["green","brown","yellow","teal"],
+  Candy:["pink","purple","teal","yellow"],
+  Concrete:["greyL","greyM","greyD","blue"]
+};
+const SCHEMES={grey:["greyL","greyM","greyD"],rainbow:["red","orange","yellow","green","blue","purple"]};
+const CW=15,CH=13,VS=6;
+const CUTS={
+  bat:[".....X...X.....","X....XXXXX....X","XX..XXXXXXX..XX","XXXXXXXXXXXXXXX",".XXXXXXXXXXXXX.","..XX.XXXXX.XX..","...X..XXX..X..."],
+  heart:[".XX...XX.","XXXX.XXXX","XXXXXXXXX","XXXXXXXXX",".XXXXXXX.","..XXXXX..","...XXX...","....X...."],
+  star:["....X....","....X....","...XXX...","XXXXXXXXX",".XXXXXXX.","..XXXXX..","..XXXXX..",".XX...XX.","X.......X"],
+  ghost:["...XXX...",".XXXXXXX.","XXXXXXXXX","XX.XXX.XX","XX.XXX.XX","XXXXXXXXX","XXXXXXXXX","XXXXXXXXX","XXXXXXXXX","X.XX.XX.X"],
+  blank:[]
+};
+const CUTP=[["bat","Bat"],["heart","Heart"],["star","Star"],["ghost","Ghost"],["blank","Blank"]];
+const VOXP=[["cube","Cube"],["cube2","Big cube"],["stairs","Stairs"],["lblock","L-block"],["pyramid","Pyramid"],["arch","Arch"],["frame","Frame"],["penrose","Impossible triangle"],["blank","Blank"]];
+const BGS=["white","lgrey","dgrey","black","dblue","plum","pyellow"];
+
+function bitmapFrom(rows){
+  const g=Array.from({length:CH},()=>Array(CW).fill(0));
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==="X"&&y<CH&&x<CW)g[y][x]=1;}));
+  return g;
+}
+function vp(name){
+  const out=[];const add=(x,y,z)=>out.push(x+","+y+","+z);
+  const box=(a,b,c)=>{for(let x=0;x<a;x++)for(let y=0;y<b;y++)for(let z=0;z<c;z++)add(x,y,z);};
+  switch(name){
+    case "cube":add(0,0,0);break;
+    case "cube2":box(2,2,2);break;
+    case "stairs":for(let x=0;x<3;x++)for(let y=0;y<2;y++)for(let z=0;z<=x;z++)add(x,y,z);break;
+    case "lblock":add(0,0,0);add(1,0,0);add(2,0,0);add(0,0,1);add(0,0,2);break;
+    case "pyramid":box(3,3,1);add(1,1,1);break;
+    case "arch":for(let y=0;y<2;y++){add(0,y,0);add(0,y,1);add(2,y,0);add(2,y,1);add(0,y,2);add(1,y,2);add(2,y,2);}break;
+    case "frame":for(let x=0;x<3;x++)for(let y=0;y<3;y++)for(let z=0;z<3;z++){if([x,y,z].filter(v=>v!==1).length>=2)add(x,y,z);}break;
+    case "penrose":for(let x=0;x<6;x++)add(x,0,0);for(let y=1;y<6;y++)add(5,y,0);for(let z=1;z<5;z++)add(5,5,z);break;
+    default:break;
+  }
+  return out;
+}
+function defaults(){
+  return {
+    size:29,view:"single",tab:"shapes",mode:"shapes",active:0,tapMode:"move",
+    slots:[
+      {kind:"vox",vox:vp("cube"),preset:"cube",scale:4,layer:0,bmp:bitmapFrom(CUTS.bat),cpreset:"bat",depth:2,dir:1,family:"blue",pos:[.5,.5],enabled:true,touched:true},
+      {kind:"cut",vox:vp("stairs"),preset:"stairs",scale:3,layer:0,bmp:bitmapFrom(CUTS.bat),cpreset:"bat",depth:2,dir:1,family:"purple",pos:[.62,.78],enabled:false,touched:false}
+    ],
+    tile:{pattern:"A",spacing:"iso",h:8,v:6,shift:4,ox:0,oy:0,colour:"grey",spread:"diag",moods:MOODS.Halloween.slice(),moodName:"Halloween",seed:1,bg:null},
+    terrain:{seed:4127,scale:2,height:6,rough:1,water:2,colour:"land",bg:null},
+    truchet:{seed:2026,style:"arcs",tile:8,width:1,colour:"one",family:"teal",bg:"dgrey",shadow:true,flips:{}},
+    fields:{effect:"pyramid",metric:"square",layout:"lattice",cell:10,ring:1,colour:"rainbow",family:"blue",by:"ring",flip:false,grout:true,bg:"black",seed:77,layers:5,rough:1},
+    lab:{active:"opart-bulge",params:{},colour:"grey",family:"greyL",bg:null},
+    board:{lattice:"square",outline:"square",n:29,w:29,h:58,d:29,side:16,hw:24,hh:20,hd:29}
+  };
+}
+const KEY="pegiso.v1";
+let state=defaults();
+try{
+  const raw=localStorage.getItem(KEY);
+  if(raw){const s=JSON.parse(raw);if(s&&Array.isArray(s.slots)&&s.slots.length===2&&s.tile){const d=defaults();state=Object.assign(d,s,{tile:Object.assign(d.tile,s.tile),terrain:Object.assign(d.terrain,s.terrain||{}),truchet:Object.assign(d.truchet,s.truchet||{}),fields:Object.assign(d.fields,s.fields||{}),lab:Object.assign(d.lab,s.lab||{}),board:Object.assign(d.board,{n:s.size||29},s.board||{})});}}
+}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ---------- geometry ---------- */
+function normalize(cells){
+  if(!cells.size)return{w:0,h:0,cells:[]};
+  let mx=Infinity,my=Infinity,Mx=-Infinity,My=-Infinity;const arr=[];
+  cells.forEach((r,k)=>{const [x,y]=k.split(",").map(Number);arr.push([x,y,r]);mx=Math.min(mx,x);my=Math.min(my,y);Mx=Math.max(Mx,x);My=Math.max(My,y);});
+  return{w:Mx-mx+1,h:My-my+1,cells:arr.map(([x,y,r])=>[x-mx,y-my,r])};
+}
+function inside(poly,x,y){
+  let pos=false,neg=false;
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i],b=poly[(i+1)%poly.length];
+    const c=(b[0]-a[0])*(y-a[1])-(b[1]-a[1])*(x-a[0]);
+    if(c>0)pos=true;else if(c<0)neg=true;
+    if(pos&&neg)return false;
+  }
+  return true;
+}
+// Block (x,y,z) projects to column s*(x-y), row s*(x+y)/2 - s*z. Draw order x+y+z = painter's algorithm.
+// Quarter turns about the vertical axis: (x, y) -> (-y, x)
+function turn(x,y,r){for(let i=0;i<r;i++){const t=x;x=-y;y=t;}return[x,y];}
+function voxSprite(keys,s,rot){return voxRaster(keys.map(k=>{const [x,y,z]=k.split(",").map(Number);const [a,b]=turn(x,y,rot||0);return[a,b,z];}),s,null);}
+// vox items are [x,y,z,family?]; with families the cells hold bead ids, otherwise face roles 0/1/2
+function voxRaster(list,s,withFam){
+  const vox=list.slice().sort((a,b)=>(a[0]+a[1]+a[2])-(b[0]+b[1]+b[2])||a[2]-b[2]);
+  const P=(X,Y,Z)=>[s*(X-Y),s*(X+Y)/2-s*Z];
+  const cells=new Map();
+  for(const [x,y,z,f] of vox){
+    const faces=[
+      [0,[P(x,y,z+1),P(x+1,y,z+1),P(x+1,y+1,z+1),P(x,y+1,z+1)]],
+      [1,[P(x,y+1,z+1),P(x+1,y+1,z+1),P(x+1,y+1,z),P(x,y+1,z)]],
+      [2,[P(x+1,y,z+1),P(x+1,y+1,z+1),P(x+1,y+1,z),P(x+1,y,z)]]
+    ];
+    for(const [role,poly] of faces){
+      const xs=poly.map(p=>p[0]),ys=poly.map(p=>p[1]);
+      const x0=Math.floor(Math.min(...xs)),x1=Math.ceil(Math.max(...xs)),y0=Math.floor(Math.min(...ys)),y1=Math.ceil(Math.max(...ys));
+      for(let py=y0;py<y1;py++)for(let px=x0;px<x1;px++){if(inside(poly,px+.5,py+.5))cells.set(px+","+py,withFam?FAM[f].b[role]:role);}
+    }
+  }
+  return normalize(cells);
+}
+function cutSprite(bmp,depth,dir){
+  const pts=[];bmp.forEach((row,y)=>row.forEach((v,x)=>{if(v)pts.push([x,y]);}));
+  const cells=new Map();
+  for(let i=depth;i>=1;i--){const role=i===1?1:2;for(const [x,y] of pts)cells.set((x+dir*i)+","+(y+i),role);}
+  for(const [x,y] of pts)cells.set(x+","+y,0);
+  return normalize(cells);
+}
+function sprites(){return state.slots.map(sl=>sl.kind==="vox"?voxSprite(sl.vox,sl.scale,sl.rot):cutSprite(sl.bmp,sl.depth,sl.dir));}
+function usesB(){return state.slots[1].enabled&&state.tile.pattern!=="A";}
+function applySpacing(sp){
+  const t=state.tile;if(t.spacing==="custom")return;
+  const list=usesB()?[sp[0],sp[1]]:[sp[0]];
+  const W=Math.max(1,...list.map(s=>s.w)),H=Math.max(1,...list.map(s=>s.h));
+  if(t.spacing==="iso"){if(isHex()){t.h=Math.max(1,W-1);t.v=Math.max(1,Math.floor(.75*(H-1)));t.shift=Math.round((W-1)/2);}else{t.h=W;t.v=Math.max(1,Math.round(H*.75));t.shift=Math.round(W/2);}}
+  else{t.h=W+1;t.v=H+1;t.shift=0;}
+}
+function hash(i,j,s){let h=Math.imul((i*73856093)^(j*19349663)^(s*83492791),2654435761);h^=h>>>15;h=Math.imul(h,2246822519);h^=h>>>13;return h>>>0;}
+function famFor(i,j,slot){
+  const t=state.tile;
+  if(t.colour==="shape")return state.slots[slot].family;
+  const L=t.colour==="mood"?(t.moods.length?t.moods:["greyM"]):SCHEMES[t.colour];
+  let k;
+  switch(t.spread){
+    case "same":k=slot;break;case "rows":k=j;break;case "cols":k=i;break;
+    case "diag":k=i+j;break;case "checker":k=(i+j)&1;break;default:k=hash(i,j,t.seed);
+  }
+  return L[((k%L.length)+L.length)%L.length];
+}
+/* ---------- seeded generators ---------- */
+const rnd=(i,j,s)=>hash(i,j,s)/4294967296;
+function vnoise(x,y,s){
+  const i=Math.floor(x),j=Math.floor(y),fx=x-i,fy=y-j,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy);
+  const a=rnd(i,j,s),b=rnd(i+1,j,s),c=rnd(i,j+1,s),d=rnd(i+1,j+1,s);
+  return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;
+}
+const fbm=(x,y,s)=>vnoise(x,y,s)*.7+vnoise(x*2.13+5.3,y*2.13+1.7,s+17)*.3;
+function landFam(z,H,W){
+  const T=state.terrain,q=(z+.5)/H;
+  if(T.colour==="land"){
+    if(W>0&&z<=W)return "brown";
+    if(W===0&&q<.2)return "brown";
+    return q<.6?"green":q<.85?"greyM":"greyL";
+  }
+  const L=T.colour==="mood"?(state.tile.moods.length?state.tile.moods:["greyM"]):SCHEMES[T.colour];
+  return L[Math.min(L.length-1,Math.floor(q*L.length))];
+}
+function terrainGrid(N){
+  const T=state.terrain,s=T.scale,G=Math.max(2,Math.floor(N/(2*s))),H=T.height,W=Math.min(T.water,H-1),f=[.11,.2,.34][T.rough];
+  const vals=[];
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++)vals.push(fbm(x*f+.5,y*f+.5,T.seed));
+  const lo=Math.min(...vals),hi=Math.max(...vals),span=hi-lo||1;
+  const wf=T.colour==="grey"?"greyD":"blue",vox=[];
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++){
+    const h=1+Math.round((vals[y*G+x]-lo)/span*(H-1));
+    const [rx,ry]=turn(x,y,T.rot||0);
+    for(let z=0;z<h;z++)vox.push([rx,ry,z,landFam(z,H,W)]);
+    for(let z=h;z<W;z++)vox.push([rx,ry,z,wf]);
+  }
+  const sp=voxRaster(vox,s,true),g=new Array(N*N).fill(T.bg||null);
+  const x0=Math.round((N-sp.w)/2),y0=sp.h>N?N-sp.h:Math.round((N-sp.h)/2);
+  for(const [dx,dy,b] of sp.cells){const x=x0+dx,y=y0+dy;if(x>=0&&y>=0&&x<N&&y<N)g[y*N+x]=b;}
+  return g;
+}
+const SHADOW={null:"dgrey",white:"lgrey",lgrey:"grey",dgrey:"black",dblue:"black",plum:"black",pyellow:"butter",black:null};
+function truchetLayout(N){const T=state.truchet.tile,nt=Math.ceil(N/T);return{T,nt,off:Math.floor((nt*T-N)/2)};}
+function truchetGrid(N){
+  const R=state.truchet,{T,nt,off}=truchetLayout(N),w=T*[.22,.3,.38][R.width];
+  const Lx=-.45,Ly=-.89,g=new Array(N*N).fill(R.bg||null),band=new Uint8Array(N*N);
+  const list=R.colour==="one"?[R.family]:R.colour==="mood"?(state.tile.moods.length?state.tile.moods:["greyM"]):SCHEMES[R.colour];
+  for(let ty=0;ty<nt;ty++)for(let tx=0;tx<nt;tx++){
+    const k=tx+","+ty,o=k in R.flips?R.flips[k]:(hash(tx,ty,R.seed)&3);
+    const fam=FAM[list[hash(tx,ty,R.seed+7)%list.length]].b;
+    for(let ly=0;ly<T;ly++)for(let lx=0;lx<T;lx++){
+      const x=tx*T+lx-off,y=ty*T+ly-off;if(x<0||y<0||x>=N||y>=N)continue;
+      const cx=lx+.5,cy=ly+.5;let role=-1;
+      if(R.style==="arcs"){
+        const cs=(o&1)?[[T,0],[0,T]]:[[0,0],[T,T]];
+        for(const [ax,ay] of cs){
+          const dx=cx-ax,dy=cy-ay,d=Math.hypot(dx,dy),u=d-T/2;
+          if(Math.abs(u)<=w/2&&d>0){const b=(u/(w/2))*((dx/d)*Lx+(dy/d)*Ly);role=b>.2?0:b<-.2?2:1;}
+        }
+      }else if(R.style==="ridges"){
+        const u=(o&1)?(cx+cy-T)/Math.SQRT2:(cx-cy)/Math.SQRT2,nx=(o&1)?Math.SQRT1_2:Math.SQRT1_2,ny=(o&1)?Math.SQRT1_2:-Math.SQRT1_2;
+        if(Math.abs(u)<=w/2)role=Math.abs(u)<w/6?1:(Math.sign(u)*(nx*Lx+ny*Ly)>0?0:2);
+      }else{
+        const sd=(o&1)?(cx+cy-T):(cx-cy);
+        role=Math.abs(sd)<.01?1:(((sd>0)!==((o>>1)===1))?0:2);
+      }
+      if(role>=0){g[y*N+x]=fam[role];band[y*N+x]=1;}
+    }
+  }
+  const sh=SHADOW[R.bg||null];
+  if(R.shadow&&sh&&R.style!=="folds"){
+    for(let y=1;y<N;y++)for(let x=1;x<N;x++){const i=y*N+x;if(!band[i]&&band[i-N-1])g[i]=sh;}
+  }
+  return g;
+}
+function famList(colour,family){return colour==="one"?[family]:colour==="mood"?(state.tile.moods.length?state.tile.moods:["greyM"]):SCHEMES[colour];}
+function rampOf(list){const out=[];list.forEach(f=>FAM[f].b.forEach(b=>{if(!out.includes(b))out.push(b);}));return out;}
+function fieldDist(m,dx,dy){return m==="square"?Math.max(Math.abs(dx),Math.abs(dy)):m==="diamond"?Math.abs(dx)+Math.abs(dy):Math.hypot(dx,dy);}
+// 0 = lit face, 1 = side face, 2 = shadow face
+function fieldLight(m,dx,dy,kind){
+  if(m==="square"){
+    if(Math.abs(dy)>=Math.abs(dx))return dy>0?2:0;
+    return kind==="pyramid"?1:(dx>0?2:0);
+  }
+  if(m==="diamond"){
+    if(kind==="pyramid"){if(dx<=0&&dy<=0)return 0;if(dx>=0&&dy>=0)return 2;return 1;}
+    return dx+dy>0?2:0;
+  }
+  const r=Math.hypot(dx,dy);if(r<.01)return 0;
+  const b=(dx*-.6+dy*-.8)/r;
+  if(kind==="pyramid")return b>.35?0:b<-.35?2:1;
+  return b>0?0:2;
+}
+function fieldsGrid(N){
+  const F=Object.assign({},state.fields,{metric:state.fields.metric==="hex"?"square":state.fields.metric}),g=new Array(N*N).fill(F.bg||null),list=famList(F.colour,F.family),L=list.length,ramp=rampOf(list);
+  if(F.effect==="atmos"){
+    const n=F.layers,f=[.07,.12,.2][F.rough];
+    for(let k=0;k<n;k++){
+      let idx=n===1?0:Math.round(k*(ramp.length-1)/(n-1));if(F.flip)idx=ramp.length-1-idx;
+      const bead=ramp[idx],base=N*(.3+.58*k/Math.max(1,n-1)),amp=N*.17;
+      for(let x=0;x<N;x++){
+        const top=Math.round(base-amp*(fbm(x*f+.3,k*5.17+.3,F.seed)-.5)*2);
+        for(let y=Math.max(0,top);y<N;y++)g[y*N+x]=bead;
+      }
+    }
+    return g;
+  }
+  const single=F.layout==="single";
+  let C=single?N:F.cell;if(!single&&F.grout&&C%2)C++;
+  const R=C/2,o=Math.floor(N/2)+.5,dia=F.metric==="diamond"&&!single;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const px=x+.5-o,py=y+.5-o;
+    let best=Infinity,second=Infinity,bi=0,bj=0,bdx=0,bdy=0;
+    const consider=(cx,cy,I,J)=>{const dx=px-cx,dy=py-cy,d=fieldDist(F.metric,dx,dy);
+      if(d<best-1e-9){second=best;best=d;bi=I;bj=J;bdx=dx;bdy=dy;}else if(d<second)second=d;};
+    if(single)consider(0,0,0,0);
+    else{
+      const i0=Math.round(px/C),j0=Math.round(py/C);
+      for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)consider((i0+a)*C,(j0+b)*C,2*(i0+a),2*(j0+b));
+      if(dia){const i1=Math.floor(px/C),j1=Math.floor(py/C);
+        for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)consider((i1+a+.5)*C,(j1+b+.5)*C,2*(i1+a)+1,2*(j1+b)+1);}
+    }
+    const i=y*N+x;
+    if(!single&&F.grout&&second-best<1e-6){g[i]=F.bg||"black";continue;}
+    const r=Math.floor(best/F.ring+1e-9),k=(bi+bj)>>1;
+    const fam=F.by==="ring"?list[r%L]:F.by==="cell"?list[((k%L)+L)%L]:list[hash(bi,bj,F.seed)%L];
+    let bead;
+    if(F.effect==="rings"){const role=(L===1||F.by!=="ring")?r%3:1;bead=FAM[fam].b[role];}
+    else if(F.effect==="pyramid"){let role=fieldLight(F.metric,bdx,bdy,"pyramid");if(F.flip)role=2-role;bead=FAM[fam].b[role];}
+    else if(F.effect==="bevel"){const edge=best>=R-F.ring-1e-9;let role=edge?fieldLight(F.metric,bdx,bdy,"bevel"):1;if(edge&&F.flip)role=2-role;bead=FAM[fam].b[role];}
+    else{const rr=F.by==="ring"?ramp:FAM[fam].b;let idx=Math.floor(Math.min(best/R,.9999)*rr.length);if(F.flip)idx=rr.length-1-idx;bead=rr[idx];}
+    g[i]=bead;
+  }
+  return g;
+}
+/* ---------- category plugins ---------- */
+const PLUGINS={},BUILTIN=new Set();let lastRegistered=null,labError=null;
+const PegLab={version:1,register(def){
+  if(!def||typeof def.id!=="string"||typeof def.generate!=="function")throw new Error("A category needs an id and a generate(ctx) function.");
+  def.params=Array.isArray(def.params)?def.params:[];def.name=def.name||def.id;
+  PLUGINS[def.id]=def;lastRegistered=def.id;
+}};
+window.PegLab=PegLab;
+function labParams(def){
+  const S=state.lab,cur=S.params[def.id]||{},out={};
+  def.params.forEach(q=>{out[q.key]=q.key in cur?cur[q.key]:(q.type==="seed"?(q.value??1):q.value);});
+  S.params[def.id]=out;return out;
+}
+function labGrid(N,H){
+  const S=state.lab,def=PLUGINS[S.active],hex=!!H,len=hex?H.pegs.length:N*N,g=new Array(len).fill(S.bg||null);
+  if(!def)return g;
+  const list=famList(S.colour,S.family);
+  const pegs=hex?H.pegs:Array.from({length:len},(_,i)=>({i,a:i%N,b:Math.floor(i/N),x:i%N,y:Math.floor(i/N)}));
+  const bounds=hex?{minx:H.minx,maxx:H.maxx,miny:H.miny,maxy:H.maxy}:{minx:0,maxx:N-1,miny:0,maxy:N-1};
+  const at=(x,y)=>{x=Math.floor(x);y=Math.floor(y);if(hex){const i=H.idx.get(x+","+y);return i===undefined?-1:i;}return(x>=0&&y>=0&&x<N&&y<N)?y*N+x:-1;};
+  const ctx={N:hex?null:N,lattice:hex?"hex":"square",pegs,bounds,p:labParams(def),colours:list,ramp:rampOf(list),FAM,BEADS,hash,rnd,noise:vnoise,fbm,
+    fam:i=>list[((i%list.length)+list.length)%list.length],
+    bead:(f,role)=>(FAM[f]||FAM.greyM).b[Math.max(0,Math.min(2,role|0))],
+    setPeg:(i,b)=>{if(b&&BEADS[b]&&i>=0&&i<len)g[i]=b;},
+    set:(x,y,b)=>{const i=at(x,y);if(i>=0&&b&&BEADS[b])g[i]=b;},
+    clear:(x,y)=>{const i=at(x,y);if(i>=0)g[i]=null;},
+    get:(x,y)=>{const i=at(x,y);return i>=0?g[i]:null;}};
+  try{def.generate(ctx);labError=null;}catch(e){labError=(e&&e.message)||String(e);}
+  return g;
+}
+const TEMPLATE=`// Pegboard Iso Lab category template.
+// Paste a finished category into Lab > Import and press Install.
+PegLab.register({
+  id: "my-category",            // unique, no spaces
+  name: "My category",
+  family: "Line fields",        // which family it belongs to, for sorting later
+  description: "One sentence on what it does.",
+  params: [
+    { key: "size",  label: "Size",  type: "range",  min: 2, max: 20, value: 8 },
+    { key: "style", label: "Style", type: "choice", value: "a", options: [["a", "Style A"], ["b", "Style B"]] },
+    { key: "soft",  label: "Soft edges", type: "toggle", value: false },
+    { key: "seed",  type: "seed", value: 1 }
+  ],
+  // ctx.lattice   "square" or "hex"
+  // ctx.pegs      every peg: { i, a, b, x, y }. x, y are real positions (y grows downward);
+  //               a, b are grid coordinates (column, row on square boards; axial q, r on hex boards)
+  // ctx.bounds    { minx, maxx, miny, maxy } of the peg positions
+  // ctx.setPeg(i, bead) colours peg i; works on every lattice
+  // ctx.N         square boards only: pegs per side
+  // ctx.p         current parameter values, e.g. ctx.p.size
+  // ctx.colours   colour families picked in the Lab tab, e.g. ["greyL", "greyM", "greyD"]
+  // ctx.fam(i)    family number i, wrapping around the list
+  // ctx.bead(f, r) bead in family f for role r: 0 light, 1 mid, 2 dark
+  // ctx.ramp      every bead in the chosen families, light to dark
+  // ctx.set(a, b, bead), ctx.get(a, b), ctx.clear(a, b) use grid coordinates
+  // ctx.hash(i, j, seed), ctx.rnd(i, j, seed) 0..1, ctx.noise(x, y, seed), ctx.fbm(x, y, seed)
+  generate(ctx) {
+    const { p, bounds: B } = ctx;
+    const cx = (B.minx + B.maxx) / 2, cy = (B.miny + B.maxy) / 2;
+    for (const peg of ctx.pegs) {
+      const ring = Math.floor(Math.hypot(peg.x - cx, peg.y - cy) / (p.size / 4));
+      ctx.setPeg(peg.i, ctx.bead(ctx.fam(ring), ring % 3));
+    }
+  }
+});
+`;
+/* ---------- board shapes and the hex lattice ---------- */
+const SQ3=Math.sqrt(3)/2;let HB=null,SQM=null;
+const isHex=()=>state.board.lattice==="hex";
+function syncSize(){const B=state.board;if(B.lattice==="square")state.size=B.outline==="rect"?Math.max(B.w,B.h):B.outline==="circle"?B.d:B.n;HB=null;}
+function sqMask(){
+  const B=state.board,N=state.size;if(B.lattice!=="square"||B.outline==="square")return null;
+  const key=[B.outline,B.w,B.h,B.d,N].join(",");if(SQM&&SQM.key===key)return SQM.m;
+  const m=new Uint8Array(N*N);
+  if(B.outline==="rect"){const x0=Math.floor((N-B.w)/2),y0=Math.floor((N-B.h)/2);for(let y=y0;y<y0+B.h;y++)for(let x=x0;x<x0+B.w;x++)m[y*N+x]=1;}
+  else{const c=(N-1)/2,r=N/2-.25;for(let y=0;y<N;y++)for(let x=0;x<N;x++)if((x-c)**2+(y-c)**2<=r*r)m[y*N+x]=1;}
+  SQM={key,m};return m;
+}
+// Hex pegs use axial coordinates (a, b): a steps down-right, b steps straight up.
+// Real position: x = a·√3/2, y = a/2 − b, so columns are vertical and alternate columns sit half a peg lower.
+function hexBoard(){
+  const B=state.board,key=[B.outline,B.side,B.hw,B.hh,B.hd].join(",");
+  if(HB&&HB.key===key)return HB;
+  const raw=[];
+  if(B.outline==="rect"){for(let a=0;a<B.hw;a++)for(let k=0;k<B.hh;k++)raw.push([a,Math.floor(a/2)-k]);}
+  else if(B.outline==="circle"){const r=B.hd/2-.25,A=Math.ceil(r/SQ3)+1;for(let a=-A;a<=A;a++)for(let b=Math.floor(a/2-r)-1;b<=Math.ceil(a/2+r)+1;b++){const x=a*SQ3,y=a/2-b;if(x*x+y*y<=r*r)raw.push([a,b]);}}
+  else{const R=Math.max(1,B.side)-1;for(let a=-R;a<=R;a++)for(let b=-R;b<=R;b++)if(Math.abs(a-b)<=R)raw.push([a,b]);}
+  const pegs=raw.map(([a,b],i)=>({i,a,b,x:a*SQ3,y:a/2-b})),idx=new Map();
+  let minx=Infinity,maxx=-Infinity,miny=Infinity,maxy=-Infinity,mina=Infinity,maxa=-Infinity,minr=Infinity,maxr=-Infinity,sx=0,sy=0;
+  for(const q of pegs){idx.set(q.a+","+q.b,q.i);minx=Math.min(minx,q.x);maxx=Math.max(maxx,q.x);miny=Math.min(miny,q.y);maxy=Math.max(maxy,q.y);
+    mina=Math.min(mina,q.a);maxa=Math.max(maxa,q.a);const r=rowk(q);minr=Math.min(minr,r);maxr=Math.max(maxr,r);sx+=q.x;sy+=q.y;}
+  HB={key,pegs,idx,minx,maxx,miny,maxy,mina,maxa,minr,maxr};
+  HB.center=nearestPeg(HB,sx/pegs.length,sy/pegs.length);
+  return HB;
+}
+function rowk(q){return Math.floor(q.a/2)-q.b;}
+function nearestPeg(H,x,y){let best=null,bd=Infinity;for(const q of H.pegs){const d=(q.x-x)**2+(q.y-y)**2;if(d<bd){bd=d;best=q;}}return best;}
+const hexDist=(da,db)=>Math.max(Math.abs(da),Math.abs(db),Math.abs(da-db));
+// Cells of a coarser hex lattice with centres at I·(2k, k) + J·(k, −k)
+function hexCellOf(pa,pb,k){
+  const fi=Math.round((pa+pb)/(3*k)),fj=Math.round((pa-2*pb)/(3*k));let best=Infinity,out=[0,0,0,0];
+  for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++){const I=fi+x,J=fj+y,da=pa-(2*k*I+k*J),db=pb-(k*I-k*J),d=hexDist(da,db);if(d<best){best=d;out=[I,J,da,db];}}
+  return out;
+}
+function hexNorm(cells){
+  if(!cells.size)return{cells:[],w:0,h:0,ka:0,kb:0};
+  const arr=[];let sx=0,sy=0,mina=Infinity,maxa=-Infinity,miny=Infinity,maxy=-Infinity;
+  cells.forEach((v,k)=>{const [a,b]=k.split(",").map(Number),y=a/2-b;arr.push([a,b,v]);sx+=a*SQ3;sy+=y;mina=Math.min(mina,a);maxa=Math.max(maxa,a);miny=Math.min(miny,y);maxy=Math.max(maxy,y);});
+  const ka=Math.round(sx/arr.length/SQ3),kb=Math.round(ka/2-sy/arr.length);
+  return{cells:arr,w:maxa-mina+1,h:Math.round(maxy-miny)+1,ka,kb};
+}
+// Exact isometric on hex pegs: block (x, y, z) at scale s lands at a = s(x − y), b = s(z − y).
+// Each visible face is a rhombus of pegs, filled peg by peg; no rounding needed.
+function hexVoxRaster(list,s,withFam){
+  const vox=list.slice().sort((p,q)=>(p[0]+p[1]+p[2])-(q[0]+q[1]+q[2])||p[2]-q[2]);
+  const Q=(X,Y,Z)=>[s*(X-Y),s*(Z-Y)],cells=new Map();
+  for(const [x,y,z,f] of vox){
+    const faces=[[1,Q(x,y+1,z),[1,0],[0,1]],[2,Q(x+1,y,z),[-1,-1],[0,1]],[0,Q(x,y,z+1),[1,0],[-1,-1]]];
+    for(const [role,o,A,Bv] of faces)for(let u=0;u<=s;u++)for(let v=0;v<=s;v++)cells.set((o[0]+u*A[0]+v*Bv[0])+","+(o[1]+u*A[1]+v*Bv[1]),withFam?FAM[f].b[role]:role);
+  }
+  return hexNorm(cells);
+}
+function hexVoxSprite(keys,s,rot){return hexVoxRaster(keys.map(k=>{const [x,y,z]=k.split(",").map(Number),[a,b]=turn(x,y,rot||0);return[a,b,z];}),s,false);}
+function hexCutSprite(bmp,depth,dir){
+  const pts=[];bmp.forEach((row,y)=>row.forEach((v,x)=>{if(v)pts.push([x,Math.floor(x/2)-y]);}));
+  const st=dir===1?[1,0]:[-1,-1],cells=new Map();
+  for(let i=depth;i>=1;i--)for(const [a,b] of pts)cells.set((a+st[0]*i)+","+(b+st[1]*i),i===1?1:2);
+  for(const [a,b] of pts)cells.set(a+","+b,0);
+  return hexNorm(cells);
+}
+function hexStamp(H,g,sp,A,Bt,f){const da=A-sp.ka,db=Bt-sp.kb;for(const [a,b,v] of sp.cells){const i=H.idx.get((a+da)+","+(b+db));if(i!==undefined)g[i]=typeof v==="number"?FAM[f].b[v]:v;}}
+function hexShapes(H){
+  const g=new Array(H.pegs.length).fill(state.tile.bg||null);
+  const sp=state.slots.map(sl=>sl.kind==="vox"?hexVoxSprite(sl.vox,sl.scale,sl.rot):hexCutSprite(sl.bmp,sl.depth,sl.dir));
+  applySpacing(sp);
+  if(state.view==="single"){
+    const items=[0,1].filter(i=>state.slots[i].enabled).map(i=>{const p=state.slots[i].pos;return{i,t:nearestPeg(H,H.minx+p[0]*(H.maxx-H.minx),H.miny+p[1]*(H.maxy-H.miny))};}).sort((x,y)=>x.t.y-y.t.y);
+    items.forEach(o=>hexStamp(H,g,sp[o.i],o.t.a,o.t.b,state.slots[o.i].family));
+  }else{
+    const t=state.tile,Hs=Math.max(1,t.h),V=Math.max(1,t.v),ub=usesB(),c=H.center,A0=c.a+(t.hoa||0),r0=rowk(c)+(t.hob||0);
+    const mW=Math.max(sp[0].w,ub?sp[1].w:0),mH=Math.max(sp[0].h,ub?sp[1].h:0);
+    const i0=Math.floor((H.mina-A0-mW-t.shift)/Hs)-1,i1=Math.ceil((H.maxa-A0+mW)/Hs)+1,j0=Math.floor((H.minr-r0-mH)/V)-1,j1=Math.ceil((H.maxr-r0+mH)/V)+1;
+    for(let j=j0;j<=j1;j++){const odd=((j%2)+2)%2===1;
+      for(let i=i0;i<=i1;i++){
+        let slot=0;if(ub)slot=t.pattern==="checker"?(((i+j)%2)+2)%2:(odd?1:0);
+        const A=A0+i*Hs+(odd?t.shift:0);
+        hexStamp(H,g,sp[slot],A,Math.floor(A/2)-(r0+j*V),famFor(i,j,slot));
+      }}
+  }
+  return g;
+}
+function terrainVox(G){
+  const T=state.terrain,H=T.height,W=Math.min(T.water,H-1),f=[.11,.2,.34][T.rough],vals=[];
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++)vals.push(fbm(x*f+.5,y*f+.5,T.seed));
+  const lo=Math.min(...vals),hi=Math.max(...vals),span=hi-lo||1,wf=T.colour==="grey"?"greyD":"blue",vox=[];
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++){const h=1+Math.round((vals[y*G+x]-lo)/span*(H-1)),[rx,ry]=turn(x,y,T.rot||0);
+    for(let z=0;z<h;z++)vox.push([rx,ry,z,landFam(z,H,W)]);for(let z=h;z<W;z++)vox.push([rx,ry,z,wf]);}
+  return vox;
+}
+function hexTerrain(H){
+  const T=state.terrain,G=Math.max(2,Math.floor((H.maxa-H.mina)/(2*T.scale)));
+  const g=new Array(H.pegs.length).fill(T.bg||null);
+  hexStamp(H,g,hexVoxRaster(terrainVox(G),T.scale,true),H.center.a,H.center.b,null);
+  return g;
+}
+// Hex faces, named by where they sit around a ring: R, UR, UL, L, DL, DR
+function hexLight(da,db,kind){
+  const A=Math.abs(da),Bb=Math.abs(db),C=Math.abs(da-db),m=Math.max(A,Bb,C);if(!m)return 0;
+  const face=A===m?(da>0?"R":"L"):Bb===m?(db>0?"UR":"DL"):(da-db>0?"DR":"UL");
+  if(kind==="pyramid")return face==="UL"||face==="UR"?0:face==="L"||face==="R"?1:2;
+  return face==="UL"||face==="UR"||face==="L"?0:2;
+}
+function hexFields(H){
+  const F=state.fields,list=famList(F.colour,F.family),L=list.length,ramp=rampOf(list),g=new Array(H.pegs.length).fill(F.bg||null);
+  if(F.effect==="atmos"){
+    const n=F.layers,fr=[.07,.12,.2][F.rough],span=H.maxy-H.miny;
+    for(let k=0;k<n;k++){let idx=n===1?0:Math.round(k*(ramp.length-1)/(n-1));if(F.flip)idx=ramp.length-1-idx;
+      const base=H.miny+span*(.3+.58*k/Math.max(1,n-1)),amp=span*.17;
+      for(const q of H.pegs){if(q.y>=base-amp*(fbm((q.x-H.minx)*fr+.3,k*5.17+.3,F.seed)-.5)*2)g[q.i]=ramp[idx];}}
+    return g;
+  }
+  const round=F.metric==="round",single=F.layout==="single",c=H.center,k=Math.max(2,Math.round(F.cell/2));
+  const real=(da,db)=>[da*SQ3,da/2-db],dist=(da,db)=>round?Math.hypot(da*SQ3,da/2-db):hexDist(da,db);
+  let R=round?k*SQ3:k;
+  if(single){R=0;for(const q of H.pegs)R=Math.max(R,dist(q.a-c.a,q.b-c.b));R+=.5;}
+  for(const q of H.pegs){
+    const pa=q.a-c.a,pb=q.b-c.b;let best=Infinity,second=Infinity,bi=0,bj=0,bda=0,bdb=0;
+    const consider=(ca,cb,I,J)=>{const da=pa-ca,db=pb-cb,d=dist(da,db);if(d<best-1e-9){second=best;best=d;bi=I;bj=J;bda=da;bdb=db;}else if(d<second)second=d;};
+    if(single)consider(0,0,0,0);
+    else{const fi=Math.round((pa+pb)/(3*k)),fj=Math.round((pa-2*pb)/(3*k));for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++){const I=fi+x,J=fj+y;consider(2*k*I+k*J,k*I-k*J,I,J);}}
+    if(!single&&F.grout&&second-best<1e-6){g[q.i]=F.bg||"black";continue;}
+    const r=Math.floor(best/F.ring+1e-9),kk=bi+bj;
+    const fam=F.by==="ring"?list[r%L]:F.by==="cell"?list[((kk%L)+L)%L]:list[hash(bi,bj,F.seed)%L];
+    const light=kind=>round?fieldLight("round",...real(bda,bdb),kind):hexLight(bda,bdb,kind);
+    let bead;
+    if(F.effect==="rings"){const role=(L===1||F.by!=="ring")?r%3:1;bead=FAM[fam].b[role];}
+    else if(F.effect==="pyramid"){let role=light("pyramid");if(F.flip)role=2-role;bead=FAM[fam].b[role];}
+    else if(F.effect==="bevel"){const edge=best>=R-F.ring-1e-9;let role=edge?light("bevel"):1;if(edge&&F.flip)role=2-role;bead=FAM[fam].b[role];}
+    else{const rr=F.by==="ring"?ramp:FAM[fam].b;let idx=Math.floor(Math.min(best/R,.9999)*rr.length);if(F.flip)idx=rr.length-1-idx;bead=rr[idx];}
+    g[q.i]=bead;
+  }
+  return g;
+}
+// Hex Truchet: three arcs per hexagon, centred on alternate corners, radius half an edge
+function hexTruchet(H){
+  const R=state.truchet,k=Math.max(2,Math.round(R.tile/2)),w=k*[.36,.5,.64][R.width],c=H.center,list=famList(R.colour,R.family),Lx=-.45,Ly=-.89;
+  const g=new Array(H.pegs.length).fill(R.bg||null),band=new Uint8Array(H.pegs.length);
+  const V=[[0,-1],[SQ3,-.5],[SQ3,.5],[0,1],[-SQ3,.5],[-SQ3,-.5]].map(([x,y])=>[x*k,y*k]);
+  for(const q of H.pegs){
+    const [I,J,da,db]=hexCellOf(q.a-c.a,q.b-c.b,k),key="h"+I+","+J,o=key in R.flips?R.flips[key]:(hash(I,J,R.seed)&1);
+    const fam=FAM[list[hash(I,J,R.seed+7)%list.length]].b,dx=da*SQ3,dy=da/2-db;let role=-1;
+    for(let v=o;v<6;v+=2){const ex=dx-V[v][0],ey=dy-V[v][1],d=Math.hypot(ex,ey),u=d-k/2;
+      if(Math.abs(u)<=w/2&&d>0){const b=(u/(w/2))*((ex/d)*Lx+(ey/d)*Ly);role=b>.2?0:b<-.2?2:1;}}
+    if(role>=0){g[q.i]=fam[role];band[q.i]=1;}
+  }
+  const sh=SHADOW[R.bg||null];
+  if(R.shadow&&sh)for(const q of H.pegs){if(band[q.i])continue;const j=H.idx.get((q.a-1)+","+q.b);if(j!==undefined&&band[j])g[q.i]=sh;}
+  return g;
+}
+function composeHex(){
+  const H=hexBoard();
+  if(state.mode==="terrain")return hexTerrain(H);
+  if(state.mode==="truchet")return hexTruchet(H);
+  if(state.mode==="fields")return hexFields(H);
+  if(state.mode==="lab")return labGrid(null,H);
+  return hexShapes(H);
+}
+function compose(){
+  if(isHex())return composeHex();
+  const g=composeSquare(),m=sqMask();
+  if(m)for(let i=0;i<g.length;i++)if(!m[i])g[i]=null;
+  return g;
+}
+function composeSquare(){
+  const N=state.size;
+  if(state.mode==="fields")return fieldsGrid(N);
+  if(state.mode==="lab")return labGrid(N);
+  if(state.mode==="terrain")return terrainGrid(N);
+  if(state.mode==="truchet")return truchetGrid(N);
+  const g=new Array(N*N).fill(state.tile.bg||null);
+  const sp=sprites();applySpacing(sp);
+  const stamp=(s,x0,y0,f)=>{const b=FAM[f].b;for(const [dx,dy,r] of s.cells){const x=x0+dx,y=y0+dy;if(x>=0&&y>=0&&x<N&&y<N)g[y*N+x]=b[r];}};
+  if(state.view==="single"){
+    const items=[0,1].filter(i=>state.slots[i].enabled).map(i=>{const s=sp[i],p=state.slots[i].pos;return{i,s,x:Math.round(p[0]*N-s.w/2),y:Math.round(p[1]*N-s.h/2)};});
+    items.sort((a,b)=>(a.y+a.s.h)-(b.y+b.s.h));
+    items.forEach(o=>stamp(o.s,o.x,o.y,state.slots[o.i].family));
+  }else{
+    const t=state.tile,H=Math.max(1,t.h),V=Math.max(1,t.v),ub=usesB();
+    const ox=((t.ox%H)+H)%H,oy=((t.oy%(2*V))+2*V)%(2*V);
+    const mW=Math.max(sp[0].w,ub?sp[1].w:0),mH=Math.max(sp[0].h,ub?sp[1].h:0);
+    const i0=-Math.ceil((mW+t.shift+ox)/H)-1,j0=-Math.ceil((mH+oy)/V)-1;
+    for(let j=j0;j*V+oy<N;j++){
+      const odd=((j%2)+2)%2===1;
+      for(let i=i0;i*H+ox+(odd?t.shift:0)<N;i++){
+        let slot=0;
+        if(ub)slot=t.pattern==="checker"?(((i+j)%2)+2)%2:(odd?1:0);
+        stamp(sp[slot],ox+i*H+(odd?t.shift:0),oy+j*V,famFor(i,j,slot));
+      }
+    }
+  }
+  return g;
+}
+
+/* ---------- drawing ---------- */
+const $=s=>document.querySelector(s);
+const cv=$("#board");
+let LAY={pad:0,c:1},lastGrid=[],hover=null;
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function paint(ctx,W,grid,N,mark,mask){
+  const pad=W*.02,c=(W-2*pad)/N,board=cssv("--board"),peg=cssv("--peg");
+  ctx.fillStyle=board;ctx.fillRect(0,0,W,W);
+  ctx.strokeStyle=cssv("--guide");ctx.lineWidth=1;ctx.beginPath();
+  for(let k=5;k<N;k+=5){const p=Math.round(pad+k*c)+.5;ctx.moveTo(p,pad);ctx.lineTo(p,W-pad);ctx.moveTo(pad,p);ctx.lineTo(W-pad,p);}
+  ctx.stroke();
+  if(N>29&&N%29===0){ctx.strokeStyle=cssv("--muted");ctx.lineWidth=2;ctx.beginPath();for(let k=29;k<N;k+=29){const p=pad+k*c;ctx.moveTo(p,pad);ctx.lineTo(p,W-pad);ctx.moveTo(pad,p);ctx.lineTo(W-pad,p);}ctx.stroke();}
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    if(mask&&!mask[y*N+x])continue;
+    const cx=pad+(x+.5)*c,cy=pad+(y+.5)*c,b=grid[y*N+x];
+    ctx.beginPath();
+    if(b){
+      ctx.fillStyle=BEADS[b][1];ctx.arc(cx,cy,c*.47,0,Math.PI*2);ctx.fill();
+      if(c>=9){ctx.beginPath();ctx.fillStyle=board;ctx.arc(cx,cy,c*.16,0,Math.PI*2);ctx.fill();}
+    }else{ctx.fillStyle=peg;ctx.arc(cx,cy,Math.max(1,c*.13),0,Math.PI*2);ctx.fill();}
+  }
+  if(mark){ctx.beginPath();ctx.strokeStyle=cssv("--ink");ctx.lineWidth=2;ctx.arc(pad+(mark[0]+.5)*c,pad+(mark[1]+.5)*c,c*.55,0,Math.PI*2);ctx.stroke();}
+  return{pad,c};
+}
+function paintHex(ctx,W,grid,mark){
+  const H=hexBoard(),pad=W*.03,bw=H.maxx-H.minx+1,bh=H.maxy-H.miny+1,c=Math.min((W-2*pad)/bw,(W-2*pad)/bh);
+  const ox=(W-bw*c)/2+c/2-H.minx*c,oy=(W-bh*c)/2+c/2-H.miny*c,board=cssv("--board"),peg=cssv("--peg");
+  ctx.fillStyle=board;ctx.fillRect(0,0,W,W);
+  for(const q of H.pegs){
+    const X=ox+q.x*c,Y=oy+q.y*c,b=grid[q.i];ctx.beginPath();
+    if(b){ctx.fillStyle=BEADS[b][1];ctx.arc(X,Y,c*.47,0,Math.PI*2);ctx.fill();if(c>=9){ctx.beginPath();ctx.fillStyle=board;ctx.arc(X,Y,c*.16,0,Math.PI*2);ctx.fill();}}
+    else{ctx.fillStyle=peg;ctx.arc(X,Y,Math.max(1,c*.13),0,Math.PI*2);ctx.fill();}
+  }
+  if(mark&&mark.hex!==undefined&&H.pegs[mark.hex]){const q=H.pegs[mark.hex];ctx.beginPath();ctx.strokeStyle=cssv("--ink");ctx.lineWidth=2;ctx.arc(ox+q.x*c,oy+q.y*c,c*.55,0,Math.PI*2);ctx.stroke();}
+  return{hex:true,ox,oy,c};
+}
+function draw(){
+  const grid=compose();lastGrid=grid;
+  const N=state.size,r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1,W=Math.max(200,Math.round(r.width));
+  cv.width=Math.round(W*dpr);cv.height=Math.round(W*dpr);
+  const ctx=cv.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+  LAY=isHex()?paintHex(ctx,W,grid,hover):paint(ctx,W,grid,N,hover,sqMask());
+  $("#tessBtn").textContent=state.view==="single"?"Tessellate":"Back to single";
+  $("#tessBtn").hidden=state.mode!=="shapes";
+  updateReadout();updateBeads();
+}
+let raf=0;function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(draw);}
+function updateReadout(){
+  const el=$("#readout");
+  if(!hover&&state.mode==="lab"&&labError){el.textContent="Category error: "+labError;return;}
+  if(!hover&&state.mode==="fields"){el.textContent=state.fields.effect==="atmos"||state.fields.by==="random"?"Seed "+state.fields.seed:"Tap a peg to read it";return;}
+  if(!hover&&state.mode==="lab"){const d=PLUGINS[state.lab.active];el.textContent=d?d.name:"Pick a category";return;}
+  if(!hover){el.textContent=state.mode==="terrain"?"Seed "+state.terrain.seed:state.mode==="truchet"?"Seed "+state.truchet.seed+". Tap a tile to turn it":state.view==="single"?"Tap the board to place Shape "+(state.active?"B":"A"):"Tap the board to slide the pattern";return;}
+  if(hover.hex!==undefined){const q=hexBoard().pegs[hover.hex],b=lastGrid[hover.hex];el.textContent=q?"Peg (q "+q.a+", r "+q.b+"): "+(b?BEADS[b][0]:"empty"):"";return;}
+  const b=lastGrid[hover[1]*state.size+hover[0]];
+  el.textContent="Peg ("+hover[0]+", "+hover[1]+"): "+(b?BEADS[b][0]:"empty");
+}
+function countBeads(g){const m={};g.forEach(b=>{if(b)m[b]=(m[b]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+function updateBeads(){
+  const c=countBeads(lastGrid),total=c.reduce((s,x)=>s+x[1],0);
+  const lbl=boardLabel();
+  $("#summary").textContent=total?total+" beads in "+c.length+" colour"+(c.length===1?"":"s")+" on "+lbl+".":"The board is empty.";
+  const list=$("#counts");
+  if(list)list.innerHTML=c.map(([b,n])=>`<li><span class="sw" style="background:${BEADS[b][1]}"></span><span>${BEADS[b][0]}</span><b>${n}</b></li>`).join("")||"<li><span></span><span>No beads yet.</span><b></b></li>";
+}
+function pegAt(e){
+  if(LAY.hex){const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,q=nearestPeg(hexBoard(),(mx-LAY.ox)/LAY.c,(my-LAY.oy)/LAY.c);
+    return q&&Math.hypot(LAY.ox+q.x*LAY.c-mx,LAY.oy+q.y*LAY.c-my)<=LAY.c*.6?{hex:q.i}:null;}
+  const m=sqMask(),r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left-LAY.pad)/LAY.c),y=Math.floor((e.clientY-r.top-LAY.pad)/LAY.c);
+  return(x>=0&&y>=0&&x<state.size&&y<state.size&&(!m||m[y*state.size+x]))?[x,y]:null;
+}
+cv.addEventListener("pointermove",e=>{if(e.pointerType!=="mouse")return;const p=pegAt(e);if(p&&hover&&JSON.stringify(p)===JSON.stringify(hover))return;hover=p;schedule();});
+cv.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"){hover=null;schedule();}});
+cv.addEventListener("pointerup",e=>{
+  const p=pegAt(e);if(!p)return;hover=p;
+  if(state.tapMode==="move"){
+    if(p.hex!==undefined){hexTap(p.hex);save();schedule();return;}
+    const N=state.size;
+    if(state.mode==="terrain"){}
+    else if(state.mode==="truchet"){
+      const R=state.truchet,{T,off}=truchetLayout(N),tx=Math.floor((p[0]+off)/T),ty=Math.floor((p[1]+off)/T),k=tx+","+ty;
+      const o=k in R.flips?R.flips[k]:(hash(tx,ty,R.seed)&3);R.flips[k]=(o+1)&3;
+    }
+    else if(state.view==="single"){const sl=state.slots[state.active];sl.enabled=true;sl.pos=[(p[0]+.5)/N,(p[1]+.5)/N];}
+    else{const sp=sprites()[0];state.tile.ox=p[0]-Math.floor(sp.w/2);state.tile.oy=p[1]-Math.floor(sp.h/2);}
+    save();
+  }
+  schedule();
+});
+
+/* ---------- controls ---------- */
+const cur=()=>state.slots[state.active];
+const esc=s=>String(s);
+function chip(act,val,label,pressed){return `<button type="button" class="chip" data-act="${act}" data-val="${val}" aria-pressed="${pressed?"true":"false"}">${label}</button>`;}
+function action(act,label){return `<button type="button" class="chip" data-act="${act}">${label}</button>`;}
+function dots(f){return `<span class="dots">${FAM[f].b.map(b=>`<i style="background:${BEADS[b][1]}"></i>`).join("")}</span>`;}
+function famChip(act,f,pressed){return `<button type="button" class="chip fam" data-act="${act}" data-val="${f}" aria-pressed="${pressed?"true":"false"}">${dots(f)}${FAM[f].n}</button>`;}
+function layerHas(sl,z){return sl.vox.some(k=>k.endsWith(","+z));}
+
+function hexTap(i){
+  const H=hexBoard(),q=H.pegs[i];if(!q)return;
+  if(state.mode==="truchet"){const R=state.truchet,k=Math.max(2,Math.round(R.tile/2)),c=H.center,[I,J]=hexCellOf(q.a-c.a,q.b-c.b,k),key="h"+I+","+J,o=key in R.flips?R.flips[key]:(hash(I,J,R.seed)&1);R.flips[key]=o^1;}
+  else if(state.mode==="shapes"){
+    if(state.view==="single"){const sl=state.slots[state.active];sl.enabled=true;sl.pos=[(q.x-H.minx)/((H.maxx-H.minx)||1),(q.y-H.miny)/((H.maxy-H.miny)||1)];}
+    else{const c=H.center;state.tile.hoa=q.a-c.a;state.tile.hob=rowk(q)-rowk(c);}
+  }
+}
+function boardLabel(){
+  const B=state.board,N=state.size;
+  if(B.lattice==="hex")return B.outline==="hex"?"a hex board, "+B.side+" pegs per side":B.outline==="rect"?"a staggered "+B.hw+" × "+B.hh+" board":"a round hex-peg board, "+B.hd+" pegs across";
+  if(B.outline==="rect")return "a "+B.w+" × "+B.h+" board";
+  if(B.outline==="circle")return "a round board, "+B.d+" pegs across";
+  return N===29?"one 29×29 board":N%29===0?(N/29)+"×"+(N/29)+" boards ("+N+"×"+N+" pegs)":"a "+N+"×"+N+" board";
+}
+function pegCount(){if(isHex())return hexBoard().pegs.length;const m=sqMask();return m?m.reduce((t,v)=>t+v,0):state.size*state.size;}
+function numIn(act,label,v,min,max){return `<label class="toggle" style="margin:0 12px 6px 0">${label} <input type="number" inputmode="numeric" min="${min}" max="${max}" data-act="${act}" value="${v}" aria-label="${label}" style="width:4.8em;height:auto;font:inherit;padding:5px 8px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink)"></label>`;}
+function boardControls(){
+  const B=state.board,hex=B.lattice==="hex",N=state.size,std=[29,58,87];
+  let h=`<div class="seg">${chip("blat","square","Square pegs",!hex)}${chip("blat","hex","Hex pegs",hex)}</div>`;
+  h+=`<div class="seg" style="margin-top:8px">${hex?chip("bout","hex","Hexagon",B.outline==="hex"):chip("bout","square","Square",B.outline==="square")}${chip("bout","rect","Rectangle",B.outline==="rect")}${chip("bout","circle","Circle",B.outline==="circle")}</div><div class="seg" style="margin-top:8px">`;
+  if(!hex&&B.outline==="square")h+=chip("size",29,"29",N===29)+chip("size",58,"58 (2×2)",N===58)+chip("size",87,"87 (3×3)",N===87)+numIn("sizeCustom","Custom",std.includes(N)?"":N,8,150);
+  else if(!hex&&B.outline==="rect")h+=numIn("bw","Width",B.w,4,150)+numIn("bh","Height",B.h,4,150);
+  else if(!hex)h+=numIn("bd","Pegs across",B.d,5,150);
+  else if(B.outline==="hex")h+=numIn("bside","Pegs per side",B.side,2,60);
+  else if(B.outline==="rect")h+=numIn("bhw","Columns",B.hw,4,150)+numIn("bhh","Pegs per column",B.hh,4,150);
+  else h+=numIn("bhd","Pegs across",B.hd,5,150);
+  h+=`</div><p class="hint" style="margin-top:6px">${pegCount()} pegs.${hex?" Columns run straight up; every other column sits half a peg lower.":""}</p>`;
+  $("#sizeopts").innerHTML=h;
+  const L=boardLabel();$("#boardsum").textContent="Board: "+L.replace(/^(a |one )/,"");
+}
+function boardOpts(){
+  $("#boardopts").innerHTML=chip("tapMode","move","Tap moves",state.tapMode==="move")+chip("tapMode","inspect","Tap inspects",state.tapMode==="inspect");
+  boardControls();
+}
+function shapesHTML(){
+  const sl=cur(),A=state.active;
+  let h=`<div class="row"><div class="seg">${chip("slot",0,"Shape A",A===0)}${chip("slot",1,"Shape B",A===1)}`;
+  if(A===1)h+=`<label class="toggle"><input type="checkbox" data-act="useB" ${state.slots[1].enabled?"checked":""}> Show B</label>`;
+  h+=`</div></div>`;
+  h+=`<div class="row"><span class="lab">Kind</span><div class="seg">${chip("kind","vox","3D blocks",sl.kind==="vox")}${chip("kind","cut","Raised cutout",sl.kind==="cut")}</div></div>`;
+  if(sl.kind==="vox"){
+    h+=`<div class="row"><span class="lab">Start from</span><div class="seg">${VOXP.map(([k,l])=>chip("vpreset",k,l,sl.preset===k)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Block size in pegs</span><div class="seg">${[2,3,4,5].map(n=>chip("scale",n,String(n),sl.scale===n)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Turn the shape to see its other sides</span><div class="seg">${[0,1,2,3].map(r=>chip("rot",r,(r*90)+"°",(sl.rot||0)===r)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Layer, bottom to top (a dot means it has blocks)</span><div class="seg">${[0,1,2,3,4,5].map(z=>chip("layer",z,(z+1)+(layerHas(sl,z)?" •":""),sl.layer===z)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Tap or drag to add blocks on layer ${sl.layer+1}. Rings show blocks on the layer below. Here x runs right and y runs down; on the board, x heads down-right and y heads down-left.</span><div class="editor" id="editor" style="grid-template-columns:repeat(${VS},1fr);max-width:250px"></div><div class="seg" style="margin-top:10px">${action("clearLayer","Clear layer")}${action("clearAll","Clear all")}</div></div>`;
+  }else{
+    h+=`<div class="row"><span class="lab">Start from</span><div class="seg">${CUTP.map(([k,l])=>chip("cpreset",k,l,sl.cpreset===k)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Depth in pegs</span><div class="seg">${[1,2,3,4].map(n=>chip("depth",n,String(n),sl.depth===n)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Extrude toward</span><div class="seg">${chip("dir",1,"Down-right",sl.dir===1)}${chip("dir",-1,"Down-left",sl.dir===-1)}</div></div>`;
+    h+=`<div class="row"><span class="lab">Tap or drag to draw the face. Holes let the side show through.</span><div class="editor" id="editor" style="grid-template-columns:repeat(${CW},1fr);max-width:440px"></div><div class="seg" style="margin-top:10px">${action("clearAll","Clear")}</div></div>`;
+  }
+  h+=`<div class="row"><span class="lab">Colour (top, left, right)</span><div class="seg">${Object.keys(FAM).map(f=>famChip("family",f,sl.family===f)).join("")}</div></div>`;
+  h+=`<details><summary>How the 3D mapping works</summary>
+  <p>Peg (0, 0) is the top-left, and y counts downward, the same as pixels on a screen.</p>
+  <p>A block at (x, y, z) lands at column s × (x − y) and row s × (x + y) ÷ 2 − s × z, where s is the block size. That ÷ 2 is what makes the 2-across, 1-up isometric edges.</p>
+  <p>Blocks are drawn in order of x + y + z, so nearer blocks cover farther ones. That ordering is the whole hidden-layer trick, and it’s why the arch and frame read as solid objects with gaps.</p>
+  <p>Each face takes one bead from the colour family: light on top, mid on the left, dark on the right, as if lit from the upper left.</p></details>`;
+  return h;
+}
+function tessHTML(){
+  const t=state.tile,bOn=state.slots[1].enabled;
+  let h=`<div class="row"><span class="lab">Pattern</span><div class="seg">${chip("pattern","A","A only",t.pattern==="A")}${chip("pattern","checker","A and B checker",t.pattern==="checker")}${chip("pattern","rows","A and B rows",t.pattern==="rows")}</div></div>`;
+  h+=`<div class="row"><span class="lab">Spacing</span><div class="seg">${chip("spacing","iso","Iso pack",t.spacing==="iso")}${chip("spacing","grid","Grid",t.spacing==="grid")}${chip("spacing","custom","Custom",t.spacing==="custom")}</div>
+  <div class="slider"><span>Across</span><input type="range" min="2" max="40" data-act="h" value="${t.h}" aria-label="Horizontal step"><output id="o-h">${t.h}</output></div>
+  <div class="slider"><span>Down</span><input type="range" min="2" max="40" data-act="v" value="${t.v}" aria-label="Vertical step"><output id="o-v">${t.v}</output></div>
+  <div class="slider"><span>Row shift</span><input type="range" min="0" max="40" data-act="shift" value="${t.shift}" aria-label="Row shift"><output id="o-shift">${t.shift}</output></div></div>`;
+  h+=`<div class="row"><span class="lab">Colours</span><div class="seg">${chip("colour","shape","Shape colours",t.colour==="shape")}${chip("colour","grey","Greyscale",t.colour==="grey")}${chip("colour","rainbow","Rainbow",t.colour==="rainbow")}${chip("colour","mood","Mood board",t.colour==="mood")}</div></div>`;
+  if(t.colour==="mood"){
+    h+=`<div class="row"><span class="lab">Mood presets</span><div class="seg">${Object.keys(MOODS).map(m=>chip("mood",m,m,t.moodName===m)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Families in this board (tap to add or remove)</span><div class="seg">${Object.keys(FAM).map(f=>famChip("moodfam",f,t.moods.includes(f))).join("")}</div></div>`;
+  }
+  if(t.colour!=="shape"){
+    h+=`<div class="row"><span class="lab">Spread colours by</span><div class="seg">${[["same","A vs B"],["rows","Rows"],["cols","Columns"],["diag","Diagonal"],["checker","Checker"],["random","Random"]].map(([k,l])=>chip("spread",k,l,t.spread===k)).join("")}</div></div>`;
+    if(t.spread==="random")h+=seedRow("seed",t.seed,"tile");
+  }
+  h+=`<div class="row"><span class="lab">Background beads</span><div class="seg">${chip("bg","none","None",!t.bg)}${BGS.map(b=>`<button type="button" class="chip fam" data-act="bg" data-val="${b}" aria-pressed="${t.bg===b}"><span class="sw" style="background:${BEADS[b][1]}"></span>${BEADS[b][0]}</button>`).join("")}</div></div>`;
+  if(t.pattern!=="A"&&!bOn)h+=`<p class="hint">Shape B is hidden. Turn it on in Shapes to use it here.</p>`;
+  h+=`<p class="hint">${state.view==="single"?"Press Tessellate under the board to repeat your shapes.":"Tap the board to slide the whole pattern."} Iso pack nests cubes into the tumbling-blocks layout.</p>`;
+  return h;
+}
+function seedRow(act,val,which){
+  return `<div class="row"><span class="lab">Seed (the same number always gives the same pattern)</span><div class="seedrow"><input type="number" inputmode="numeric" min="0" max="999999" data-act="${act}" value="${val}" aria-label="Seed">${action("newSeed","New seed").replace('data-act="newSeed"',`data-act="newSeed" data-val="${which}"`)}</div></div>`;
+}
+function bgRow(act,cur){
+  return `<div class="row"><span class="lab">Background beads</span><div class="seg">${chip(act,"none","None",!cur)}${BGS.map(b=>`<button type="button" class="chip fam" data-act="${act}" data-val="${b}" aria-pressed="${cur===b}"><span class="sw" style="background:${BEADS[b][1]}"></span>${BEADS[b][0]}</button>`).join("")}</div></div>`;
+}
+function moodRow(){
+  const t=state.tile;
+  return `<div class="row"><span class="lab">Mood presets (shared with Tessellate)</span><div class="seg">${Object.keys(MOODS).map(m=>chip("mood",m,m,t.moodName===m)).join("")}</div></div>`;
+}
+function terrainHTML(){
+  const T=state.terrain;
+  let h=seedRow("terrainSeed",T.seed,"terrain");
+  h+=`<div class="row"><span class="lab">Block size in pegs (smaller blocks give a wider landscape)</span><div class="seg">${[1,2,3].map(n=>chip("tscale",n,String(n),T.scale===n)).join("")}</div></div>`;
+  h+=`<div class="row"><span class="lab">Turn the landscape</span><div class="seg">${[0,1,2,3].map(r=>chip("trot",r,(r*90)+"°",(T.rot||0)===r)).join("")}</div></div>`;
+  h+=`<div class="row"><div class="slider"><span>Max height</span><input type="range" min="2" max="10" data-act="theight" value="${T.height}" aria-label="Max height"><output id="o-theight">${T.height}</output></div></div>`;
+  h+=`<div class="row"><span class="lab">Ground</span><div class="seg">${["Smooth","Rolling","Rugged"].map((l,i)=>chip("trough",i,l,T.rough===i)).join("")}</div></div>`;
+  h+=`<div class="row"><span class="lab">Water level</span><div class="seg">${[0,1,2,3,4].map(n=>chip("twater",n,n?String(n):"Off",T.water===n)).join("")}</div></div>`;
+  h+=`<div class="row"><span class="lab">Colour by height</span><div class="seg">${chip("tcolour","land","Landscape",T.colour==="land")}${chip("tcolour","grey","Greyscale",T.colour==="grey")}${chip("tcolour","rainbow","Rainbow",T.colour==="rainbow")}${chip("tcolour","mood","Mood board",T.colour==="mood")}</div></div>`;
+  if(T.colour==="mood")h+=moodRow();
+  h+=bgRow("tbg",T.bg);
+  h+=`<p class="hint">Each column’s height comes from smooth noise sampled at its (x, y) square and the seed, then gets stacked as real blocks, so cliffs show their layers.</p>`;
+  return h;
+}
+function truchetHTML(){
+  const R=state.truchet;
+  let h=seedRow("truchetSeed",R.seed,"truchet");
+  h+=isHex()?`<p class="hint">Hex boards use pipes: three arcs per hexagon, and each tile has two possible turns.</p>`:`<div class="row"><span class="lab">Style</span><div class="seg">${chip("rstyle","arcs","Pipes",R.style==="arcs")}${chip("rstyle","ridges","Ridges",R.style==="ridges")}${chip("rstyle","folds","Folds",R.style==="folds")}</div></div>`;
+  h+=`<div class="row"><span class="lab">Tile size in pegs</span><div class="seg">${[4,5,6,7,8].map(n=>chip("rtile",n,String(n),R.tile===n)).join("")}</div></div>`;
+  if(R.style!=="folds"||isHex())h+=`<div class="row"><span class="lab">Width</span><div class="seg">${["Thin","Medium","Thick"].map((l,i)=>chip("rwidth",i,l,R.width===i)).join("")}</div></div>`;
+  h+=`<div class="row"><span class="lab">Colours</span><div class="seg">${chip("rcolour","one","One family",R.colour==="one")}${chip("rcolour","grey","Greyscale",R.colour==="grey")}${chip("rcolour","rainbow","Rainbow",R.colour==="rainbow")}${chip("rcolour","mood","Mood board",R.colour==="mood")}</div></div>`;
+  if(R.colour==="one")h+=`<div class="row"><div class="seg">${Object.keys(FAM).map(f=>famChip("rfamily",f,R.family===f)).join("")}</div></div>`;
+  if(R.colour==="mood")h+=moodRow();
+  h+=bgRow("rbg",R.bg);
+  if(R.style!=="folds"||isHex())h+=`<div class="row"><label class="toggle" style="margin-left:0"><input type="checkbox" data-act="rshadow" ${R.shadow?"checked":""}> Drop shadow (needs a background)</label></div>`;
+  h+=`<p class="hint">The seed picks each tile’s rotation. Tap a tile on the board to turn it yourself; a new seed clears your turns.</p>`;
+  return h;
+}
+function colourRows(prefix,colour,family){
+  let h=`<div class="row"><span class="lab">Colours</span><div class="seg">${chip(prefix+"colour","one","One family",colour==="one")}${chip(prefix+"colour","grey","Greyscale",colour==="grey")}${chip(prefix+"colour","rainbow","Rainbow",colour==="rainbow")}${chip(prefix+"colour","mood","Mood board",colour==="mood")}</div></div>`;
+  if(colour==="one")h+=`<div class="row"><div class="seg">${Object.keys(FAM).map(f=>famChip(prefix+"family",f,family===f)).join("")}</div></div>`;
+  if(colour==="mood")h+=moodRow();
+  return h;
+}
+function fieldsHTML(){
+  const F=state.fields,atmos=F.effect==="atmos";
+  let h=`<div class="row"><span class="lab">Effect</span><div class="seg">${[["pyramid","Pyramids"],["bevel","Bevels"],["rings","Rings"],["ombre","Ombré"],["atmos","Atmosphere"]].map(([k,l])=>chip("feffect",k,l,F.effect===k)).join("")}</div></div>`;
+  if(atmos){
+    h+=seedRow("fieldsSeed",F.seed,"fields");
+    h+=`<div class="row"><div class="slider"><span>Layers</span><input type="range" min="2" max="7" data-act="flayers" value="${F.layers}" aria-label="Layers"><output id="o-flayers">${F.layers}</output></div></div>`;
+    h+=`<div class="row"><span class="lab">Ridges</span><div class="seg">${["Smooth","Rolling","Rugged"].map((l,i)=>chip("frough",i,l,F.rough===i)).join("")}</div></div>`;
+    h+=`<div class="row"><label class="toggle" style="margin-left:0"><input type="checkbox" data-act="fflip" ${F.flip?"checked":""}> Reverse the fade (dark distance, light front)</label></div>`;
+  }else{
+    h+=isHex()?`<div class="row"><span class="lab">Ring shape</span><div class="seg">${chip("fmetric","hex","Hexagon",F.metric!=="round")}${chip("fmetric","round","Round",F.metric==="round")}</div></div>`:`<div class="row"><span class="lab">Ring shape</span><div class="seg">${chip("fmetric","square","Square",F.metric==="square")}${chip("fmetric","diamond","Diamond",F.metric==="diamond")}${chip("fmetric","round","Round",F.metric==="round")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Layout</span><div class="seg">${chip("flayout","single","One big",F.layout==="single")}${chip("flayout","lattice","Lattice",F.layout==="lattice")}</div>`;
+    if(F.layout==="lattice")h+=`<div class="slider"><span>Cell size</span><input type="range" min="4" max="29" data-act="fcell" value="${F.cell}" aria-label="Cell size"><output id="o-fcell">${F.cell}</output></div><label class="toggle" style="margin-left:0"><input type="checkbox" data-act="fgrout" ${F.grout?"checked":""}> Grout lines (odd cell sizes round up to even)</label>`;
+    h+=`</div>`;
+    h+=`<div class="row"><span class="lab">${F.effect==="bevel"?"Bevel width":"Ring width"} in pegs</span><div class="seg">${[1,2,3].map(n=>chip("fring",n,String(n),F.ring===n)).join("")}</div></div>`;
+    h+=`<div class="row"><span class="lab">Change colour by</span><div class="seg">${chip("fby","ring","Ring",F.by==="ring")}${chip("fby","cell","Cell, diagonally",F.by==="cell")}${chip("fby","random","Cell, randomly",F.by==="random")}</div></div>`;
+    if(F.by==="random")h+=seedRow("fieldsSeed",F.seed,"fields");
+    if(F.effect!=="rings")h+=`<div class="row"><label class="toggle" style="margin-left:0"><input type="checkbox" data-act="fflip" ${F.flip?"checked":""}> Flip bump to dent</label></div>`;
+  }
+  h+=colourRows("f",F.colour,F.family);
+  h+=bgRow("fbg",F.bg);
+  h+=`<details><summary>How fields work</summary>
+  <p>Each peg measures its distance to the nearest centre. Square rings use the larger of the x and y gaps, diamonds add the two gaps, and round rings use a straight line. Dividing that distance by the ring width gives the ring number.</p>
+  <p>Pyramids light whichever face points toward the top-left; flipping swaps light and dark, and your eye reads the same rings as a hole. Bevels only light the outer band, so cells look like raised tiles.</p>
+  <p>In a diamond lattice every second centre is shifted half a cell, so the nearest-centre regions become diamonds. Atmosphere stacks noisy ridgelines back to front, paler in the distance.</p></details>`;
+  return h;
+}
+function labHTML(){
+  const S=state.lab,def=PLUGINS[S.active];
+  let h=`<div class="row"><span class="lab">Categories</span><div class="seg">${Object.values(PLUGINS).map(d=>chip("lcat",d.id,d.name,S.active===d.id)).join("")}</div></div>`;
+  if(def){
+    if(def.description)h+=`<p class="hint">${def.description}${def.family?` Family: ${def.family}.`:""}</p>`;
+    const p=labParams(def);
+    def.params.forEach(q=>{
+      if(q.type==="range")h+=`<div class="row"><div class="slider"><span>${q.label||q.key}</span><input type="range" min="${q.min??0}" max="${q.max??10}" step="${q.step??1}" data-act="lp" data-key="${q.key}" value="${p[q.key]}" aria-label="${q.label||q.key}"><output id="o-lp-${q.key}">${p[q.key]}</output></div></div>`;
+      else if(q.type==="choice")h+=`<div class="row"><span class="lab">${q.label||q.key}</span><div class="seg">${(q.options||[]).map(([v,l])=>chip("lpc",q.key+"|"+v,l,p[q.key]===v)).join("")}</div></div>`;
+      else if(q.type==="toggle")h+=`<div class="row"><label class="toggle" style="margin-left:0"><input type="checkbox" data-act="lpt" data-key="${q.key}" ${p[q.key]?"checked":""}> ${q.label||q.key}</label></div>`;
+      else if(q.type==="seed")h+=seedRow("labSeed",p[q.key],"lab");
+    });
+    h+=colourRows("l",S.colour,S.family);
+    h+=bgRow("lbg",S.bg);
+    if(!BUILTIN.has(def.id))h+=`<div class="row">${action("lremove","Remove this category")}</div>`;
+  }
+  h+=`<details class="labbox" ${state.labOpen?"open":""}><summary>Import a category</summary>
+  <p>A category is a small piece of JavaScript that calls PegLab.register. Paste one below or load a .js file, then press Install. It stays installed in this browser. Only install code you trust.</p>
+  <textarea id="labSrc" spellcheck="false" aria-label="Category code" placeholder="PegLab.register({ ... })"></textarea>
+  <div class="actions"><button type="button" class="btn primary" data-act="linstall">Install</button><label class="btn" style="display:inline-flex;align-items:center">Load file<input type="file" accept=".js,.txt,text/javascript,text/plain" data-act="lfile" hidden></label><button type="button" class="btn" data-act="ltemplate">Show template</button></div>
+  <p class="msg" id="labMsg"></p></details>`;
+  return h;
+}
+function beadsHTML(){
+  return `<ul class="counts" id="counts"></ul>
+  <p class="note">Colour names follow Perler’s line where they match; the swatches are approximate. Counts cover the whole board, background included.</p>`;
+}
+function renderTabs(){document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===state.tab?"true":"false"));}
+function renderPanel(){
+  renderTabs();boardOpts();
+  const c=$("#controls");
+  c.innerHTML=({shapes:shapesHTML,tess:tessHTML,terrain:terrainHTML,truchet:truchetHTML,fields:fieldsHTML,lab:labHTML,beads:beadsHTML}[state.tab]||shapesHTML)();
+  fillEditor();
+}
+function fillEditor(){
+  const ed=$("#editor");if(!ed)return;
+  const sl=cur(),vox=sl.kind==="vox",cols=vox?VS:CW,rows=vox?VS:CH,set=vox?new Set(sl.vox):null;
+  const on=BEADS[FAM[sl.family].b[vox?0:1]][1];
+  let h="";
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+    const isOn=vox?set.has(x+","+y+","+sl.layer):!!sl.bmp[y][x];
+    const below=vox&&!isOn&&sl.layer>0&&set.has(x+","+y+","+(sl.layer-1));
+    h+=`<button type="button" class="c${below?" below":""}" data-x="${x}" data-y="${y}" aria-label="x ${x}, y ${y}${isOn?", filled":""}" aria-pressed="${isOn}"${isOn?` style="background:${on}"`:""}></button>`;
+  }
+  ed.innerHTML=h;
+}
+function setCell(x,y,val){
+  const sl=cur();
+  if(sl.kind==="vox"){
+    const k=x+","+y+","+sl.layer,has=sl.vox.includes(k);
+    if(val&&!has)sl.vox.push(k);else if(!val&&has)sl.vox=sl.vox.filter(v=>v!==k);else return;
+    sl.preset=null;
+  }else{
+    if(!!sl.bmp[y][x]===val)return;
+    sl.bmp[y][x]=val?1:0;sl.cpreset=null;
+  }
+  fillEditor();schedule();
+}
+let painting=null;
+const controls=$("#controls");
+controls.addEventListener("pointerdown",e=>{
+  const c=e.target.closest(".editor .c");if(!c)return;
+  e.preventDefault();
+  const x=+c.dataset.x,y=+c.dataset.y,sl=cur();
+  const isOn=sl.kind==="vox"?sl.vox.includes(x+","+y+","+sl.layer):!!sl.bmp[y][x];
+  painting=!isOn;setCell(x,y,painting);
+});
+window.addEventListener("pointermove",e=>{
+  if(painting===null)return;
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const c=el&&el.closest?el.closest(".editor .c"):null;
+  if(c)setCell(+c.dataset.x,+c.dataset.y,painting);
+});
+window.addEventListener("pointerup",()=>{if(painting!==null){painting=null;save();renderLayerDots();}});
+window.addEventListener("pointercancel",()=>{painting=null;});
+function renderLayerDots(){if(state.tab==="shapes"&&cur().kind==="vox"){const y=window.scrollY;renderPanel();window.scrollTo(0,y);}}
+
+function handle(act,val){
+  const sl=cur(),t=state.tile;
+  switch(act){
+    case "tapMode":state.tapMode=val;break;
+    case "size":state.size=+val;state.board.n=+val;hover=null;break;
+    case "blat":{const B=state.board;B.lattice=val;if(val==="hex"&&B.outline==="square")B.outline="hex";if(val==="square"&&B.outline==="hex")B.outline="square";syncSize();hover=null;break;}
+    case "bout":state.board.outline=val;syncSize();hover=null;break;
+    case "slot":state.active=+val;if(+val===1&&!state.slots[1].touched){state.slots[1].enabled=true;state.slots[1].touched=true;}break;
+    case "kind":sl.kind=val;break;
+    case "vpreset":sl.vox=vp(val);sl.preset=val;sl.layer=0;if(val==="penrose")sl.scale=2;break;
+    case "scale":sl.scale=+val;break;
+    case "rot":sl.rot=+val;break;
+    case "trot":state.terrain.rot=+val;break;
+    case "layer":sl.layer=+val;break;
+    case "clearLayer":sl.vox=sl.vox.filter(k=>!k.endsWith(","+sl.layer));sl.preset=null;break;
+    case "clearAll":if(sl.kind==="vox"){sl.vox=[];sl.preset="blank";sl.layer=0;}else{sl.bmp=bitmapFrom([]);sl.cpreset="blank";}break;
+    case "cpreset":sl.bmp=bitmapFrom(CUTS[val]);sl.cpreset=val;break;
+    case "depth":sl.depth=+val;break;
+    case "dir":sl.dir=+val;break;
+    case "family":sl.family=val;break;
+    case "pattern":t.pattern=val;if(val!=="A"){state.slots[1].enabled=true;state.slots[1].touched=true;}break;
+    case "spacing":t.spacing=val;break;
+    case "colour":t.colour=val;break;
+    case "mood":t.moods=MOODS[val].slice();t.moodName=val;break;
+    case "moodfam":t.moods=t.moods.includes(val)?t.moods.filter(f=>f!==val):t.moods.concat(val);t.moodName=null;break;
+    case "spread":t.spread=val;break;
+    case "newSeed":{const n=Math.floor(Math.random()*1000000);if(val==="fields")state.fields.seed=n;else if(val==="lab"){const d=PLUGINS[state.lab.active];if(d)labParams(d).seed=n;}else if(val==="terrain")state.terrain.seed=n;else if(val==="truchet"){state.truchet.seed=n;state.truchet.flips={};}else t.seed=n;break;}
+    case "tscale":state.terrain.scale=+val;break;
+    case "feffect":state.fields.effect=val;break;
+    case "fmetric":state.fields.metric=val;break;
+    case "flayout":state.fields.layout=val;break;
+    case "fring":state.fields.ring=+val;break;
+    case "fby":state.fields.by=val;break;
+    case "frough":state.fields.rough=+val;break;
+    case "fcolour":state.fields.colour=val;break;
+    case "ffamily":state.fields.family=val;break;
+    case "fbg":state.fields.bg=val==="none"?null:val;break;
+    case "lcat":state.lab.active=val;break;
+    case "lcolour":state.lab.colour=val;break;
+    case "lfamily":state.lab.family=val;break;
+    case "lbg":state.lab.bg=val==="none"?null:val;break;
+    case "lpc":{const d=PLUGINS[state.lab.active];if(d){const [k,v]=val.split("|");labParams(d)[k]=v;}break;}
+    case "lremove":{const id=state.lab.active;if(!BUILTIN.has(id)){delete PLUGINS[id];removeSaved(id);state.lab.active=Object.keys(PLUGINS)[0]||null;}break;}
+    case "trough":state.terrain.rough=+val;break;
+    case "twater":state.terrain.water=+val;break;
+    case "tcolour":state.terrain.colour=val;break;
+    case "tbg":state.terrain.bg=val==="none"?null:val;break;
+    case "rstyle":state.truchet.style=val;break;
+    case "rtile":state.truchet.tile=+val;state.truchet.flips={};break;
+    case "rwidth":state.truchet.width=+val;break;
+    case "rcolour":state.truchet.colour=val;break;
+    case "rfamily":state.truchet.family=val;break;
+    case "rbg":state.truchet.bg=val==="none"?null:val;break;
+    case "bg":t.bg=val==="none"?null:val;break;
+    default:return;
+  }
+  const y=window.scrollY;renderPanel();window.scrollTo(0,y);draw();save();
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");
+  if(!b||b.tagName==="INPUT"||b.classList.contains("c"))return;
+  if(!b.closest("#controls")&&!b.closest("#boardopts")&&!b.closest("#sizeopts"))return;
+  if(b.dataset.act==="linstall"){const t=$("#labSrc");installFrom(t?t.value:"");return;}
+  if(b.dataset.act==="ltemplate"){const t=$("#labSrc");if(t){t.value=TEMPLATE;t.focus();}return;}
+  handle(b.dataset.act,b.dataset.val);
+});
+controls.addEventListener("change",e=>{
+  const a=e.target.dataset.act;
+  if(a==="useB"){state.slots[1].enabled=e.target.checked;state.slots[1].touched=true;draw();save();}
+  if(a==="rshadow"){state.truchet.shadow=e.target.checked;draw();save();}
+  if(a==="fgrout"){state.fields.grout=e.target.checked;draw();save();}
+  if(a==="fflip"){state.fields.flip=e.target.checked;draw();save();}
+  if(a==="lpt"){const d=PLUGINS[state.lab.active];if(d){labParams(d)[e.target.dataset.key]=e.target.checked;draw();save();}}
+  if(a==="lfile"&&e.target.files&&e.target.files[0]){const fr=new FileReader();fr.onload=()=>{const t=$("#labSrc");if(t)t.value=String(fr.result);installFrom(String(fr.result));};fr.readAsText(e.target.files[0]);}
+  if(a==="fieldsSeed"||a==="labSeed"){
+    const n=Math.max(0,Math.min(999999,parseInt(e.target.value,10)||0));e.target.value=n;
+    if(a==="fieldsSeed")state.fields.seed=n;else{const d=PLUGINS[state.lab.active];if(d)labParams(d).seed=n;}
+    draw();save();
+  }
+  if(a==="seed"||a==="terrainSeed"||a==="truchetSeed"){
+    const n=Math.max(0,Math.min(999999,parseInt(e.target.value,10)||0));e.target.value=n;
+    if(a==="seed")state.tile.seed=n;else if(a==="terrainSeed")state.terrain.seed=n;else{state.truchet.seed=n;state.truchet.flips={};}
+    draw();save();
+  }
+});
+controls.addEventListener("input",e=>{
+  const a=e.target.dataset.act;
+  if(a==="h"||a==="v"||a==="shift"){
+    state.tile[a]=+e.target.value;state.tile.spacing="custom";
+    const o=$("#o-"+a);if(o)o.textContent=e.target.value;
+    controls.querySelectorAll('[data-act="spacing"]').forEach(b=>b.setAttribute("aria-pressed",b.dataset.val==="custom"?"true":"false"));
+    schedule();save();
+  }
+  if(a==="fcell"||a==="flayers"){state.fields[a==="fcell"?"cell":"layers"]=+e.target.value;const o=$("#o-"+a);if(o)o.textContent=e.target.value;schedule();save();}
+  if(a==="lp"){const d=PLUGINS[state.lab.active];if(d){const k=e.target.dataset.key;labParams(d)[k]=+e.target.value;const o=$("#o-lp-"+k);if(o)o.textContent=e.target.value;schedule();save();}}
+  if(a==="theight"){state.terrain.height=+e.target.value;const o=$("#o-theight");if(o)o.textContent=e.target.value;schedule();save();}
+});
+$("#tabs").addEventListener("click",e=>{
+  const b=e.target.closest("[data-tab]");if(!b)return;state.tab=b.dataset.tab;
+  if(state.tab==="shapes"||state.tab==="tess")state.mode="shapes";else if(state.tab!=="beads")state.mode=state.tab;
+  b.scrollIntoView({block:"nearest",inline:"nearest"});
+  hover=null;renderPanel();draw();save();
+});
+$("#tessBtn").addEventListener("click",()=>{
+  state.view=state.view==="single"?"tiled":"single";
+  state.mode="shapes";
+  if(state.view==="tiled"&&state.tab==="shapes")state.tab="tess";
+  renderPanel();draw();save();
+});
+
+/* ---------- output ---------- */
+const out=$("#out");
+$("#snapBtn").addEventListener("click",()=>{
+  const N=state.size,W=isHex()?1100:Math.min(1600,N*26),c=document.createElement("canvas");c.width=W;c.height=W;
+  if(isHex())paintHex(c.getContext("2d"),W,lastGrid,null);else paint(c.getContext("2d"),W,lastGrid,N,null,sqMask());
+  out.innerHTML=`<p class="cap">Press and hold (or right-click) the image to save it.</p><img alt="Snapshot of the bead pattern" src="${c.toDataURL("image/png")}"><div class="actions"><button type="button" class="btn" id="closeOut">Close</button></div>`;
+  $("#closeOut").onclick=()=>{out.innerHTML="";};
+});
+function patternText(){
+  const N=state.size,g=lastGrid,counts=countBeads(g),letters="ABCDEFGHJKLMNPQRSTUVWXYZabdefghjkmnpqrstuvwxyz",map={};
+  counts.forEach(([b],i)=>{map[b]=letters[i]||"?";});
+  if(isHex()){
+    const H=hexBoard(),rows=new Map();H.pegs.forEach(q=>{const k=Math.round(q.y*2);if(!rows.has(k))rows.set(k,new Map());rows.get(k).set(q.a,q);});
+    let t="Pegboard Iso Lab, "+boardLabel()+". Each line is half a peg lower than the one above, and each character is one column; a dot is an empty peg.\n\n";
+    [...rows.keys()].sort((x,y)=>x-y).forEach(k=>{const by=rows.get(k);let line="";for(let a=H.mina;a<=H.maxa;a++){const q=by.get(a);line+=q?(g[q.i]?map[g[q.i]]:"."):" ";}t+=line.replace(/\s+$/,"")+"\n";});
+    return t+"\n"+counts.map(([b,n])=>map[b]+" = "+BEADS[b][0]+" ("+n+")").join("\n");
+  }
+  let s="Pegboard Iso Lab, "+N+"×"+N+". Row 0 is the top; a dot is an empty peg.\n\n";
+  for(let y=0;y<N;y++){s+=String(y).padStart(2," ")+"  "+g.slice(y*N,y*N+N).map(b=>b?map[b]:".").join(" ")+"\n";}
+  s+="\n"+counts.map(([b,n])=>map[b]+" = "+BEADS[b][0]+" ("+n+")").join("\n");
+  return s;
+}
+$("#textBtn").addEventListener("click",()=>{
+  const txt=patternText();
+  out.innerHTML=`<p class="cap" id="copyCap">Pattern as text, one letter per peg.</p><textarea readonly aria-label="Pattern as text"></textarea><div class="actions"><button type="button" class="btn" id="copyOut">Copy</button><button type="button" class="btn" id="closeOut">Close</button></div>`;
+  const ta=out.querySelector("textarea");ta.value=txt;
+  $("#closeOut").onclick=()=>{out.innerHTML="";};
+  $("#copyOut").onclick=()=>{
+    const done=()=>{$("#copyCap").textContent="Copied.";};
+    const fallback=()=>{ta.focus();ta.select();try{document.execCommand("copy");done();}catch(e){$("#copyCap").textContent="Select the text and copy it.";}};
+    try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,fallback);else fallback();}catch(e){fallback();}
+  };
+});
+
+const PKEY="pegiso.plugins";
+function savedPlugins(){try{return JSON.parse(localStorage.getItem(PKEY)||"{}")||{};}catch(e){return{};}}
+function removeSaved(id){try{const m=savedPlugins();delete m[id];localStorage.setItem(PKEY,JSON.stringify(m));}catch(e){}}
+function inject(src){
+  lastRegistered=null;let err=null;
+  const onErr=ev=>{err=ev.message||"The code has an error.";ev.preventDefault&&ev.preventDefault();};
+  window.addEventListener("error",onErr);
+  try{const el=document.createElement("script");el.textContent=src;document.head.appendChild(el);el.remove();}catch(e){err=e.message;}
+  window.removeEventListener("error",onErr);
+  return{id:lastRegistered,err};
+}
+function installFrom(src){
+  const msg=t=>{const m=$("#labMsg");if(m)m.textContent=t;};
+  if(!src||!src.trim()){msg("Paste a category first, or press Show template.");return;}
+  const r=inject(src);
+  if(!r.id){msg(r.err?"Not installed: "+r.err:"Not installed: the code didn’t call PegLab.register. If it did, this page may be blocking imported code; add the category in Code instead.");return;}
+  if(BUILTIN.has(r.id)){msg("Not installed: "+r.id+" is a built-in category. Give yours a different id.");return;}
+  try{const m=savedPlugins();m[r.id]=src;localStorage.setItem(PKEY,JSON.stringify(m));}catch(e){}
+  state.lab.active=r.id;state.labOpen=false;save();renderPanel();draw();
+  msg("Installed "+PLUGINS[r.id].name+".");
+}
+// Built-in example, written with the same API an imported category uses
+PegLab.register({
+  id:"opart-bulge",name:"Op-art bulge",family:"Line fields",
+  description:"Stripes magnified around a hidden sphere, so the middle seems to swell toward you.",
+  params:[
+    {key:"width",label:"Stripe width",type:"range",min:1,max:4,value:2},
+    {key:"strength",label:"Bulge",type:"range",min:0,max:12,value:5},
+    {key:"size",label:"Bulge size",type:"range",min:3,max:24,value:10},
+    {key:"dir",label:"Stripes",type:"choice",value:"h",options:[["h","Horizontal"],["v","Vertical"],["rings","Rings"],["check","Checks"]]}
+  ],
+  generate(ctx){
+    const {p}=ctx,B=ctx.bounds,cx=(B.minx+B.maxx)/2,cy=(B.miny+B.maxy)/2,f=ctx.colours,a=ctx.bead(f[0],0),b=ctx.bead(f[f.length-1],2);
+    for(const q of ctx.pegs){
+      const dx=q.x-cx,dy=q.y-cy,m=1+p.strength/4*Math.exp(-(dx*dx+dy*dy)/(p.size*p.size));
+      const band=t=>Math.floor(t/m/p.width+1000)%2;
+      const on=p.dir==="h"?band(dy):p.dir==="v"?band(dx):p.dir==="rings"?band(Math.hypot(dx,dy)):band(dx)^band(dy);
+      ctx.setPeg(q.i,on?a:b);
+    }
+  }
+});
+BUILTIN.add("opart-bulge");
+Object.values(savedPlugins()).forEach(src=>{try{inject(src);}catch(e){}});
+if(!PLUGINS[state.lab.active])state.lab.active="opart-bulge";
+
+$("#sizeopts").addEventListener("change",e=>{
+  const a=e.target.dataset.act,v=parseInt(e.target.value,10);if(!a||!v)return;
+  const B=state.board,cl=(lo,hi)=>Math.max(lo,Math.min(hi,v));
+  if(a==="sizeCustom")B.n=cl(8,150);else if(a==="bw")B.w=cl(4,150);else if(a==="bh")B.h=cl(4,150);else if(a==="bd")B.d=cl(5,150);
+  else if(a==="bside")B.side=cl(2,60);else if(a==="bhw")B.hw=cl(4,150);else if(a==="bhh")B.hh=cl(4,150);else if(a==="bhd")B.hd=cl(5,150);else return;
+  syncSize();hover=null;renderPanel();draw();save();
+});
+window.addEventListener("resize",schedule);
+try{window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",draw);}catch(e){}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(schedule);
+syncSize();
+renderPanel();draw();
+</script>
+</body>
+</html>

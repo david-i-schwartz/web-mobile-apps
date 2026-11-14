@@ -28,6 +28,22 @@
       "tagline": "Make single-file apps like these: fill in a short spec, watch the app take shape, download it.",
       "accent": "#3D4FB5",
       "folder": "generator"
+    },
+    {
+      "file": "src/iso-lab.html",
+      "folder": "iso-lab",
+      "code": "PIL",
+      "name": "Pegboard Iso Lab",
+      "tagline": "Design 3D-illusion bead patterns: isometric shapes, tessellations, seeded terrain and pipe tiles, on a pegboard.",
+      "accent": "#F2C230"
+    },
+    {
+      "file": "src/milspeak.html",
+      "folder": "milspeak",
+      "code": "MIL",
+      "name": "The Civilian's Guide to Milspeak",
+      "tagline": "A plain-language guide to military ranks, structures, codes and terms.",
+      "accent": "#F97316"
     }
   ],
   "readme": [

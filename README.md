@@ -9,6 +9,8 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`big/`](https://david-i-schwartz.github.io/web-mobile-apps/big/): BIG, Brick Image Generator
 - [`tig/`](https://david-i-schwartz.github.io/web-mobile-apps/tig/): TIG, Tile Image Generator
 - [`generator/`](https://david-i-schwartz.github.io/web-mobile-apps/generator/): GEN, HTML App Generator
+- [`iso-lab/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-lab/): PIL, Pegboard Iso Lab
+- [`milspeak/`](https://david-i-schwartz.github.io/web-mobile-apps/milspeak/): MIL, The Civilian's Guide to Milspeak
 
 ## How it works
 

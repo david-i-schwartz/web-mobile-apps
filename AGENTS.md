@@ -61,6 +61,7 @@ Delete its entry in `site.json`, its `src/` file and its built folder. Then buil
 
 - Don't edit built files (`index.html`, `README.md`, the app folders). Change `src/` or `site.json`, then build.
 - Don't commit notes, plans, personal data, passwords or anything private. This repository is public.
+- Don't publish an app the owner marks private, confidential or under a non-disclosure agreement, and don't mention it here either. If you aren't sure an app may be public, ask the owner first.
 - Don't add libraries, trackers, analytics or anything that loads from another site.
 - Don't remove `tig` (the reference app the tests use), `tools/` or `LICENSE`.
 
