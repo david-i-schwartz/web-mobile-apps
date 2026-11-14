@@ -5,14 +5,16 @@ AI-Generated Apps via HTML+JavaScript Files
 
 Site: https://david-i-schwartz.github.io/web-mobile-apps/
 
-- `fig/`: FIG, Fusebead Image Generator
-- `big/`: BIG, Brick Image Generator
-- `tig/`: TIG, Tile Image Generator (an example made with the generator)
-- `generator/`: HTML App Generator
+- [`fig/`](https://david-i-schwartz.github.io/web-mobile-apps/fig/): FIG, Fusebead Image Generator
+- [`big/`](https://david-i-schwartz.github.io/web-mobile-apps/big/): BIG, Brick Image Generator
+- [`tig/`](https://david-i-schwartz.github.io/web-mobile-apps/tig/): TIG, Tile Image Generator
+- [`generator/`](https://david-i-schwartz.github.io/web-mobile-apps/generator/): GEN, HTML App Generator
 
-Each folder holds the app (`index.html`), its Home Screen icons, `manifest.webmanifest` and `sw.js`. `sw.js` is an offline helper: it keeps a copy so the Home Screen app opens without a connection.
+## How it works
 
-This site is built by HTML App Generator's kit (`node cli.js site site.json folder`). The master copies, specs and notes are kept elsewhere: change the apps there, then rebuild and replace this site.
+- `src/` holds the published copy of each app, one HTML file each. `site.json` lists them.
+- `node tools/cli.js site site.json .` builds a folder for each app: the app (`index.html`), Home Screen icons, `manifest.webmanifest`, and `sw.js`, an offline helper so the Home Screen app opens without a connection. It also builds the front page and this README.
+- To add, update or remove an app, follow `AGENTS.md`. It's written for any AI assistant or person. The rules every app follows are in `HOUSE-RULES.md`.
 
 ## License
 

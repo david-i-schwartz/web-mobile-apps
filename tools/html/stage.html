@@ -1,0 +1,41 @@
+  <section class="stage" aria-label="{{One}} grid">
+    <div class="toolbar">
+      <div class="tapwrap" id="tapWrap">
+        <div class="seg" role="group" aria-label="What a tap does">
+          <button type="button" data-k="tap" data-v="inspect">Inspect</button>
+<!--if:progress-->          <button type="button" data-k="tap" data-v="mark">Mark placed</button>
+<!--/if:progress--><!--if:edit-->          <button type="button" data-k="tap" data-v="edit">Edit</button>
+<!--/if:edit-->        </div>
+        <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: tapping">?</button>
+      </div>
+      <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button></div>
+    </div>
+    <div class="sub tip" id="t-tap" hidden>
+      <ul>
+        <li><b>Inspect</b> shows a {{one}}’s colour and place.</li>
+<!--if:progress-->        <li><b>Mark placed</b> ticks a {{one}} off, so you can follow your build. Tap it again to untick it.</li>
+<!--/if:progress--><!--if:edit-->        <li><b>Edit</b> paints colours onto {{many}}. Drag to paint a line. Undo is in the edit bar.</li>
+<!--/if:edit-->        <li>Zoom with + and −, or Ctrl and the mouse wheel. On a keyboard, the arrow keys move between {{many}}, and Space or Enter acts on the selected one.</li>
+      </ul>
+    </div>
+<!--if:edit-->    <div id="editBar" hidden>
+      <div class="seg four" role="group" aria-label="Edit tool">
+        <button type="button" data-k="ed.tool" data-v="paint">Paint</button>
+        <button type="button" data-k="ed.tool" data-v="erase">Erase</button>
+        <button type="button" data-k="ed.tool" data-v="fill">Fill</button>
+        <button type="button" data-k="ed.tool" data-v="pick">Pick</button>
+      </div>
+      <div id="brushColour">
+        <div class="pc"><span class="dot" id="paintDot"></span><b id="paintName">Pick a colour</b></div>
+        <div class="sws" id="paintSw" role="group" aria-label="Paint colour"></div>
+      </div>
+      <div class="btns"><button type="button" class="btn sm" id="undo">Undo</button><button type="button" class="btn sm" id="redo">Redo</button><button type="button" class="btn sm" id="clearEdits">Clear all edits</button></div>
+      <p class="sub" id="editMsg" aria-live="polite"></p>
+    </div>
+<!--/if:edit-->    <div id="vp" tabindex="0" aria-label="The grid. Use the arrow keys to move between {{many}}.">
+<!--if:picture-->      <div id="empty"><p id="emptyMsg">Choose a picture to turn it into {{many}}.</p><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label><div class="pasteBox" id="pasteEmpty" contenteditable="true" role="textbox" aria-label="Paste a picture here" inputmode="none" spellcheck="false" data-ph="Or paste a picture here: copy one, then tap this box and choose Paste (or press Ctrl+V / ⌘V)."></div><!--if:edit--><div class="btns" style="justify-content:center"><button type="button" class="btn" id="startBlank">Start with an empty grid</button></div><!--/if:edit--><p class="sub" id="emptyNote" aria-live="polite"></p><p class="sub">If Choose image does nothing, the app you’re viewing this in may not allow file pickers. Paste instead, drop a file here, or open this page in your web browser.</p></div>
+<!--/if:picture-->      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{{One}} grid" hidden></svg>
+    </div>
+    <div id="hud" aria-live="polite"><span id="hudDot" class="empty"></span><div><div id="hudName">Tap a {{one}}</div><div id="hudWhere">Its colour and place show here.</div></div></div>
+{{{appStage}}}
+  </section>

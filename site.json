@@ -1,0 +1,53 @@
+{
+  "title": "Web & Mobile Apps",
+  "tagline": "Small apps that run in any browser, on a phone, tablet or computer. Open one, then add it to your Home Screen.",
+  "base": "https://david-i-schwartz.github.io/web-mobile-apps/",
+  "accent": "#3D4FB5",
+  "foot": "Each app is one HTML file that runs in your browser. Nothing you make is uploaded. Code licensed under GPL-3.0.",
+  "apps": [
+    {
+      "file": "src/fig.html",
+      "code": "FIG",
+      "name": "Fusebead Image Generator",
+      "folder": "fig"
+    },
+    {
+      "file": "src/big.html",
+      "code": "BIG",
+      "name": "Brick Image Generator",
+      "folder": "big"
+    },
+    {
+      "file": "src/tig.html",
+      "folder": "tig"
+    },
+    {
+      "file": "src/generator.html",
+      "code": "GEN",
+      "name": "HTML App Generator",
+      "tagline": "Make single-file apps like these: fill in a short spec, watch the app take shape, download it.",
+      "accent": "#3D4FB5",
+      "folder": "generator"
+    }
+  ],
+  "readme": [
+    "# web-mobile-apps",
+    "AI-Generated Apps via HTML+JavaScript Files",
+    "",
+    "**Web & Mobile Apps** gives single-file HTML apps live web addresses, so they open on any phone, tablet or computer and can be added to the Home Screen.",
+    "",
+    "Site: https://david-i-schwartz.github.io/web-mobile-apps/",
+    "",
+    "__APPS__",
+    "",
+    "## How it works",
+    "",
+    "- `src/` holds the published copy of each app, one HTML file each. `site.json` lists them.",
+    "- `node tools/cli.js site site.json .` builds a folder for each app: the app (`index.html`), Home Screen icons, `manifest.webmanifest`, and `sw.js`, an offline helper so the Home Screen app opens without a connection. It also builds the front page and this README.",
+    "- To add, update or remove an app, follow `AGENTS.md`. It's written for any AI assistant or person. The rules every app follows are in `HOUSE-RULES.md`.",
+    "",
+    "## License",
+    "",
+    "The code in this repository is licensed under the GNU General Public License v3.0 (see `LICENSE`). Anything the apps credit to others, such as colour data or trademarks, keeps its own terms."
+  ]
+}

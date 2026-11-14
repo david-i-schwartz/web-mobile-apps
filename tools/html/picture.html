@@ -1,0 +1,65 @@
+    <section class="group" id="picGroup">
+      <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
+      <div class="sub tip" id="t-pic" hidden><p>Your picture never leaves this browser. Each step below changes how it becomes {{many}}, and the grid updates as you go.</p></div>
+      <div id="picStart"><p class="sub">Choose a picture to start. You can also paste one, or drop a file on the grid area.</p><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div>
+      <div id="picBtns" hidden>
+        <div class="btns"><label class="btn pick">Choose another image<input type="file" accept="image/*" class="fileIn"></label><button type="button" class="btn" id="dropPic">Remove picture</button><button type="button" class="btn" id="resetPic">Reset picture settings</button></div>
+        <div class="pasteBox" id="pastePic" contenteditable="true" role="textbox" aria-label="Paste a new picture here" inputmode="none" spellcheck="false" data-ph="Or paste a new picture here."></div>
+      </div>
+      <p class="sub" id="imgMsg" aria-live="polite"></p>
+      <div id="imgSteps" hidden>
+        <h3>1. Crop <button type="button" class="q" aria-expanded="false" aria-controls="t-crop" aria-label="Help: crop">?</button></h3>
+        <div class="sub tip" id="t-crop" hidden><p>Drag the box to move it and its corners to resize it.<!--if:boards--> The box keeps the shape of your boards.<!--/if:boards--> Auto-trim cuts away flat borders.</p></div>
+        <div id="cropWrap"><canvas id="cropCv" aria-label="The picture, with the crop box"></canvas></div>
+        <div class="btns"><button type="button" class="btn sm" id="autoTrim">Auto-trim</button><button type="button" class="btn sm" id="cropReset">Whole picture</button><span class="sub" id="cropMsg" aria-live="polite"></span></div>
+
+        <h3>2. Size <button type="button" class="q" aria-expanded="false" aria-controls="t-size" aria-label="Help: size">?</button></h3>
+{{{size}}}
+        <h3>3. Background <button type="button" class="q" aria-expanded="false" aria-controls="t-bg" aria-label="Help: background">?</button></h3>
+        <div class="sub tip" id="t-bg" hidden><p>Leave background empty clears the colour round the picture’s edges, so those {{many}} stay empty. Raise the tolerance to clear more. If the background isn’t at the edges, pick its colour in the crop picture.</p></div>
+        <div class="checks"><label><input type="checkbox" id="bgOn"> Leave background empty</label></div>
+        <div class="row"><label for="bgTol">Tolerance</label><input type="range" id="bgTol" min="0" max="160"><output id="bgTolOut"></output></div>
+        <div class="btns"><button type="button" class="btn sm" id="bgPick" aria-pressed="false">Pick background colour</button><span class="dot" id="bgDot" hidden></span><button type="button" class="btn sm" id="bgAuto" hidden>Use the edges again</button></div>
+        <p class="sub" id="bgMsg" aria-live="polite"></p>
+
+        <details class="mini" id="adjBox" data-ui="adj"><summary>4. Adjust <span id="adjSum"></span></summary>
+          <div class="row"><label for="adjB">Brightness</label><input type="range" class="zero" id="adjB" min="-100" max="100"><output id="adjBOut"></output></div>
+          <div class="row"><label for="adjC">Contrast</label><input type="range" class="zero" id="adjC" min="-100" max="100"><output id="adjCOut"></output></div>
+          <div class="row"><label for="adjS">Saturation</label><input type="range" class="zero" id="adjS" min="-100" max="100"><output id="adjSOut"></output></div>
+          <div class="row"><label for="adjH">Hue</label><input type="range" class="zero" id="adjH" min="-180" max="180"><output id="adjHOut"></output></div>
+          <div class="row"><label for="adjW">Warmth</label><input type="range" class="zero" id="adjW" min="-100" max="100"><output id="adjWOut"></output></div>
+          <div class="btns"><button type="button" class="btn sm" id="adjReset">Reset adjustments</button></div>
+        </details>
+
+        <h3>5. Colours <button type="button" class="q" aria-expanded="false" aria-controls="t-col" aria-label="Help: colours">?</button></h3>
+        <div class="sub tip" id="t-col" hidden><p>Tap a colour to leave it out or put it back. Max colours keeps only the most useful ones.</p></div>
+        <div class="btns">{{{setButtons}}}<button type="button" class="btn sm" data-pset="-1">All colours</button></div>
+        <div class="sws" id="palSw" role="group" aria-label="Colours to use"></div>
+        <div class="row"><label for="maxC">Max colours</label><input type="range" id="maxC" min="2" max="{{allColours}}"><output id="maxCOut"></output></div>
+        <p class="sub" id="colMsg" aria-live="polite"></p>
+
+        <h3>6. Matching and dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
+        <div class="sub tip" id="t-dith" hidden><ul>
+          <li><b>Match by</b>: how “closest colour” is measured. RGB is quick; CIE76, CIEDE2000 and Oklab follow how eyes see colour.</li>
+          <li><b>Sample by</b>: how one {{one}}’s colour is taken from the pixels under it. Centre pixel suits pixel art.</li>
+          <li><b>Dithering</b> mixes colours in patterns to suggest shades the palette lacks.</li>
+          <li><b>Merge rare</b> gives colours used fewer times than this to their nearest neighbour.</li>
+        </ul></div>
+        <p class="sub">Match by</p>
+        <div class="seg four" role="group" aria-label="Match colours by"><button type="button" data-k="img.metric" data-v="rgb">RGB</button><button type="button" data-k="img.metric" data-v="cie76">CIE76</button><button type="button" data-k="img.metric" data-v="de2000">CIEDE2000</button><button type="button" data-k="img.metric" data-v="oklab">Oklab</button></div>
+        <p class="sub">Sample by</p>
+        <div class="seg four" role="group" aria-label="Sample each cell by"><button type="button" data-k="img.sampling" data-v="average">Average</button><button type="button" data-k="img.sampling" data-v="nearest">Centre pixel</button><button type="button" data-k="img.sampling" data-v="dominant">Most common</button><button type="button" data-k="img.sampling" data-v="median">Middle brightness</button></div>
+        <p class="sub">Dithering</p>
+        <div class="seg four" role="group" aria-label="Dithering"><button type="button" data-k="img.dither" data-v="none">None</button><button type="button" data-k="img.dither" data-v="fs">Floyd–Steinberg</button><button type="button" data-k="img.dither" data-v="atk">Atkinson</button><button type="button" data-k="img.dither" data-v="ordered">Ordered</button></div>
+        <div class="row" id="dAmtRow"><label for="dAmt">Strength</label><input type="range" id="dAmt" min="10" max="100" step="5"><output id="dAmtOut"></output></div>
+        <div class="row"><label for="rare">Merge rare</label><input type="range" id="rare" min="0" max="40"><output id="rareOut"></output></div>
+
+        <details class="mini" id="cleanBox" data-ui="clean"><summary>7. Clean up <span id="cleanSum"></span></summary>
+          <div class="row"><label for="specks">Specks</label><input type="range" id="specks" min="0" max="8"><output id="specksOut"></output></div>
+          <div class="row"><label for="smooth">Smooth</label><input type="range" id="smooth" min="0" max="3"><output id="smoothOut"></output></div>
+          <p class="sub">Outline in the darkest colour</p>
+          <div class="seg" role="group" aria-label="Outline"><button type="button" data-k="img.outline" data-v="none">None</button><button type="button" data-k="img.outline" data-v="in">Inside</button><button type="button" data-k="img.outline" data-v="out">Outside</button></div>
+          <p class="sub" id="cleanInfo"></p>
+        </details>
+      </div>
+    </section>

@@ -1,0 +1,54 @@
+<!--part:sizeGroup-->    <section class="group" id="sizeGroup">
+      <h2>Size <button type="button" class="q" aria-expanded="false" aria-controls="t-size" aria-label="Help: size">?</button></h2>
+{{{size}}}    </section>
+<!--part:progress-->    <section class="group" id="progGroup" hidden>
+      <h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2>
+      <div class="sub tip" id="t-prog" hidden><p>Choose Mark placed above the grid, then tap {{many}} as you place them. Tap a colour below to show only that colour.</p></div>
+      <div class="bar"><span id="barFill"></span></div>
+      <p id="pct"></p>
+      <details class="mini" id="legendBox" data-ui="legend" open><summary>Colours</summary>
+        <div id="legend"></div>
+        <div class="btns" id="isoBtns" hidden><span class="sub">Only <b id="isoName"></b>:</span><button type="button" class="btn sm" id="isoMark">Mark all placed</button><button type="button" class="btn sm" id="isoClear">Clear</button></div>
+      </details>
+      <div class="checks"><label><input type="checkbox" data-k="fade"> Fade placed {{many}}</label></div>
+      <div class="btns"><button type="button" class="btn sm" id="resetProg">Reset progress</button></div>
+    </section>
+<!--part:project-->    <section class="group">
+      <h2>Save and open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2>
+      <div class="sub tip" id="t-proj" hidden><p>A project file keeps <!--if:picture-->the picture, <!--/if:picture-->every setting<!--if:edit-->, your edits<!--/if:edit--><!--if:progress--> and your progress<!--/if:progress-->, so your work reopens exactly. It stays on your device: nothing is uploaded.</p></div>
+      <div class="frow"><input type="text" id="projName" placeholder="Project name" maxlength="60" aria-label="Project name"></div>
+      <div class="btns"><button type="button" class="btn" id="projSave">Save project file</button><label class="btn pick">Open project file<input type="file" id="projIn" accept="{{exts}},.json,application/json"></label></div>
+      <p class="sub" id="projMsg" aria-live="polite"></p>
+      <p class="sub" id="saveMsg" hidden>This browser isn’t keeping your work between visits. Save a project file to keep it.</p>
+    </section>
+<!--part:export-->    <section class="group">
+      <h2>Export</h2>
+      <div class="btns"><button type="button" class="btn" id="pngSave">Save picture</button></div>
+      <p class="sub" id="pngMsg" aria-live="polite"></p>
+      <details class="mini" id="expDetails"><summary>Lists</summary>
+        <select id="expKind" aria-label="List to show"></select>
+        <textarea id="expText" readonly aria-label="List text"></textarea>
+        <div class="btns"><button type="button" class="btn" id="copyBtn">Copy</button><button type="button" class="btn" id="listSave">Save list file</button><span id="copyMsg" aria-live="polite"></span></div>
+      </details>
+    </section>
+<!--part:saveWarn-->    <p class="warn" id="saveMsg" hidden>This browser isn’t keeping your work between visits.</p>
+<!--part:info-->    <section class="group" id="learn">
+      <h2>Learn the ideas</h2>
+      <ul class="sub" id="learnList"></ul>
+    </section>
+    <details class="group" id="homeBox">
+      <summary>On your phone</summary>
+      <div class="sub" id="homeHow"></div>
+    </details>
+    <details class="group">
+      <summary>About this version <span class="sub" id="aboutWhen"></span></summary>
+      <ul class="sub" id="aboutList"></ul>
+    </details>
+    <details class="group">
+      <summary>Credits</summary>
+      <ul class="sub" id="creditList"></ul>
+    </details>
+<!--part:starterPanel-->    <section class="group">
+      <h2>{{name}}</h2>
+      <p class="sub">{{code}}’s own tools go here. This panel sits between the APP PANELS markers, so the generator keeps it when it upgrades the core.</p>
+    </section>

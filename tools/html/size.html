@@ -1,0 +1,8 @@
+<!--if:boards-->      <div class="sub tip" id="t-size" hidden><p>The grid is made of whole boards. Choose a board, then how many go across and down.</p></div>
+<!--if:manyBoards-->      <div class="seg{{boardSeg}}" role="group" aria-label="Board">{{{boardButtons}}}</div>
+<!--/if:manyBoards-->      <div class="stepper"><label>Across</label><button type="button" class="ib" data-step="size.across" data-d="-1" aria-label="One board fewer across">−</button><output id="acrossOut"></output><button type="button" class="ib" data-step="size.across" data-d="1" aria-label="One board more across">+</button></div>
+      <div class="stepper"><label>Down</label><button type="button" class="ib" data-step="size.down" data-d="-1" aria-label="One board fewer down">−</button><output id="downOut"></output><button type="button" class="ib" data-step="size.down" data-d="1" aria-label="One board more down">+</button></div>
+<!--/if:boards--><!--if:!boards-->      <div class="sub tip" id="t-size" hidden><p>The width is counted in {{many}}.<!--if:picture--> Once there is a picture, the height follows the shape of your crop.<!--/if:picture--></p></div>
+      <div class="row"><label for="sizeW">Width</label><input type="range" id="sizeW" min="{{minW}}" max="{{maxW}}"><output id="sizeWOut"></output></div>
+      <div class="row" id="sizeHRow"><label for="sizeH">Height</label><input type="range" id="sizeH" min="{{minW}}" max="{{maxW}}"><output id="sizeHOut"></output></div>
+<!--/if:!boards-->      <p class="sub" id="sizeInfo" aria-live="polite"></p>
