@@ -1,6 +1,6 @@
     <section class="group" id="picGroup">
       <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
-      <div class="sub tip" id="t-pic" hidden><p>Your picture never leaves this browser. Each step below changes how it becomes {{many}}, and the grid updates as you go.</p></div>
+      <div class="sub tip" id="t-pic" hidden><p>This section turns your picture into {{many}}: each {{one}} takes the colour of the part of the picture it covers, like a pixel. Each step below changes how that happens, and the grid updates as you go. Your picture never leaves this browser.</p></div>
       <div id="picStart"><p class="sub">Choose a picture to start. You can also paste one, or drop a file on the grid area.</p><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div>
       <div id="picBtns" hidden>
         <div class="btns"><label class="btn pick">Choose another image<input type="file" accept="image/*" class="fileIn"></label><button type="button" class="btn" id="dropPic">Remove picture</button><button type="button" class="btn" id="resetPic">Reset picture settings</button></div>
@@ -38,7 +38,7 @@
         <div class="row"><label for="maxC">Max colours</label><input type="range" id="maxC" min="2" max="{{allColours}}"><output id="maxCOut"></output></div>
         <p class="sub" id="colMsg" aria-live="polite"></p>
 
-        <h3>6. Matching and dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
+        <h3>6. Matching and Dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
         <div class="sub tip" id="t-dith" hidden><ul>
           <li><b>Match by</b>: how “closest colour” is measured. RGB is quick; CIE76, CIEDE2000 and Oklab follow how eyes see colour.</li>
           <li><b>Sample by</b>: how one {{one}}’s colour is taken from the pixels under it. Centre pixel suits pixel art.</li>
@@ -54,7 +54,7 @@
         <div class="row" id="dAmtRow"><label for="dAmt">Strength</label><input type="range" id="dAmt" min="10" max="100" step="5"><output id="dAmtOut"></output></div>
         <div class="row"><label for="rare">Merge rare</label><input type="range" id="rare" min="0" max="40"><output id="rareOut"></output></div>
 
-        <details class="mini" id="cleanBox" data-ui="clean"><summary>7. Clean up <span id="cleanSum"></span></summary>
+        <details class="mini" id="cleanBox" data-ui="clean"><summary>7. Clean Up <span id="cleanSum"></span></summary>
           <div class="row"><label for="specks">Specks</label><input type="range" id="specks" min="0" max="8"><output id="specksOut"></output></div>
           <div class="row"><label for="smooth">Smooth</label><input type="range" id="smooth" min="0" max="3"><output id="smoothOut"></output></div>
           <p class="sub">Outline in the darkest colour</p>

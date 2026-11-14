@@ -5,7 +5,7 @@
    brief(spec) -> text                                     the build brief to hand to Claude or another AI with the app */
 (function(root){
 'use strict';
-const GEN_VERSION='1.1',CORE_VERSION='1.1';
+const GEN_VERSION='1.2',CORE_VERSION='1.2';
 const MODULES=['base','home','board','picture','edit','progress','project','export'];
 const FEATURES=['board','picture','edit','progress','project','export'];
 const NEEDS_BOARD=['picture','edit','progress','export'];
@@ -249,7 +249,7 @@ Before handing the file back, test it on a phone-sized and a desktop-sized windo
 function testBrief(specIn){
   const {spec}=tidySpec(specIn),F=spec.features,u=spec.unit;
   const checks=['Opens with no errors in the console, on a phone-sized (390 px) and a desktop-sized window, in light and dark mode.',
-    'Makes no network requests and loads nothing from outside: search the file for fetch, XMLHttpRequest, WebSocket, <script src, <link href, @import and url(http. Only the Learn the ideas links may point to the web.',
+    'Makes no network requests and loads nothing from outside: search the file for fetch, XMLHttpRequest, WebSocket, <script src, <link href, @import and url(http. Only the Learn the Ideas links may point to the web.',
     'Every control has a label or aria-label; messages that change are in aria-live areas; focus outlines show; touch targets are at least 44 px.',
     'Text from files, storage or the spec is escaped before it goes into the page (esc), and CSV lists guard against spreadsheet formulas (csv).',
     `The core parts match HTML App Generator core ${CORE_VERSION}: the app's own work should only be in the APP CSS, APP STAGE, APP PANELS and APP CODE sections. Flag any edit to the core.`];

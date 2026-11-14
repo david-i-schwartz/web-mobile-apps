@@ -12,17 +12,19 @@ These are the rules for FIG, BIG and every app made with HTML App Generator. Any
 6. **Phone first.** It works at 380 px wide, touch targets are at least 44 px, and nothing needs hover. Light and dark mode both work.
 7. **Plain words and access for everyone.** Short, plain interface text. Every control has a label, changes are announced to screen readers, focus is visible, and the keyboard works on the grid.
 8. **Old work keeps opening.** Project files and saved settings from earlier versions still open. New fields get defaults, and everything read from a file or from storage is checked and tidied first.
-9. **Every version says what changed.** Raise the version, set the date, and add a line to About this version. Add credits and Learn the ideas links for new ideas.
+9. **Every version says what changed.** Raise the version, set the date, and add a line to About This Version. Add credits and Learn the Ideas links for new ideas.
+
+10. **One way of laying out the page.** Section headings are in Title Case ("Save and Open", "Learn the Ideas"). The help by the grid is one tip in labelled parts (placing cells, Sizing, then Views when the app has views), and a ? beside the zoom buttons opens the same tip, centred on them. A section's ? help starts by saying what the section is or does, in plain words. A view that needs a setting (BIG's Heights needs Relief) says so where it shows and offers to turn it on.
 
 ## Apps made with HTML App Generator
 
-10. **Own code goes only in the APP sections** (APP CSS, APP STAGE, APP PANELS, APP CODE). The core is shared by every app: improve it in the generator's kit, then upgrade the apps.
-11. **The spec is the source of truth** for name, version, colours, sizes, changes, credits and learn links. It's the `app-spec` block at the top of the file.
+11. **Own code goes only in the APP sections** (APP CSS, APP STAGE, APP PANELS, APP CODE). The core is shared by every app: improve it in the generator's kit, then upgrade the apps.
+12. **The spec is the source of truth** for name, version, colours, sizes, changes, credits and learn links. It's the `app-spec` block at the top of the file.
 
 ## Testing and publishing
 
-12. **Test before publishing**, on a phone-sized and a desktop-sized window, in light and dark mode, with no console errors. Check: a picture through every step, editing with undo, mark placed, saving and reopening a project file, an older project file, saving a picture and a list, and a reload.
-13. **Independent testing.** When it matters, have a different AI from the one that built the app test it, using the generator's test brief. Fix what it finds, or say why not.
-14. **Where files live.** Each app has its own folder under `Claude Apps` on the owner's RIT Google Drive. It holds the master app file, its spec, notes, plans and the build kit if there is one. Older versions go in an `Archive` folder inside it.
-15. **Phones and tablets use a web address.** iPhones and iPads can't run an app from a file, so the public copies live on GitHub Pages, on the site *Web & Mobile Apps* (repository `web-mobile-apps`), one folder per app, built with the generator's `site` command. That repository is public: apps only, no notes or plans. Each app shows the taps that put it on the Home Screen, and its spec's `homeUrl` points a phone's file preview to the right address.
-16. **Keep the site in step.** Publishing a new version of an app (to Drive, a Claude page or anywhere else) isn't finished until the site has it too. Put the new file in the repository's `src/`, rebuild, check and push, as the repository's `AGENTS.md` says. If you can't push to GitHub, hand the file to the owner with a note that the site needs it. A new app goes on the site the same way.
+13. **Test before publishing**, on a phone-sized and a desktop-sized window, in light and dark mode, with no console errors. Check: a picture through every step, editing with undo, mark placed, saving and reopening a project file, an older project file, saving a picture and a list, and a reload.
+14. **Independent testing.** When it matters, have a different AI from the one that built the app test it, using the generator's test brief. Fix what it finds, or say why not.
+15. **Where files live.** Each app has its own folder under `Claude Apps` on the owner's RIT Google Drive. It holds the master app file, its spec, notes, plans and the build kit if there is one. Older versions go in an `Archive` folder inside it.
+16. **Phones and tablets use a web address.** iPhones and iPads can't run an app from a file, so the public copies live on GitHub Pages, on the site *Web & Mobile Apps* (repository `web-mobile-apps`), one folder per app, built with the generator's `site` command. That repository is public: apps only, no notes or plans. Each app shows the taps that put it on the Home Screen, and its spec's `homeUrl` points a phone's file preview to the right address.
+17. **Keep the site in step.** Publishing a new version of an app (to Drive, a Claude page or anywhere else) isn't finished until the site has it too. Put the new file in the repository's `src/`, rebuild, check and push, as the repository's `AGENTS.md` says. If you can't push to GitHub, hand the file to the owner with a note that the site needs it. A new app goes on the site the same way.

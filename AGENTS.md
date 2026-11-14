@@ -40,6 +40,19 @@ It gives single-file HTML apps a web address, so they open on any phone, tablet 
 
 Replace `src/<folder>.html` with the new version. Then build, check, commit and push, as in steps 5 to 7. People who added the app to their Home Screen get the new version the next time they open it online.
 
+## Update the generator's core
+
+When HTML App Generator gets a new version, do these steps in one commit:
+1. Copy the new kit's `cli.js`, `generate.js`, `web.js`, `core/` and `html/` into `tools/`. The kit is on RIT Drive as `html-app-generator-<version>-kit.zip`.
+2. Put the new generator page in `src/generator.html`.
+3. Build. Apps made with the generator are remade on the new core automatically.
+
+## Keep src/, tools/ and the site in step
+
+The built folders must always be exactly what `node tools/cli.js site site.json .` makes from `src/`, `site.json` and `tools/`. So:
+- **Never commit built folders without their sources.** If you publish an app, its file goes in `src/` in the same commit.
+- **After building, run `git status`.** It should list only the files you meant to change. If other apps' folders changed too, `src/` or `tools/` were out of date. Stop and find out why before you push.
+
 ## Remove an app
 
 Delete its entry in `site.json`, its `src/` file and its built folder. Then build, check, commit and push.

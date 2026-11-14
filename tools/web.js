@@ -153,7 +153,7 @@ header,.foot{max-width:760px}
 ${cards}
   </nav>
   <section class="how group">
-    <h2>Put an app on your phone or tablet</h2>
+    <h2>Put an App on Your Phone or Tablet</h2>
     <ol class="sub">
       <li>Tap an app above to open it.</li>
       <li>A card at the bottom shows the two or three taps for your phone. On an iPhone or iPad: <b>Share</b>, then <b>Add to Home Screen</b>, then <b>Add</b>.</li>

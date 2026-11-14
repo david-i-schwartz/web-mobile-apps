@@ -6,16 +6,23 @@
 <!--if:progress-->          <button type="button" data-k="tap" data-v="mark">Mark placed</button>
 <!--/if:progress--><!--if:edit-->          <button type="button" data-k="tap" data-v="edit">Edit</button>
 <!--/if:edit-->        </div>
-        <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: tapping">?</button>
+        <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: placing {{many}} and sizing">?</button>
       </div>
-      <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button></div>
+      <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button><button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: placing {{many}} and sizing">?</button></div>
     </div>
     <div class="sub tip" id="t-tap" hidden>
+      <h4>{{One}} Placement</h4>
       <ul>
         <li><b>Inspect</b> shows a {{one}}’s colour and place.</li>
 <!--if:progress-->        <li><b>Mark placed</b> ticks a {{one}} off, so you can follow your build. Tap it again to untick it.</li>
 <!--/if:progress--><!--if:edit-->        <li><b>Edit</b> paints colours onto {{many}}. Drag to paint a line. Undo is in the edit bar.</li>
-<!--/if:edit-->        <li>Zoom with + and −, or Ctrl and the mouse wheel. On a keyboard, the arrow keys move between {{many}}, and Space or Enter acts on the selected one.</li>
+<!--/if:edit-->        <li>On a keyboard, the arrow keys move between {{many}}, and Space or Enter acts on the selected one.</li>
+      </ul>
+      <h4>Sizing</h4>
+      <ul>
+        <li><b>−</b> and <b>+</b> zoom out and in, up to 12 times closer. On a computer, Ctrl and the mouse wheel zoom too.</li>
+        <li><b>Fit</b> shows the whole grid again.</li>
+        <li>Zoomed in, drag or scroll inside the grid to move around.<!--if:edit--> In Edit, dragging paints, so switch to Inspect to move.<!--/if:edit--></li>
       </ul>
     </div>
 <!--if:edit-->    <div id="editBar" hidden>

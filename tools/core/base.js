@@ -141,7 +141,9 @@ function start(){
   st=tidy(store.get(KEY+'settings'));
   for(const f of HOOK.load)f();
   specText();
-  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const t=$(b.getAttribute('aria-controls'));if(!t)return;const open=t.hidden;t.hidden=!open;b.setAttribute('aria-expanded',String(open))}));
+  /* a help tip can have more than one ? button: they open and close it together */
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden;t.hidden=!open;
+    document.querySelectorAll('.q[aria-controls="'+id+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
   document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
     d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
   for(const f of HOOK.start)f();

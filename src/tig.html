@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7A3FB0">
-<meta name="generator" content="HTML App Generator 1.1">
+<meta name="generator" content="HTML App Generator 1.2">
 <title>TIG: Tile Image Generator</title>
 <script>document.documentElement.classList.remove('nojs')/* scripts run, so the app shows instead of the preview note */</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%237A3FB0%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2242%22%20font-family%3D%22system-ui%2Csans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%3ETIG%3C%2Ftext%3E%3C%2Fsvg%3E">
@@ -13,7 +13,7 @@
  "code": "TIG",
  "name": "Tile Image Generator",
  "tagline": "Turn a picture into a tile mosaic on mesh sheets, then follow it tile by tile. Everything stays in this browser.",
- "version": "1.0",
+ "version": "1.1",
  "date": "14 Nov 2026",
  "unit": {
   "one": "tile",
@@ -157,6 +157,7 @@
   }
  ],
  "changes": [
+  "1.1: the help by the grid comes in two parts, Tile Placement and Sizing, with a ? beside the zoom buttons too; the Picture help says what the section does; every section heading is in Title Case.",
   "An example app, made to show what HTML App Generator builds."
  ],
  "credits": [
@@ -167,12 +168,12 @@
  "key": "tig:",
  "oldKeys": [],
  "ext": ".tig.json",
- "core": "1.1",
- "generator": "1.1"
+ "core": "1.2",
+ "generator": "1.2"
 }
 </script>
 <style>
-/* ==== CORE CSS: made by HTML App Generator 1.1 (core 1.1). Upgrade it with the generator rather than editing it here. ==== */
+/* ==== CORE CSS: made by HTML App Generator 1.2 (core 1.2). Upgrade it with the generator rather than editing it here. ==== */
 /* Core stylesheet of HTML App Generator apps. It grew from the stylesheet FIG and BIG share.
    The app's accent colours come after it, then the app's own styles (APP CSS). */
 
@@ -209,7 +210,7 @@ h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .toolbar .seg{margin:0}
 .tapwrap{display:flex;align-items:center}
-.zoom{display:flex;gap:6px}
+.zoom{display:flex;align-items:center;gap:6px}
 .btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
 .ib{width:44px;padding:0;font-size:20px;line-height:1}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
@@ -365,16 +366,23 @@ details.mini .q{margin-left:4px}
           <button type="button" data-k="tap" data-v="mark">Mark placed</button>
           <button type="button" data-k="tap" data-v="edit">Edit</button>
         </div>
-        <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: tapping">?</button>
+        <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: placing tiles and sizing">?</button>
       </div>
-      <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button></div>
+      <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button><button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: placing tiles and sizing">?</button></div>
     </div>
     <div class="sub tip" id="t-tap" hidden>
+      <h4>Tile Placement</h4>
       <ul>
         <li><b>Inspect</b> shows a tile’s colour and place.</li>
         <li><b>Mark placed</b> ticks a tile off, so you can follow your build. Tap it again to untick it.</li>
         <li><b>Edit</b> paints colours onto tiles. Drag to paint a line. Undo is in the edit bar.</li>
-        <li>Zoom with + and −, or Ctrl and the mouse wheel. On a keyboard, the arrow keys move between tiles, and Space or Enter acts on the selected one.</li>
+        <li>On a keyboard, the arrow keys move between tiles, and Space or Enter acts on the selected one.</li>
+      </ul>
+      <h4>Sizing</h4>
+      <ul>
+        <li><b>−</b> and <b>+</b> zoom out and in, up to 12 times closer. On a computer, Ctrl and the mouse wheel zoom too.</li>
+        <li><b>Fit</b> shows the whole grid again.</li>
+        <li>Zoomed in, drag or scroll inside the grid to move around. In Edit, dragging paints, so switch to Inspect to move.</li>
       </ul>
     </div>
     <div id="editBar" hidden>
@@ -403,7 +411,7 @@ details.mini .q{margin-left:4px}
   <div class="controls">
     <section class="group" id="picGroup">
       <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
-      <div class="sub tip" id="t-pic" hidden><p>Your picture never leaves this browser. Each step below changes how it becomes tiles, and the grid updates as you go.</p></div>
+      <div class="sub tip" id="t-pic" hidden><p>This section turns your picture into tiles: each tile takes the colour of the part of the picture it covers, like a pixel. Each step below changes how that happens, and the grid updates as you go. Your picture never leaves this browser.</p></div>
       <div id="picStart"><p class="sub">Choose a picture to start. You can also paste one, or drop a file on the grid area.</p><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div>
       <div id="picBtns" hidden>
         <div class="btns"><label class="btn pick">Choose another image<input type="file" accept="image/*" class="fileIn"></label><button type="button" class="btn" id="dropPic">Remove picture</button><button type="button" class="btn" id="resetPic">Reset picture settings</button></div>
@@ -446,7 +454,7 @@ details.mini .q{margin-left:4px}
         <div class="row"><label for="maxC">Max colours</label><input type="range" id="maxC" min="2" max="16"><output id="maxCOut"></output></div>
         <p class="sub" id="colMsg" aria-live="polite"></p>
 
-        <h3>6. Matching and dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
+        <h3>6. Matching and Dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
         <div class="sub tip" id="t-dith" hidden><ul>
           <li><b>Match by</b>: how “closest colour” is measured. RGB is quick; CIE76, CIEDE2000 and Oklab follow how eyes see colour.</li>
           <li><b>Sample by</b>: how one tile’s colour is taken from the pixels under it. Centre pixel suits pixel art.</li>
@@ -462,7 +470,7 @@ details.mini .q{margin-left:4px}
         <div class="row" id="dAmtRow"><label for="dAmt">Strength</label><input type="range" id="dAmt" min="10" max="100" step="5"><output id="dAmtOut"></output></div>
         <div class="row"><label for="rare">Merge rare</label><input type="range" id="rare" min="0" max="40"><output id="rareOut"></output></div>
 
-        <details class="mini" id="cleanBox" data-ui="clean"><summary>7. Clean up <span id="cleanSum"></span></summary>
+        <details class="mini" id="cleanBox" data-ui="clean"><summary>7. Clean Up <span id="cleanSum"></span></summary>
           <div class="row"><label for="specks">Specks</label><input type="range" id="specks" min="0" max="8"><output id="specksOut"></output></div>
           <div class="row"><label for="smooth">Smooth</label><input type="range" id="smooth" min="0" max="3"><output id="smoothOut"></output></div>
           <p class="sub">Outline in the darkest colour</p>
@@ -486,7 +494,7 @@ details.mini .q{margin-left:4px}
       <div class="btns"><button type="button" class="btn sm" id="resetProg">Reset progress</button></div>
     </section>
     <section class="group">
-      <h2>Save and open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2>
+      <h2>Save and Open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2>
       <div class="sub tip" id="t-proj" hidden><p>A project file keeps the picture, every setting, your edits and your progress, so your work reopens exactly. It stays on your device: nothing is uploaded.</p></div>
       <div class="frow"><input type="text" id="projName" placeholder="Project name" maxlength="60" aria-label="Project name"></div>
       <div class="btns"><button type="button" class="btn" id="projSave">Save project file</button><label class="btn pick">Open project file<input type="file" id="projIn" accept=".tig.json,.json,application/json"></label></div>
@@ -504,15 +512,15 @@ details.mini .q{margin-left:4px}
       </details>
     </section>
     <section class="group" id="learn">
-      <h2>Learn the ideas</h2>
+      <h2>Learn the Ideas</h2>
       <ul class="sub" id="learnList"></ul>
     </section>
     <details class="group" id="homeBox">
-      <summary>On your phone</summary>
+      <summary>On Your Phone</summary>
       <div class="sub" id="homeHow"></div>
     </details>
     <details class="group">
-      <summary>About this version <span class="sub" id="aboutWhen"></span></summary>
+      <summary>About This Version <span class="sub" id="aboutWhen"></span></summary>
       <ul class="sub" id="aboutList"></ul>
     </details>
     <details class="group">
@@ -521,10 +529,10 @@ details.mini .q{margin-left:4px}
     </details>
   </div>
 </main>
-<p class="foot">TIG 1.0, made with HTML App Generator 1.1. One file, no server: everything stays in this browser.</p>
+<p class="foot">TIG 1.1, made with HTML App Generator 1.2. One file, no server: everything stays in this browser.</p>
 <div id="sr" class="sr" aria-live="polite"></div>
 <script>
-/* TIG: Tile Image Generator 1.0. Made with HTML App Generator 1.1 (core 1.1).
+/* TIG: Tile Image Generator 1.1. Made with HTML App Generator 1.2 (core 1.2).
    The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
 (()=>{
 'use strict';
@@ -672,7 +680,9 @@ function start(){
   st=tidy(store.get(KEY+'settings'));
   for(const f of HOOK.load)f();
   specText();
-  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const t=$(b.getAttribute('aria-controls'));if(!t)return;const open=t.hidden;t.hidden=!open;b.setAttribute('aria-expanded',String(open))}));
+  /* a help tip can have more than one ? button: they open and close it together */
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden;t.hidden=!open;
+    document.querySelectorAll('.q[aria-controls="'+id+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
   document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
     d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
   for(const f of HOOK.start)f();

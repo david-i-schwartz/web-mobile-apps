@@ -38,7 +38,7 @@ h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .toolbar .seg{margin:0}
 .tapwrap{display:flex;align-items:center}
-.zoom{display:flex;gap:6px}
+.zoom{display:flex;align-items:center;gap:6px}
 .btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
 .ib{width:44px;padding:0;font-size:20px;line-height:1}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
@@ -211,21 +211,33 @@ details.mini .q{margin-left:4px}
         <button type="button" data-k="tap" data-v="mark">Mark placed</button>
         <button type="button" data-k="tap" data-v="edit">Edit</button>
       </div>
-      <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: Inspect, Mark placed and Edit">?</button>
+      <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: placing beads, sizing and views">?</button>
       </div>
       <div class="zoom">
         <button type="button" class="ib" id="zout" aria-label="Zoom out">−</button>
         <button type="button" class="ib" id="zin" aria-label="Zoom in">+</button>
         <button type="button" class="btn" id="zfit">Fit</button>
+        <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: placing beads, sizing and views">?</button>
       </div>
     </div>
     <div class="sub tip" id="t-tap" hidden>
+      <h4>Bead Placement</h4>
       <ul>
         <li><b>Inspect</b> is for looking. Tap a bead to see its colour, coordinate and chunk under the board. Nothing gets ticked off, and you can mark, clear or focus on that bead’s whole chunk from there.</li>
         <li><b>Mark placed</b> is for building. Tap a bead to tick it off as placed, and tap it again to undo.</li>
         <li><b>Edit</b> is for changing the pattern by hand. It opens the paint tools above the board and the Edit panel.</li>
         <li><b>Keyboard</b>: the arrow keys move the selection. Space ticks the selected bead, or uses the edit tool on it in Edit.</li>
-        <li><b>Compare</b> slides your picture over the pattern from the left, so you can check the match. It only changes the view.</li>
+      </ul>
+      <h4>Sizing</h4>
+      <ul>
+        <li><b>−</b> and <b>+</b> zoom out and in, up to 12 times closer.</li>
+        <li><b>Fit</b> shows the whole board again.</li>
+        <li>Zoomed in, drag or scroll inside the board to move around. In Edit with “Drag paints on a touch screen” ticked, dragging paints instead, so switch to Inspect to move.</li>
+        <li><b>Focus on this chunk</b>, under the board once you tap a bead in Inspect, zooms to that chunk.</li>
+      </ul>
+      <h4>Views</h4>
+      <ul>
+        <li><b>Compare</b>, under the board, slides your picture over the pattern from the left, so you can check the match. It only changes the view.</li>
       </ul>
         </div>
     <div id="editBar" hidden>
@@ -250,7 +262,7 @@ details.mini .q{margin-left:4px}
           <li><b>On a touch screen</b> a tap edits one peg and a drag still scrolls the board. Tick Drag paints on a touch screen, in the Edit panel, to paint with a drag.</li>
           <li>A peg whose bead changes loses its placed tick.</li>
         </ul>
-        <h4>Learn more</h4>
+        <h4>Learn More</h4>
         <ul>
           <li><a href="https://en.wikipedia.org/wiki/Flood_fill" target="_blank" rel="noopener noreferrer">Flood fill</a>, Wikipedia: how Fill spreads from the peg you tap through matching neighbours.</li>
         </ul>
@@ -285,7 +297,7 @@ details.mini .q{margin-left:4px}
   <section class="controls">
     <div class="group" id="editGroup" hidden>
       <h2>Edit <span id="edSum"></span></h2>
-      <h3>Paint colour</h3>
+      <h3>Paint Colour</h3>
       <p class="sub" id="swCount"></p>
       <input type="text" id="swFind" placeholder="Find a colour by name or code" aria-label="Find a colour by name or code" hidden>
       <div class="sws" id="allSw" role="group" aria-label="All paint colours"></div>
@@ -295,7 +307,7 @@ details.mini .q{margin-left:4px}
       </div>
       <p class="sub" id="keepMsg"></p>
       <details class="mini" id="swapBox">
-        <summary>Swap or drop a colour <span id="swapSum"></span></summary>
+        <summary>Swap or Drop a Colour <span id="swapSum"></span></summary>
         <p class="sub">Changes one bead colour everywhere. <button type="button" class="q" aria-expanded="false" aria-controls="t-swap" aria-label="Help: swap or drop a colour">?</button></p>
         <div class="sub tip" id="t-swap" hidden>
           <ul>
@@ -311,7 +323,7 @@ details.mini .q{margin-left:4px}
         <ul class="sub" id="ruleList"></ul>
       </details>
       <details class="mini" id="slideBox">
-        <summary>Slide and resize <span id="slideSum"></span></summary>
+        <summary>Slide and Resize <span id="slideSum"></span></summary>
         <p class="sub">Moves the whole pattern, or changes the board under it. <button type="button" class="q" aria-expanded="false" aria-controls="t-slide" aria-label="Help: slide and resize">?</button></p>
         <div class="sub tip" id="t-slide" hidden>
           <ul>
@@ -344,7 +356,7 @@ details.mini .q{margin-left:4px}
           <li><b>Iso</b>: the same shifted layout on a rectangular board, such as a perforated sheet. Its three directions sit 60° apart, which is what lets cubes and other 3D-looking designs line up. Each peg is named by its column and row.</li>
           <li><b>Chunks</b> split a board into small named areas, so you can build one area at a time.</li>
         </ul>
-        <h4>Learn more</h4>
+        <h4>Learn More</h4>
         <ul>
           <li><a href="https://www.redblobgames.com/grids/hexagons/" target="_blank" rel="noopener noreferrer">Hexagonal grids</a>, Red Blob Games: every way to number a hex layout, including q, r, s and shifted rows, with pictures you can play with.</li>
           <li><a href="https://www.redblobgames.com/grids/parts/" target="_blank" rel="noopener noreferrer">Grid parts and relationships</a>, Red Blob Games: square, hex and triangle grids side by side.</li>
@@ -399,7 +411,7 @@ details.mini .q{margin-left:4px}
               <li id="t-lhex"><b>Board side</b> is the number of pegs along one edge of the hexagon. <b>Point up</b> and <b>Flat edge up</b> turn the board. Coordinates are q, r and s, counted from the centre peg, and they always add up to zero. Chunks are the six wedges, numbered clockwise from the top.</li>
               <li id="t-liso"><b>Offset every second</b> column or row shifts it by half a peg, the same layout as the Iso bead designer. Columns and rows are numbered from the top left. Chunks are 10 × 10 blocks: A, B, C… across and 1, 2, 3… down.</li>
             </ul>
-            <h4>Learn more</h4>
+            <h4>Learn More</h4>
             <ul>
               <li><a href="https://www.redblobgames.com/grids/hexagons/" target="_blank" rel="noopener noreferrer">Hexagonal grids</a>, Red Blob Games: why three numbers suit a hex layout, and how shifted rows and columns relate to them.</li>
             </ul>
@@ -437,7 +449,7 @@ details.mini .q{margin-left:4px}
             <li><b>Pick background colour</b> is for a background that isn’t the colour at the picture’s edge. Tap that colour in the crop picture. The patch you tap is emptied, along with any of that colour touching the edge.</li>
             <li><b>Use edge colour</b> goes back to the automatic choice.</li>
           </ul>
-          <h4>Learn more</h4>
+          <h4>Learn More</h4>
           <ul>
             <li><a href="https://en.wikipedia.org/wiki/Flood_fill" target="_blank" rel="noopener noreferrer">Flood fill</a>, Wikipedia: the method used here, which spreads from a starting point through matching neighbours.</li>
           </ul>
@@ -448,7 +460,7 @@ details.mini .q{margin-left:4px}
         <p class="sub" id="bgMsg" aria-live="polite"></p>
 
         <details class="mini" id="adjBox">
-          <summary>4. Adjust picture <span id="adjSum"></span></summary>
+          <summary>4. Adjust Picture <span id="adjSum"></span></summary>
           <p class="sub">Shifts the picture’s colours before beads are matched. <button type="button" class="q" aria-expanded="false" aria-controls="t-adj" aria-label="Help: adjust picture">?</button></p>
           <div class="sub tip" id="t-adj" hidden>
             <p>Use these when the pattern comes out too dark, too flat or too grey.</p>
@@ -471,27 +483,27 @@ details.mini .q{margin-left:4px}
 
         <h3>5. Colours <button type="button" class="q" aria-expanded="false" aria-controls="t-col" aria-label="Help: colours">?</button></h3>
         <div class="sub tip" id="t-col" hidden>
-          <h4>How each bead samples the picture</h4>
+          <h4>How Each Bead Samples the Picture</h4>
           <ul>
             <li><b>Photo (average)</b> blends all the pixels under a bead. Best for photos.</li>
             <li><b>Pixel art (exact)</b> takes the single pixel at the bead’s centre. Best when one pixel should become one bead.</li>
             <li><b>Dominant colour</b> takes the most common colour under the bead, which keeps cartoon and logo edges crisp.</li>
             <li><b>Median</b> takes the pixel of middle brightness, so a few stray pixels can’t tint the bead.</li>
           </ul>
-          <h4>Where the bead colours come from</h4>
+          <h4>Where the Bead Colours Come From</h4>
           <ul>
             <li><b>Basic 16</b> is a starter palette you can edit. Untick a colour to leave it out, change its colour or name, or add your own.</li>
             <li><b>Catalog</b> picks the closest real beads from your bead sheet (.xlsx or .csv), so the shopping list works. Until a sheet is imported, the Basic 16 colours are used.</li>
             <li><b>Scheme</b> recolours the picture in one family: greyscale, a rainbow, or shades of a single colour from dark to light.</li>
           </ul>
-          <h4>Catalog choices</h4>
+          <h4>Catalog Choices</h4>
           <ul>
             <li><b>Max colours</b> limits how many different beads the pattern uses. Fewer colours means fewer bags to buy and an easier build. The app drops the colours that matter least and gives their beads to the next-closest colour.</li>
             <li><b>Brands</b>: untick a brand to shop from fewer brands.</li>
             <li><b>Translucent, glow and mixes</b> are off by default because their screen colours aren’t reliable.</li>
             <li>The shopping list counts bags at 1,000 beads each.</li>
           </ul>
-          <h4>Scheme choices</h4>
+          <h4>Scheme Choices</h4>
           <ul>
             <li><b>Shades</b> sets how many steps the scheme has.</li>
             <li><b>By brightness</b> ignores the picture’s own colours. Dark areas get the darkest shade and light areas the lightest, with the contrast stretched so every shade is used.</li>
@@ -499,7 +511,7 @@ details.mini .q{margin-left:4px}
             <li><b>Add black and white</b> puts a black and a white at the ends of the scheme.</li>
             <li><b>Use real beads from my sheet</b> swaps each shade for the closest real bead, and the shopping list works as usual.</li>
           </ul>
-          <h4>Learn more</h4>
+          <h4>Learn More</h4>
           <ul>
             <li><a href="https://en.wikipedia.org/wiki/Color_difference" target="_blank" rel="noopener noreferrer">Color difference</a>, Wikipedia: the ways “closest colour” can be measured, from plain RGB distance to CIEDE2000.</li>
             <li><a href="https://bottosson.github.io/posts/oklab/" target="_blank" rel="noopener noreferrer">A perceptual color space for image processing</a>, Björn Ottosson: a readable account of what makes a colour space match what we see.</li>
@@ -541,7 +553,7 @@ details.mini .q{margin-left:4px}
           <div id="pal"></div>
           <div class="btns"><button type="button" class="btn" id="palAdd">Add colour</button><button type="button" class="btn" id="palReset">Reset palette</button></div>
         </div>
-        <h3>6. Dithering and matching <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: dithering and matching">?</button></h3>
+        <h3>6. Dithering and Matching <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: dithering and matching">?</button></h3>
         <div class="sub tip" id="t-dith" hidden>
           <h4>Dithering</h4>
           <ul>
@@ -552,7 +564,7 @@ details.mini .q{margin-left:4px}
             <li><b>Ordered</b> adds a regular 4 × 4 pattern instead of passing errors on.</li>
             <li><b>Strength</b> softens or strengthens the dithering.</li>
           </ul>
-          <h4>Colour match</h4>
+          <h4>Colour Match</h4>
           <ul>
             <li>This is how the closest bead is judged.</li>
             <li><b>RGB</b> is quick but crude.</li>
@@ -561,11 +573,11 @@ details.mini .q{margin-left:4px}
             <li><b>Oklab</b> is a newer colour space of the same kind. It often handles blues and purples better than CIE76, so try each on your picture.</li>
             <li>When Max colours trims the catalog, the colours to keep are chosen with CIE76. Every bead is then matched with the formula you pick.</li>
           </ul>
-          <h4>Merge rare</h4>
+          <h4>Merge Rare</h4>
           <ul>
             <li><b>Merge rare</b> removes any colour used on fewer pegs than the number you set, and gives those beads to their next-closest colour already in the pattern.</li>
           </ul>
-          <h4>Learn more</h4>
+          <h4>Learn More</h4>
           <ul>
             <li><a href="https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html" target="_blank" rel="noopener noreferrer">Image dithering: eleven algorithms and source code</a>, Tanner Helland: error diffusion step by step, including Floyd–Steinberg and Atkinson.</li>
             <li><a href="https://surma.dev/things/ditherpunk/" target="_blank" rel="noopener noreferrer">Ditherpunk</a>, Surma: ordered and other dithering, with pictures.</li>
@@ -591,7 +603,7 @@ details.mini .q{margin-left:4px}
         <div class="row"><label for="rare">Merge rare</label><input type="range" id="rare" min="0" max="50" step="1"><output id="rareOut"></output></div>
         <p class="sub" id="rareInfo"></p>
         <details class="mini" id="cleanBox">
-          <summary>7. Clean up <span id="cleanSum"></span></summary>
+          <summary>7. Clean Up <span id="cleanSum"></span></summary>
           <p class="sub">Tidies the pattern after matching. <button type="button" class="q" aria-expanded="false" aria-controls="t-clean" aria-label="Help: clean up">?</button></p>
           <div class="sub tip" id="t-clean" hidden>
             <ul>
@@ -601,7 +613,7 @@ details.mini .q{margin-left:4px}
               <li>Dithering adds specks on purpose, so cleaning up a dithered pattern undoes some of it.</li>
               <li>Merge rare runs after Remove specks and Smooth.</li>
             </ul>
-            <h4>Learn more</h4>
+            <h4>Learn More</h4>
             <ul>
               <li><a href="https://en.wikipedia.org/wiki/Flood_fill" target="_blank" rel="noopener noreferrer">Flood fill</a>, Wikipedia: the method that finds each connected patch of one colour.</li>
             </ul>
@@ -617,7 +629,7 @@ details.mini .q{margin-left:4px}
           <p class="sub" id="cleanInfo" aria-live="polite"></p>
         </details>
         <details class="mini" id="orderBox" hidden>
-          <summary>Shopping list <span id="orderSum"></span></summary>
+          <summary>Shopping List <span id="orderSum"></span></summary>
           <div id="orderList"></div>
         </details>
         </div>
@@ -655,10 +667,10 @@ details.mini .q{margin-left:4px}
 
     <div class="group">
       <details id="projBox">
-        <summary>Save and open</summary>
-        <h3>Pattern name</h3>
+        <summary>Save and Open</summary>
+        <h3>Pattern Name</h3>
         <input type="text" id="libName" maxlength="60" placeholder="Name this pattern" aria-label="Pattern name">
-        <h3>Project file <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files and the library">?</button></h3>
+        <h3>Project File <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files and the library">?</button></h3>
         <div class="sub tip" id="t-proj" hidden>
           <ul>
             <li><b>Save project file</b> writes one .fig.json file. It holds the picture, your settings, your edits, your placed ticks, and the finished pattern bead for bead.</li>
@@ -702,7 +714,7 @@ details.mini .q{margin-left:4px}
     </div>
     <div class="group">
       <details class="mini" id="learn">
-        <summary>Learn the ideas</summary>
+        <summary>Learn the Ideas</summary>
         <p class="sub">FIG runs on a few classic ideas from computer graphics. These free tutorials explain each one. They open in a new tab; FIG itself still loads nothing from other sites.</p>
         <ul class="sub">
           <li><b>Coordinate systems</b>: <a href="https://www.redblobgames.com/grids/hexagons/" target="_blank" rel="noopener noreferrer">Hexagonal grids</a> and <a href="https://www.redblobgames.com/grids/parts/" target="_blank" rel="noopener noreferrer">Grid parts and relationships</a>, both from Red Blob Games.</li>
@@ -713,8 +725,9 @@ details.mini .q{margin-left:4px}
         </ul>
       </details>
       <details class="mini" id="about">
-        <summary>About this version <span>1.4 · 13 Nov 2026</span></summary>
+        <summary>About This Version <span>1.4.1 · 14 Nov 2026</span></summary>
         <ul class="sub">
+          <li>1.4.1, ideas from BIG: the help by the board comes in three parts (Bead Placement, Sizing and Views), there’s a ? beside the zoom buttons too, and every section heading is in Title Case.</li>
           <li>Edit, beside Inspect and Mark placed: paint, erase, fill and pick on every board, with undo and redo.</li>
           <li>Edits are kept when you change a setting, unless you untick that.</li>
           <li>Swap one bead colour for another everywhere, or drop a colour.</li>
@@ -1042,7 +1055,7 @@ function readProject(text){
 /* ---------- end of the 1.4 helpers ---------- */
 
 /* the edits themselves: one set per board type, kept in this browser, plus the undo history for this visit */
-const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.4',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
+const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.4.1',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
 const freshEdits=()=>({square:newEdits(),hexb:newEdits(),iso:newEdits()}),freshHist=()=>({square:{undo:[],redo:[]},hexb:{undo:[],redo:[]},iso:{undo:[],redo:[]}});
 let ED=freshEdits(),HIST=freshHist(),E=ED.square,conv=null,savedClean=false;
 {const v=store.get('fl:edits');if(v&&typeof v==='object'){for(const k in ED)ED[k]=tidyEdits(v[k]);savedClean=store.get('fl:saved')===hash(JSON.stringify(ED))}E=ED[KIND[st.source]]}
@@ -1851,7 +1864,7 @@ $('snapW').addEventListener('change',e=>{st.img.snap=e.target.checked;saveSettin
 $('iw').addEventListener('change',e=>{setWidth(+e.target.value);rebuild()});
 slider('downR',String,v=>{st.img.rows=v;lockCrop();rebuild()});
 document.addEventListener('click',e=>{const b=e.target.closest('.q');if(!b)return;const t=$(b.getAttribute('aria-controls'));if(!t)return;
-  const open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));t.hidden=!open});
+  const open=t.hidden;document.querySelectorAll('.q[aria-controls="'+b.getAttribute('aria-controls')+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)));t.hidden=!open});
 $('resetSettings').addEventListener('click',()=>{
   st.img=clone(DEF.img);st.lat=clone(DEF.lat);
   palUI();saveSettings();rebuild();
