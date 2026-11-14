@@ -39,7 +39,7 @@ h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
 .toolbar .seg{margin:0}
 .tapwrap{display:flex;align-items:center}
-.zoom{display:flex;gap:6px}
+.zoom{display:flex;align-items:center;gap:6px}
 .btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
 .ib{width:44px;padding:0;font-size:20px;line-height:1}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
@@ -256,7 +256,7 @@ details.mini .q{margin-left:4px}
       <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button><button type="button" class="q" aria-expanded="false" aria-controls="t-board" aria-label="Help: placing bricks, sizing and views">?</button></div>
     </div>
     <div class="sub tip" id="t-board" hidden>
-      <h4>Brick placement</h4>
+      <h4>Brick Placement</h4>
       <ul>
         <li><b>Inspect</b> shows a stud’s colour, part and code, height and place.</li>
         <li><b>Mark placed</b> ticks off the whole part a stud belongs to, so you can follow your build.</li>
@@ -331,8 +331,9 @@ details.mini .q{margin-left:4px}
     <section class="group" id="picGroup">
       <h2>Mosaic <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: mosaic">?</button></h2>
       <div class="sub tip" id="t-pic" hidden>
+        <p>A <b>mosaic</b> is your picture rebuilt in bricks. Each stud on the baseplate is one dot of colour, like a pixel, and studs of the same colour join into bigger plates and tiles. This section turns your picture into a mosaic and lists the parts it needs.</p>
         <ul>
-          <li>Work down the steps. Each change re-makes the mosaic straight away, and your edits are laid back over it.</li>
+          <li>Work down the steps, from Crop to Relief. Each change re-makes the mosaic straight away, and your edits are laid back over it.</li>
           <li>Simple, bold pictures with clear light and dark areas make the best mosaics. Crop close to the subject.</li>
           <li>A mosaic looks best from a few steps back: each stud is one 8 mm pixel.</li>
         </ul>
@@ -393,7 +394,7 @@ details.mini .q{margin-left:4px}
         <p class="sub" id="bgMsg" aria-live="polite"></p>
 
         <details class="mini" id="adjBox">
-          <summary>4. Adjust picture <span id="adjSum"></span></summary>
+          <summary>4. Adjust Picture <span id="adjSum"></span></summary>
           <div class="row wide"><label for="adjB">Brightness</label><input type="range" class="zero" id="adjB" min="-100" max="100" step="1"><output id="adjBOut"></output></div>
           <div class="row wide"><label for="adjC">Contrast</label><input type="range" class="zero" id="adjC" min="-100" max="100" step="1"><output id="adjCOut"></output></div>
           <div class="row wide"><label for="adjS">Saturation</label><input type="range" class="zero" id="adjS" min="-100" max="100" step="1"><output id="adjSOut"></output></div>
@@ -423,14 +424,14 @@ details.mini .q{margin-left:4px}
           <button type="button" data-k="img.sampling" data-v="median">Median</button>
         </div>
 
-        <h3>6. Matching and dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
+        <h3>6. Matching and Dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
         <div class="sub tip" id="t-dith" hidden>
           <ul>
             <li><b>Colour match</b> decides which LEGO colour is closest. CIE76 and CIEDE2000 judge colours the way eyes do; Oklab is a newer, simpler formula; RGB is the plainest.</li>
             <li><b>Dithering</b> mixes two colours in a speckle to fake one LEGO doesn’t make. It helps smooth skin and skies, but adds grain and 1 × 1 parts.</li>
             <li><b>Merge rare</b> folds colours used on only a few studs into their nearest neighbour.</li>
           </ul>
-          <h4>Learn more</h4>
+          <h4>Learn More</h4>
           <ul>
             <li><a href="https://en.wikipedia.org/wiki/Color_difference" target="_blank" rel="noopener noreferrer">Color difference</a>, Wikipedia.</li>
             <li><a href="https://bottosson.github.io/posts/oklab/" target="_blank" rel="noopener noreferrer">A perceptual color space for image processing</a>, Björn Ottosson: where Oklab comes from.</li>
@@ -455,7 +456,7 @@ details.mini .q{margin-left:4px}
         <div class="row"><label for="rare">Merge rare</label><input type="range" id="rare" min="0" max="40" step="1"><output id="rareOut"></output></div>
 
         <details class="mini" id="cleanBox">
-          <summary>7. Clean up <span id="cleanSum"></span></summary>
+          <summary>7. Clean Up <span id="cleanSum"></span></summary>
           <p class="sub">Fewer stray studs means bigger parts and an easier build.</p>
           <div class="row"><label for="specks">Remove specks</label><input type="range" id="specks" min="0" max="8" step="1"><output id="specksOut"></output></div>
           <div class="row"><label for="smooth">Smooth</label><input type="range" id="smooth" min="0" max="3" step="1"><output id="smoothOut"></output></div>
@@ -478,7 +479,7 @@ details.mini .q{margin-left:4px}
             <li><b>Keep parts inside sections</b> means each 16 × 16 section builds on its own.</li>
             <li>Not every part is made in every colour. BrickLink’s wanted list shows which ones sellers have.</li>
           </ul>
-          <h4>Learn more</h4>
+          <h4>Learn More</h4>
           <ul>
             <li><a href="https://en.wikipedia.org/wiki/Greedy_algorithm" target="_blank" rel="noopener noreferrer">Greedy algorithm</a>, Wikipedia: Biggest first works this way. It is quick, but not always the fewest parts possible.</li>
             <li><a href="https://bricknerd.com/home/everything-you-want-to-know-about-lego-mosaics-11-12-24" target="_blank" rel="noopener noreferrer">Everything you want to know about LEGO mosaics</a>, BrickNerd.</li>
@@ -492,7 +493,7 @@ details.mini .q{margin-left:4px}
           <button type="button" data-k="style.def" data-v="dot">Round tiles</button>
         </div>
         <details class="mini" id="byColBox">
-          <summary>Style by colour <span id="byColSum"></span></summary>
+          <summary>Style by Colour <span id="byColSum"></span></summary>
           <div id="byCol"></div>
         </details>
         <p class="sub gap">Joining studs into parts</p>
@@ -527,7 +528,7 @@ details.mini .q{margin-left:4px}
         </div>
 
         <details class="mini" id="partsBox">
-          <summary><b>Parts list</b> <span id="partsSum"></span></summary>
+          <summary><b>Parts List</b> <span id="partsSum"></span></summary>
           <div class="row"><label for="spares">Spares per lot</label><input type="range" id="spares" min="0" max="20" step="1"><output id="sparesOut"></output></div>
           <div id="partsList"></div>
           <p class="sub">Part and colour numbers are BrickLink’s. A BrickLink wanted list finds sellers for every lot at once: save it here, then upload it on BrickLink.</p>
@@ -552,7 +553,7 @@ details.mini .q{margin-left:4px}
     </section>
 
     <section class="group">
-      <h2>Save and open</h2>
+      <h2>Save and Open</h2>
       <p class="sub">A project file keeps the picture, every setting and your edits, so the mosaic reopens exactly.</p>
       <div class="frow"><input type="text" id="projName" placeholder="Mosaic name" maxlength="60" aria-label="Mosaic name"></div>
       <div class="btns"><button type="button" class="btn" id="projSave">Save project file</button><label class="btn pick">Open project file<input type="file" id="projIn" accept=".json,.big.json,.lig.json,application/json"></label></div>
@@ -564,7 +565,7 @@ details.mini .q{margin-left:4px}
       <h2>Export</h2>
       <div class="btns"><button type="button" class="btn" id="pngFlat">Save picture</button><button type="button" class="btn" id="pngTilt">Save 3D picture</button><button type="button" class="btn" id="pngCode">Save numbered map</button></div>
       <p class="sub" id="pngMsg" aria-live="polite"></p>
-      <h3>Build sheets</h3>
+      <h3>Build Sheets</h3>
       <p class="sub">A PDF to print: a cover with the whole mosaic and its colours, the parts list, then a real-size page for each 16 × 16 section with every part’s code. Raised sections get a page for each layer of hidden plates first.</p>
       <div class="seg" role="group" aria-label="Paper size"><button type="button" data-k="paper" data-v="letter">Letter</button><button type="button" data-k="paper" data-v="a4">A4</button></div>
       <div class="btns"><button type="button" class="btn primary" id="pdfBtn">Save build sheets (PDF)</button></div>
@@ -582,7 +583,7 @@ details.mini .q{margin-left:4px}
     </section>
 
     <section class="group" id="learn">
-      <h2>Learn the ideas</h2>
+      <h2>Learn the Ideas</h2>
       <ul class="sub">
         <li><b>Mosaics</b>: <a href="https://bricknerd.com/home/everything-you-want-to-know-about-lego-mosaics-11-12-24" target="_blank" rel="noopener noreferrer">Everything you want to know about LEGO mosaics</a> (BrickNerd), and <a href="https://www.wikipedia.org/wiki/Lego_Art" target="_blank" rel="noopener noreferrer">LEGO Art</a> (Wikipedia).</li>
         <li><b>Sizes</b>: <a href="https://brickfact.com/blog/guidebooks/lego-brick-dimensions" target="_blank" rel="noopener noreferrer">LEGO brick dimensions</a> (Brickfact): why a stud is 8 mm and a plate 3.2 mm.</li>
@@ -595,7 +596,7 @@ details.mini .q{margin-left:4px}
     </section>
 
     <details class="group">
-      <summary>About this version <span class="sub">1.0 · 13 Nov 2026</span></summary>
+      <summary>About This Version <span class="sub">1.0 · 14 Nov 2026</span></summary>
       <ul class="sub">
         <li>A new app for brick mosaics, grown from an early LEGO mode for FIG. (For its first day it was called LIG; anything saved then still opens.)</li>
           <li>14 Nov: paste boxes for pictures, one picture button at a time, the Tilted view renamed 3D, and Heights and 3D explain themselves and can turn relief on. Later that day: a Codes view and numbered map, with a code for every kind of part (RED22T is a Red 2 × 2 tile) in the parts list, lists and wanted list. Then printable build sheets: a PDF with real-size pages for every section, and FIG’s Compare slider.</li>
@@ -1690,7 +1691,7 @@ function sync(){
   /* under the board in the Heights and 3D views: what the view shows, and a way to turn relief on when it's off */
   $('cmpRow').hidden=!shown||!srcUrl||st.view==='tilt';put('cmp',cmp);
   const dk=$('depthKey');dk.hidden=!shown||st.view==='colour';
-  if(!dk.hidden&&st.view==='code')dk.innerHTML=`<span>Each part shows its code: colour, size, then style. ${CODE_HOWTO} The Parts list gives each code’s BrickLink and LEGO numbers.</span>`
+  if(!dk.hidden&&st.view==='code')dk.innerHTML=`<span>Each part shows its code: colour, size, then style. ${CODE_HOWTO} The Parts List gives each code’s BrickLink and LEGO numbers.</span>`
     +usedColours().map(c=>`<span class="dk"><span class="dot" style="background:${LEGO[c].hex}"></span><b class="kcode">${LEGO[c].code}</b> ${esc(LEGO[c].name)}</span>`).join(' ');
   else if(!dk.hidden){const on='<button type="button" class="btn sm" data-act="relief">Turn on relief</button>';
     dk.innerHTML=st.view==='depth'
@@ -1975,7 +1976,7 @@ function sheetDraw(page,n,N){
         const lab=(multiSheet()?`${bc+1}-${br+1} `:'')+'ABC'[sx]+(sy+1);pg.g.lineWidth=pg.m(0.6);pg.g.strokeStyle='#FFFFFF';
         pg.g.font=`700 ${pg.m(3.2)}px ${SANS}`;pg.g.textAlign='left';pg.g.textBaseline='top';pg.g.strokeText(lab,pg.m(X+sx*SEC*s+1),pg.m(Y+sy*SEC*s+1));pg.text(lab,X+sx*SEC*s+1,Y+sy*SEC*s+1,3.2,{w:700})}}
     y+=p.Hpx*s+7;
-    pg.text('How to use these sheets',MARGIN,y,4.2,{w:700});y+=6.5;
+    pg.text('How to Use These Sheets',MARGIN,y,4.2,{w:700});y+=6.5;
     const steps=['Print at 100% (Actual size). The bar at the foot of each page should measure 5 cm.',
       'Sort your pieces by code. A code is colour, size, then style. '+CODE_HOWTO,
       'Build one section at a time, in page order. Each page is real size: lay pieces on the paper, then move them onto the plate.'];
@@ -1987,7 +1988,7 @@ function sheetDraw(page,n,N){
     const cw=46,per=Math.max(1,Math.floor((P.w-2*MARGIN)/cw));
     cols.forEach((c,j)=>{const x=MARGIN+(j%per)*cw,yy=y+Math.floor(j/per)*5.2;if(yy>P.h-MARGIN-14)return;pg.swatch(x,yy,3.6,LEGO[c].hex);pg.text(LEGO[c].code,x+5,yy+0.1,3.2,{w:700,mono:true});pg.text(LEGO[c].name,x+13,yy+0.2,2.9,{max:cw-14})});
   }else if(page.kind==='parts'){
-    let y=MARGIN;pg.text(page.first?'Parts list':'Parts list, continued',MARGIN,y,6,{w:700});y+=10;
+    let y=MARGIN;pg.text(page.first?'Parts List':'Parts List (Continued)',MARGIN,y,6,{w:700});y+=10;
     const cx=[MARGIN,MARGIN+6,MARGIN+24,MARGIN+70,MARGIN+128,MARGIN+156],R=P.w-MARGIN;
     ['','Code','Colour','Part','BrickLink',''].forEach((h,i)=>pg.text(h,cx[i],y,2.9,{w:700,c:MUTED}));pg.text('Qty',R,y,2.9,{w:700,c:MUTED,a:'right'});y+=5;
     let lastWhere='';
@@ -2053,7 +2054,7 @@ async function saveSheets(){
 $('pdfBtn').addEventListener('click',saveSheets);
 })();
 </script>
-<script id="hh-helper">/* Home Screen helper from HTML App Generator 1.1 */
+<script id="hh-helper">/* Home Screen helper from HTML App Generator 1.2 */
 (function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
    Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
    Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the
