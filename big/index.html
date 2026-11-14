@@ -596,10 +596,10 @@ details.mini .q{margin-left:4px}
     </section>
 
     <details class="group">
-      <summary>About This Version <span class="sub">1.0 · 14 Nov 2026</span></summary>
+      <summary>About This Version <span class="sub">1.1 · 14 Nov 2026</span></summary>
       <ul class="sub">
-        <li>A new app for brick mosaics, grown from an early LEGO mode for FIG. (For its first day it was called LIG; anything saved then still opens.)</li>
-          <li>14 Nov: paste boxes for pictures, one picture button at a time, the Tilted view renamed 3D, and Heights and 3D explain themselves and can turn relief on. Later that day: a Codes view and numbered map, with a code for every kind of part (RED22T is a Red 2 × 2 tile) in the parts list, lists and wanted list. Then printable build sheets: a PDF with real-size pages for every section, and FIG’s Compare slider.</li>
+        <li>1.1 (14 Nov 2026): the name BIG: Brick Image Generator (it was called LIG for its first day, and anything saved then still opens). Paste boxes for pictures, for viewers that block file pickers, with messages under the Choose image button, and one picture button at a time. The Tilted view is now 3D, and Heights and 3D say when relief is off and can turn it on. A Codes view and numbered map, with a code for every kind of part (RED22T is a Red 2 × 2 tile) in the parts list, the lists and the wanted list. Printable build sheets: a PDF with a real-size page for every section. FIG’s Compare slider. The help by the board in three parts, with a ? beside the zoom buttons too, and every heading in Title Case.</li>
+        <li>1.0 (13 Nov 2026): a new app for brick mosaics, grown from an early LEGO mode for FIG.</li>
         <li>Mosaics are built on real sheets: baseplates 48 × 48, 32 × 32 and 16 × 32, Plate 16 × 16, or the LEGO Art canvas, as many across and down as you like.</li>
         <li>Plates, tiles, round plates and round tiles, chosen for the whole mosaic, per colour, or painted on.</li>
         <li>Three ways to join studs into parts, with the part count for each, and 16 × 16 sections.</li>
@@ -619,7 +619,7 @@ details.mini .q{margin-left:4px}
   </div>
 </main>
 <script>
-/* BIG: Brick Image Generator 1.0. One file, no server: picture in, brick mosaic out.
+/* BIG: Brick Image Generator 1.1. One file, no server: picture in, brick mosaic out.
    The picture pipeline (sampling, adjustments, matching, dithering, clean up) comes from FIG, its sister app.
    Order of this script: constants and data, settings, conversion, the mosaic model (styles, heights, parts),
    drawing, the views, interaction, editing, the controls, lists and files, start-up, then the build sheets (app5). */
@@ -632,7 +632,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const f3=n=>+n.toFixed(3);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const plural=(n,w)=>n.toLocaleString()+' '+w+(n===1?'':'s');
-const VERSION='1.0';
+const VERSION='1.1';
 const SRC_MAX=600;        /* a loaded picture is shrunk so its longer side is at most this many pixels */
 const ALL_COLOURS=60;     /* top of the Max colours slider, shown as "All" */
 const BAYER_SPREAD=64;    /* ordered-dither strength at 100% */
@@ -2054,7 +2054,7 @@ async function saveSheets(){
 $('pdfBtn').addEventListener('click',saveSheets);
 })();
 </script>
-<script id="hh-helper">/* Home Screen helper from HTML App Generator 1.2 */
+<script id="hh-helper">/* Home Screen helper from HTML App Generator 1.3 */
 (function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
    Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
    Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the

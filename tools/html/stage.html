@@ -24,6 +24,11 @@
         <li><b>Fit</b> shows the whole grid again.</li>
         <li>Zoomed in, drag or scroll inside the grid to move around.<!--if:edit--> In Edit, dragging paints, so switch to Inspect to move.<!--/if:edit--></li>
       </ul>
+<!--if:picture-->      <h4>Views</h4>
+      <ul>
+        <li><b>Compare</b>, under the grid, slides your picture over the {{many}} from the left, so you can check the match. It only changes the view.</li>
+      </ul>
+<!--/if:picture-->
     </div>
 <!--if:edit-->    <div id="editBar" hidden>
       <div class="seg four" role="group" aria-label="Edit tool">
@@ -43,6 +48,7 @@
 <!--if:picture-->      <div id="empty"><p id="emptyMsg">Choose a picture to turn it into {{many}}.</p><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label><div class="pasteBox" id="pasteEmpty" contenteditable="true" role="textbox" aria-label="Paste a picture here" inputmode="none" spellcheck="false" data-ph="Or paste a picture here: copy one, then tap this box and choose Paste (or press Ctrl+V / ⌘V)."></div><!--if:edit--><div class="btns" style="justify-content:center"><button type="button" class="btn" id="startBlank">Start with an empty grid</button></div><!--/if:edit--><p class="sub" id="emptyNote" aria-live="polite"></p><p class="sub">If Choose image does nothing, the app you’re viewing this in may not allow file pickers. Paste instead, drop a file here, or open this page in your web browser.</p></div>
 <!--/if:picture-->      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{{One}} grid" hidden></svg>
     </div>
-    <div id="hud" aria-live="polite"><span id="hudDot" class="empty"></span><div><div id="hudName">Tap a {{one}}</div><div id="hudWhere">Its colour and place show here.</div></div></div>
+<!--if:picture-->    <div class="row" id="cmpRow" hidden><label for="cmp">Compare</label><input type="range" id="cmp" min="0" max="100" step="5" value="0"><output id="cmpOut"></output></div>
+<!--/if:picture-->    <div id="hud" aria-live="polite"><span id="hudDot" class="empty"></span><div><div id="hudName">Tap a {{one}}</div><div id="hudWhere">Its colour and place show here.</div></div></div>
 {{{appStage}}}
   </section>

@@ -1,7 +1,7 @@
     <section class="group" id="picGroup">
       <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
       <div class="sub tip" id="t-pic" hidden><p>This section turns your picture into {{many}}: each {{one}} takes the colour of the part of the picture it covers, like a pixel. Each step below changes how that happens, and the grid updates as you go. Your picture never leaves this browser.</p></div>
-      <div id="picStart"><p class="sub">Choose a picture to start. You can also paste one, or drop a file on the grid area.</p><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div>
+      <div id="picStart"><p class="sub" id="picStartMsg">Choose or paste a picture on the grid to begin.</p><div id="picStartBtns" hidden><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div></div>
       <div id="picBtns" hidden>
         <div class="btns"><label class="btn pick">Choose another image<input type="file" accept="image/*" class="fileIn"></label><button type="button" class="btn" id="dropPic">Remove picture</button><button type="button" class="btn" id="resetPic">Reset picture settings</button></div>
         <div class="pasteBox" id="pastePic" contenteditable="true" role="textbox" aria-label="Paste a new picture here" inputmode="none" spellcheck="false" data-ph="Or paste a new picture here."></div>

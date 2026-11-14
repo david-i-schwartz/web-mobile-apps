@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7A3FB0">
-<meta name="generator" content="HTML App Generator 1.2">
+<meta name="generator" content="HTML App Generator 1.3">
 <title>TIG: Tile Image Generator</title>
 <script>document.documentElement.classList.remove('nojs')/* scripts run, so the app shows instead of the preview note */</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%237A3FB0%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2242%22%20font-family%3D%22system-ui%2Csans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%3ETIG%3C%2Ftext%3E%3C%2Fsvg%3E">
@@ -13,7 +13,7 @@
  "code": "TIG",
  "name": "Tile Image Generator",
  "tagline": "Turn a picture into a tile mosaic on mesh sheets, then follow it tile by tile. Everything stays in this browser.",
- "version": "1.1",
+ "version": "1.2",
  "date": "14 Nov 2026",
  "unit": {
   "one": "tile",
@@ -157,6 +157,7 @@
   }
  ],
  "changes": [
+  "1.2: one picture button at a time, and the Compare slider under the grid, with a Views section in the grid help.",
   "1.1: the help by the grid comes in two parts, Tile Placement and Sizing, with a ? beside the zoom buttons too; the Picture help says what the section does; every section heading is in Title Case.",
   "An example app, made to show what HTML App Generator builds."
  ],
@@ -168,12 +169,12 @@
  "key": "tig:",
  "oldKeys": [],
  "ext": ".tig.json",
- "core": "1.2",
- "generator": "1.2"
+ "core": "1.3",
+ "generator": "1.3"
 }
 </script>
 <style>
-/* ==== CORE CSS: made by HTML App Generator 1.2 (core 1.2). Upgrade it with the generator rather than editing it here. ==== */
+/* ==== CORE CSS: made by HTML App Generator 1.3 (core 1.3). Upgrade it with the generator rather than editing it here. ==== */
 /* Core stylesheet of HTML App Generator apps. It grew from the stylesheet FIG and BIG share.
    The app's accent colours come after it, then the app's own styles (APP CSS). */
 
@@ -211,6 +212,8 @@ h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .toolbar .seg{margin:0}
 .tapwrap{display:flex;align-items:center}
 .zoom{display:flex;align-items:center;gap:6px}
+#cmpRow{margin:10px 2px 0}
+#board .cmp{pointer-events:none}
 .btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
 .ib{width:44px;padding:0;font-size:20px;line-height:1}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
@@ -384,6 +387,11 @@ details.mini .q{margin-left:4px}
         <li><b>Fit</b> shows the whole grid again.</li>
         <li>Zoomed in, drag or scroll inside the grid to move around. In Edit, dragging paints, so switch to Inspect to move.</li>
       </ul>
+      <h4>Views</h4>
+      <ul>
+        <li><b>Compare</b>, under the grid, slides your picture over the tiles from the left, so you can check the match. It only changes the view.</li>
+      </ul>
+
     </div>
     <div id="editBar" hidden>
       <div class="seg four" role="group" aria-label="Edit tool">
@@ -403,6 +411,7 @@ details.mini .q{margin-left:4px}
       <div id="empty"><p id="emptyMsg">Choose a picture to turn it into tiles.</p><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label><div class="pasteBox" id="pasteEmpty" contenteditable="true" role="textbox" aria-label="Paste a picture here" inputmode="none" spellcheck="false" data-ph="Or paste a picture here: copy one, then tap this box and choose Paste (or press Ctrl+V / ⌘V)."></div><div class="btns" style="justify-content:center"><button type="button" class="btn" id="startBlank">Start with an empty grid</button></div><p class="sub" id="emptyNote" aria-live="polite"></p><p class="sub">If Choose image does nothing, the app you’re viewing this in may not allow file pickers. Paste instead, drop a file here, or open this page in your web browser.</p></div>
       <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tile grid" hidden></svg>
     </div>
+    <div class="row" id="cmpRow" hidden><label for="cmp">Compare</label><input type="range" id="cmp" min="0" max="100" step="5" value="0"><output id="cmpOut"></output></div>
     <div id="hud" aria-live="polite"><span id="hudDot" class="empty"></span><div><div id="hudName">Tap a tile</div><div id="hudWhere">Its colour and place show here.</div></div></div>
     <!-- ==== APP STAGE START ==== -->
 
@@ -412,7 +421,7 @@ details.mini .q{margin-left:4px}
     <section class="group" id="picGroup">
       <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
       <div class="sub tip" id="t-pic" hidden><p>This section turns your picture into tiles: each tile takes the colour of the part of the picture it covers, like a pixel. Each step below changes how that happens, and the grid updates as you go. Your picture never leaves this browser.</p></div>
-      <div id="picStart"><p class="sub">Choose a picture to start. You can also paste one, or drop a file on the grid area.</p><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div>
+      <div id="picStart"><p class="sub" id="picStartMsg">Choose or paste a picture on the grid to begin.</p><div id="picStartBtns" hidden><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div></div>
       <div id="picBtns" hidden>
         <div class="btns"><label class="btn pick">Choose another image<input type="file" accept="image/*" class="fileIn"></label><button type="button" class="btn" id="dropPic">Remove picture</button><button type="button" class="btn" id="resetPic">Reset picture settings</button></div>
         <div class="pasteBox" id="pastePic" contenteditable="true" role="textbox" aria-label="Paste a new picture here" inputmode="none" spellcheck="false" data-ph="Or paste a new picture here."></div>
@@ -529,10 +538,10 @@ details.mini .q{margin-left:4px}
     </details>
   </div>
 </main>
-<p class="foot">TIG 1.1, made with HTML App Generator 1.2. One file, no server: everything stays in this browser.</p>
+<p class="foot">TIG 1.2, made with HTML App Generator 1.3. One file, no server: everything stays in this browser.</p>
 <div id="sr" class="sr" aria-live="polite"></div>
 <script>
-/* TIG: Tile Image Generator 1.1. Made with HTML App Generator 1.2 (core 1.2).
+/* TIG: Tile Image Generator 1.2. Made with HTML App Generator 1.3 (core 1.3).
    The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
 (()=>{
 'use strict';
@@ -1371,6 +1380,10 @@ const blankBtn=$('startBlank');if(blankBtn)blankBtn.addEventListener('click',()=
 HOOK.sync.push(()=>{
   const has=!!srcImg;
   $('imgSteps').hidden=!has;$('picBtns').hidden=!has;$('picStart').hidden=has;
+  /* one picture button at a time: while the grid shows its own Choose image button, the panel only points to it */
+  const em=$('empty'),onGrid=!!em&&!em.hidden;$('picStartBtns').hidden=onGrid;
+  txt('picStartMsg',onGrid?'Choose or paste a picture on the grid to begin.':'Choose a picture to start. You can also paste one, or drop a file on the grid area.');
+  const cr=$('cmpRow');if(cr)cr.hidden=!has||!shown();put('cmp',cmp);
   $('bgOn').checked=st.img.bg;put('bgTol',st.img.bgTol);
   $('bgPick').setAttribute('aria-pressed',String(picking));txt('bgPick',picking?'Cancel picking':'Pick background colour');
   $('cropCv').classList.toggle('picking',picking);
@@ -1436,6 +1449,26 @@ document.querySelectorAll('.pasteBox').forEach(b=>{
 });
 vp.addEventListener('dragover',e=>e.preventDefault());
 vp.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];takeFile(f)});
+/* ---------- Compare (as in FIG and BIG): the picture laid over the grid, board by board, revealed from the left. It only changes the view. ---------- */
+let cmp=0;
+function cmpDraw(){
+  const svg=$('board');if(!svg)return;let g=$('cmpG');
+  if(!(pattern&&shown()&&srcUrl&&cmp>0)){if(g){g.remove();const d=$('cmpDefs');if(d)d.remove()}return}
+  const p=pattern;
+  if(!g){
+    const cf=st.img.crop,n5=v=>(+v).toFixed(5),mk=(n,a,par)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);par.appendChild(e);return e};
+    const cp=mk('clipPath',{id:'cmpClip'},mk('defs',{id:'cmpDefs'},svg));mk('rect',{id:'cmpRect',x:0,y:0,width:0,height:n2(p.Hpx)},cp);
+    g=mk('g',{id:'cmpG',class:'cmp','clip-path':'url(#cmpClip)'},svg);
+    for(let by=0;by<p.down;by++)for(let bx=0;bx<p.across;bx++){
+      const part=mk('svg',{x:n2(PAD+bx*(p.bw+GAP)),y:n2(PAD+by*(p.bh+GAP)),width:p.bw,height:p.bh,
+        viewBox:[cf.x+bx*p.bw/p.W*cf.w,cf.y+by*p.bh/p.H*cf.h,p.bw/p.W*cf.w,p.bh/p.H*cf.h].map(n5).join(' '),preserveAspectRatio:'none'},g);
+      const im=mk('image',{href:srcUrl,x:0,y:0,width:1,height:1,preserveAspectRatio:'none'},part);if(st.img.sampling==='nearest')im.style.imageRendering='pixelated'}
+    const r=$('selRing');if(r)svg.appendChild(r);   /* the selection ring stays on top */
+  }
+  $('cmpRect').setAttribute('width',n2(p.Wpx*cmp/100));
+}
+HOOK.after.push(()=>{const g=$('cmpG');if(g){g.remove();const d=$('cmpDefs');if(d)d.remove()}cmpDraw()});
+slider('cmp',v=>v?v+'%':'Off',v=>{cmp=v;cmpDraw()},v=>{cmp=v;cmpDraw()});
 HOOK.start.push(()=>{const s=store.get(KEY+'img');if(typeof s==='string'&&s.startsWith('data:image/png;base64,'))loadImage(s,false)});
 
 /* ---------- editing: paint, erase, fill and pick, with undo ----------

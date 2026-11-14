@@ -401,6 +401,10 @@ const blankBtn=$('startBlank');if(blankBtn)blankBtn.addEventListener('click',()=
 HOOK.sync.push(()=>{
   const has=!!srcImg;
   $('imgSteps').hidden=!has;$('picBtns').hidden=!has;$('picStart').hidden=has;
+  /* one picture button at a time: while the grid shows its own Choose image button, the panel only points to it */
+  const em=$('empty'),onGrid=!!em&&!em.hidden;$('picStartBtns').hidden=onGrid;
+  txt('picStartMsg',onGrid?'Choose or paste a picture on the grid to begin.':'Choose a picture to start. You can also paste one, or drop a file on the grid area.');
+  const cr=$('cmpRow');if(cr)cr.hidden=!has||!shown();put('cmp',cmp);
   $('bgOn').checked=st.img.bg;put('bgTol',st.img.bgTol);
   $('bgPick').setAttribute('aria-pressed',String(picking));txt('bgPick',picking?'Cancel picking':'Pick background colour');
   $('cropCv').classList.toggle('picking',picking);
@@ -466,4 +470,24 @@ document.querySelectorAll('.pasteBox').forEach(b=>{
 });
 vp.addEventListener('dragover',e=>e.preventDefault());
 vp.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];takeFile(f)});
+/* ---------- Compare (as in FIG and BIG): the picture laid over the grid, board by board, revealed from the left. It only changes the view. ---------- */
+let cmp=0;
+function cmpDraw(){
+  const svg=$('board');if(!svg)return;let g=$('cmpG');
+  if(!(pattern&&shown()&&srcUrl&&cmp>0)){if(g){g.remove();const d=$('cmpDefs');if(d)d.remove()}return}
+  const p=pattern;
+  if(!g){
+    const cf=st.img.crop,n5=v=>(+v).toFixed(5),mk=(n,a,par)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);par.appendChild(e);return e};
+    const cp=mk('clipPath',{id:'cmpClip'},mk('defs',{id:'cmpDefs'},svg));mk('rect',{id:'cmpRect',x:0,y:0,width:0,height:n2(p.Hpx)},cp);
+    g=mk('g',{id:'cmpG',class:'cmp','clip-path':'url(#cmpClip)'},svg);
+    for(let by=0;by<p.down;by++)for(let bx=0;bx<p.across;bx++){
+      const part=mk('svg',{x:n2(PAD+bx*(p.bw+GAP)),y:n2(PAD+by*(p.bh+GAP)),width:p.bw,height:p.bh,
+        viewBox:[cf.x+bx*p.bw/p.W*cf.w,cf.y+by*p.bh/p.H*cf.h,p.bw/p.W*cf.w,p.bh/p.H*cf.h].map(n5).join(' '),preserveAspectRatio:'none'},g);
+      const im=mk('image',{href:srcUrl,x:0,y:0,width:1,height:1,preserveAspectRatio:'none'},part);if(st.img.sampling==='nearest')im.style.imageRendering='pixelated'}
+    const r=$('selRing');if(r)svg.appendChild(r);   /* the selection ring stays on top */
+  }
+  $('cmpRect').setAttribute('width',n2(p.Wpx*cmp/100));
+}
+HOOK.after.push(()=>{const g=$('cmpG');if(g){g.remove();const d=$('cmpDefs');if(d)d.remove()}cmpDraw()});
+slider('cmp',v=>v?v+'%':'Off',v=>{cmp=v;cmpDraw()},v=>{cmp=v;cmpDraw()});
 HOOK.start.push(()=>{const s=store.get(KEY+'img');if(typeof s==='string'&&s.startsWith('data:image/png;base64,'))loadImage(s,false)});

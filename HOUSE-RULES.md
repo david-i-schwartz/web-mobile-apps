@@ -14,7 +14,7 @@ These are the rules for FIG, BIG and every app made with HTML App Generator. Any
 8. **Old work keeps opening.** Project files and saved settings from earlier versions still open. New fields get defaults, and everything read from a file or from storage is checked and tidied first.
 9. **Every version says what changed.** Raise the version, set the date, and add a line to About This Version. Add credits and Learn the Ideas links for new ideas.
 
-10. **One way of laying out the page.** Section headings are in Title Case ("Save and Open", "Learn the Ideas"). The help by the grid is one tip in labelled parts (placing cells, Sizing, then Views when the app has views), and a ? beside the zoom buttons opens the same tip, centred on them. A section's ? help starts by saying what the section is or does, in plain words. A view that needs a setting (BIG's Heights needs Relief) says so where it shows and offers to turn it on.
+10. **One way of laying out the page.** Section headings are in Title Case ("Save and Open", "Learn the Ideas"). The help by the grid is one tip in labelled parts (placing cells, Sizing, then Views when the app has views), and a ? beside the zoom buttons opens the same tip, centred on them. A section's ? help starts by saying what the section is or does, in plain words. A view that needs a setting (BIG's Heights needs Relief) says so where it shows and offers to turn it on. Getting a picture in works the same everywhere: one Choose image button at a time (on the grid until there is a picture, then Choose another image in the panel), a paste box beside it because some viewers block file pickers, and picture messages shown under the button. Compare, under the grid, slides the picture over the result.
 
 ## Apps made with HTML App Generator
 
