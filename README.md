@@ -11,6 +11,7 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`generator/`](https://david-i-schwartz.github.io/web-mobile-apps/generator/): GEN, HTML App Generator
 - [`iso-lab/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-lab/): PIL, Pegboard Iso Lab
 - [`milspeak/`](https://david-i-schwartz.github.io/web-mobile-apps/milspeak/): MIL, The Civilian's Guide to Milspeak
+- [`torah-tutor/`](https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/): TORAH, Torah Tutor
 
 ## How it works
 

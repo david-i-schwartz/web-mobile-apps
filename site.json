@@ -44,6 +44,14 @@
       "name": "The Civilian's Guide to Milspeak",
       "tagline": "A plain-language guide to military ranks, structures, codes and terms.",
       "accent": "#F97316"
+    },
+    {
+      "file": "src/torah-tutor.html",
+      "folder": "torah-tutor",
+      "code": "TORAH",
+      "name": "Torah Tutor",
+      "tagline": "Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part.",
+      "accent": "#2B4C9B"
     }
   ],
   "readme": [
