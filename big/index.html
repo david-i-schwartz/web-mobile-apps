@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BIG: Brick Image Generator</title>
+<style>
+/* Stylesheet shared with FIG, the same author's bead app (taken from FIG 1.5). */
+:root{
+  --bg:#EEF1F5;--panel:#FFFFFF;--ink:#1D2230;--muted:#5B6375;--line:#D5DAE3;--accent:#0E7C7B;--accent-ink:#FFFFFF;--chip:#E3E8EF;--edge:#6F7888;
+  --board:#DCE1E8;--peg:#B4BBC6;--vp:#F5F7FA;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5}
+header{max-width:1180px;margin:0 auto;padding:18px 16px 2px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.1;margin:0 0 4px;letter-spacing:-0.01em;font-weight:800}
+header p{margin:0;color:var(--muted);max-width:62ch}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.wrap{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}.stage{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px}
+.controls{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+h2{font-size:19px;margin:0 0 8px;line-height:1.25;font-weight:750}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+h3{font-size:16px;margin:14px 0 4px;font-weight:700}
+.sub{font-size:14px;color:var(--muted);margin:2px 0 0}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:flex;background:var(--chip);border-radius:999px;padding:3px;gap:3px;margin:6px 0}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:7px 12px;border-radius:999px;cursor:pointer;min-height:44px;line-height:1.2}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.toolbar .seg{margin:0}
+.tapwrap{display:flex;align-items:center}
+.zoom{display:flex;gap:6px}
+.btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
+.ib{width:44px;padding:0;font-size:20px;line-height:1}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#vp{position:relative;overflow:auto;max-height:70vh;border-radius:12px;background:var(--vp);outline:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#vp:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+#board{display:block;margin:0 auto;touch-action:manipulation}
+#board .bead{pointer-events:all;cursor:pointer;transition:opacity .15s}
+#board .peg{fill:var(--peg);stroke:transparent;stroke-width:.6;pointer-events:all;cursor:pointer}
+#board .bd{fill:var(--board)}
+#board .cl{stroke:var(--muted);stroke-width:.07;opacity:.75}
+#board .ring{fill:none;stroke:var(--accent);stroke-width:.14;pointer-events:none}
+#board .lbl{fill:var(--ink);stroke:var(--board);stroke-width:.28;paint-order:stroke;font-weight:700;font-size:.9px;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#board .bead{transition:none}}
+#empty{padding:48px 20px;text-align:center;color:var(--muted)}
+#empty p{margin:0 auto 14px;max-width:34ch}
+#hud{display:flex;gap:10px;align-items:flex-start;margin:12px 2px 0;min-height:44px}
+#hudDot{width:26px;height:26px;border-radius:50%;flex:none;margin-top:2px;border:1px solid var(--line)}
+#hudDot.empty{background:transparent!important;border-style:dashed}
+#hudName{font-weight:700;font-size:17px;line-height:1.3}
+#hudWhere{font-size:14px;color:var(--muted)}
+#chunkBox{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.chead{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.chead span{color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:10px;background:var(--chip);border-radius:99px;overflow:hidden;margin:4px 0 6px}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#pct{font-size:15px;color:var(--ink);margin:0 0 10px;font-variant-numeric:tabular-nums}
+#legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}
+.crow{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;font-size:15px;cursor:pointer;min-height:44px;text-align:left}
+.crow[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.crow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .ct{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+.crow.done .ct{color:var(--accent)}
+.dot{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);flex:none}
+.schs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.sch{display:flex;flex-direction:column;gap:5px;align-items:stretch;min-width:76px;min-height:52px;padding:6px 8px 5px;border:2px solid var(--line);border-radius:12px;background:var(--chip);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.sch i{display:block;height:14px;border-radius:5px;border:1px solid var(--line)}
+.sch[aria-pressed="true"]{border-color:var(--accent);font-weight:700}
+.sch:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.ramp{display:flex;gap:3px;margin-top:10px}
+.ramp span{flex:1;height:26px;border-radius:6px;border:1px solid var(--line);min-width:0}
+.checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:15px}
+.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;align-items:center;gap:10px;margin:6px 0}
+.row label{color:var(--muted);font-size:15px}
+.row output{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;min-height:28px;accent-color:var(--accent)}
+.tickwrap{position:relative;padding-bottom:26px}
+.tickwrap input.snap{position:relative;z-index:1}
+input.snap{-webkit-appearance:none;appearance:none;height:28px;background:transparent;margin:0;display:block}
+input.snap::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--line)}
+input.snap::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);margin-top:-8px;box-sizing:border-box}
+input.snap::-moz-range-track{height:6px;border-radius:3px;background:var(--line)}
+input.snap::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);box-sizing:border-box}
+.tick{position:absolute;top:3px;left:calc(11px + (100% - 22px) * var(--p));transform:translateX(-50%);width:2px;height:22px;background:var(--muted);border-radius:1px}
+.tlab{position:absolute;z-index:2;bottom:0;left:calc(11px + (100% - 22px) * var(--p));transform:translateX(-50%);border:0;background:none;color:var(--muted);font:700 12px/1 system-ui,-apple-system,sans-serif;padding:6px;min-width:24px;min-height:24px;cursor:pointer;font-variant-numeric:tabular-nums}
+.tlab[aria-pressed="true"]{color:var(--accent)}
+#cropWrap{display:flex;justify-content:center;margin:8px 0 4px;background:var(--vp);border-radius:12px;padding:8px}
+#cropCv{display:block;touch-action:none;cursor:crosshair;border-radius:4px;max-width:100%}
+.steps{display:flex;flex-wrap:wrap;gap:10px 28px;margin:6px 0}
+.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;vertical-align:middle;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
+.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.q::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+.tip{background:var(--chip);border-radius:10px;padding:8px 12px;margin:4px 0 8px}
+.tip p{margin:0 0 6px}.tip p:last-child{margin:0}
+.otab{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.otab th{text-align:left;color:var(--muted);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line)}
+.otab td{padding:6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.otab td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.otab .dot{display:inline-block;vertical-align:middle;margin-right:6px}
+.otab .code{color:var(--muted);font-size:12px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--muted);text-align:center}
+.sw.off{opacity:.45}
+input[type=color]{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+.prow{display:grid;grid-template-columns:auto 40px minmax(0,1fr);gap:10px;align-items:center;margin:6px 0}
+input[type=text],select{width:100%;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:44px}
+details summary{cursor:pointer;font-size:19px;font-weight:750}
+details.mini{margin-top:12px}
+details.mini summary{font-size:16px;font-weight:700;min-height:36px;display:list-item;padding:6px 0}
+details.mini summary span{font-weight:400;font-size:14px;color:var(--muted)}
+textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:8px;resize:vertical}
+#imgMsg,#copyMsg{font-size:14px;color:var(--muted)}
+button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible,label.btn:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.warn{margin:8px 0 0;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:14px;max-width:62ch}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sub.gap{margin:6px 0 0}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+.group ul{margin:6px 0 0;padding-left:20px}
+.group li{margin:4px 0}
+.seg.four{flex-wrap:wrap;border-radius:26px}
+.seg.four button{flex:1 1 40%}
+.row.wide{grid-template-columns:7.5em minmax(0,1fr) 3.4em}
+input.zero{--zero:linear-gradient(90deg,var(--line) calc(50% - 1px),var(--muted) calc(50% - 1px),var(--muted) calc(50% + 1px),var(--line) calc(50% + 1px))}
+input.zero::-webkit-slider-runnable-track{background:var(--zero)}
+input.zero::-moz-range-track{background:var(--zero)}
+#cmpRow{margin:10px 2px 0}
+#bgDot{width:26px;height:26px}
+#board .cmp{pointer-events:none}
+#cropCv.picking{cursor:copy;outline:3px solid var(--accent);outline-offset:2px}
+#adjReset:disabled{opacity:.5;cursor:default}
+.tip{text-align:left}
+.tip ul{margin:0;padding-left:1.15em}
+.tip li{margin:0 0 6px}
+.tip li:last-child{margin-bottom:0}
+.tip h4{font-size:14px;font-weight:700;color:var(--ink);margin:10px 0 4px}
+.tip h4:first-child{margin-top:0}
+.tip p + ul,.tip ul + p{margin-top:6px}
+.tip a,#learn a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+h2 .q{margin-left:4px}
+details.mini .q{margin-left:4px}
+/* ---- 1.4 editing ---- */
+.btn:disabled,.ib:disabled{opacity:.45;cursor:default}
+#guard{margin:0 0 10px;max-width:none}
+#guard .btns{margin-top:8px}
+#editBar{margin:0 0 10px}
+.ebar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.ebar .seg{margin:0;flex:1 1 250px}
+.ebar .zoom{margin-left:auto}
+.pc{display:flex;align-items:center;gap:8px;margin:10px 2px 2px;font-size:15px;min-width:0}
+.pc .dot{width:22px;height:22px}
+.pc b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sws{display:flex;flex-wrap:wrap;gap:10px;padding:6px 6px 8px}
+#quickSw{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.swb{position:relative;flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--edge);padding:0;cursor:pointer}
+.swb::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.swb[aria-pressed="true"]{box-shadow:0 0 0 2px var(--panel),0 0 0 5px var(--accent)}
+#allSw{max-height:228px;overflow-y:auto}
+#editMsg{min-height:1.5em;margin:2px 2px 0}
+#edNote{margin:8px 2px 0}
+#board.editing .bead,#board.editing .peg{cursor:crosshair}
+#board.lock{touch-action:none}
+.pad{position:relative;width:164px;height:164px;margin:10px auto 8px}
+.pad .sl{position:absolute;display:flex;align-items:center;justify-content:center}
+.pad .sl span{display:flex}
+.rz{display:grid;grid-template-columns:minmax(0,1fr) 44px 6.5em 44px;gap:8px;align-items:center;margin:6px 0;font-size:15px}
+.rz span{color:var(--muted)}
+.rz output{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.btn.sm{min-height:36px;padding:4px 12px;font-size:14px}
+#ruleList{list-style:none;padding:0;margin:8px 0 0}
+#ruleList li{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin:8px 0}
+#libList{display:grid;gap:8px;margin-top:8px}
+.lrow{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px}
+.lrow img{width:72px;height:72px;object-fit:contain;border-radius:8px;background:var(--vp);image-rendering:pixelated}
+.lrow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .btns{margin-top:6px}
+#editGroup h2 span{font-weight:400;font-size:14px;color:var(--muted)}
+
+/* ---- BIG ---- */
+:root{--accent:#B23A17;--accent-ink:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#F08C63;--accent-ink:#2A1208}}
+:root[data-theme="dark"]{--accent:#F08C63;--accent-ink:#2A1208}
+#board .stud{fill:rgba(255,255,255,.16);stroke:rgba(0,0,0,.3);stroke-width:.06;pointer-events:none}
+#board .sheen{fill:none;stroke:rgba(255,255,255,.28);stroke-width:.05;pointer-events:none}
+#board .pcs{fill:none;stroke:rgba(0,0,0,.55);stroke-width:.08;stroke-linejoin:round;pointer-events:none;transition:opacity .15s}
+#board .pring{fill:none;stroke:var(--accent);stroke-width:.12;stroke-dasharray:.3 .18;pointer-events:none}
+#tiltCv{display:block;margin:0 auto}
+#viewSeg{margin:0 0 10px}
+.seg.six{flex-wrap:wrap;border-radius:26px}
+.seg.six button{flex:1 1 30%}
+.lsw[aria-pressed="true"]{box-shadow:none}
+.lsw[aria-pressed="false"]{opacity:.22;border-style:dashed}
+#legoSw,#paintSw{max-height:228px;overflow-y:auto}
+#shapeBtns .btn{min-width:4.2em}
+.otab td.pt{white-space:nowrap}
+.otab th[colspan]{padding-top:12px}
+#partsList{max-height:440px;overflow-y:auto}
+.brow{display:grid;grid-template-columns:18px minmax(0,1fr) minmax(0,1.25fr);gap:10px;align-items:center;margin:6px 0;font-size:15px}
+#depthKey{margin:8px 2px 0;display:flex;flex-wrap:wrap;gap:6px 14px}
+.dk{display:inline-flex;align-items:center;gap:6px}
+#hidDot{width:22px;height:22px}
+#editBar .sws{padding:6px 2px 8px}
+.prow label{color:var(--muted);font-size:15px}
+#board.codes .stud,#board.codes .sheen{display:none}
+#cmpRow{margin:10px 2px 0}
+#board .cmp{pointer-events:none}
+#board.codes .pcs{stroke:rgba(29,34,48,.75)}
+#board .kc{fill:#1D2230;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.kcode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;white-space:nowrap}
+.pasteBox{margin:12px auto 0;max-width:36ch;min-height:48px;padding:10px 14px;border:2px dashed var(--edge);border-radius:12px;color:var(--muted);font-size:14px;text-align:center;caret-color:transparent;outline:none;overflow:hidden;cursor:text;-webkit-user-select:text;user-select:text}
+.pasteBox:empty::before{content:attr(data-ph)}
+.pasteBox:focus{border-color:var(--accent);color:var(--ink)}
+.pasteBox:focus:empty::before{content:"Now paste: long-press here and choose Paste, or press Ctrl+V / ⌘V."}
+.pasteBox img{max-width:100%;max-height:80px}
+#empty .sub{max-width:40ch;margin:8px auto 0}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="BIG">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<header>
+  <h1>BIG: Brick Image Generator</h1>
+  <p>Turn a picture into a brick mosaic on real LEGO® baseplates and plates, flat or raised in relief. Choose the parts, join studs into bigger pieces, and get a parts list. Everything stays in this browser.</p>
+</header>
+<main class="wrap">
+  <section class="stage" aria-label="Mosaic">
+    <div class="toolbar">
+      <div class="tapwrap">
+        <div class="seg" role="group" aria-label="What a tap does">
+          <button type="button" data-k="tap" data-v="inspect">Inspect</button>
+          <button type="button" data-k="tap" data-v="mark">Mark placed</button>
+          <button type="button" data-k="tap" data-v="edit">Edit</button>
+        </div>
+        <button type="button" class="q" aria-expanded="false" aria-controls="t-board" aria-label="Help: placing bricks, sizing and views">?</button>
+      </div>
+      <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button><button type="button" class="q" aria-expanded="false" aria-controls="t-board" aria-label="Help: placing bricks, sizing and views">?</button></div>
+    </div>
+    <div class="sub tip" id="t-board" hidden>
+      <h4>Brick placement</h4>
+      <ul>
+        <li><b>Inspect</b> shows a stud’s colour, part and code, height and place.</li>
+        <li><b>Mark placed</b> ticks off the whole part a stud belongs to, so you can follow your build.</li>
+        <li><b>Edit</b> paints colours, part styles or heights onto studs. Drag to paint a line. Undo is in the edit bar.</li>
+        <li>On a keyboard, the arrow keys move between studs, and Space or Enter acts on the selected one.</li>
+      </ul>
+      <h4>Sizing</h4>
+      <ul>
+        <li><b>−</b> and <b>+</b> zoom out and in, up to 12 times closer.</li>
+        <li><b>Fit</b> shows the whole mosaic again.</li>
+        <li>Zoomed in, drag or scroll inside the board to move around. In Edit, dragging paints, so switch to Inspect to move.</li>
+        <li><b>Focus on section</b>, under the board once you tap a stud, zooms to that stud’s 16 × 16 section.</li>
+      </ul>
+      <h4>Views</h4>
+      <ul>
+        <li><b>Colours</b> is the mosaic as you’ll build it.</li>
+        <li><b>Heights</b> is a grey map of how high each stud stands: lighter is higher. It needs Relief (step 9).</li>
+        <li><b>3D</b> shows the mosaic from an angle, with raised parts standing up.</li>
+        <li><b>Codes</b> labels every part with its code, like paint by numbers. RED22T is a Red 2 × 2 tile.</li>
+        <li><b>Compare</b>, under the board, slides your picture over the mosaic from the left to check the match. It only changes the view.</li>
+      </ul>
+    </div>
+    <div class="seg" role="group" aria-label="View" id="viewSeg">
+      <button type="button" data-k="view" data-v="colour">Colours</button>
+      <button type="button" data-k="view" data-v="depth">Heights</button>
+      <button type="button" data-k="view" data-v="tilt">3D</button>
+      <button type="button" data-k="view" data-v="code">Codes</button>
+    </div>
+    <div id="editBar" hidden>
+      <div class="seg six" role="group" aria-label="Edit tool">
+        <button type="button" data-k="ed.tool" data-v="paint">Paint</button>
+        <button type="button" data-k="ed.tool" data-v="erase">Erase</button>
+        <button type="button" data-k="ed.tool" data-v="fill">Fill</button>
+        <button type="button" data-k="ed.tool" data-v="pick">Pick</button>
+        <button type="button" data-k="ed.tool" data-v="style">Part style</button>
+        <button type="button" data-k="ed.tool" data-v="depth">Height</button>
+      </div>
+      <div id="brushColour">
+        <div class="pc"><span class="dot" id="paintDot"></span><b id="paintName">Pick a colour</b></div>
+        <div class="sws" id="paintSw" role="group" aria-label="Paint colour"></div>
+      </div>
+      <div id="brushStyle" hidden>
+        <div class="seg four" role="group" aria-label="Part style to paint">
+          <button type="button" data-k="ed.style" data-v="plate">Plate</button>
+          <button type="button" data-k="ed.style" data-v="tile">Tile</button>
+          <button type="button" data-k="ed.style" data-v="round">Round plate</button>
+          <button type="button" data-k="ed.style" data-v="dot">Round tile</button>
+        </div>
+      </div>
+      <div id="brushDepth" hidden>
+        <div class="row"><label for="edDepth">Raise by</label><input type="range" id="edDepth" min="0" max="4" step="1"><output id="edDepthOut"></output></div>
+      </div>
+      <div class="btns"><button type="button" class="btn sm" id="undo">Undo</button><button type="button" class="btn sm" id="redo">Redo</button><button type="button" class="btn sm" id="clearEdits">Clear all edits</button></div>
+      <p class="sub" id="editMsg" aria-live="polite"></p>
+    </div>
+    <div id="vp" tabindex="0" aria-label="Mosaic. Arrow keys move between studs; Space or Enter acts on the selected stud.">
+      <div id="empty"><p id="emptyMsg">Choose a picture to turn it into a mosaic.</p><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label><div class="pasteBox" id="pasteEmpty" contenteditable="true" role="textbox" aria-label="Paste a picture here" inputmode="none" spellcheck="false" data-ph="Or paste a picture here: copy one, then tap this box and choose Paste (or press Ctrl+V / ⌘V)."></div><p class="sub" id="emptyNote" aria-live="polite"></p><p class="sub">If Choose image does nothing, the app you’re viewing this in may not allow file pickers. Paste instead, drop a file here, or open this page in your web browser.</p></div>
+      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mosaic preview" hidden></svg>
+      <canvas id="tiltCv" hidden aria-label="3D preview of the mosaic"></canvas>
+    </div>
+    <div class="row" id="cmpRow" hidden><label for="cmp">Compare</label><input type="range" id="cmp" min="0" max="100" step="5" value="0"><output id="cmpOut"></output></div>
+    <div id="depthKey" class="sub" hidden></div>
+    <div id="hud" aria-live="polite"><span id="hudDot" class="empty"></span><div><div id="hudName">Tap a stud</div><div id="hudWhere">Its colour, part, height and place show here.</div></div></div>
+    <div id="secBox" hidden>
+      <div class="chead"><b id="secName"></b><span id="secCount"></span></div>
+      <div class="bar"><span id="secBar"></span></div>
+      <div class="btns"><button type="button" class="btn sm" id="secMark">Mark section placed</button><button type="button" class="btn sm" id="secClear">Clear section</button><button type="button" class="btn sm" id="secFocus">Focus on section</button></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <section class="group" id="picGroup">
+      <h2>Mosaic <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: mosaic">?</button></h2>
+      <div class="sub tip" id="t-pic" hidden>
+        <ul>
+          <li>Work down the steps. Each change re-makes the mosaic straight away, and your edits are laid back over it.</li>
+          <li>Simple, bold pictures with clear light and dark areas make the best mosaics. Crop close to the subject.</li>
+          <li>A mosaic looks best from a few steps back: each stud is one 8 mm pixel.</li>
+        </ul>
+      </div>
+      <p class="sub" id="picStart">Choose or paste a picture on the board to begin.</p>
+      <div id="picBtns" hidden><div class="btns"><label class="btn pick">Choose another image<input type="file" accept="image/*" class="fileIn"></label></div><div class="pasteBox" id="pastePic" contenteditable="true" role="textbox" aria-label="Paste a picture here" inputmode="none" spellcheck="false" data-ph="Or paste a picture here: copy one, then tap this box and choose Paste (or press Ctrl+V / ⌘V)."></div></div>
+      <p id="imgMsg" aria-live="polite"></p>
+
+      <div id="imgSteps" hidden>
+        <h3>1. Crop <button type="button" class="q" aria-expanded="false" aria-controls="t-crop" aria-label="Help: crop">?</button></h3>
+        <div class="sub tip" id="t-crop" hidden>
+          <ul>
+            <li>The crop box keeps the shape of your sheets. Drag inside it to move it, or drag a corner to zoom in or out.</li>
+            <li>Dashed lines show where one sheet ends and the next begins.</li>
+            <li><b>Auto-trim edges</b> cuts off flat borders, like a plain background around a logo.</li>
+          </ul>
+        </div>
+        <div id="cropWrap"><canvas id="cropCv" aria-label="Crop box over the picture"></canvas></div>
+        <div class="btns"><button type="button" class="btn sm" id="autoTrim">Auto-trim edges</button><button type="button" class="btn sm" id="cropReset">Reset crop</button></div>
+        <p class="sub" id="cropMsg" aria-live="polite"></p>
+
+        <h3>2. Sheets <button type="button" class="q" aria-expanded="false" aria-controls="t-sheet" aria-label="Help: sheets">?</button></h3>
+        <div class="sub tip" id="t-sheet" hidden>
+          <ul>
+            <li>A mosaic is built on standard LEGO sheets laid side by side. Pick the sheet, then how many across and down.</li>
+            <li><b>Baseplates</b> are thin and flexible; studs only. <b>Plate 16 × 16</b> is rigid. The <b>LEGO Art canvas</b> is the 16 × 16 Technic brick that LEGO Art sets join with pins.</li>
+            <li>Each stud is 8 mm, so a 48 × 48 baseplate makes a mosaic 38.4 cm across.</li>
+            <li>Mosaics are split into 16 × 16 <b>sections</b>, the size LEGO Art builds in, so you can work one section at a time.</li>
+          </ul>
+        </div>
+        <div class="seg four" role="group" aria-label="Sheet" id="sheetSeg">
+          <button type="button" data-k="sheet" data-v="b48">Baseplate 48</button>
+          <button type="button" data-k="sheet" data-v="b32">Baseplate 32</button>
+          <button type="button" data-k="sheet" data-v="b1632">Baseplate 16 × 32</button>
+          <button type="button" data-k="sheet" data-v="p16">Plate 16</button>
+          <button type="button" data-k="sheet" data-v="art">LEGO Art 16</button>
+        </div>
+        <p class="sub" id="sheetInfo"></p>
+        <div class="seg" role="group" aria-label="Sheet direction" id="rotSeg" hidden>
+          <button type="button" data-k="rot" data-v="false">Upright</button>
+          <button type="button" data-k="rot" data-v="true">Sideways</button>
+        </div>
+        <div class="rz"><span>Sheets across</span><button type="button" class="ib" data-step="across" data-d="-1" aria-label="Fewer sheets across">−</button><output id="acrossOut">1</output><button type="button" class="ib" data-step="across" data-d="1" aria-label="More sheets across">+</button></div>
+        <div class="rz"><span>Sheets down</span><button type="button" class="ib" data-step="down" data-d="-1" aria-label="Fewer sheets down">−</button><output id="downOut">1</output><button type="button" class="ib" data-step="down" data-d="1" aria-label="More sheets down">+</button></div>
+        <p class="sub" id="sizeInfo" aria-live="polite"></p>
+
+        <h3>3. Background <button type="button" class="q" aria-expanded="false" aria-controls="t-bg" aria-label="Help: background">?</button></h3>
+        <div class="sub tip" id="t-bg" hidden>
+          <ul>
+            <li><b>Leave background empty</b> clears the plain area around the subject, starting from the picture’s edges. Empty studs show the bare sheet and need no parts.</li>
+            <li><b>Tolerance</b> sets how different a colour can be and still count as background.</li>
+            <li><b>Pick background colour</b> lets you tap the colour to clear in the crop picture.</li>
+          </ul>
+        </div>
+        <div class="checks"><label><input type="checkbox" id="bgOn"> Leave background empty</label></div>
+        <div class="row"><label for="bgTol">Tolerance</label><input type="range" id="bgTol" min="0" max="160" step="2"><output id="bgTolOut"></output></div>
+        <div class="btns" id="bgPickRow"><span class="dot" id="bgDot" hidden></span><button type="button" class="btn sm" id="bgPick" aria-pressed="false">Pick background colour</button><button type="button" class="btn sm" id="bgAuto" hidden>Use the corners again</button></div>
+        <p class="sub" id="bgMsg" aria-live="polite"></p>
+
+        <details class="mini" id="adjBox">
+          <summary>4. Adjust picture <span id="adjSum"></span></summary>
+          <div class="row wide"><label for="adjB">Brightness</label><input type="range" class="zero" id="adjB" min="-100" max="100" step="1"><output id="adjBOut"></output></div>
+          <div class="row wide"><label for="adjC">Contrast</label><input type="range" class="zero" id="adjC" min="-100" max="100" step="1"><output id="adjCOut"></output></div>
+          <div class="row wide"><label for="adjS">Saturation</label><input type="range" class="zero" id="adjS" min="-100" max="100" step="1"><output id="adjSOut"></output></div>
+          <div class="row wide"><label for="adjH">Hue</label><input type="range" class="zero" id="adjH" min="-180" max="180" step="1"><output id="adjHOut"></output></div>
+          <div class="row wide"><label for="adjW">Warmth</label><input type="range" class="zero" id="adjW" min="-100" max="100" step="1"><output id="adjWOut"></output></div>
+          <div class="btns"><button type="button" class="btn sm" id="adjReset">Reset adjustments</button></div>
+        </details>
+
+        <h3>5. Colours <button type="button" class="q" aria-expanded="false" aria-controls="t-col" aria-label="Help: colours">?</button></h3>
+        <div class="sub tip" id="t-col" hidden>
+          <ul>
+            <li>These are 41 solid colours from LEGO’s current range, under their BrickLink names. Tap a colour to leave it out or bring it back.</li>
+            <li><b>Classic 12</b> and <b>Greys</b> are quick starting sets. Fewer colours means fewer lots to buy.</li>
+            <li><b>Max colours</b> keeps only the colours that matter most to this picture.</li>
+            <li>Screen colours are close, not exact: real plastic looks different under different light.</li>
+          </ul>
+        </div>
+        <div class="btns"><button type="button" class="btn sm" data-lset="all">All 41</button><button type="button" class="btn sm" data-lset="classic">Classic 12</button><button type="button" class="btn sm" data-lset="grey">Greys</button></div>
+        <div class="sws" id="legoSw" role="group" aria-label="LEGO colours to use. Tap one to leave it out or bring it back."></div>
+        <div class="row"><label for="maxC">Max colours</label><input type="range" id="maxC" min="2" max="60" step="1"><output id="maxCOut"></output></div>
+        <p class="sub" id="colMsg"></p>
+        <p class="sub gap">Sampling</p>
+        <div class="seg four" role="group" aria-label="Sampling">
+          <button type="button" data-k="img.sampling" data-v="average">Photo (average)</button>
+          <button type="button" data-k="img.sampling" data-v="nearest">Pixel art (exact)</button>
+          <button type="button" data-k="img.sampling" data-v="dominant">Dominant colour</button>
+          <button type="button" data-k="img.sampling" data-v="median">Median</button>
+        </div>
+
+        <h3>6. Matching and dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
+        <div class="sub tip" id="t-dith" hidden>
+          <ul>
+            <li><b>Colour match</b> decides which LEGO colour is closest. CIE76 and CIEDE2000 judge colours the way eyes do; Oklab is a newer, simpler formula; RGB is the plainest.</li>
+            <li><b>Dithering</b> mixes two colours in a speckle to fake one LEGO doesn’t make. It helps smooth skin and skies, but adds grain and 1 × 1 parts.</li>
+            <li><b>Merge rare</b> folds colours used on only a few studs into their nearest neighbour.</li>
+          </ul>
+          <h4>Learn more</h4>
+          <ul>
+            <li><a href="https://en.wikipedia.org/wiki/Color_difference" target="_blank" rel="noopener noreferrer">Color difference</a>, Wikipedia.</li>
+            <li><a href="https://bottosson.github.io/posts/oklab/" target="_blank" rel="noopener noreferrer">A perceptual color space for image processing</a>, Björn Ottosson: where Oklab comes from.</li>
+            <li><a href="https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html" target="_blank" rel="noopener noreferrer">Dithering: eleven algorithms</a>, Tanner Helland.</li>
+          </ul>
+        </div>
+        <p class="sub gap">Colour match</p>
+        <div class="seg four" role="group" aria-label="Colour match">
+          <button type="button" data-k="img.metric" data-v="rgb">RGB</button>
+          <button type="button" data-k="img.metric" data-v="cie76">CIE76</button>
+          <button type="button" data-k="img.metric" data-v="de2000">CIEDE2000</button>
+          <button type="button" data-k="img.metric" data-v="oklab">Oklab</button>
+        </div>
+        <p class="sub gap">Dithering</p>
+        <div class="seg four" role="group" aria-label="Dithering">
+          <button type="button" data-k="img.dither" data-v="none">None</button>
+          <button type="button" data-k="img.dither" data-v="fs">Diffuse</button>
+          <button type="button" data-k="img.dither" data-v="atk">Atkinson</button>
+          <button type="button" data-k="img.dither" data-v="ordered">Ordered</button>
+        </div>
+        <div class="row" id="dAmtRow"><label for="dAmt">Strength</label><input type="range" id="dAmt" min="10" max="100" step="5"><output id="dAmtOut"></output></div>
+        <div class="row"><label for="rare">Merge rare</label><input type="range" id="rare" min="0" max="40" step="1"><output id="rareOut"></output></div>
+
+        <details class="mini" id="cleanBox">
+          <summary>7. Clean up <span id="cleanSum"></span></summary>
+          <p class="sub">Fewer stray studs means bigger parts and an easier build.</p>
+          <div class="row"><label for="specks">Remove specks</label><input type="range" id="specks" min="0" max="8" step="1"><output id="specksOut"></output></div>
+          <div class="row"><label for="smooth">Smooth</label><input type="range" id="smooth" min="0" max="3" step="1"><output id="smoothOut"></output></div>
+          <p class="sub gap">Outline in the darkest colour</p>
+          <div class="seg" role="group" aria-label="Outline">
+            <button type="button" data-k="img.outline" data-v="none">Off</button>
+            <button type="button" data-k="img.outline" data-v="in">Inside</button>
+            <button type="button" data-k="img.outline" data-v="out">Outside</button>
+          </div>
+          <p class="sub" id="cleanInfo"></p>
+        </details>
+
+        <h3>8. Pieces <button type="button" class="q" aria-expanded="false" aria-controls="t-piece" aria-label="Help: pieces">?</button></h3>
+        <div class="sub tip" id="t-piece" hidden>
+          <ul>
+            <li><b>Plates</b> have studs on top. <b>Tiles</b> are smooth. <b>Round plates</b> and <b>round tiles</b> are one stud each and give a dotted look. All four are the same height, so they mix freely.</li>
+            <li>Choose a style for the whole mosaic, change it colour by colour, or paint it onto areas with the Part style tool in Edit.</li>
+            <li><b>Biggest first</b> covers each patch of one colour with the largest part that fits. <b>Rows</b> uses only 1-wide parts along each row. <b>Studs only</b> uses one part per stud, like LEGO Art.</li>
+            <li>A part only joins studs of the same colour, style and height. Round parts are always 1 × 1.</li>
+            <li><b>Keep parts inside sections</b> means each 16 × 16 section builds on its own.</li>
+            <li>Not every part is made in every colour. BrickLink’s wanted list shows which ones sellers have.</li>
+          </ul>
+          <h4>Learn more</h4>
+          <ul>
+            <li><a href="https://en.wikipedia.org/wiki/Greedy_algorithm" target="_blank" rel="noopener noreferrer">Greedy algorithm</a>, Wikipedia: Biggest first works this way. It is quick, but not always the fewest parts possible.</li>
+            <li><a href="https://bricknerd.com/home/everything-you-want-to-know-about-lego-mosaics-11-12-24" target="_blank" rel="noopener noreferrer">Everything you want to know about LEGO mosaics</a>, BrickNerd.</li>
+          </ul>
+        </div>
+        <p class="sub gap">Style for the whole mosaic</p>
+        <div class="seg four" role="group" aria-label="Part style for the whole mosaic">
+          <button type="button" data-k="style.def" data-v="plate">Plates</button>
+          <button type="button" data-k="style.def" data-v="tile">Tiles</button>
+          <button type="button" data-k="style.def" data-v="round">Round plates</button>
+          <button type="button" data-k="style.def" data-v="dot">Round tiles</button>
+        </div>
+        <details class="mini" id="byColBox">
+          <summary>Style by colour <span id="byColSum"></span></summary>
+          <div id="byCol"></div>
+        </details>
+        <p class="sub gap">Joining studs into parts</p>
+        <div class="seg" role="group" aria-label="Joining studs into parts">
+          <button type="button" data-k="join.mode" data-v="big">Biggest first</button>
+          <button type="button" data-k="join.mode" data-v="rows">Rows</button>
+          <button type="button" data-k="join.mode" data-v="one">Studs only</button>
+        </div>
+        <p class="sub" id="joinCounts" aria-live="polite"></p>
+        <div id="shapeRow"><p class="sub gap">Part sizes to use</p><div class="btns" id="shapeBtns" role="group" aria-label="Part sizes to use"></div></div>
+        <div class="checks"><label><input type="checkbox" id="joinSec"> Keep parts inside sections</label><label><input type="checkbox" id="joinLines"> Show part outlines</label></div>
+
+        <h3>9. Relief <button type="button" class="q" aria-expanded="false" aria-controls="t-depth" aria-label="Help: relief">?</button></h3>
+        <div class="sub tip" id="t-depth" hidden>
+          <ul>
+            <li>Relief raises parts on hidden plates, one plate (3.2 mm) per step, so areas of the picture stand out from the sheet.</li>
+            <li><b>From light areas</b> raises the brightest parts most; <b>From dark areas</b> does the opposite; <b>Paint only</b> starts flat and you raise areas with the Height tool in Edit.</li>
+            <li>Hidden plates stack under the raised parts and are joined into bigger plates too. Nobody sees them, so pick a cheap colour.</li>
+            <li>Look at the result in the <b>Heights</b> or <b>3D</b> view above the mosaic.</li>
+          </ul>
+        </div>
+        <div class="checks"><label><input type="checkbox" id="depthOn"> Raise parts in relief</label></div>
+        <div id="depthSet">
+          <div class="row"><label for="levels">Highest step</label><input type="range" id="levels" min="1" max="4" step="1"><output id="levelsOut"></output></div>
+          <div class="seg" role="group" aria-label="Where the heights come from">
+            <button type="button" data-k="depth.src" data-v="light">From light areas</button>
+            <button type="button" data-k="depth.src" data-v="dark">From dark areas</button>
+            <button type="button" data-k="depth.src" data-v="paint">Paint only</button>
+          </div>
+          <div class="prow"><label for="hidCol">Hidden plate colour</label><span class="dot" id="hidDot"></span><select id="hidCol"></select></div>
+          <p class="sub" id="depthInfo" aria-live="polite"></p>
+        </div>
+
+        <details class="mini" id="partsBox">
+          <summary><b>Parts list</b> <span id="partsSum"></span></summary>
+          <div class="row"><label for="spares">Spares per lot</label><input type="range" id="spares" min="0" max="20" step="1"><output id="sparesOut"></output></div>
+          <div id="partsList"></div>
+          <p class="sub">Part and colour numbers are BrickLink’s. A BrickLink wanted list finds sellers for every lot at once: save it here, then upload it on BrickLink.</p>
+          <div class="btns"><button type="button" class="btn" id="blSave">Save BrickLink wanted list (XML)</button></div>
+          <p class="sub" id="blMsg" aria-live="polite"></p>
+        </details>
+        <div class="btns"><button type="button" class="btn sm" id="resetSettings">Reset settings</button></div>
+      </div>
+    </section>
+
+    <section class="group" id="progGroup" hidden>
+      <h2>Progress</h2>
+      <p id="pct"></p>
+      <details class="mini" id="legendBox">
+        <summary>Colours <span id="legendSum"></span></summary>
+        <p class="sub">Tap a colour to show only its studs.</p>
+        <div id="legend"></div>
+        <div class="btns" id="isoBtns" hidden><button type="button" class="btn sm" id="isoMark">Mark this colour placed</button><button type="button" class="btn sm" id="isoClear">Clear this colour</button></div>
+      </details>
+      <div class="checks"><label><input type="checkbox" id="fade"> Fade placed parts</label><label><input type="checkbox" id="labels"> Show section labels</label></div>
+      <div class="btns"><button type="button" class="btn sm" id="resetProg">Reset progress</button></div>
+    </section>
+
+    <section class="group">
+      <h2>Save and open</h2>
+      <p class="sub">A project file keeps the picture, every setting and your edits, so the mosaic reopens exactly.</p>
+      <div class="frow"><input type="text" id="projName" placeholder="Mosaic name" maxlength="60" aria-label="Mosaic name"></div>
+      <div class="btns"><button type="button" class="btn" id="projSave">Save project file</button><label class="btn pick">Open project file<input type="file" id="projIn" accept=".json,.big.json,.lig.json,application/json"></label></div>
+      <p class="sub" id="projMsg" aria-live="polite"></p>
+      <p class="sub" id="saveMsg" hidden>This browser isn’t keeping your work between visits. Save a project file to keep it.</p>
+    </section>
+
+    <section class="group">
+      <h2>Export</h2>
+      <div class="btns"><button type="button" class="btn" id="pngFlat">Save picture</button><button type="button" class="btn" id="pngTilt">Save 3D picture</button><button type="button" class="btn" id="pngCode">Save numbered map</button></div>
+      <p class="sub" id="pngMsg" aria-live="polite"></p>
+      <h3>Build sheets</h3>
+      <p class="sub">A PDF to print: a cover with the whole mosaic and its colours, the parts list, then a real-size page for each 16 × 16 section with every part’s code. Raised sections get a page for each layer of hidden plates first.</p>
+      <div class="seg" role="group" aria-label="Paper size"><button type="button" data-k="paper" data-v="letter">Letter</button><button type="button" data-k="paper" data-v="a4">A4</button></div>
+      <div class="btns"><button type="button" class="btn primary" id="pdfBtn">Save build sheets (PDF)</button></div>
+      <p class="sub" id="pdfMsg" aria-live="polite"></p>
+      <details class="mini" id="expDetails">
+        <summary>Lists</summary>
+        <select id="expKind" aria-label="List to show">
+          <option value="parts">Parts list (CSV)</option>
+          <option value="studs">Stud list (CSV)</option>
+          <option value="bricklink">BrickLink wanted list (XML)</option>
+        </select>
+        <textarea id="expText" readonly aria-label="List text"></textarea>
+        <div class="btns"><button type="button" class="btn" id="copyBtn">Copy</button><span id="copyMsg" aria-live="polite"></span></div>
+      </details>
+    </section>
+
+    <section class="group" id="learn">
+      <h2>Learn the ideas</h2>
+      <ul class="sub">
+        <li><b>Mosaics</b>: <a href="https://bricknerd.com/home/everything-you-want-to-know-about-lego-mosaics-11-12-24" target="_blank" rel="noopener noreferrer">Everything you want to know about LEGO mosaics</a> (BrickNerd), and <a href="https://www.wikipedia.org/wiki/Lego_Art" target="_blank" rel="noopener noreferrer">LEGO Art</a> (Wikipedia).</li>
+        <li><b>Sizes</b>: <a href="https://brickfact.com/blog/guidebooks/lego-brick-dimensions" target="_blank" rel="noopener noreferrer">LEGO brick dimensions</a> (Brickfact): why a stud is 8 mm and a plate 3.2 mm.</li>
+        <li><b>Colour</b>: <a href="https://en.wikipedia.org/wiki/Color_difference" target="_blank" rel="noopener noreferrer">Color difference</a> (Wikipedia) and <a href="https://bottosson.github.io/posts/oklab/" target="_blank" rel="noopener noreferrer">Oklab</a> (Björn Ottosson).</li>
+        <li><b>Dithering</b>: <a href="https://surma.dev/things/ditherpunk/" target="_blank" rel="noopener noreferrer">Ditherpunk</a> (Surma), and <a href="https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html" target="_blank" rel="noopener noreferrer">eleven dithering algorithms</a> (Tanner Helland).</li>
+        <li><b>Joining studs into parts</b>: <a href="https://en.wikipedia.org/wiki/Greedy_algorithm" target="_blank" rel="noopener noreferrer">Greedy algorithm</a> (Wikipedia).</li>
+        <li><b>Fill</b>: <a href="https://en.wikipedia.org/wiki/Flood_fill" target="_blank" rel="noopener noreferrer">Flood fill</a> (Wikipedia), the idea behind the Fill tool and Leave background empty.</li>
+        <li><b>Another mosaic tool</b>: <a href="https://studiohelp.bricklink.com/hc/en-us/articles/5625025298327" target="_blank" rel="noopener noreferrer">BrickLink Studio’s mosaic maker</a>.</li>
+      </ul>
+    </section>
+
+    <details class="group">
+      <summary>About this version <span class="sub">1.0 · 13 Nov 2026</span></summary>
+      <ul class="sub">
+        <li>A new app for brick mosaics, grown from an early LEGO mode for FIG. (For its first day it was called LIG; anything saved then still opens.)</li>
+          <li>14 Nov: paste boxes for pictures, one picture button at a time, the Tilted view renamed 3D, and Heights and 3D explain themselves and can turn relief on. Later that day: a Codes view and numbered map, with a code for every kind of part (RED22T is a Red 2 × 2 tile) in the parts list, lists and wanted list. Then printable build sheets: a PDF with real-size pages for every section, and FIG’s Compare slider.</li>
+        <li>Mosaics are built on real sheets: baseplates 48 × 48, 32 × 32 and 16 × 32, Plate 16 × 16, or the LEGO Art canvas, as many across and down as you like.</li>
+        <li>Plates, tiles, round plates and round tiles, chosen for the whole mosaic, per colour, or painted on.</li>
+        <li>Three ways to join studs into parts, with the part count for each, and 16 × 16 sections.</li>
+        <li>Relief: parts raised up to four plates on hidden plates, from the picture’s light or dark areas or painted by hand, with Heights and 3D views.</li>
+        <li>A parts list with spares, a BrickLink wanted list, project files, progress marking and editing with undo.</li>
+      </ul>
+    </details>
+    <details class="group">
+      <summary>Credits</summary>
+      <ul class="sub">
+        <li>BIG’s code is written for BIG and for FIG, its sister app. No code, pictures or fonts are taken from other apps.</li>
+        <li>Colour names are BrickLink’s and LEGO’s own, with BrickLink colour and part numbers, so the lists match what sellers use. The screen colours come from Rebrickable’s colour data, which Rebrickable offers free for any use.</li>
+        <li>Oklab is by Björn Ottosson, published in the public domain. CIEDE2000 follows Sharma, Wu and Dalal (2005).</li>
+        <li>LEGO® is a trademark of the LEGO Group, which does not sponsor, authorise or endorse this app. BIG is a fan-made tool.</li>
+      </ul>
+    </details>
+  </div>
+</main>
+<script>
+/* BIG: Brick Image Generator 1.0. One file, no server: picture in, brick mosaic out.
+   The picture pipeline (sampling, adjustments, matching, dithering, clean up) comes from FIG, its sister app.
+   Order of this script: constants and data, settings, conversion, the mosaic model (styles, heights, parts),
+   drawing, the views, interaction, editing, the controls, lists and files, start-up, then the build sheets (app5). */
+(()=>{
+'use strict';
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f3=n=>+n.toFixed(3);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const plural=(n,w)=>n.toLocaleString()+' '+w+(n===1?'':'s');
+const VERSION='1.0';
+const SRC_MAX=600;        /* a loaded picture is shrunk so its longer side is at most this many pixels */
+const ALL_COLOURS=60;     /* top of the Max colours slider, shown as "All" */
+const BAYER_SPREAD=64;    /* ordered-dither strength at 100% */
+const MAX_STUDS=192;      /* the widest or tallest mosaic, in studs */
+const SEC=16;             /* section size in studs; every sheet is a whole number of sections */
+const GAP=0.5,PAD=0.6;    /* drawing: gap between sheets and margin, in studs */
+
+/* ---------- storage: localStorage when it works, memory when it doesn't ---------- */
+const mem={},unsaved=new Set();
+const store={
+  get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
+  set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok},
+  del(k){delete mem[k];unsaved.delete(k);try{localStorage.removeItem(k)}catch(e){}}
+};
+/* For its first day BIG was called LIG: move anything this browser saved under the old name. */
+try{const old=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('lig:'))old.push(k)}
+  for(const k of old){const n='big:'+k.slice(4);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}catch(e){}
+
+/* ---------- LEGO colours ----------
+   BrickLink name, LEGO's own name, BrickLink colour number, LEGO colour number, screen colour.
+   The screen colours are from Rebrickable's colour data (free for any use); names and numbers are BrickLink's and LEGO's. */
+const LEGO=[
+  ['White','White',1,1,'#FFFFFF'],['Light Bluish Gray','Medium Stone Grey',86,194,'#A0A5A9'],['Dark Bluish Gray','Dark Stone Grey',85,199,'#6C6E68'],['Black','Black',11,26,'#05131D'],
+  ['Red','Bright Red',5,21,'#C91A09'],['Dark Red','Dark Red',59,154,'#720E0F'],['Coral','Vibrant Coral',220,353,'#FF698F'],['Orange','Bright Orange',4,106,'#FE8A18'],
+  ['Dark Orange','Dark Orange',68,38,'#A95500'],['Bright Light Orange','Flame Yellowish Orange',110,191,'#F8BB3D'],['Yellow','Bright Yellow',3,24,'#F2CD37'],['Bright Light Yellow','Cool Yellow',103,226,'#FFF03A'],
+  ['Yellowish Green','Spring Yellowish Green',158,326,'#DFEEA5'],['Lime','Bright Yellowish Green',34,119,'#BBE90B'],['Bright Green','Bright Green',36,37,'#4B9F4A'],['Green','Dark Green',6,28,'#237841'],
+  ['Dark Green','Earth Green',80,141,'#184632'],['Olive Green','Olive Green',155,330,'#9B9A5A'],['Sand Green','Sand Green',48,151,'#A0BCAC'],['Light Aqua','Aqua',152,323,'#ADC3C0'],
+  ['Dark Turquoise','Bright Bluish Green',39,107,'#008F9B'],['Medium Azure','Medium Azur',156,322,'#36AEBF'],['Dark Azure','Dark Azur',153,321,'#078BC9'],['Bright Light Blue','Light Royal Blue',105,212,'#9FC3E9'],
+  ['Medium Blue','Medium Blue',42,102,'#5A93DB'],['Blue','Bright Blue',7,23,'#0055BF'],['Dark Blue','Earth Blue',63,140,'#0A3463'],['Sand Blue','Sand Blue',55,135,'#6074A1'],
+  ['Lavender','Lavender',154,325,'#E1D5ED'],['Medium Lavender','Medium Lavender',157,324,'#AC78BA'],['Dark Purple','Medium Lilac',89,268,'#3F3691'],['Magenta','Bright Reddish Violet',71,124,'#923978'],
+  ['Dark Pink','Bright Purple',47,221,'#C870A0'],['Bright Pink','Light Purple',104,222,'#E4ADC8'],['Light Nougat','Light Nougat',90,283,'#F6D7B3'],['Nougat','Nougat',28,18,'#D09168'],
+  ['Medium Nougat','Medium Nougat',150,312,'#AA7D55'],['Tan','Brick Yellow',2,5,'#E4CD9E'],['Dark Tan','Sand Yellow',69,138,'#958A73'],['Reddish Brown','Reddish Brown',88,192,'#582A12'],
+  ['Dark Brown','Dark Brown',120,308,'#352100']
+].map(([name,lname,bl,lid,hex],i)=>({name,lname,bl,lid,hex,i}));
+const LEGO_BY=new Map(LEGO.map(c=>[c.name,c]));
+/* BIG codes: every kind of part gets colour + size + style, such as RED22T for a Red 2 x 2 tile.
+   Colour: three letters, the usual fan shorthand where there is one (BLK, WHT, LBG, DBG, RBR...). Size: short side then long side.
+   Style: nothing for a plate with studs, T tile, R round plate, RT round tile. */
+const COLOUR_CODE={'White':'WHT','Light Bluish Gray':'LBG','Dark Bluish Gray':'DBG','Black':'BLK','Red':'RED','Dark Red':'DRD','Coral':'CRL','Orange':'ORG','Dark Orange':'DOR','Bright Light Orange':'BLO','Yellow':'YEL','Bright Light Yellow':'BLY','Yellowish Green':'YGN','Lime':'LIM','Bright Green':'BGN','Green':'GRN','Dark Green':'DGN','Olive Green':'OLV','Sand Green':'SGN','Light Aqua':'LAQ','Dark Turquoise':'DTQ','Medium Azure':'MAZ','Dark Azure':'DAZ','Bright Light Blue':'BLB','Medium Blue':'MBL','Blue':'BLU','Dark Blue':'DBL','Sand Blue':'SBL','Lavender':'LAV','Medium Lavender':'MLV','Dark Purple':'DPU','Magenta':'MAG','Dark Pink':'DPK','Bright Pink':'BPK','Light Nougat':'LNG','Nougat':'NOU','Medium Nougat':'MNG','Tan':'TAN','Dark Tan':'DTN','Reddish Brown':'RBR','Dark Brown':'DBR'};
+LEGO.forEach(c=>{c.code=COLOUR_CODE[c.name]});
+const STYLE_MARK={plate:'',tile:'T',round:'R',dot:'RT'};
+const kindCode=(c,s,k)=>LEGO[c].code+k.replace('x','')+STYLE_MARK[s];
+const LEGO_SETS={classic:['White','Light Bluish Gray','Dark Bluish Gray','Black','Red','Orange','Yellow','Green','Blue','Dark Blue','Reddish Brown','Tan'],grey:['White','Light Bluish Gray','Dark Bluish Gray','Black']};
+
+/* ---------- parts seen from above: sizes are short side x long side, with BrickLink part numbers ---------- */
+const STYLES=['plate','tile','round','dot'];
+const PARTS={
+  plate:{one:'Plate',many:'plates',name:'Plates',studs:1,ids:{'1x1':'3024','1x2':'3023','1x3':'3623','1x4':'3710','1x6':'3666','1x8':'3460','2x2':'3022','2x3':'3021','2x4':'3020','2x6':'3795','2x8':'3034'}},
+  tile:{one:'Tile',many:'tiles',name:'Tiles',studs:0,ids:{'1x1':'3070b','1x2':'3069b','1x3':'63864','1x4':'2431','1x6':'6636','1x8':'4162','2x2':'3068b','2x3':'26603','2x4':'87079'}},
+  round:{one:'Round plate',many:'round plates',name:'Round plates',studs:1,round:1,ids:{'1x1':'4073'}},
+  dot:{one:'Round tile',many:'round tiles',name:'Round tiles',studs:0,round:1,ids:{'1x1':'98138'}}};
+const SHAPES=['1x2','1x3','1x4','1x6','1x8','2x2','2x3','2x4','2x6','2x8'];
+const partName=(s,k)=>{const[a,b]=k.split('x');return PARTS[s].one+' '+a+' × '+b};
+/* ---------- sheets ---------- */
+const SHEETS={
+  b48:{name:'Baseplate 48 × 48',w:48,h:48,id:'4186',kind:'a thin, flexible baseplate'},
+  b32:{name:'Baseplate 32 × 32',w:32,h:32,id:'3811',kind:'a thin, flexible baseplate'},
+  b1632:{name:'Baseplate 16 × 32',w:16,h:32,id:'3857',kind:'a thin, flexible baseplate'},
+  p16:{name:'Plate 16 × 16',w:16,h:16,id:'91405',kind:'a rigid plate'},
+  art:{name:'LEGO Art canvas 16 × 16',w:16,h:16,id:'65803',kind:'the Technic brick LEGO Art sets join with pins'}};
+/* Heights view: flat parts dark, the highest light, as in a depth map */
+const depthGrey=(d,L)=>{const t=L?d/L:0,a=[62,69,82],b=[244,245,247];return'rgb('+a.map((v,i)=>Math.round(v+(b[i]-v)*t)).join(',')+')'};
+
+/* ---------- settings ---------- */
+const DEF={sheet:'b32',rot:false,across:1,down:1,
+  img:{crop:{x:0,y:0,w:1,h:1},free:{x:0,y:0,w:1,h:1},sampling:'average',metric:'cie76',dither:'none',ditherAmt:100,rare:0,maxColors:ALL_COLOURS,off:[],
+    bg:false,bgTol:40,bgCol:null,bgPt:null,adjB:0,adjC:0,adjS:0,adjH:0,adjW:0,specks:0,smooth:0,outline:'none'},
+  style:{def:'plate',by:{}},
+  join:{mode:'big',shapeOff:[],sections:true,lines:true},
+  depth:{on:false,levels:3,src:'light',hidden:'Black'},
+  spares:0,paper:'letter',tap:'inspect',view:'colour',fade:true,labels:false,iso:null,
+  ed:{tool:'paint',paint:null,style:'tile',depth:1},
+  ui:{adj:false,clean:false,parts:false,legend:true,byCol:false}};
+const CHOICES={sheet:Object.keys(SHEETS),'img.sampling':['average','nearest','dominant','median'],'img.metric':['rgb','cie76','de2000','oklab'],
+  'img.dither':['none','fs','atk','ordered'],'img.outline':['none','in','out'],'style.def':STYLES,'join.mode':['big','rows','one'],
+  'depth.src':['light','dark','paint'],tap:['inspect','mark','edit'],view:['colour','depth','tilt','code'],paper:['letter','a4'],
+  'ed.tool':['paint','erase','fill','pick','style','depth'],'ed.style':STYLES};
+const LIMITS={across:[1,12],down:[1,12],'img.ditherAmt':[10,100],'img.rare':[0,40],'img.maxColors':[2,ALL_COLOURS],'img.bgTol':[0,160],
+  'img.adjB':[-100,100],'img.adjC':[-100,100],'img.adjS':[-100,100],'img.adjH':[-180,180],'img.adjW':[-100,100],'img.specks':[0,8],'img.smooth':[0,3],
+  'depth.levels':[1,4],'ed.depth':[0,4],spares:[0,20]};
+const getIn=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const setIn=(o,p,v)=>{const ks=p.split('.'),l=ks.pop();ks.reduce((a,k)=>a[k],o)[l]=v};
+function merge(d,s){
+  if(d===null)return null;
+  if(Array.isArray(d))return Array.isArray(s)?s.slice(0,200):d.slice();
+  if(typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&typeof s==='object'&&!Array.isArray(s)?s[k]:undefined);return o}
+  return typeof s===typeof d&&(typeof s!=='number'||Number.isFinite(s))?s:d;
+}
+const box01=c=>{if(!c||![c.x,c.y,c.w,c.h].every(Number.isFinite)||c.w<=0||c.h<=0)return{x:0,y:0,w:1,h:1};
+  const w=clamp(c.w,0.001,1),h=clamp(c.h,0.001,1);return{x:clamp(c.x,0,1-w),y:clamp(c.y,0,1-h),w,h}};
+function sheetWH(o=st){const S=SHEETS[o.sheet];return S.w!==S.h&&o.rot?[S.h,S.w]:[S.w,S.h]}
+function tidy(s){
+  if(!s||typeof s!=='object')s={};
+  const o=merge(DEF,s);
+  for(const p in CHOICES)if(!CHOICES[p].includes(getIn(o,p)))setIn(o,p,getIn(DEF,p));
+  for(const p in LIMITS){const[a,b]=LIMITS[p],v=getIn(o,p);setIn(o,p,clamp(Math.round(Number.isFinite(v)?v:getIn(DEF,p)),a,b))}
+  const I=s.img&&typeof s.img==='object'?s.img:{};
+  o.img.bgCol=typeof I.bgCol==='string'&&/^#[0-9A-F]{6}$/i.test(I.bgCol)?I.bgCol.toUpperCase():null;
+  o.img.bgPt=I.bgPt&&Number.isFinite(I.bgPt.x)&&Number.isFinite(I.bgPt.y)?{x:clamp(I.bgPt.x,0,1),y:clamp(I.bgPt.y,0,1)}:null;
+  o.img.crop=box01(o.img.crop);o.img.free=box01(o.img.free);
+  o.img.off=[...new Set(o.img.off.filter(n=>typeof n==='string'&&LEGO_BY.has(n)))];if(o.img.off.length>LEGO.length-2)o.img.off=[];
+  const by={},sb=s.style&&s.style.by;if(sb&&typeof sb==='object')for(const k in sb)if(LEGO_BY.has(k)&&STYLES.includes(sb[k]))by[k]=sb[k];o.style.by=by;
+  o.join.shapeOff=[...new Set(o.join.shapeOff.filter(k=>SHAPES.includes(k)))];
+  if(typeof o.depth.hidden!=='string'||!LEGO_BY.has(o.depth.hidden))o.depth.hidden='Black';
+  const p=s.ed&&s.ed.paint;o.ed.paint=typeof p==='string'&&LEGO_BY.has(p)?p:null;
+  o.iso=Number.isInteger(s.iso)&&s.iso>=0&&s.iso<LEGO.length?s.iso:null;
+  fitCount(o);
+  return o;
+}
+function fitCount(o=st){const[w,h]=sheetWH(o);o.across=clamp(o.across,1,Math.max(1,Math.floor(MAX_STUDS/w)));o.down=clamp(o.down,1,Math.max(1,Math.floor(MAX_STUDS/h)))}
+let st=tidy(store.get('big:settings'));
+const saveSettings=()=>store.set('big:settings',st);
+const dims=()=>{const[sw,sh]=sheetWH();return{sw,sh,W:sw*st.across,H:sh*st.down}};
+
+/* ---------- edits: colour, style and height set by hand, keyed "x,y" so they stay put when the picture is re-made ---------- */
+const newEdits=()=>({col:{},sty:{},dep:{}});
+function tidyEdits(o){
+  const E=newEdits();if(!o||typeof o!=='object')return E;
+  const ok=k=>/^\d{1,3},\d{1,3}$/.test(k);let n=0;
+  for(const k in o.col||{}){if(n++>60000)break;const v=o.col[k];if(ok(k)&&(v===''||(typeof v==='string'&&LEGO_BY.has(v))))E.col[k]=v}
+  for(const k in o.sty||{}){if(n++>120000)break;if(ok(k)&&STYLES.includes(o.sty[k]))E.sty[k]=o.sty[k]}
+  for(const k in o.dep||{}){if(n++>180000)break;const v=o.dep[k];if(ok(k)&&Number.isInteger(v)&&v>=0&&v<=4)E.dep[k]=v}
+  return E;
+}
+let E=tidyEdits(store.get('big:edits'));
+const saveEdits=()=>store.set('big:edits',E);
+const editCount=()=>Object.keys(E.col).length+Object.keys(E.sty).length+Object.keys(E.dep).length;
+
+/* ---------- state ---------- */
+let srcImg=null,imgCv=null,srcUrl='',conv=null,pattern=null,sel=-1,focus=null,zoom=1,prog=new Set(),progKey='',outlined=0;
+let undoStack=[],redoStack=[];
+
+/* ---------- picture helpers shared with FIG, the same author's bead app (taken from FIG 1.5) ---------- */
+/* Oklab (Björn Ottosson, 2020; published in the public domain): a perceptual colour space. Input is sRGB, 0 to 255. */
+function toOklab(r,g,b){
+  const f=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)};
+  const R=f(r),G=f(g),B=f(b);
+  const l=Math.cbrt(0.4122214708*R+0.5363325363*G+0.0514459929*B),m=Math.cbrt(0.2119034982*R+0.6806995451*G+0.1073969566*B),s=Math.cbrt(0.0883024619*R+0.2817188376*G+0.6299787005*B);
+  return[0.2104542553*l+0.7936177850*m-0.0040720468*s,1.9779984951*l-2.4285922050*m+0.4505937099*s,0.0259040371*l+0.7827717662*m-0.8086757660*s];
+}
+/* Picture adjustments on the sampled colours (three numbers per bead in `rgb`), for every bead where ok(k) is true.
+   br, ct, sat and warm run from -100 to 100 and hue from -180 to 180 degrees; 0 changes nothing. */
+function adjustRgb(rgb,n,ok,a){
+  const C=a.ct*1.5,f=(259*(C+255))/(255*(259-C)),sat=1+a.sat/100,w=a.warm*0.4,h=a.hue*Math.PI/180,ch=Math.cos(h),sh=Math.sin(h),turn=a.sat!==0||a.hue!==0;
+  const cl=v=>v<0?0:v>255?255:v;
+  for(let k=0;k<n;k++){
+    if(!ok(k))continue;
+    let r=f*(rgb[k*3]+w-128)+128+a.br,g=f*(rgb[k*3+1]-128)+128+a.br,b=f*(rgb[k*3+2]-w-128)+128+a.br;
+    if(turn){   /* YIQ: Y is brightness; the colour part (I, Q) is scaled for saturation and rotated for hue */
+      const y=0.299*r+0.587*g+0.114*b,i=(0.596*r-0.274*g-0.322*b)*sat,q=(0.211*r-0.523*g+0.312*b)*sat,i2=i*ch-q*sh,q2=i*sh+q*ch;
+      r=y+0.956*i2+0.621*q2;g=y-0.272*i2-0.647*q2;b=y-1.106*i2+1.703*q2;
+    }
+    rgb[k*3]=cl(r);rgb[k*3+1]=cl(g);rgb[k*3+2]=cl(b);
+  }
+}
+/* One bead's colour from the pixels of its cell (columns x0 to x1, rows y0 to y1 of an RGBA picture `sw` pixels wide).
+   'dominant' = the most common colour, counted in coarse steps of 16 per channel; 'median' = the pixel of middle brightness.
+   See-through pixels do not vote. Returns [r, g, b, average alpha]. */
+function cellPick(data,sw,x0,x1,y0,y1,mode){
+  let sa=0,m=0;const px=[];
+  for(let yy=y0;yy<y1;yy++)for(let xx=x0;xx<x1;xx++){const i=(yy*sw+xx)*4;sa+=data[i+3];m++;if(data[i+3]>=128)px.push(i)}
+  const a=m?sa/m:0;if(!px.length)return[0,0,0,a];
+  if(mode==='median'){
+    const lum=i=>0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+    px.sort((p,q)=>lum(p)-lum(q)||p-q);const i=px[(px.length-1)>>1];return[data[i],data[i+1],data[i+2],a];
+  }
+  const bins=new Map();let best=null;
+  for(const i of px){
+    const key=(data[i]>>4)<<8|(data[i+1]>>4)<<4|data[i+2]>>4;let t=bins.get(key);if(!t){t=[0,0,0,0];bins.set(key,t)}
+    t[0]++;t[1]+=data[i];t[2]+=data[i+1];t[3]+=data[i+2];if(!best||t[0]>best[0])best=t;
+  }
+  return[best[1]/best[0],best[2]/best[0],best[3]/best[0],a];
+}
+/* The three clean-up steps work on `pick`: one palette number per peg, -1 for an empty peg. `near(k)` lists peg k's neighbours.
+   Smooth: a bead takes the colour that more than half of its neighbourhood (itself included) shares. Empty pegs do not vote and stay empty. */
+function smoothPick(pick,n,near,passes){
+  for(let p=0;p<passes;p++){
+    const was=Int16Array.from(pick);let changed=0;
+    for(let k=0;k<n;k++){
+      if(was[k]<0)continue;
+      const cnt=new Map([[was[k],1]]);let tot=1,bi=was[k],bc=1;
+      for(const j of near(k)){const c=was[j];if(c<0)continue;tot++;const v=(cnt.get(c)||0)+1;cnt.set(c,v);if(v>bc){bc=v;bi=c}}
+      if(bi!==was[k]&&bc*2>tot){pick[k]=bi;changed++}
+    }
+    if(!changed)break;
+  }
+}
+/* Remove specks: a connected patch of one colour with `max` beads or fewer is given to the colour that touches it most.
+   A patch that touches no other bead (an island among empty pegs) is left alone. */
+function mergeSpecks(pick,n,near,max){
+  for(let round=0;round<4;round++){
+    const seen=new Uint8Array(n);let changed=0;
+    for(let s=0;s<n;s++){
+      if(seen[s]||pick[s]<0)continue;
+      const col=pick[s],patch=[s];seen[s]=1;
+      for(let h=0;h<patch.length;h++)for(const j of near(patch[h]))if(!seen[j]&&pick[j]===col){seen[j]=1;patch.push(j)}
+      if(patch.length>max)continue;
+      const around=new Map();let bi=-1,bc=0;
+      for(const k of patch)for(const j of near(k)){const c=pick[j];if(c<0||c===col)continue;const v=(around.get(c)||0)+1;around.set(c,v);if(v>bc){bc=v;bi=c}}
+      if(bi<0)continue;
+      for(const k of patch)pick[k]=bi;changed++;
+    }
+    if(!changed)break;
+  }
+}
+/* Outline: a one-bead line of palette colour `oc` where beads meet empty pegs. 'in' recolours the edge beads; 'out' fills the
+   empty pegs beside them. Returns how many pegs it changed. */
+function outlinePick(pick,n,near,mode,oc){
+  const inside=mode==='in',hit=[];
+  for(let k=0;k<n;k++){
+    const bead=pick[k]>=0;if(bead!==inside)continue;
+    for(const j of near(k))if((pick[j]>=0)!==bead){hit.push(k);break}
+  }
+  for(const k of hit)pick[k]=oc;
+  return hit.length;
+}
+function hexRgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function dist(a,b){const rm=(a[0]+b[0])/2,dr=a[0]-b[0],dg=a[1]-b[1],db=a[2]-b[2];return(2+rm/256)*dr*dr+4*dg*dg+(2+(255-rm)/256)*db*db}
+function toLab(r,g,b){
+  const f=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)};
+  const R=f(r),G=f(g),B=f(b),h=t=>t>0.008856?Math.cbrt(t):7.787*t+16/116;
+  const X=h((R*0.4124+G*0.3576+B*0.1805)/0.95047),Y=h(R*0.2126+G*0.7152+B*0.0722),Z=h((R*0.0193+G*0.1192+B*0.9505)/1.08883);
+  return[116*Y-16,500*(X-Y),200*(Y-Z)];
+}
+/* nearest catalog bead in Lab, then drop the least useful colours until at most maxC remain */
+function catalogAssign(P,rgb,solid,empty,n,maxC){
+  const NP=P.length,PL=new Float32Array(NP*3);
+  P.forEach((p,i)=>{const c=hexRgb(p.hex),l=toLab(c[0],c[1],c[2]);PL[i*3]=l[0];PL[i*3+1]=l[1];PL[i*3+2]=l[2]});
+  const idx=[];for(let k=0;k<n;k++)if(solid[k]&&!empty[k])idx.push(k);
+  const m=idx.length,BL=new Float32Array(m*3);
+  idx.forEach((k,j)=>{const l=toLab(rgb[k*3],rgb[k*3+1],rgb[k*3+2]);BL[j*3]=l[0];BL[j*3+1]=l[1];BL[j*3+2]=l[2]});
+  const best=new Int32Array(m),sec=new Int32Array(m),d1=new Float64Array(m),d2=new Float64Array(m);
+  let S=[];for(let i=0;i<NP;i++)S.push(i);
+  const scan=j=>{const a=BL[j*3],b=BL[j*3+1],c=BL[j*3+2];let bi=-1,si=-1,bd=Infinity,sd=Infinity;
+    for(const i of S){const x=a-PL[i*3],y=b-PL[i*3+1],z=c-PL[i*3+2],v=x*x+y*y+z*z;
+      if(v<bd){si=bi;sd=bd;bi=i;bd=v}else if(v<sd){si=i;sd=v}}
+    best[j]=bi;sec[j]=si;d1[j]=bd;d2[j]=sd};
+  for(let j=0;j<m;j++)scan(j);
+  S=[...new Set(best)];for(let j=0;j<m;j++)scan(j);
+  const cost=new Float64Array(NP);
+  while(S.length>Math.max(1,maxC)){
+    S.forEach(i=>cost[i]=0);
+    for(let j=0;j<m;j++)cost[best[j]]+=sec[j]>=0?d2[j]-d1[j]:1e12;
+    let drop=S[0];for(const i of S)if(cost[i]<cost[drop])drop=i;
+    S=S.filter(i=>i!==drop);
+    for(let j=0;j<m;j++)if(best[j]===drop||sec[j]===drop)scan(j);
+  }
+  return{idx,best};
+}
+/* CIEDE2000 colour difference (Sharma, Wu and Dalal 2005) */
+function de2000(L1,a1,b1,L2,a2,b2){
+  const D=Math.PI/180,P7=6103515625,C1=Math.hypot(a1,b1),C2=Math.hypot(a2,b2),Cb=(C1+C2)/2,Cb7=Cb**7;
+  const G=0.5*(1-Math.sqrt(Cb7/(Cb7+P7))),a1p=(1+G)*a1,a2p=(1+G)*a2,C1p=Math.hypot(a1p,b1),C2p=Math.hypot(a2p,b2);
+  const hue=(b,a)=>{if(a===0&&b===0)return 0;const t=Math.atan2(b,a)/D;return t<0?t+360:t};
+  const h1=hue(b1,a1p),h2=hue(b2,a2p),zero=C1p*C2p===0;
+  let dh=0;if(!zero){dh=h2-h1;if(dh>180)dh-=360;else if(dh<-180)dh+=360}
+  const dL=L2-L1,dC=C2p-C1p,dH=2*Math.sqrt(C1p*C2p)*Math.sin(dh*D/2),Lb=(L1+L2)/2,Cbp=(C1p+C2p)/2;
+  let hb=h1+h2;if(!zero)hb=Math.abs(h1-h2)>180?(hb<360?hb+360:hb-360)/2:hb/2;
+  const T=1-0.17*Math.cos((hb-30)*D)+0.24*Math.cos(2*hb*D)+0.32*Math.cos((3*hb+6)*D)-0.20*Math.cos((4*hb-63)*D);
+  const dT=30*Math.exp(-(((hb-275)/25)**2)),Cbp7=Cbp**7,RC=2*Math.sqrt(Cbp7/(Cbp7+P7));
+  const SL=1+0.015*(Lb-50)**2/Math.sqrt(20+(Lb-50)**2),SC=1+0.045*Cbp,SH=1+0.015*Cbp*T,RT=-Math.sin(2*dT*D)*RC;
+  return Math.sqrt((dL/SL)**2+(dC/SC)**2+(dH/SH)**2+RT*(dC/SC)*(dH/SH));
+}
+const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+/* Auto-trim: shave rows and columns off each edge while 99% of their pixels are one flat colour */
+function autoTrimBox(){
+  const {w,h,data}=srcImg,T=24;
+  const px=(x,y)=>{const i=(y*w+x)*4;return[data[i],data[i+1],data[i+2],data[i+3]]};
+  const same=(p,q)=>(p[3]<128&&q[3]<128)||(p[3]>=128&&q[3]>=128&&Math.abs(p[0]-q[0])<=T&&Math.abs(p[1]-q[1])<=T&&Math.abs(p[2]-q[2])<=T);
+  const flat=pts=>{const n=pts.length,cand=[pts[0],pts[n>>2],pts[n>>1],pts[(3*n)>>2],pts[n-1]];
+    let best=0;for(const c of cand){let k=0;for(const p of pts)if(same(p,c))k++;best=Math.max(best,k)}return best>=n*0.99};
+  const row=(y,x0,x1)=>{const a=[];for(let x=x0;x<x1;x++)a.push(px(x,y));return a};
+  const col=(x,y0,y1)=>{const a=[];for(let y=y0;y<y1;y++)a.push(px(x,y));return a};
+  let t=0,b=h,l=0,r=w;const MIN=4;
+  let moved=true;
+  while(moved){moved=false;
+    if(b-t>MIN&&flat(row(t,l,r))){t++;moved=true}
+    if(b-t>MIN&&flat(row(b-1,l,r))){b--;moved=true}
+    if(r-l>MIN&&flat(col(l,t,b))){l++;moved=true}
+    if(r-l>MIN&&flat(col(r-1,t,b))){r--;moved=true}
+  }
+  return {x:l/w,y:t/h,w:(r-l)/w,h:(b-t)/h,changed:t>0||l>0||b<h||r<w};
+}
+/* hand a file to the person: through the host's save box where there is one, otherwise as an ordinary download. True if it went. */
+async function saveFile(name,blob,msg){
+  let dl=null;
+  try{if(window.claude&&typeof window.claude.use==='function')dl=await window.claude.use('downloads')}catch(e){}
+  if(dl){
+    try{await dl.save({filename:name,data:blob});msg.textContent='Saved '+name+'.';return true}
+    catch(e){msg.textContent=e&&e.code==='declined'?'Save cancelled.':'Saving isn\u2019t available here. Open the page in your browser instead.';return false}
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);msg.textContent='Downloaded '+name+'.';return true;
+}
+/* ---------- end of the shared helpers ---------- */
+
+/* ---------- conversion: the cropped picture becomes one LEGO colour per stud ---------- */
+function legoPal(){const off=new Set(st.img.off);return LEGO.filter(c=>!off.has(c.name))}
+function cropPx(){const c=st.img.crop;return{x:c.x*srcImg.w,y:c.y*srcImg.h,w:Math.max(1,c.w*srcImg.w),h:Math.max(1,c.h*srcImg.h)}}
+const hasAdj=()=>{const a=st.img;return!!(a.adjB||a.adjC||a.adjS||a.adjH||a.adjW)};
+const adjArgs=()=>({br:st.img.adjB,ct:st.img.adjC,sat:st.img.adjS,hue:st.img.adjH,warm:st.img.adjW});
+/* the darkest colour in a palette, for the outline */
+function darkest(P){let bi=-1,bl=Infinity;P.forEach((p,i)=>{const c=hexRgb(p.hex),L=toLab(c[0],c[1],c[2])[0];if(L<bl){bl=L;bi=i}});return bi}
+/* Pick a palette entry for every sample: colour limit, then matching with dithering, then clean up and the rare-colour merge.
+   As in FIG: o.fwd / o.fwdA list [neighbour, weight] pairs for error diffusion and o.xy gives grid coordinates for ordered dithering. */
+function assign(P,rgb,solid,empty,n,o){
+  const pick=new Int16Array(n).fill(-1),live=k=>solid[k]&&!empty[k];
+  let S;
+  if(st.img.maxColors<ALL_COLOURS){const {best}=catalogAssign(P,rgb,solid,empty,n,st.img.maxColors);S=[...new Set(best)].filter(i=>i>=0)}
+  else S=P.map((p,i)=>i);
+  if(!S.length)return pick;
+  const M=st.img.metric,PR=P.map(p=>hexRgb(p.hex)),PL=PR.map(c=>toLab(c[0],c[1],c[2]));
+  /* closest entry; for the Lab formulas the search runs outward in lightness and stops once the lightness gap rules out the rest */
+  const finder=set=>{
+    if(M==='rgb')return(r,g,b)=>{const px=[r,g,b];let bi=-1,bd=Infinity;for(const i of set){const d=dist(px,PR[i]);if(d<bd){bd=d;bi=i}}return bi};
+    if(M==='oklab'){
+      const O=new Float64Array(set.length*3);set.forEach((i,p)=>{const v=toOklab(PR[i][0],PR[i][1],PR[i][2]);O[p*3]=v[0];O[p*3+1]=v[1];O[p*3+2]=v[2]});
+      return(r,g,b)=>{const v=toOklab(r,g,b);let bp=-1,bd=Infinity;
+        for(let p=0;p<set.length;p++){const x=v[0]-O[p*3],y=v[1]-O[p*3+1],z=v[2]-O[p*3+2],d=x*x+y*y+z*z;if(d<bd){bd=d;bp=p}}
+        return bp<0?-1:set[bp]};
+    }
+    const m=set.length,de=M==='de2000',ord=set.map((_,p)=>p).sort((a,b)=>PL[set[a]][0]-PL[set[b]][0]),Ls=ord.map(p=>PL[set[p]][0]);
+    const F=new Float64Array(m*3);set.forEach((i,p)=>{F[p*3]=PL[i][0];F[p*3+1]=PL[i][1];F[p*3+2]=PL[i][2]});
+    return(r,g,b)=>{
+      const l=toLab(r,g,b),L=l[0];let lo=0,hi=m;
+      while(lo<hi){const mid=(lo+hi)>>1;if(Ls[mid]<L)lo=mid+1;else hi=mid}
+      let up=lo,dn=lo-1,bd=Infinity,bp=-1;
+      if(de){let sv=Infinity,sp=-1;for(let p=0;p<m;p++){const x=L-F[p*3],y=l[1]-F[p*3+1],z=l[2]-F[p*3+2],v=x*x+y*y+z*z;if(v<sv){sv=v;sp=p}}
+        if(sp>=0){bd=de2000(L,l[1],l[2],F[sp*3],F[sp*3+1],F[sp*3+2]);bp=sp}}
+      for(;;){
+        const du=up<m?Ls[up]-L:Infinity,dd=dn>=0?L-Ls[dn]:Infinity,gap=Math.min(du,dd);
+        if(!(gap<Infinity)||(de?gap/1.75:gap*gap)>bd)break;
+        const p=du<=dd?ord[up++]:ord[dn--];
+        const d=de?de2000(L,l[1],l[2],F[p*3],F[p*3+1],F[p*3+2]):(L-F[p*3])**2+(l[1]-F[p*3+1])**2+(l[2]-F[p*3+2])**2;
+        if(d<bd||(d===bd&&p<bp)){bd=d;bp=p}
+      }
+      return bp<0?-1:set[bp]};
+  };
+  const find=finder(S);
+  const amt=st.img.ditherAmt/100,DM=st.img.dither,fw=DM==='fs'?o.fwd:DM==='atk'?o.fwdA:null;
+  if(fw){
+    const w=Float32Array.from(rgb);
+    for(let k=0;k<n;k++){if(!live(k))continue;
+      const r=clamp(w[k*3],0,255),g=clamp(w[k*3+1],0,255),b=clamp(w[k*3+2],0,255),i=find(r,g,b);pick[k]=i;if(i<0)continue;
+      const er=(r-PR[i][0])*amt,eg=(g-PR[i][1])*amt,eb=(b-PR[i][2])*amt;
+      for(const [j,f] of fw(k))if(live(j)){w[j*3]+=er*f;w[j*3+1]+=eg*f;w[j*3+2]+=eb*f}}
+  }else if(DM==='ordered'){
+    const sp=BAYER_SPREAD*amt;
+    for(let k=0;k<n;k++){if(!live(k))continue;const [x,y]=o.xy(k),t=((BAYER[(x&3)+((y&3)<<2)]+0.5)/16-0.5)*sp;
+      pick[k]=find(clamp(rgb[k*3]+t,0,255),clamp(rgb[k*3+1]+t,0,255),clamp(rgb[k*3+2]+t,0,255))}
+  }else for(let k=0;k<n;k++)if(live(k))pick[k]=find(rgb[k*3],rgb[k*3+1],rgb[k*3+2]);
+  if(o.post)o.post(pick);
+  const R=st.img.rare;
+  if(R>0)for(;;){
+    const cnt=new Map();for(let k=0;k<n;k++)if(pick[k]>=0)cnt.set(pick[k],(cnt.get(pick[k])||0)+1);
+    if(cnt.size<=1)break;
+    let lo=-1,lc=Infinity;cnt.forEach((c,i)=>{if(c<lc){lc=c;lo=i}});
+    if(lc>=R)break;
+    const again=finder([...cnt.keys()].filter(i=>i!==lo));
+    for(let k=0;k<n;k++)if(pick[k]===lo)pick[k]=again(rgb[k*3],rgb[k*3+1],rgb[k*3+2]);
+  }
+  return pick;
+}
+/* the whole conversion: c0 = LEGO colour number per stud (-1 empty), lum = lightness 0 to 1 per stud (for relief) */
+function convert(){
+  const {W:iw,H:ih}=dims(),n=iw*ih,out={W:iw,H:ih,c0:new Int16Array(n).fill(-1),lum:new Float32Array(n)};
+  outlined=0;
+  if(!srcImg)return out;
+  const {w:sw,h:sh,data}=srcImg,c=cropPx();
+  const rgb=new Float32Array(n*3),solid=new Uint8Array(n),mode=st.img.sampling,near=mode==='nearest';
+  for(let y=0;y<ih;y++)for(let x=0;x<iw;x++){
+    let r,g,b,a;
+    if(near){
+      const sx=clamp(Math.floor(c.x+(x+0.5)*c.w/iw),0,sw-1),sy=clamp(Math.floor(c.y+(y+0.5)*c.h/ih),0,sh-1),i=(sy*sw+sx)*4;
+      r=data[i];g=data[i+1];b=data[i+2];a=data[i+3];
+    }else{
+      const x0=clamp(Math.floor(c.x+x*c.w/iw),0,sw-1),x1=clamp(Math.max(x0+1,Math.floor(c.x+(x+1)*c.w/iw)),1,sw);
+      const y0=clamp(Math.floor(c.y+y*c.h/ih),0,sh-1),y1=clamp(Math.max(y0+1,Math.floor(c.y+(y+1)*c.h/ih)),1,sh);
+      if(mode!=='average')[r,g,b,a]=cellPick(data,sw,x0,x1,y0,y1,mode);
+      else{let sr=0,sg=0,sb=0,sa=0,m=0;
+        for(let yy=y0;yy<y1;yy++)for(let xx=x0;xx<x1;xx++){const i=(yy*sw+xx)*4,al=data[i+3];sr+=data[i]*al;sg+=data[i+1]*al;sb+=data[i+2]*al;sa+=al;m++}
+        a=m?sa/m:0;r=sa?sr/sa:0;g=sa?sg/sa:0;b=sa?sb/sa:0}
+    }
+    const k=y*iw+x;rgb[k*3]=r;rgb[k*3+1]=g;rgb[k*3+2]=b;solid[k]=a>=128?1:0;
+  }
+  /* background: flood from the picture's edges (and a tapped spot) through colours close to the background colour */
+  const empty=new Uint8Array(n);
+  if(st.img.bg){
+    const d2=(k,q)=>{const dr=rgb[k*3]-q[0],dg=rgb[k*3+1]-q[1],db=rgb[k*3+2]-q[2];return dr*dr+dg*dg+db*db};
+    const cs=[0,iw-1,(ih-1)*iw,ih*iw-1].filter(k=>solid[k]).map(k=>[rgb[k*3],rgb[k*3+1],rgb[k*3+2]]);
+    const pc=st.img.bgCol?hexRgb(st.img.bgCol):null;
+    if(pc||cs.length){
+      let bg=pc||cs[0],bs=Infinity;
+      if(!pc)cs.forEach(q=>{let t=0;cs.forEach(o=>{t+=(q[0]-o[0])**2+(q[1]-o[1])**2+(q[2]-o[2])**2});if(t<bs){bs=t;bg=q}});
+      const T=st.img.bgTol*st.img.bgTol,ok=k=>solid[k]&&!empty[k]&&d2(k,bg)<=T,qu=[];
+      const push=k=>{if(ok(k)){empty[k]=1;qu.push(k)}};
+      for(let x=0;x<iw;x++){push(x);push((ih-1)*iw+x)}
+      for(let y=0;y<ih;y++){push(y*iw);push(y*iw+iw-1)}
+      if(pc&&st.img.bgPt){const x=Math.floor((st.img.bgPt.x*sw-c.x)/c.w*iw),y=Math.floor((st.img.bgPt.y*sh-c.y)/c.h*ih);if(x>=0&&x<iw&&y>=0&&y<ih)push(y*iw+x)}
+      while(qu.length){const k=qu.pop(),x=k%iw,y=(k-x)/iw;if(x>0)push(k-1);if(x<iw-1)push(k+1);if(y>0)push(k-iw);if(y<ih-1)push(k+iw)}
+    }
+  }
+  if(hasAdj())adjustRgb(rgb,n,k=>solid[k]&&!empty[k],adjArgs());
+  for(let k=0;k<n;k++)out.lum[k]=toLab(rgb[k*3],rgb[k*3+1],rgb[k*3+2])[0]/100;
+  const P=legoPal();
+  const near4=k=>{const x=k%iw,y=(k-x)/iw,o=[];if(x>0)o.push(k-1);if(x+1<iw)o.push(k+1);if(y>0)o.push(k-iw);if(y+1<ih)o.push(k+iw);return o};
+  const near8=k=>{const x=k%iw,y=(k-x)/iw,o=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const X=x+dx,Y=y+dy;if((dx||dy)&&X>=0&&X<iw&&Y>=0&&Y<ih)o.push(Y*iw+X)}return o};
+  const post=st.img.smooth||st.img.specks?pick=>{if(st.img.smooth)smoothPick(pick,n,near8,st.img.smooth);if(st.img.specks)mergeSpecks(pick,n,near4,st.img.specks)}:null;
+  const pick=assign(P,rgb,solid,empty,n,{
+    fwd:k=>{const x=k%iw,y=(k-x)/iw,o=[];if(x+1<iw)o.push([k+1,7/16]);
+      if(y+1<ih){if(x>0)o.push([k+iw-1,3/16]);o.push([k+iw,5/16]);if(x+1<iw)o.push([k+iw+1,1/16])}return o},
+    fwdA:k=>{const x=k%iw,y=(k-x)/iw,o=[],e=1/8;if(x+1<iw)o.push([k+1,e]);if(x+2<iw)o.push([k+2,e]);
+      if(y+1<ih){if(x>0)o.push([k+iw-1,e]);o.push([k+iw,e]);if(x+1<iw)o.push([k+iw+1,e])}if(y+2<ih)o.push([k+2*iw,e]);return o},
+    xy:k=>[k%iw,Math.floor(k/iw)],post});
+  if(st.img.outline!=='none'){const oc=darkest(P);if(oc>=0)outlined=outlinePick(pick,n,near4,st.img.outline,oc)}
+  for(let k=0;k<n;k++)out.c0[k]=pick[k]>=0?P[pick[k]].i:-1;
+  return out;
+}
+
+/* ---------- the mosaic model ----------
+   c: LEGO colour per stud (-1 empty), sty: style number (STYLES), dep: plates of relief under the part,
+   pieces: the visible parts, hidden: the plates stacked under raised parts. */
+const keyXY=(x,y)=>x+','+y;
+const styleOf=c=>{const s=st.style.by[LEGO[c].name];return STYLES.indexOf(s||st.style.def)};
+/* relief from lightness: the picture's range (2nd to 98th percentile) is stretched over the steps */
+function autoDepth(lum,c,n,L){
+  const out=new Uint8Array(n);if(!st.depth.on||st.depth.src==='paint')return out;
+  const v=[];for(let k=0;k<n;k++)if(c[k]>=0)v.push(lum[k]);if(!v.length)return out;
+  v.sort((a,b)=>a-b);const p0=v[Math.floor(0.02*(v.length-1))],p1=v[Math.ceil(0.98*(v.length-1))],span=Math.max(1e-6,p1-p0);
+  for(let k=0;k<n;k++){if(c[k]<0)continue;let t=clamp((lum[k]-p0)/span,0,1);if(st.depth.src==='dark')t=1-t;out[k]=Math.min(L,Math.floor(t*(L+1)))}
+  return out;
+}
+/* candidate part shapes for a style and strategy, as [width across, height down, size key], best first */
+const candCache=new Map();
+function candFor(s,mode){
+  const key=s+'|'+mode+'|'+st.join.shapeOff.join(',');let c=candCache.get(key);if(c)return c;
+  const T=PARTS[STYLES[s]],off=new Set(st.join.shapeOff);c=[];
+  if(!T.round&&mode!=='one')for(const k of Object.keys(T.ids)){
+    if(k==='1x1'||off.has(k))continue;const[a,b]=k.split('x').map(Number);
+    if(mode==='rows'){if(a===1)c.push([b,1,k]);continue}
+    c.push([b,a,k]);if(a!==b)c.push([a,b,k]);
+  }
+  c.sort((p,q)=>q[0]*q[1]-p[0]*p[1]||Math.min(q[0],q[1])-Math.min(p[0],p[1])||q[0]-p[0]);   /* biggest; then squarer; then lying across */
+  c.push([1,1,'1x1']);candCache.set(key,c);return c;
+}
+/* Cover every stud that has a key (>= 0) with parts whose studs all share that key. In reading order, the first uncovered stud is the
+   top-left corner of its part, and the first candidate that fits is taken. Parts stay inside their sheet, and inside their 16 x 16
+   section when sections are on. A 1 x 1 always fits, so every stud ends up in exactly one part. */
+function cover(W,H,key,candAt,sw,sh,secOn){
+  const of=new Int32Array(W*H).fill(-1),out=[];
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=y*W+x,kk=key[i];if(kk<0||of[i]>=0)continue;
+    let x1=(Math.floor(x/sw)+1)*sw,y1=(Math.floor(y/sh)+1)*sh;
+    if(secOn){x1=Math.min(x1,(Math.floor(x/SEC)+1)*SEC);y1=Math.min(y1,(Math.floor(y/SEC)+1)*SEC)}
+    for(const[w,h,k]of candAt(i)){
+      if(x+w>x1||y+h>y1)continue;
+      let ok=true;
+      for(let dy=0;dy<h&&ok;dy++){const r=(y+dy)*W+x;for(let dx=0;dx<w;dx++){const j=r+dx;if(key[j]!==kk||of[j]>=0){ok=false;break}}}
+      if(!ok)continue;
+      const id=out.length,cells=[];
+      for(let dy=0;dy<h;dy++){const r=(y+dy)*W+x;for(let dx=0;dx<w;dx++){of[r+dx]=id;cells.push(r+dx)}}
+      out.push({x,y,w,h,k,i,cells});break;
+    }
+  }
+  return{pieces:out,of};
+}
+function topKeys(p){const n=p.W*p.H,key=new Int32Array(n);for(let i=0;i<n;i++)key[i]=p.c[i]<0?-1:(p.c[i]*8+p.sty[i])*8+p.dep[i];return key}
+function compose(){
+  const {sw,sh,W,H}=dims(),n=W*H;
+  if(!conv||conv.W!==W||conv.H!==H)conv=convert();
+  const c=Int16Array.from(conv.c0);
+  for(const k in E.col){const[x,y]=k.split(',').map(Number);if(x<W&&y<H){const v=E.col[k];c[y*W+x]=v===''?-1:LEGO_BY.get(v).i}}
+  const sty=new Uint8Array(n);for(let i=0;i<n;i++)if(c[i]>=0)sty[i]=styleOf(c[i]);
+  for(const k in E.sty){const[x,y]=k.split(',').map(Number);if(x<W&&y<H&&c[y*W+x]>=0)sty[y*W+x]=STYLES.indexOf(E.sty[k])}
+  const L=st.depth.levels,dep=autoDepth(conv.lum,c,n,L);
+  const auto=Uint8Array.from(dep);   /* the heights before any painted by hand, for the Height tool */
+  if(st.depth.on)for(const k in E.dep){const[x,y]=k.split(',').map(Number);if(x<W&&y<H&&c[y*W+x]>=0)dep[y*W+x]=Math.min(L,E.dep[k])}
+  const p={W,H,sw,sh,across:st.across,down:st.down,c,sty,dep,auto,
+    Wpx:PAD*2+st.across*sw+(st.across-1)*GAP,Hpx:PAD*2+st.down*sh+(st.down-1)*GAP};
+  p.X=x=>PAD+Math.floor(x/sw)*(sw+GAP)+x%sw+0.5;p.Y=y=>PAD+Math.floor(y/sh)*(sh+GAP)+y%sh+0.5;
+  const t=cover(W,H,topKeys(p),i=>candFor(sty[i],st.join.mode),sw,sh,st.join.sections);
+  p.pieces=t.pieces;p.of=t.of;
+  /* hidden plates: layer h holds a plate under every stud raised h or more; each layer is joined into the biggest plates that fit */
+  p.hidden=[];
+  if(st.depth.on)for(let h=1;h<=L;h++){
+    const key=new Int32Array(n);let any=false;for(let i=0;i<n;i++){key[i]=c[i]>=0&&dep[i]>=h?1:-1;if(key[i]>0)any=true}
+    if(!any)break;
+    for(const q of cover(W,H,key,()=>candFor(0,'big'),sw,sh,st.join.sections).pieces){q.layer=h;p.hidden.push(q)}
+  }
+  return p;
+}
+/* part counts for each strategy, for the comparison under Joining (cached on the pattern) */
+function joinCounts(p){
+  if(p.counts)return p.counts;const key=topKeys(p),o={};
+  for(const m of['big','rows','one'])o[m]=m===st.join.mode?p.pieces.length:cover(p.W,p.H,key,i=>candFor(p.sty[i],m),p.sw,p.sh,st.join.sections).pieces.length;
+  return p.counts=o;
+}
+/* sections: 16 x 16 areas of a sheet, named A1, B1 ... within the sheet */
+function secOf(x,y){const p=pattern,bc=Math.floor(x/p.sw),br=Math.floor(y/p.sh),lx=x%p.sw,ly=y%p.sh;return{bc,br,sx:Math.floor(lx/SEC),sy:Math.floor(ly/SEC),lx,ly,id:bc+'.'+br+'.'+Math.floor(lx/SEC)+'.'+Math.floor(ly/SEC)}}
+const multiSheet=()=>pattern&&pattern.across*pattern.down>1;
+function secName(s){return(multiSheet()?`Sheet ${s.bc+1}-${s.br+1}, section `:'Section ')+'ABC'[s.sx]+(s.sy+1)}
+
+/* ---------- drawing the mosaic (SVG) ---------- */
+let tpl={},els=[],ring=null,pring=null;
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function makeTemplates(){
+  const g=()=>mk('g',{class:'bead'});tpl={};
+  tpl.plate=g();mk('rect',{x:-0.51,y:-0.51,width:1.02,height:1.02},tpl.plate);mk('circle',{r:0.3,class:'stud'},tpl.plate);
+  tpl.tile=g();mk('rect',{x:-0.51,y:-0.51,width:1.02,height:1.02},tpl.tile);mk('rect',{x:-0.34,y:-0.34,width:0.68,height:0.68,rx:0.08,class:'sheen'},tpl.tile);
+  tpl.round=g();mk('circle',{r:0.46},tpl.round);mk('circle',{r:0.3,class:'stud'},tpl.round);
+  tpl.dot=g();mk('circle',{r:0.46},tpl.dot);mk('circle',{r:0.3,class:'sheen'},tpl.dot);
+  tpl.peg=mk('circle',{r:0.28,class:'peg'});
+}
+/* Codes view: a pale wash of each colour, so the codes read clearly, as on a paint-by-numbers sheet */
+function wash(hex,a=0.3){const v=parseInt(hex.slice(1),16),m=k=>Math.round(255+(((v>>k)&255)-255)*a);return`rgb(${m(16)},${m(8)},${m(0)})`}
+const fillOf=i=>st.view==='depth'?depthGrey(pattern.dep[i],st.depth.levels):st.view==='code'?wash(LEGO[pattern.c[i]].hex):LEGO[pattern.c[i]].hex;
+function studEl(i){
+  const p=pattern,c=p.c[i],e=(c<0?tpl.peg:tpl[STYLES[p.sty[i]]]).cloneNode(true),x=i%p.W,y=(i-x)/p.W;
+  if(c<0){e.setAttribute('cx',f3(p.X(x)));e.setAttribute('cy',f3(p.Y(y)))}
+  else{e.setAttribute('transform','translate('+f3(p.X(x))+' '+f3(p.Y(y))+')');e.firstChild.setAttribute('fill',fillOf(i))}
+  e.setAttribute('data-i',i);return e;
+}
+function render(){
+  const svg=$('board');svg.innerHTML='';els=[];ring=pring=null;
+  if(!pattern||!srcImg&&!editCount()){svg.toggleAttribute('hidden',true);return}
+  const p=pattern;svg.setAttribute('viewBox',`0 0 ${f3(p.Wpx)} ${f3(p.Hpx)}`);
+  const base=mk('g',{},svg);
+  for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++){
+    const X=PAD+bc*(p.sw+GAP),Y=PAD+br*(p.sh+GAP);
+    mk('rect',{x:X,y:Y,width:p.sw,height:p.sh,rx:0.25,class:'bd'},base);
+    for(let t=SEC;t<p.sw;t+=SEC)mk('line',{x1:X+t,y1:Y,x2:X+t,y2:Y+p.sh,class:'cl'},base);
+    for(let t=SEC;t<p.sh;t+=SEC)mk('line',{x1:X,y1:Y+t,x2:X+p.sw,y2:Y+t,class:'cl'},base);
+  }
+  makeTemplates();
+  const g=mk('g',{id:'studs'},svg),frag=document.createDocumentFragment();
+  for(let i=0;i<p.W*p.H;i++){const e=studEl(i);els.push(e);frag.appendChild(e)}
+  g.appendChild(frag);
+  const lg=mk('g',{id:'lblG'},svg);
+  for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++)for(let sy=0;sy*SEC<p.sh;sy++)for(let sx=0;sx*SEC<p.sw;sx++){
+    const t=mk('text',{x:f3(PAD+bc*(p.sw+GAP)+sx*SEC+0.3),y:f3(PAD+br*(p.sh+GAP)+sy*SEC+1.1),class:'lbl'},lg);t.textContent='ABC'[sx]+(sy+1)}
+  drawPieces();drawCodes();
+  ring=mk('circle',{r:0.56,class:'ring',style:'display:none'},svg);
+  pring=mk('rect',{class:'pring',x:0,y:0,width:1,height:1,rx:0.12,style:'display:none'},svg);
+  svg.toggleAttribute('hidden',st.view==='tilt');svg.classList.toggle('codes',st.view==='code');
+  cmpDraw();
+}
+/* the outline of every visible part, as one path laid over the studs */
+function drawPieces(){
+  const old=$('pcsG');if(old)old.remove();
+  if(!pattern||!(st.join.lines||st.view==='code')||!els.length)return;
+  const p=pattern,e=0.05,d=[];
+  for(const q of p.pieces){if(PARTS[STYLES[p.sty[q.i]]].round)continue;
+    d.push('M'+f3(p.X(q.x)-0.5+e)+' '+f3(p.Y(q.y)-0.5+e)+'h'+f3(q.w-2*e)+'v'+f3(q.h-2*e)+'h'+f3(2*e-q.w)+'Z')}
+  const path=mk('path',{id:'pcsG',class:'pcs',d:d.join('')});$('board').insertBefore(path,$('lblG'));
+}
+/* Codes view: each part's code at its middle, on one line where it fits, otherwise colour above size and style */
+function codeLines(q,p){const code=kindCode(p.c[q.i],STYLES[p.sty[q.i]],q.k),col=LEGO[p.c[q.i]].code,rest=code.slice(col.length);
+  return q.w>=2||code.length*0.6*0.42<=q.w*0.9?[code]:[col,rest]}
+let codeEls=new Map();   /* each label, keyed by its part's place, size and code, so an edit only touches labels that changed */
+function codeEl(q,p){const L=codeLines(q,p),round=PARTS[STYLES[p.sty[q.i]]].round,n=Math.max(...L.map(s=>s.length));
+  const fs=Math.min(round?0.32:0.42,0.9*q.w/(n*0.6),0.9*q.h/(L.length*1.12)),cx=p.X(q.x)+(q.w-1)/2,cy=p.Y(q.y)+(q.h-1)/2;
+  const t=mk('text',{x:f3(cx),y:f3(cy),'font-size':f3(fs),class:'kc'});
+  if(L.length===1)t.textContent=L[0];
+  else L.forEach((s,j)=>{const ts=mk('tspan',{x:f3(cx),y:f3(cy+(j-(L.length-1)/2)*fs*1.12)},t);ts.textContent=s});
+  return t}
+function drawCodes(edit){
+  let g=$('codeG');
+  if(!pattern||st.view!=='code'||!els.length){if(g)g.remove();codeEls=new Map();return}
+  const p=pattern,want=new Map();
+  for(const q of p.pieces)want.set(q.x+','+q.y+','+q.w+','+q.h+','+kindCode(p.c[q.i],STYLES[p.sty[q.i]],q.k),q);
+  if(!edit||!g){if(g)g.remove();g=mk('g',{id:'codeG'});codeEls=new Map()}
+  for(const [k,e] of codeEls)if(!want.has(k)){e.remove();codeEls.delete(k)}
+  const frag=document.createDocumentFragment();
+  for(const [k,q] of want)if(!codeEls.has(k)){const e=codeEl(q,p);codeEls.set(k,e);frag.appendChild(e)}
+  g.appendChild(frag);if(!g.parentNode)$('board').insertBefore(g,$('lblG'));
+}
+/* Compare (as in FIG): the picture, cut sheet by sheet, laid over the mosaic and revealed from the left. It only changes the view. */
+let cmp=0;
+function cmpDraw(){
+  const svg=$('board'),on=!!pattern&&!!srcUrl&&cmp>0&&els.length>0;let g=$('cmpG');
+  if(!on){if(g){g.remove();const d=$('cmpDefs');if(d)d.remove()}return}
+  const p=pattern;
+  if(!g){
+    const n5=v=>(+v).toFixed(5),cf=st.img.crop;
+    const cp=mk('clipPath',{id:'cmpClip'},mk('defs',{id:'cmpDefs'},svg));mk('rect',{id:'cmpRect',x:0,y:0,width:0,height:f3(p.Hpx)},cp);
+    g=mk('g',{id:'cmpG',class:'cmp','clip-path':'url(#cmpClip)'},svg);
+    for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++){
+      const part=mk('svg',{x:f3(PAD+bc*(p.sw+GAP)),y:f3(PAD+br*(p.sh+GAP)),width:p.sw,height:p.sh,
+        viewBox:[cf.x+bc*p.sw/p.W*cf.w,cf.y+br*p.sh/p.H*cf.h,p.sw/p.W*cf.w,p.sh/p.H*cf.h].map(n5).join(' '),preserveAspectRatio:'none'},g);
+      const im=mk('image',{href:srcUrl,x:0,y:0,width:1,height:1,preserveAspectRatio:'none'},part);
+      if(st.img.sampling==='nearest')im.style.imageRendering='pixelated'}
+    if(ring)svg.appendChild(ring);if(pring)svg.appendChild(pring);   /* the selection rings stay on top */
+  }
+  $('cmpRect').setAttribute('width',f3(p.Wpx*cmp/100));
+}
+/* a different view: new fills, outlines and codes, without redrawing the studs */
+function viewChanged(){repaint();drawPieces();drawCodes();const svg=$('board');svg.classList.toggle('codes',st.view==='code');svg.toggleAttribute('hidden',st.view==='tilt'||!els.length);showTilt()}
+/* after an edit: rebuild the model, then swap only the studs whose drawing changed */
+function patch(){
+  const old=pattern;pattern=compose();
+  if(!old||old.W!==pattern.W||old.H!==pattern.H||!els.length){render();return}
+  const g=$('studs');
+  for(let i=0;i<pattern.W*pattern.H;i++){
+    const oc=old.c[i],nc=pattern.c[i];
+    if((oc<0)!==(nc<0)||old.sty[i]!==pattern.sty[i]){const e=studEl(i);g.replaceChild(e,els[i]);els[i]=e}
+    else if(nc>=0&&(oc!==nc||old.dep[i]!==pattern.dep[i]))els[i].firstChild.setAttribute('fill',fillOf(i));
+  }
+  drawPieces();drawCodes(true);
+}
+function repaint(){if(!pattern||!els.length)return;for(let i=0;i<els.length;i++)if(pattern.c[i]>=0)els[i].firstChild.setAttribute('fill',fillOf(i))}
+
+/* ---------- the tilted view: the mosaic seen from the front and above, raised parts standing out ---------- */
+const shade=(hex,f)=>{const c=hexRgb(hex);return`rgb(${c.map(v=>Math.round(v*f)).join(',')})`};
+function drawTilt(cv,U){
+  const p=pattern,cy=0.78,rise=0.42*U,L=st.depth.on?st.depth.levels:0,top=(L+1)*rise+U*0.5;
+  cv.width=Math.ceil(p.Wpx*U);cv.height=Math.ceil(p.Hpx*U*cy+top+rise*1.5);
+  const g=cv.getContext('2d'),css=getComputedStyle(document.documentElement);
+  g.fillStyle=css.getPropertyValue('--vp').trim()||'#F5F7FA';g.fillRect(0,0,cv.width,cv.height);
+  const board=css.getPropertyValue('--board').trim()||'#DCE1E8',peg=css.getPropertyValue('--peg').trim()||'#B4BBC6';
+  const SY=y=>top+y*U*cy;
+  for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++){   /* the sheets: a top face and a front edge */
+    const X=(PAD+bc*(p.sw+GAP))*U,Y0=SY(PAD+br*(p.sh+GAP)),Y1=SY(PAD+br*(p.sh+GAP)+p.sh);
+    g.fillStyle=board;g.fillRect(X,Y0,p.sw*U,Y1-Y0);g.fillStyle=shade(board.startsWith('#')?board:'#DCE1E8',0.72);g.fillRect(X,Y1,p.sw*U,rise*0.8);
+  }
+  const H=i=>p.c[i]<0?0:1+p.dep[i];
+  for(let y=0;y<p.H;y++)for(let x=0;x<p.W;x++){
+    const i=y*p.W+x,h=H(i),X=(p.X(x)-0.5)*U,Y=SY(p.Y(y)-0.5)-h*rise;
+    if(p.c[i]<0){g.fillStyle=peg;g.beginPath();g.ellipse(X+U/2,Y+U*cy/2,U*0.28,U*0.28*cy,0,0,Math.PI*2);g.fill();continue}
+    const hex=LEGO[p.c[i]].hex,s=STYLES[p.sty[i]],T=PARTS[s];
+    /* the front face shows down to the stud in front, or to the sheet at its front edge */
+    const below=(y+1<p.H&&Math.floor((y+1)/p.sh)===Math.floor(y/p.sh))?H(i+p.W):0,drop=(h-below)*rise;
+    if(T.round){
+      g.fillStyle=shade(hex,0.62);g.fillRect(X+U*0.04,Y+U*cy/2,U*0.92,drop);
+      g.beginPath();g.ellipse(X+U/2,Y+U*cy/2+drop,U*0.46,U*0.46*cy,0,0,Math.PI);g.fill();
+      g.fillStyle=hex;g.beginPath();g.ellipse(X+U/2,Y+U*cy/2,U*0.46,U*0.46*cy,0,0,Math.PI*2);g.fill();
+    }else{
+      if(drop>0){g.fillStyle=shade(hex,0.62);g.fillRect(X,Y+U*cy,U+0.6,drop)}
+      g.fillStyle=hex;g.fillRect(X,Y,U+0.6,U*cy+0.6);
+    }
+    if(T.studs){g.fillStyle=shade(hex,0.8);g.beginPath();g.ellipse(X+U/2,Y+U*cy/2,U*0.3,U*0.3*cy,0,0,Math.PI*2);g.fill();
+      g.fillStyle=hex;g.beginPath();g.ellipse(X+U/2,Y+U*cy/2-U*0.08,U*0.3,U*0.3*cy,0,0,Math.PI*2);g.fill()}
+  }
+  return cv;
+}
+function showTilt(){
+  const cv=$('tiltCv');if(st.view!=='tilt'||!pattern||!els.length){cv.hidden=true;return}
+  const w=vp.clientWidth*zoom,U=Math.max(2,w/pattern.Wpx)*(window.devicePixelRatio||1);
+  drawTilt(cv,U);cv.style.width=w+'px';cv.hidden=false;
+}
+
+/* ---------- what each stud looks like right now: placed, isolated colour, focused section ---------- */
+function styles(){
+  if(!pattern||!els.length)return;
+  const p=pattern,fs=focus;
+  for(let i=0;i<els.length;i++){
+    let o=1;const c=p.c[i];
+    if(c>=0){const x=i%p.W,y=(i-x)/p.W;
+      if(st.fade&&prog.has(keyXY(x,y)))o=0.28;
+      if(st.iso!=null&&c!==st.iso)o=Math.min(o,0.12);
+      if(fs&&secOf(x,y).id!==fs)o=Math.min(o,0.15)}
+    else if(fs){const x=i%p.W,y=(i-x)/p.W;if(secOf(x,y).id!==fs)o=0.3}
+    const v=o===1?'':String(o);if(els[i].style.opacity!==v)els[i].style.opacity=v;
+  }
+  const s=sel>=0?sel:-1;
+  if(ring){if(s>=0){const x=s%p.W,y=(s-x)/p.W;ring.setAttribute('cx',f3(p.X(x)));ring.setAttribute('cy',f3(p.Y(y)));ring.style.display=''}else ring.style.display='none'}
+  if(pring){const q=s>=0&&p.of[s]>=0?p.pieces[p.of[s]]:null;
+    if(q&&(q.w>1||q.h>1)){pring.setAttribute('x',f3(p.X(q.x)-0.5));pring.setAttribute('y',f3(p.Y(q.y)-0.5));pring.setAttribute('width',q.w);pring.setAttribute('height',q.h);pring.style.display=''}
+    else pring.style.display='none'}
+  const pc=$('pcsG');if(pc)pc.style.opacity=st.iso!=null||fs?0.3:1;
+  $('lblG')&&($('lblG').style.display=st.labels?'':'none');
+}
+const txt=(id,t)=>{const e=$(id);t=String(t);if(e.textContent!==t)e.textContent=t};
+const placedPart=q=>q.cells.every(j=>prog.has(keyXY(j%pattern.W,Math.floor(j/pattern.W))));
+function progress(){
+  const has=!!(pattern&&els.length);$('progGroup').hidden=!has;if(!has)return;
+  const p=pattern;let studs=0,done=0;const cnt=new Map();
+  for(let i=0;i<p.W*p.H;i++){const c=p.c[i];if(c<0)continue;studs++;const x=i%p.W,y=(i-x)/p.W,on=prog.has(keyXY(x,y));if(on)done++;
+    const r=cnt.get(c)||[0,0];r[0]++;if(on)r[1]++;cnt.set(c,r)}
+  const parts=p.pieces.length,pd=p.pieces.filter(placedPart).length;
+  txt('pct',`${plural(pd,'part')} of ${parts.toLocaleString()} placed (${done.toLocaleString()} of ${plural(studs,'stud')}, ${studs?Math.round(100*done/studs):0}%)`);
+  const rows=[...cnt.entries()].sort((a,b)=>a[0]-b[0]);
+  const html=rows.map(([c,[n,d]])=>`<button type="button" class="crow${d===n?' done':''}" data-c="${c}" aria-pressed="${st.iso===c}"><span class="dot" style="background:${LEGO[c].hex}"></span><span class="nm">${esc(LEGO[c].name)}</span><span class="ct">${d}/${n}</span></button>`).join('');
+  const lg=$('legend');if(lg.dataset.h!==html){lg.innerHTML=html;lg.dataset.h=html}
+  txt('legendSum',`(${rows.length})`);
+  $('isoBtns').hidden=st.iso==null;
+}
+function hud(){
+  const dot=$('hudDot'),sb=$('secBox');
+  if(!pattern||sel<0){dot.className='empty';dot.style.background='';txt('hudName','Tap a stud');txt('hudWhere','Its colour, part, height and place show here.');sb.hidden=true;return}
+  const p=pattern,x=sel%p.W,y=(sel-x)/p.W,c=p.c[sel],s=secOf(x,y);
+  dot.className=c<0?'empty':'';dot.style.background=c<0?'':LEGO[c].hex;
+  if(c<0)txt('hudName','Empty stud');
+  else{const L=LEGO[c];txt('hudName',L.name+(L.lname!==L.name?' (LEGO: '+L.lname+')':'')+(prog.has(keyXY(x,y))?', placed':', not placed yet'))}
+  let where=`${s.lx+1} across, ${s.ly+1} down, ${secName(s).replace(/^S/,'s').replace(/^sheet/,'on sheet')}`;
+  if(c>=0){const q=p.pieces[p.of[sel]],sty=STYLES[p.sty[sel]];where+=`. Part: ${kindCode(c,sty,q.k)}, ${partName(sty,q.k)} (${PARTS[sty].ids[q.k]})`;if(st.depth.on)where+=`, raised ${plural(p.dep[sel],'plate')}`}
+  txt('hudWhere',where+'.');
+  const ids=p.pieces.filter(q=>{const qx=q.x,qy=q.y;return secOf(qx,qy).id===s.id});
+  const n=ids.length,d=ids.filter(placedPart).length;
+  sb.hidden=false;txt('secName',secName(s));txt('secCount',`${d} of ${plural(n,'part')}`);
+  $('secBar').style.width=(n?100*d/n:0)+'%';txt('secFocus',focus===s.id?'Show everything':'Focus on section');
+}
+let expTimer=0;
+function refresh(){styles();progress();hud();if($('expDetails').open){clearTimeout(expTimer);expTimer=setTimeout(()=>{$('expText').value=exportText()},150)}}
+
+/* ---------- zoom and scrolling ---------- */
+const vp=$('vp');
+const maxH=()=>Math.max(240,window.innerHeight*0.7);
+function fitZoom(){if(!pattern)return 1;const h=vp.clientWidth*pattern.Hpx/pattern.Wpx;return Math.min(1,maxH()/h)}
+const ppu=()=>vp.clientWidth*zoom/pattern.Wpx;
+function size(){if(!pattern)return;const w=vp.clientWidth*zoom,svg=$('board');svg.style.width=w+'px';svg.style.height=(w*pattern.Hpx/pattern.Wpx)+'px';if(st.view==='tilt')showTilt()}
+function setZoom(z,cx,cy){
+  if(!pattern)return;const old=ppu();
+  if(cx===undefined){cx=(vp.scrollLeft+vp.clientWidth/2)/old;cy=(vp.scrollTop+vp.clientHeight/2)/old}
+  zoom=Math.max(fitZoom(),Math.min(12,z));size();
+  const q=ppu();vp.scrollLeft=cx*q-vp.clientWidth/2;vp.scrollTop=cy*q-vp.clientHeight/2;
+}
+function ensureVisible(i){
+  const p=pattern,x=i%p.W,y=(i-x)/p.W,q=ppu(),X=p.X(x)*q,Y=p.Y(y)*q,m=40;
+  if(X<vp.scrollLeft+m)vp.scrollLeft=X-m*2;else if(X>vp.scrollLeft+vp.clientWidth-m)vp.scrollLeft=X-vp.clientWidth+m*2;
+  if(Y<vp.scrollTop+m)vp.scrollTop=Y-m*2;else if(Y>vp.scrollTop+vp.clientHeight-m)vp.scrollTop=Y-vp.clientHeight+m*2;
+}
+$('zin').addEventListener('click',()=>setZoom(zoom*1.5));
+$('zout').addEventListener('click',()=>setZoom(zoom/1.5));
+$('zfit').addEventListener('click',()=>{focus=null;setZoom(0,pattern?pattern.Wpx/2:0,pattern?pattern.Hpx/2:0);refresh()});
+let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(pattern){zoom=Math.max(zoom,fitZoom());size()}drawCrop()},120)});
+
+/* ---------- interaction: inspect and mark placed ---------- */
+function toggle(i,force){const p=pattern;if(p.c[i]<0)return;const k=keyXY(i%p.W,Math.floor(i/p.W)),on=force===undefined?!prog.has(k):force;on?prog.add(k):prog.delete(k)}
+function togglePart(i){const p=pattern;if(p.c[i]<0)return;const q=p.pieces[p.of[i]],on=!prog.has(keyXY(i%p.W,Math.floor(i/p.W)));for(const j of q.cells)toggle(j,on)}
+const saveProg=()=>{if(progKey)prog.size?store.set(progKey,[...prog]):store.del(progKey)};
+function hashStr(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(36)}
+function loadProg(carry){
+  if(!pattern){prog=new Set();progKey='';return}
+  const key='big:prog:'+pattern.W+'x'+pattern.H+':'+hashStr(Array.from(pattern.c).join(','));
+  if(key===progKey)return;
+  const had=prog;progKey=key;const v=store.get(key);
+  prog=new Set(Array.isArray(v)?v.filter(k=>typeof k==='string'):[]);
+  if(carry&&!Array.isArray(v)&&had.size){   /* the mosaic changed (an edit or a setting): keep ticks on studs that kept their colour */
+    for(const k of had){const[x,y]=k.split(',').map(Number);if(x<pattern.W&&y<pattern.H&&pattern.c[y*pattern.W+x]>=0)prog.add(k)}saveProg()}
+}
+function select(i,mark){sel=i;if(mark&&i>=0){togglePart(i);saveProg()}refresh()}
+vp.addEventListener('click',e=>{
+  if(!pattern||st.tap==='edit'||st.view==='tilt')return;
+  const h=e.target.closest&&e.target.closest('[data-i]');if(!h)return;
+  select(+h.getAttribute('data-i'),st.tap==='mark');
+});
+vp.addEventListener('keydown',e=>{
+  if(!pattern||!els.length)return;
+  const d={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key],p=pattern;
+  if(d){e.preventDefault();
+    if(sel<0){let i=p.c.findIndex(c=>c>=0);select(i<0?0:i,false)}
+    else{const x=clamp(sel%p.W+d[0],0,p.W-1),y=clamp(Math.floor(sel/p.W)+d[1],0,p.H-1);select(y*p.W+x,false)}
+    ensureVisible(sel);
+  }else if((e.key===' '||e.key==='Enter')&&sel>=0){e.preventDefault();if(st.tap==='edit')strokeAt(sel,true);else{togglePart(sel);saveProg();refresh()}}
+  else if(e.key==='Escape'&&focus){focus=null;refresh()}
+});
+$('legend').addEventListener('click',e=>{const b=e.target.closest('.crow');if(!b)return;const c=+b.dataset.c;st.iso=st.iso===c?null:c;saveSettings();refresh()});
+function markWhere(pred,val){const p=pattern;for(let i=0;i<p.W*p.H;i++)if(p.c[i]>=0&&pred(i))toggle(i,val);saveProg();refresh()}
+$('isoMark').addEventListener('click',()=>markWhere(i=>pattern.c[i]===st.iso,true));
+$('isoClear').addEventListener('click',()=>markWhere(i=>pattern.c[i]===st.iso,false));
+const inSec=i=>{const p=pattern,s=secOf(sel%p.W,Math.floor(sel/p.W)).id;return secOf(i%p.W,Math.floor(i/p.W)).id===s&&(st.iso==null||p.c[i]===st.iso)};
+$('secMark').addEventListener('click',()=>markWhere(inSec,true));
+$('secClear').addEventListener('click',()=>markWhere(inSec,false));
+$('secFocus').addEventListener('click',()=>{
+  const p=pattern,x=sel%p.W,y=Math.floor(sel/p.W),s=secOf(x,y);
+  if(focus===s.id){focus=null;setZoom(0,p.Wpx/2,p.Hpx/2)}
+  else{focus=s.id;const x0=PAD+s.bc*(p.sw+GAP)+s.sx*SEC,y0=PAD+s.br*(p.sh+GAP)+s.sy*SEC,w=Math.min(SEC,p.sw-s.sx*SEC)+2,h=Math.min(SEC,p.sh-s.sy*SEC)+2;
+    setZoom(Math.min(p.Wpx/w,maxH()*p.Wpx/(vp.clientWidth*h)),x0+w/2-1,y0+h/2-1)}
+  refresh();
+});
+$('fade').addEventListener('change',e=>{st.fade=e.target.checked;saveSettings();refresh()});
+$('labels').addEventListener('change',e=>{st.labels=e.target.checked;saveSettings();refresh()});
+let armed=0;
+$('resetProg').addEventListener('click',()=>{
+  const b=$('resetProg');
+  if(!armed){b.textContent='Tap again to clear all progress';armed=setTimeout(()=>{armed=0;b.textContent='Reset progress'},3000);return}
+  clearTimeout(armed);armed=0;b.textContent='Reset progress';prog.clear();saveProg();refresh();
+});
+
+/* ---------- editing: paint, erase, fill, pick, part style and height, with undo ---------- */
+const note=t=>txt('editMsg',t);
+function studAt(e){
+  const p=pattern,r=$('board').getBoundingClientRect(),q=r.width/p.Wpx,x=(e.clientX-r.left)/q,y=(e.clientY-r.top)/q;
+  const bc=Math.floor((x-PAD)/(p.sw+GAP)),br=Math.floor((y-PAD)/(p.sh+GAP)),lx=Math.floor(x-PAD-bc*(p.sw+GAP)),ly=Math.floor(y-PAD-br*(p.sh+GAP));
+  if(bc<0||br<0||bc>=p.across||br>=p.down||lx<0||ly<0||lx>=p.sw||ly>=p.sh)return-1;
+  return(br*p.sh+ly)*p.W+bc*p.sw+lx;
+}
+function setE(layer,k,val,ch){const before=E[layer][k];if(before===val)return;ch.push([layer,k,before,val]);if(val===undefined)delete E[layer][k];else E[layer][k]=val}
+function applyTool(i,ch){
+  const p=pattern,x=i%p.W,y=(i-x)/p.W,k=keyXY(x,y),t=st.ed.tool,base=conv.c0[i];
+  if(t==='paint'){const P=st.ed.paint;if(!P)return;setE('col',k,base===LEGO_BY.get(P).i?undefined:P,ch)}
+  else if(t==='erase')setE('col',k,base<0?undefined:'',ch);
+  else if(t==='style'){if(p.c[i]<0)return;const v=STYLES.indexOf(st.ed.style);setE('sty',k,styleOf(p.c[i])===v?undefined:st.ed.style,ch)}
+  else if(t==='depth'){if(p.c[i]<0)return;const v=Math.min(st.ed.depth,st.depth.levels);setE('dep',k,p.auto[i]===v?undefined:v,ch)}
+}
+function describe(t,ch){
+  const n=ch.length;
+  return t==='paint'?`Painted ${plural(n,'stud')} ${st.ed.paint}`:t==='erase'?`Erased ${plural(n,'stud')}`:t==='fill'?`Filled ${plural(n,'stud')} with ${st.ed.paint}`
+    :t==='style'?`Made ${plural(n,'stud')} ${PARTS[st.ed.style].many}`:t==='depth'?`Set ${plural(n,'stud')} to ${plural(Math.min(st.ed.depth,st.depth.levels),'plate')} high`:`Changed ${plural(n,'stud')}`;
+}
+function pushUndo(what,ch){undoStack.push({what,ch});if(undoStack.length>100)undoStack.shift();redoStack=[]}
+function afterEdit(){saveEdits();patch();loadProg(true);sync();refresh()}
+function needs(){
+  const t=st.ed.tool;
+  if((t==='paint'||t==='fill')&&!st.ed.paint){note('Pick a paint colour first: tap a swatch, or use Pick on the mosaic.');return false}
+  if(t==='depth'&&!st.depth.on){st.depth.on=true;st.depth.src='paint';saveSettings();pattern=compose();render();size();note('Relief is now on, with heights painted by hand.')}
+  return true;
+}
+/* one tap: fill and pick act once; the other tools change one stud */
+function strokeAt(i,single){
+  if(!pattern||i<0)return;sel=i;const t=st.ed.tool,p=pattern;
+  if(t==='pick'){if(p.c[i]<0){note('That stud is empty. Tap a coloured stud to pick its colour.');refresh();return}
+    st.ed.paint=LEGO[p.c[i]].name;st.ed.tool='paint';saveSettings();note('Picked '+st.ed.paint+'. Paint is ready.');sync();refresh();return}
+  if(!needs())return;
+  const ch=[];
+  if(t==='fill'){
+    const target=p.c[i],ci=LEGO_BY.get(st.ed.paint).i;
+    if(target===ci){note('That is already '+st.ed.paint+'.');refresh();return}
+    const seen=new Uint8Array(p.W*p.H),q=[i];seen[i]=1;
+    while(q.length){const j=q.pop(),x=j%p.W,y=(j-x)/p.W;setE('col',keyXY(x,y),conv.c0[j]===ci?undefined:st.ed.paint,ch);
+      for(const n of[x>0?j-1:-1,x<p.W-1?j+1:-1,y>0?j-p.W:-1,y<p.H-1?j+p.W:-1])if(n>=0&&!seen[n]&&p.c[n]===target){seen[n]=1;q.push(n)}}
+  }else applyTool(i,ch);
+  if(!ch.length){note(t==='erase'?'That stud is already empty.':'Nothing to change there.');refresh();return}
+  pushUndo(describe(t,ch),ch);note(describe(t,ch)+'.');afterEdit();
+}
+let stroke=null,strokeRaf=0;
+function line(a,b){   /* the studs on a straight line between two studs, so a fast drag leaves no gaps */
+  const W=pattern.W,x0=a%W,y0=(a-x0)/W,x1=b%W,y1=(b-x1)/W,n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),o=[];
+  for(let s=1;s<=n;s++)o.push(Math.round(y0+(y1-y0)*s/n)*W+Math.round(x0+(x1-x0)*s/n));return o;
+}
+$('board').addEventListener('pointerdown',e=>{
+  if(st.tap!=='edit'||!pattern||st.view==='tilt')return;
+  const i=studAt(e);if(i<0)return;e.preventDefault();
+  const t=st.ed.tool;if(t==='pick'||t==='fill'){strokeAt(i,true);return}
+  if(!needs())return;
+  stroke={ch:[],last:i,t};$('board').setPointerCapture(e.pointerId);sel=i;applyTool(i,stroke.ch);patch();refresh();
+});
+$('board').addEventListener('pointermove',e=>{
+  if(!stroke)return;const i=studAt(e);if(i<0||i===stroke.last)return;
+  for(const j of line(stroke.last,i))applyTool(j,stroke.ch);stroke.last=i;sel=i;
+  if(!strokeRaf)strokeRaf=requestAnimationFrame(()=>{strokeRaf=0;patch();refresh()});
+});
+function endStroke(){
+  if(!stroke)return;const s=stroke;stroke=null;
+  if(s.ch.length){pushUndo(describe(s.t,s.ch),s.ch);note(describe(s.t,s.ch)+'.')}
+  else note(s.t==='erase'?'That stud is already empty.':'Nothing to change there.');
+  afterEdit();
+}
+$('board').addEventListener('pointerup',endStroke);
+$('board').addEventListener('pointercancel',endStroke);
+function replay(d,dir){for(const[layer,k,before,after]of(dir?d.ch:[...d.ch].reverse())){const v=dir?after:before;if(v===undefined)delete E[layer][k];else E[layer][k]=v}}
+$('undo').addEventListener('click',()=>{const d=undoStack.pop();if(!d)return;replay(d,0);redoStack.push(d);note('Undid: '+d.what+'.');afterEdit()});
+$('redo').addEventListener('click',()=>{const d=redoStack.pop();if(!d)return;replay(d,1);undoStack.push(d);note('Redid: '+d.what+'.');afterEdit()});
+$('clearEdits').addEventListener('click',()=>{
+  const ch=[];for(const layer of['col','sty','dep'])for(const k in E[layer])ch.push([layer,k,E[layer][k],undefined]);
+  if(!ch.length){note('There are no edits to clear.');return}
+  replay({ch},1);pushUndo('cleared '+plural(ch.length,'edit'),ch);note('Cleared '+plural(ch.length,'edit')+'. Undo brings them back.');afterEdit();
+});
+$('paintSw').addEventListener('click',e=>{const b=e.target.closest('[data-pc]');if(!b)return;st.ed.paint=LEGO[+b.dataset.pc].name;if(st.ed.tool!=='fill')st.ed.tool='paint';saveSettings();sync()});
+
+/* ---------- settings controls ---------- */
+const OUT={},FMT={};
+function readout(id,v){const t=(FMT[id]||String)(v),o=$(OUT[id]||id+'Out');if(o&&o.textContent!==t)o.textContent=t;$(id).setAttribute('aria-valuetext',t)}
+function put(id,v){$(id).value=v;readout(id,v)}
+function slider(id,fmt,commit,live){FMT[id]=fmt;const e=$(id);e.addEventListener('input',()=>{if(live)live(+e.value);readout(id,+e.value)});e.addEventListener('change',()=>commit(+e.value))}
+/* rebuild: reconvert the picture (true) or only re-lay styles, heights and parts (false) */
+function rebuild(reconvert=true){
+  if(reconvert)conv=null;
+  const old=pattern;pattern=compose();
+  if(sel>=pattern.W*pattern.H)sel=-1;
+  if(!old||old.Wpx!==pattern.Wpx||old.Hpx!==pattern.Hpx){focus=null;zoom=1}
+  render();loadProg(false);
+  if(pattern&&els.length){zoom=Math.max(zoom,fitZoom());size()}
+  saveSettings();sync();refresh();
+}
+const RECOMPOSE=k=>/^(style|join|depth)\./.test(k);
+document.querySelectorAll('.seg button[data-k]').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.k;let v=b.dataset.v;if(k==='rot')v=v==='true';
+  setIn(st,k,v);
+  if(k==='sheet'||k==='rot'){fitCount();reAspect()}
+  if(k==='tap'||k==='view'||k==='paper'||k.startsWith('ed.')){
+    if(k==='view')viewChanged();
+    if(k==='ed.depth'||k==='ed.style'||k==='ed.tool')note('');
+    saveSettings();sync();refresh();return}
+  rebuild(!RECOMPOSE(k));
+}));
+document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.step;st[k]=st[k]+(+b.dataset.d);fitCount();reAspect();rebuild();
+}));
+slider('cmp',v=>v?v+'%':'Off',v=>{cmp=v;cmpDraw()},v=>{cmp=v;cmpDraw()});
+slider('maxC',v=>v>=ALL_COLOURS?'All':String(v),v=>{st.img.maxColors=v;rebuild()});
+slider('dAmt',v=>v+'%',v=>{st.img.ditherAmt=v;rebuild()});
+slider('rare',v=>v?'<'+v:'Off',v=>{st.img.rare=v;rebuild()});
+slider('bgTol',String,()=>rebuild(),v=>{st.img.bgTol=v});
+slider('specks',v=>v?String(v):'Off',v=>{st.img.specks=v;rebuild()});
+slider('smooth',v=>v?v+'×':'Off',v=>{st.img.smooth=v;rebuild()});
+slider('levels',v=>plural(v,'plate'),v=>{st.depth.levels=v;st.ed.depth=Math.min(st.ed.depth,v);rebuild(false)});
+slider('spares',v=>v?'+'+v:'None',v=>{st.spares=v;saveSettings();sync();refresh()});
+slider('edDepth',v=>v?plural(v,'plate'):'Flat',v=>{st.ed.depth=v;saveSettings()});
+const signed=v=>v>0?'+'+v:v<0?'−'+(-v):'0',ADJ=[['adjB','brightness',''],['adjC','contrast',''],['adjS','saturation',''],['adjH','hue','°'],['adjW','warmth','']];
+ADJ.forEach(([id,,unit])=>slider(id,v=>signed(v)+unit,v=>{st.img[id]=v;rebuild()}));
+$('adjReset').addEventListener('click',()=>{ADJ.forEach(([id])=>{st.img[id]=0});rebuild()});
+$('bgOn').addEventListener('change',e=>{st.img.bg=e.target.checked;rebuild()});
+$('joinSec').addEventListener('change',e=>{st.join.sections=e.target.checked;rebuild(false)});
+$('joinLines').addEventListener('change',e=>{st.join.lines=e.target.checked;saveSettings();drawPieces();styles()});
+$('depthOn').addEventListener('change',e=>{st.depth.on=e.target.checked;rebuild(false)});
+$('depthKey').addEventListener('click',e=>{if(!e.target.closest('[data-act="relief"]'))return;st.depth.on=true;rebuild(false)});
+$('hidCol').addEventListener('change',e=>{st.depth.hidden=e.target.value;saveSettings();sync();refresh()});
+$('legoSw').addEventListener('click',e=>{
+  const b=e.target.closest('[data-lc]');if(!b)return;const c=LEGO[+b.dataset.lc],off=new Set(st.img.off);
+  if(off.has(c.name))off.delete(c.name);else{if(LEGO.length-off.size<=2){txt('colMsg','Keep at least two colours.');return}off.add(c.name)}
+  st.img.off=[...off];rebuild();
+});
+document.querySelectorAll('[data-lset]').forEach(b=>b.addEventListener('click',()=>{
+  const keep=b.dataset.lset==='all'?null:new Set(LEGO_SETS[b.dataset.lset]);st.img.off=keep?LEGO.filter(c=>!keep.has(c.name)).map(c=>c.name):[];rebuild()}));
+$('byCol').addEventListener('change',e=>{const s=e.target.closest('select[data-bc]');if(!s)return;const nm=LEGO[+s.dataset.bc].name;
+  if(s.value==='')delete st.style.by[nm];else st.style.by[nm]=s.value;rebuild(false)});
+$('shapeBtns').addEventListener('click',e=>{const b=e.target.closest('[data-shape]');if(!b)return;const k=b.dataset.shape,so=new Set(st.join.shapeOff);
+  so.has(k)?so.delete(k):so.add(k);st.join.shapeOff=[...so];rebuild(false)});
+$('resetSettings').addEventListener('click',()=>{
+  const keep={sheet:st.sheet,rot:st.rot,across:st.across,down:st.down,crop:st.img.crop,free:st.img.free,tap:st.tap,view:st.view};
+  st=tidy({});Object.assign(st,{sheet:keep.sheet,rot:keep.rot,across:keep.across,down:keep.down,tap:keep.tap,view:keep.view});st.img.crop=keep.crop;st.img.free=keep.free;
+  rebuild();txt('imgMsg','Settings reset. Your sheets, crop and edits are kept.');
+});
+
+/* ---------- crop: the box keeps the shape of the sheets ---------- */
+const aspect=()=>{const d=dims();return d.W/d.H};
+/* the biggest box of the sheets' shape inside box b (fractions of the picture), centred in it */
+function fitBox(b){const sw=srcImg.w,sh=srcImg.h,A=aspect();let w=b.w*sw,h=b.h*sh;if(w/h>A)w=h*A;else h=w/A;
+  return{x:b.x+(b.w-w/sw)/2,y:b.y+(b.h-h/sh)/2,w:w/sw,h:h/sh}}
+/* after the sheets change shape: keep the crop's centre and how far it is zoomed in, relative to the biggest box that fits */
+function maxWH(A){const f=st.img.free;let w=f.w*srcImg.w,h=f.h*srcImg.h;if(w/h>A)w=h*A;else h=w/A;return[w,h]}
+function reAspect(){
+  if(!srcImg)return;const sw=srcImg.w,sh=srcImg.h,c=st.img.crop,oldA=c.w*sw/(c.h*sh),A=aspect();
+  const z=clamp(c.w*sw/maxWH(oldA)[0],0.05,1);let[w,h]=maxWH(A);w*=z;h*=z;
+  const cx=(c.x+c.w/2)*sw,cy=(c.y+c.h/2)*sh;
+  st.img.crop={x:clamp(cx-w/2,0,sw-w)/sw,y:clamp(cy-h/2,0,sh-h)/sh,w:w/sw,h:h/sh};
+}
+function drawCrop(){
+  const cv=$('cropCv');if(!srcImg||!imgCv||$('imgSteps').hidden)return;
+  const wrap=$('cropWrap'),avail=Math.max(120,wrap.clientWidth-16),s=Math.min(avail/srcImg.w,320/srcImg.h);
+  const W=Math.max(1,Math.round(srcImg.w*s)),H=Math.max(1,Math.round(srcImg.h*s)),dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  g.imageSmoothingEnabled=s<1;g.drawImage(imgCv,0,0,W,H);
+  const c=st.img.crop,x=c.x*W,y=c.y*H,w=c.w*W,h=c.h*H;
+  g.fillStyle='rgba(0,0,0,.58)';g.fillRect(0,0,W,y);g.fillRect(0,y+h,W,H-y-h);g.fillRect(0,y,x,h);g.fillRect(x+w,y,W-x-w,h);
+  const acc=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#B5401D';
+  g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=1;g.setLineDash([4,4]);g.beginPath();
+  for(let i=1;i<st.across;i++){const X=x+w*i/st.across;g.moveTo(X,y);g.lineTo(X,y+h)}
+  for(let i=1;i<st.down;i++){const Y=y+h*i/st.down;g.moveTo(x,Y);g.lineTo(x+w,Y)}
+  g.stroke();g.setLineDash([]);
+  g.strokeStyle=acc;g.lineWidth=2;g.strokeRect(x,y,w,h);
+  g.fillStyle=acc;g.strokeStyle='#fff';g.lineWidth=1.5;
+  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([X,Y])=>{g.beginPath();g.rect(X-6,Y-6,12,12);g.fill();g.stroke()});
+}
+let cdrag=null,picking=false;
+function cropPt(e){const r=$('cropCv').getBoundingClientRect();return{px:clamp((e.clientX-r.left)/r.width,0,1),py:clamp((e.clientY-r.top)/r.height,0,1),r}}
+function colourAt(px,py){
+  const {w,h,data}=srcImg,cx=clamp(Math.floor(px*w),0,w-1),cy=clamp(Math.floor(py*h),0,h-1);let r=0,g=0,b=0,m=0;
+  for(let y=Math.max(0,cy-1);y<=Math.min(h-1,cy+1);y++)for(let x=Math.max(0,cx-1);x<=Math.min(w-1,cx+1);x++){const i=(y*w+x)*4;if(data[i+3]>=128){r+=data[i];g+=data[i+1];b+=data[i+2];m++}}
+  return m?'#'+[r,g,b].map(v=>Math.round(v/m).toString(16).padStart(2,'0')).join('').toUpperCase():null;
+}
+$('cropCv').addEventListener('pointerdown',e=>{
+  if(!srcImg)return;
+  if(picking){e.preventDefault();const q=cropPt(e),col=colourAt(q.px,q.py);
+    if(!col){txt('bgMsg','That spot is see-through. Tap a solid colour.');return}
+    st.img.bgCol=col;st.img.bgPt={x:q.px,y:q.py};st.img.bg=true;picking=false;rebuild();return}
+  const {px,py,r}=cropPt(e),c=st.img.crop;
+  const cs=[[c.x,c.y,c.x+c.w,c.y+c.h],[c.x+c.w,c.y,c.x,c.y+c.h],[c.x,c.y+c.h,c.x+c.w,c.y],[c.x+c.w,c.y+c.h,c.x,c.y]];
+  let best=null,bd=26;
+  cs.forEach(([cx,cy,ax,ay])=>{const d=Math.hypot((px-cx)*r.width,(py-cy)*r.height);if(d<bd){bd=d;best={mode:'corner',ax,ay}}});
+  if(!best&&px>=c.x&&px<=c.x+c.w&&py>=c.y&&py<=c.y+c.h)best={mode:'move',ox:px-c.x,oy:py-c.y};
+  if(!best)return;cdrag=best;$('cropCv').setPointerCapture(e.pointerId);e.preventDefault();
+});
+$('cropCv').addEventListener('pointermove',e=>{
+  if(!cdrag)return;const {px,py}=cropPt(e),c=st.img.crop,sw=srcImg.w,sh=srcImg.h;
+  if(cdrag.mode==='move')st.img.crop={x:clamp(px-cdrag.ox,0,1-c.w),y:clamp(py-cdrag.oy,0,1-c.h),w:c.w,h:c.h};
+  else{const {ax,ay}=cdrag,sx=px>=ax?1:-1,sy=py>=ay?1:-1,MIN=4,A=aspect();
+    const dx=Math.abs(px-ax)*sw,dy=Math.abs(py-ay)*sh,maxW=(sx>0?1-ax:ax)*sw,maxH=(sy>0?1-ay:ay)*sh;
+    let w=Math.max(dx,dy*A,MIN),h=w/A;if(w>maxW){w=maxW;h=w/A}if(h>maxH){h=maxH;w=h*A}
+    st.img.crop={x:sx>0?ax:ax-w/sw,y:sy>0?ay:ay-h/sh,w:w/sw,h:h/sh}}
+  drawCrop();
+});
+const endDrag=()=>{if(!cdrag)return;cdrag=null;txt('cropMsg','');rebuild()};
+$('cropCv').addEventListener('pointerup',endDrag);
+$('cropCv').addEventListener('pointercancel',endDrag);
+$('autoTrim').addEventListener('click',()=>{
+  if(!srcImg)return;const b=autoTrimBox();
+  if(!b.changed){txt('cropMsg','No flat edges found. Drag the corners instead.');return}
+  st.img.free={x:b.x,y:b.y,w:b.w,h:b.h};st.img.crop=fitBox(st.img.free);txt('cropMsg','Trimmed.');rebuild();
+});
+$('cropReset').addEventListener('click',()=>{if(!srcImg)return;st.img.free={x:0,y:0,w:1,h:1};st.img.crop=fitBox(st.img.free);txt('cropMsg','');rebuild()});
+$('bgPick').addEventListener('click',()=>{picking=!picking;sync();if(picking)$('cropWrap').scrollIntoView({block:'center',behavior:'smooth'})});
+$('bgAuto').addEventListener('click',()=>{st.img.bgCol=null;st.img.bgPt=null;picking=false;rebuild()});
+
+/* ---------- keeping every control in step with the settings ---------- */
+const cm=n=>(n*0.8).toFixed(1).replace(/\.0$/,''),inch=n=>(n*8/25.4).toFixed(1).replace(/\.0$/,'');
+function fillBox(id,html){const b=$(id);if(b.dataset.h!==html){b.innerHTML=html;b.dataset.h=html}}
+function sync(){
+  document.querySelectorAll('.seg button[data-k]').forEach(b=>b.setAttribute('aria-pressed',String(String(getIn(st,b.dataset.k))===b.dataset.v)));
+  const has=!!srcImg,shown=!!(pattern&&els.length);
+  $('imgSteps').hidden=!has;$('empty').hidden=shown;$('picBtns').hidden=!has;$('picStart').hidden=has;
+  $('viewSeg').hidden=!shown;$('pngFlat').disabled=$('pngTilt').disabled=$('pngCode').disabled=!shown;$('pdfBtn').disabled=!shown||$('pdfBtn').dataset.busy==='1';
+  /* sheets */
+  const S=SHEETS[st.sheet],{sw,sh,W,H}=dims(),n=st.across*st.down;
+  txt('sheetInfo',`${S.name}: ${S.kind}, BrickLink part ${S.id}.`);
+  $('rotSeg').hidden=S.w===S.h;
+  txt('acrossOut',st.across);txt('downOut',st.down);
+  document.querySelector('[data-step="across"][data-d="1"]').disabled=(st.across+1)*sw>MAX_STUDS;
+  document.querySelector('[data-step="down"][data-d="1"]').disabled=(st.down+1)*sh>MAX_STUDS;
+  document.querySelector('[data-step="across"][data-d="-1"]').disabled=st.across<=1;
+  document.querySelector('[data-step="down"][data-d="-1"]').disabled=st.down<=1;
+  const studs=pattern?pattern.c.reduce((a,c)=>a+(c>=0),0):0;
+  txt('sizeInfo',`${W} × ${H} studs on ${n} ${n>1?'sheets':'sheet'} (${st.across} × ${st.down}), ${cm(W)} × ${cm(H)} cm (${inch(W)} × ${inch(H)} in).`+(studs?` ${plural(studs,'stud')} to fill.`:''));
+  /* background */
+  $('bgOn').checked=st.img.bg;put('bgTol',st.img.bgTol);
+  $('bgPick').setAttribute('aria-pressed',String(picking));txt('bgPick',picking?'Cancel picking':'Pick background colour');
+  $('cropCv').classList.toggle('picking',picking);
+  const bd=$('bgDot');bd.hidden=!st.img.bgCol;bd.style.background=st.img.bgCol||'';$('bgAuto').hidden=!st.img.bgCol;
+  txt('bgMsg',picking?'Now tap the background in the crop picture above.':st.img.bgCol&&st.img.bg?'Emptying the colour you picked. If a rim of it stays, raise the tolerance.':st.img.bgCol?'Tick Leave background empty to use the colour you picked.':'');
+  /* adjust and clean up */
+  ADJ.forEach(([id])=>put(id,st.img[id]));
+  const on=ADJ.filter(([id])=>st.img[id]).map(([id,name,unit])=>name+' '+signed(st.img[id])+unit);
+  txt('adjSum',on.length?'('+on.join(', ')+')':'(off)');$('adjReset').disabled=!on.length;
+  const I=st.img,cl=[];put('specks',I.specks);put('smooth',I.smooth);
+  if(I.specks)cl.push('specks '+I.specks);if(I.smooth)cl.push('smooth '+I.smooth+'×');if(I.outline!=='none')cl.push('outline '+(I.outline==='in'?'inside':'outside'));
+  txt('cleanSum',cl.length?'('+cl.join(', ')+')':'(off)');
+  txt('cleanInfo',I.outline!=='none'&&has?(outlined?`The outline uses ${LEGO[legoPal()[darkest(legoPal())].i].name} on ${plural(outlined,'stud')}.`:'Nothing to outline: no stud inside the picture is empty. Turn on Leave background empty first.'):'');
+  /* colours */
+  const off=new Set(st.img.off),used=new Set();if(pattern)for(const c of pattern.c)if(c>=0)used.add(c);
+  fillBox('legoSw',LEGO.map((c,i)=>`<button type="button" class="swb lsw" data-lc="${i}" style="background:${c.hex}" title="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${!off.has(c.name)}"></button>`).join(''));
+  put('maxC',st.img.maxColors);
+  txt('colMsg',`Choosing from ${LEGO.length-off.size} of ${LEGO.length} colours`+(used.size?`; this mosaic uses ${used.size}.`:'.'));
+  $('dAmtRow').hidden=st.img.dither==='none';put('dAmt',st.img.ditherAmt);put('rare',st.img.rare);
+  /* pieces */
+  const usedL=[...used].sort((a,b)=>a-b);
+  fillBox('byCol',usedL.length?usedL.map(c=>{const v=st.style.by[LEGO[c].name]||'';return`<div class="brow"><span class="dot" style="background:${LEGO[c].hex}"></span><label for="bc${c}">${esc(LEGO[c].name)}</label><select id="bc${c}" data-bc="${c}"><option value=""${v===''?' selected':''}>Same as the whole mosaic</option>${STYLES.map(s=>`<option value="${s}"${v===s?' selected':''}>${PARTS[s].name}</option>`).join('')}</select></div>`}).join(''):'<p class="sub">Colours appear here once the mosaic is made.</p>');
+  const nb=Object.keys(st.style.by).length;txt('byColSum',nb?`(${nb} set)`:'');
+  if(pattern&&studs){const k=joinCounts(pattern),cur=st.join.mode;
+    txt('joinCounts',`Parts needed: biggest first ${k.big.toLocaleString()}, rows ${k.rows.toLocaleString()}, studs only ${k.one.toLocaleString()}. Now using ${({big:'biggest first',rows:'rows',one:'studs only'})[cur]}.`)}
+  else txt('joinCounts','');
+  const so=new Set(st.join.shapeOff);$('shapeRow').hidden=st.join.mode==='one';
+  fillBox('shapeBtns',SHAPES.filter(k=>st.join.mode!=='rows'||k.startsWith('1x')).map(k=>`<button type="button" class="btn sm" data-shape="${k}" aria-pressed="${!so.has(k)}">${k.replace('x',' × ')}</button>`).join(''));
+  $('joinSec').checked=st.join.sections;$('joinLines').checked=st.join.lines;
+  /* relief */
+  $('depthOn').checked=st.depth.on;$('depthSet').hidden=!st.depth.on;put('levels',st.depth.levels);
+  const hs=$('hidCol');if(!hs.options.length)hs.innerHTML=LEGO.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+  hs.value=st.depth.hidden;$('hidDot').style.background=LEGO_BY.get(st.depth.hidden).hex;
+  if(st.depth.on&&pattern){let top=0;for(let i=0;i<pattern.dep.length;i++)if(pattern.c[i]>=0&&pattern.dep[i]>top)top=pattern.dep[i];
+    txt('depthInfo',top?`${plural(pattern.hidden.length,'hidden plate')} lift the raised parts. The highest stand ${plural(top,'plate')} (${(top*3.2).toFixed(1)} mm) above the sheet's other parts.`:'Nothing is raised yet. Paint heights with the Height tool in Edit.')}
+  else txt('depthInfo','');
+  /* views and edit bar */
+  /* under the board in the Heights and 3D views: what the view shows, and a way to turn relief on when it's off */
+  $('cmpRow').hidden=!shown||!srcUrl||st.view==='tilt';put('cmp',cmp);
+  const dk=$('depthKey');dk.hidden=!shown||st.view==='colour';
+  if(!dk.hidden&&st.view==='code')dk.innerHTML=`<span>Each part shows its code: colour, size, then style. ${CODE_HOWTO} The Parts list gives each code’s BrickLink and LEGO numbers.</span>`
+    +usedColours().map(c=>`<span class="dk"><span class="dot" style="background:${LEGO[c].hex}"></span><b class="kcode">${LEGO[c].code}</b> ${esc(LEGO[c].name)}</span>`).join(' ');
+  else if(!dk.hidden){const on='<button type="button" class="btn sm" data-act="relief">Turn on relief</button>';
+    dk.innerHTML=st.view==='depth'
+      ?(st.depth.on?'Lighter grey stands higher (set up in step 9, Relief). '+Array.from({length:st.depth.levels+1},(_,i)=>`<span class="dk"><span class="dot" style="background:${depthGrey(i,st.depth.levels)}"></span>${i?plural(i,'plate'):'flat'}</span>`).join(' ')
+        :`<span>Heights shows how high each stud stands. Relief is off, so the whole mosaic is flat.</span>${on}`)
+      :(st.depth.on?'<span>The mosaic seen from an angle, with raised parts standing up (set up in step 9, Relief).</span>'
+        :`<span>The mosaic seen from an angle. It’s flat until you turn on relief.</span>${on}`)}
+  const ed=st.tap==='edit';$('editBar').hidden=!ed||!shown;$('board').classList.toggle('editing',ed);$('board').classList.toggle('lock',ed);
+  if(ed){
+    const t=st.ed.tool;$('brushColour').hidden=!(t==='paint'||t==='fill');$('brushStyle').hidden=t!=='style';$('brushDepth').hidden=t!=='depth';
+    const pc=st.ed.paint?LEGO_BY.get(st.ed.paint):null;$('paintDot').style.background=pc?pc.hex:'transparent';txt('paintName',pc?pc.name:'Pick a colour');
+    fillBox('paintSw',LEGO.map((c,i)=>`<button type="button" class="swb" data-pc="${i}" style="background:${c.hex}" title="${esc(c.name)}" aria-label="Paint ${esc(c.name)}" aria-pressed="${st.ed.paint===c.name}"></button>`).join(''));
+    $('edDepth').max=st.depth.levels;put('edDepth',Math.min(st.ed.depth,st.depth.levels));
+    $('undo').disabled=!undoStack.length;$('redo').disabled=!redoStack.length;$('clearEdits').disabled=!editCount();
+  }
+  $('fade').checked=st.fade;$('labels').checked=st.labels;
+  partsUI();
+  drawCrop();
+}
+
+/* ---------- the parts list ---------- */
+function partRows(){
+  const p=pattern,m=new Map();
+  for(const q of p.pieces){const c=p.c[q.i],s=STYLES[p.sty[q.i]],key=c+'|'+s+'|'+q.k;let r=m.get(key);
+    if(!r){const L=LEGO[c],[a,b]=q.k.split('x').map(Number);r={c,code:kindCode(c,s,q.k),name:L.name,lname:L.lname,lid:L.lid,hex:L.hex,bl:L.bl,s,k:q.k,part:partName(s,q.k),id:PARTS[s].ids[q.k],area:a*b,qty:0};m.set(key,r)}r.qty++}
+  const rows=[...m.values()].sort((x,y)=>x.c-y.c||STYLES.indexOf(x.s)-STYLES.indexOf(y.s)||y.area-x.area||x.k.localeCompare(y.k));
+  const H=LEGO_BY.get(st.depth.hidden),hm=new Map();
+  for(const q of p.hidden){let r=hm.get(q.k);if(!r){const[a,b]=q.k.split('x').map(Number);r={c:H.i,code:kindCode(H.i,'plate',q.k),name:H.name,lname:H.lname,lid:H.lid,hex:H.hex,bl:H.bl,s:'plate',k:q.k,part:partName('plate',q.k),id:PARTS.plate.ids[q.k],area:a*b,qty:0,hidden:true};hm.set(q.k,r)}r.qty++}
+  return{rows,hid:[...hm.values()].sort((x,y)=>y.area-x.area||x.k.localeCompare(y.k))};
+}
+/* lots for BrickLink: one per part number and colour, visible and hidden parts together, with spares */
+function lots(){const {rows,hid}=partRows(),m=new Map();for(const r of rows.concat(hid)){const k=r.id+'|'+r.bl,o=m.get(k);if(o)o.qty+=r.qty;else m.set(k,{id:r.id,bl:r.bl,qty:r.qty,code:r.code})}return[...m.values()].map(o=>({...o,qty:o.qty+st.spares}))}
+function brickXml(){const L=lots();return'<INVENTORY>\n'+L.map(r=>`  <ITEM>\n    <ITEMTYPE>P</ITEMTYPE>\n    <ITEMID>${r.id}</ITEMID>\n    <COLOR>${r.bl}</COLOR>\n    <MINQTY>${r.qty}</MINQTY>\n    <REMARKS>BIG ${r.code}</REMARKS>\n  </ITEM>`).join('\n')+(L.length?'\n':'')+'</INVENTORY>\n'}
+function partsUI(){
+  const box=$('partsBox');box.hidden=!(pattern&&els.length);if(box.hidden)return;
+  const {rows,hid}=partRows(),S=SHEETS[st.sheet],n=st.across*st.down,tot=rows.concat(hid).reduce((a,r)=>a+r.qty,0),L=lots();
+  const tr=r=>`<tr><td class="kcode">${r.code}</td><td><span class="dot" style="background:${r.hex}"></span>${esc(r.name)} <span class="code">BL ${r.bl} · LEGO ${r.lid}</span></td><td class="pt">${esc(r.part)} <span class="code">${esc(r.id)}</span></td><td class="n">${r.qty.toLocaleString()}</td></tr>`;
+  fillBox('partsList',(rows.length?`<table class="otab"><thead><tr><th>Code</th><th>Colour</th><th>Part</th><th class="n">Qty</th></tr></thead><tbody>${rows.map(tr).join('')}`
+    +(hid.length?`<tr><th colspan="4">Hidden plates under raised parts</th></tr>${hid.map(tr).join('')}`:'')+`</tbody></table>`:'<p class="sub">No parts yet.</p>')
+    +`<p class="sub">To build on: ${n} × ${esc(S.name)} (${S.id}), any colour.${st.spares?` The wanted list adds ${st.spares} spare${st.spares>1?'s':''} to each of its ${L.length} lots.`:''}</p>`);
+  put('spares',st.spares);
+  txt('partsSum',tot?`(${plural(tot,'part')}, ${plural(L.length,'lot')})`:'');
+  $('blSave').disabled=!tot;
+}
+$('blSave').addEventListener('click',()=>saveFile(fileBase()+'-wanted-list.xml',new Blob([brickXml()],{type:'application/xml'}),$('blMsg')));
+
+/* ---------- lists to copy ---------- */
+const q=v=>{let s=String(v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+function exportText(){
+  if(!pattern)return'';const k=$('expKind').value,p=pattern;
+  if(k==='bricklink')return brickXml();
+  if(k==='parts'){const {rows,hid}=partRows();
+    const line=(r,w)=>[r.code,q(r.name),q(r.lname),r.bl,r.lid,q(r.part),q(r.id),r.qty,w].join(',');
+    return'code,colour,lego_colour,bricklink_colour,lego_colour_id,part,bricklink_part,quantity,where\n'+rows.map(r=>line(r,'visible')).concat(hid.map(r=>line(r,'hidden'))).join('\n')}
+  const out=['sheet,section,across,down,overall_across,overall_down,code,colour,part,bricklink_part,part_number,raised_plates,placed'];
+  for(let i=0;i<p.W*p.H;i++){if(p.c[i]<0)continue;const x=i%p.W,y=(i-x)/p.W,s=secOf(x,y),pc=p.of[i],qq=p.pieces[pc],sty=STYLES[p.sty[i]];
+    out.push([(s.bc+1)+'-'+(s.br+1),'ABC'[s.sx]+(s.sy+1),s.lx+1,s.ly+1,x+1,y+1,kindCode(p.c[i],sty,qq.k),q(LEGO[p.c[i]].name),q(partName(sty,qq.k)),q(PARTS[sty].ids[qq.k]),pc+1,p.dep[i],prog.has(keyXY(x,y))?'yes':'no'].join(','))}
+  return out.join('\n');
+}
+$('expDetails').addEventListener('toggle',()=>{if($('expDetails').open)$('expText').value=exportText()});
+$('expKind').addEventListener('change',()=>{$('expText').value=exportText()});
+$('copyBtn').addEventListener('click',async()=>{const t=$('expText');t.value=exportText();
+  try{await navigator.clipboard.writeText(t.value);txt('copyMsg','Copied.')}catch(e){t.select();txt('copyMsg','Select-all is done: copy with Ctrl+C or ⌘C.')}});
+
+/* ---------- pictures to save ---------- */
+const CODE_HOWTO='RED22T is a Red 2 × 2 tile. No letter means a plate with studs, R a round plate and RT a round tile.';
+function usedColours(){const s=new Set();for(const c of pattern.c)if(c>=0)s.add(c);return[...s].sort((a,b)=>a-b)}
+function flatPNG(codes=false){
+  const p=pattern,U=Math.max(8,Math.floor(2400/Math.max(p.Wpx,p.Hpx))),cv=document.createElement('canvas');
+  cv.width=Math.ceil(p.Wpx*U);cv.height=Math.ceil(p.Hpx*U);const g=cv.getContext('2d');
+  g.fillStyle='#FFFFFF';g.fillRect(0,0,cv.width,cv.height);
+  for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++){g.fillStyle='#DCE1E8';g.fillRect((PAD+bc*(p.sw+GAP))*U,(PAD+br*(p.sh+GAP))*U,p.sw*U,p.sh*U)}
+  for(let i=0;i<p.W*p.H;i++){const x=i%p.W,y=(i-x)/p.W,X=p.X(x)*U,Y=p.Y(y)*U;
+    if(p.c[i]<0){g.fillStyle='#B4BBC6';g.beginPath();g.arc(X,Y,0.28*U,0,Math.PI*2);g.fill();continue}
+    const T=PARTS[STYLES[p.sty[i]]];g.fillStyle=codes?wash(LEGO[p.c[i]].hex):LEGO[p.c[i]].hex;
+    if(T.round){g.beginPath();g.arc(X,Y,0.46*U,0,Math.PI*2);g.fill()}else g.fillRect(X-U/2,Y-U/2,U+0.5,U+0.5);
+    if(T.studs&&!codes){g.beginPath();g.arc(X,Y,0.3*U,0,Math.PI*2);g.fillStyle='rgba(255,255,255,.16)';g.fill();g.strokeStyle='rgba(0,0,0,.3)';g.lineWidth=0.06*U;g.stroke()}}
+  if(st.join.lines||codes){g.strokeStyle='rgba(0,0,0,.55)';g.lineWidth=0.08*U;const e=0.05;
+    for(const q of p.pieces){if(PARTS[STYLES[p.sty[q.i]]].round)continue;g.strokeRect((p.X(q.x)-0.5+e)*U,(p.Y(q.y)-0.5+e)*U,(q.w-2*e)*U,(q.h-2*e)*U)}}
+  if(!codes)return cv;
+  /* the numbered map: each part's code, then a key of the colours under the mosaic */
+  const mono='ui-monospace,Menlo,Consolas,monospace';g.fillStyle='#1D2230';g.textAlign='center';g.textBaseline='middle';
+  for(const q of p.pieces){const L=codeLines(q,p),round=PARTS[STYLES[p.sty[q.i]]].round,n=Math.max(...L.map(s=>s.length));
+    const fs=Math.min(round?0.32:0.42,0.9*q.w/(n*0.6),0.9*q.h/(L.length*1.12)),cx=(p.X(q.x)+(q.w-1)/2)*U,cy=(p.Y(q.y)+(q.h-1)/2)*U;
+    g.font=`600 ${fs*U}px ${mono}`;L.forEach((s,j)=>g.fillText(s,cx,cy+(j-(L.length-1)/2)*fs*1.12*U))}
+  const cols=usedColours(),F=Math.max(14,Math.round(cv.width/70)),pad=F,lineH=F*1.6,colW=F*13,per=Math.max(1,Math.floor((cv.width-2*pad)/colW));
+  const out=document.createElement('canvas');out.width=cv.width;out.height=cv.height+pad*2+lineH*2.4+Math.ceil(cols.length/per)*lineH;
+  const o=out.getContext('2d');o.fillStyle='#FFFFFF';o.fillRect(0,0,out.width,out.height);o.drawImage(cv,0,0);
+  let y=cv.height+pad;o.fillStyle='#1D2230';o.textBaseline='top';o.textAlign='left';
+  o.font=`700 ${F}px system-ui,sans-serif`;o.fillText('Codes: colour, size, then style.',pad,y);y+=lineH;
+  o.font=`${F*0.85}px system-ui,sans-serif`;o.fillText(CODE_HOWTO,pad,y,out.width-2*pad);y+=lineH*1.4;
+  cols.forEach((c,j)=>{const x=pad+(j%per)*colW,yy=y+Math.floor(j/per)*lineH;o.fillStyle=LEGO[c].hex;o.fillRect(x,yy,F,F);o.strokeStyle='#5B6375';o.lineWidth=1;o.strokeRect(x+.5,yy+.5,F-1,F-1);
+    o.fillStyle='#1D2230';o.font=`700 ${F}px ${mono}`;o.fillText(LEGO[c].code,x+F*1.4,yy);o.font=`${F*0.85}px system-ui,sans-serif`;o.fillText(LEGO[c].name,x+F*4,yy+F*0.08,colW-F*4.4)});
+  return out;
+}
+const fileBase=()=>($('projName').value.trim()||'big-mosaic').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'big-mosaic';
+function savePNG(kind){
+  if(!pattern||!els.length)return;
+  const cv=kind==='tilt'?drawTilt(document.createElement('canvas'),Math.max(8,Math.floor(2400/Math.max(pattern.Wpx,pattern.Hpx)))):flatPNG(kind==='code');
+  cv.toBlob(b=>{if(b)saveFile(fileBase()+(kind==='tilt'?'-3d':kind==='code'?'-numbered':'')+'.png',b,$('pngMsg'));else txt('pngMsg','The picture could not be made here.')},'image/png');
+}
+$('pngFlat').addEventListener('click',()=>savePNG('flat'));
+$('pngTilt').addEventListener('click',()=>savePNG('tilt'));
+$('pngCode').addEventListener('click',()=>savePNG('code'));
+
+/* ---------- project files ---------- */
+function makeProject(){return JSON.stringify({app:'BIG',version:VERSION,saved:new Date().toISOString(),name:$('projName').value.trim().slice(0,60)||'BIG mosaic',settings:st,edits:E,image:srcUrl||null})}
+$('projSave').addEventListener('click',()=>saveFile(fileBase()+'.big.json',new Blob([makeProject()],{type:'application/json'}),$('projMsg')));
+$('projIn').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  if(f.size>30e6){txt('projMsg','That file is too big to be a BIG project.');return}
+  const rd=new FileReader();rd.onload=()=>openProject(String(rd.result));rd.onerror=()=>txt('projMsg','That file could not be read.');rd.readAsText(f);
+});
+function openProject(text){
+  let o;try{o=JSON.parse(text)}catch(e){txt('projMsg','That file isn’t a BIG project.');return}
+  if(!o||typeof o!=='object'||(o.app!=='BIG'&&o.app!=='LIG')){txt('projMsg','That file isn’t a BIG project.');return}
+  st=tidy(o.settings);E=tidyEdits(o.edits);undoStack=[];redoStack=[];saveSettings();saveEdits();
+  const name=typeof o.name==='string'?o.name.slice(0,60):'';$('projName').value=name;store.set('big:name',name);
+  txt('projMsg','Opened “'+(name||'the mosaic')+'”.');
+  if(typeof o.image==='string'&&/^data:image\/(png|jpeg|webp|gif);base64,/.test(o.image))loadImage(o.image,false);
+  else{srcImg=null;imgCv=null;srcUrl='';store.del('big:img');rebuild()}
+}
+$('projName').addEventListener('change',()=>store.set('big:name',$('projName').value.trim().slice(0,60)));
+
+/* ---------- loading a picture ---------- */
+/* picture messages go to the Picture section and, while no picture is loaded, under the big Choose image button */
+function say(m){txt('imgMsg',m);txt('emptyNote',$('empty').hidden?'':m)}
+let loadSeq=0;
+function loadImage(url,fresh,seq=++loadSeq){
+  const im=new Image();
+  im.onload=()=>{
+    if(seq!==loadSeq)return;
+    let w=im.naturalWidth,h=im.naturalHeight;const s=Math.min(1,SRC_MAX/Math.max(w,h));
+    w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    const cx=cv.getContext('2d');cx.imageSmoothingEnabled=s<1;cx.drawImage(im,0,0,w,h);
+    let data;try{data=cx.getImageData(0,0,w,h).data}catch(e){say('That image could not be read here. Try saving it as a PNG or JPEG first.');return}
+    srcImg={w,h,data};imgCv=cv;picking=false;
+    try{srcUrl=cv.toDataURL('image/png');store.set('big:img',srcUrl)}catch(e){srcUrl=url}
+    if(fresh){
+      st.img.bgCol=null;st.img.bgPt=null;st.img.free={x:0,y:0,w:1,h:1};st.img.crop=fitBox(st.img.free);
+      st.img.sampling=im.naturalWidth<=MAX_STUDS&&im.naturalHeight<=MAX_STUDS?'nearest':'average';
+      txt('cropMsg','');say(`${im.naturalWidth} × ${im.naturalHeight} px loaded.`);
+    }
+    else{const c=st.img.crop,A=c.w*w/(c.h*h);if(Math.abs(A/aspect()-1)>0.01)reAspect()}   /* a crop saved for other sheets takes their shape */
+    rebuild();
+  };
+  im.onerror=()=>say('That file could not be read as an image. Photos in HEIC format often can’t be: save it as a JPEG or PNG and try again.');
+  im.src=url;
+}
+function takeFile(f){
+  if(!f)return;if(f.type&&!/^image\//.test(f.type)){say('That isn’t an image file.');return}
+  say('Loading the picture…');
+  const rd=new FileReader(),seq=++loadSeq;rd.onload=()=>{if(seq===loadSeq)loadImage(rd.result,true,seq)};rd.onerror=()=>say('That file could not be read.');rd.readAsDataURL(f);
+}
+document.querySelectorAll('.fileIn').forEach(i=>i.addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];takeFile(f);e.target.value=''}));
+/* Pasting works in viewers that block file pickers. A pasted picture arrives as a file on the paste event,
+   or (from some phone keyboards) as an <img> dropped into a paste box. */
+document.addEventListener('paste',e=>{const items=e.clipboardData&&e.clipboardData.items;if(!items)return;
+  for(const it of items){if(it.kind==='file'&&it.type.startsWith('image/')){e.preventDefault();takeFile(it.getAsFile());return}}
+  if(e.target.closest&&e.target.closest('.pasteBox')){e.preventDefault();say('That was text, not a picture. Copy the picture itself, then paste.')}});
+document.querySelectorAll('.pasteBox').forEach(b=>{
+  b.addEventListener('input',()=>{const im=b.querySelector('img'),src=im&&im.getAttribute('src');b.textContent='';
+    if(src&&/^(data:image\/|blob:)/.test(src)){say('Loading the picture…');loadImage(src,true)}
+    else if(src)say('That picture could not be taken from here. Save it, then paste or choose the file.')});
+  b.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)&&e.key.length===1)e.preventDefault()});
+  b.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)takeFile(f)});
+});
+vp.addEventListener('dragover',e=>e.preventDefault());
+vp.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];takeFile(f)});
+
+/* ---------- start ---------- */
+/* a help panel can have more than one ? button: they open and close it together */
+document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id),open=t.hidden;t.hidden=!open;
+  document.querySelectorAll(`.q[aria-controls="${id}"]`).forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
+[['adjBox','adj'],['cleanBox','clean'],['partsBox','parts'],['legendBox','legend'],['byColBox','byCol']].forEach(([id,k])=>{const d=$(id);d.open=!!st.ui[k];
+  d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
+const nm=store.get('big:name');if(typeof nm==='string')$('projName').value=nm.slice(0,60);
+const stored=store.get('big:img');
+if(typeof stored==='string'&&stored.startsWith('data:image/png;base64,'))loadImage(stored,false);
+rebuild();
+
+/* ---------- build sheets: a printable PDF with a cover, the parts list and real-size pages for every 16 x 16 section ----------
+   Each page is drawn on a canvas at 200 dpi and stored in the PDF as a JPEG, so no library is needed.
+   Sections with raised parts get a page per layer of hidden plates first, then the page of visible parts. */
+const PAPER={letter:{w:215.9,h:279.4,name:'Letter'},a4:{w:210,h:297,name:'A4'}};
+const DPI=200,PXMM=DPI/25.4,STUD=8,MARGIN=12,SANS='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',MONO='ui-monospace,Menlo,Consolas,monospace',INK='#1D2230',MUTED='#5B6375';
+
+function sheetCanvas(P){
+  const cv=document.createElement('canvas');cv.width=Math.round(P.w*PXMM);cv.height=Math.round(P.h*PXMM);
+  const g=cv.getContext('2d'),m=v=>v*PXMM;g.fillStyle='#FFFFFF';g.fillRect(0,0,cv.width,cv.height);g.lineJoin='round';
+  const pg={cv,g,m,P,
+    text(s,x,y,size,o={}){g.font=`${o.w||400} ${m(size)}px ${o.mono?MONO:SANS}`;g.fillStyle=o.c||INK;g.textAlign=o.a||'left';g.textBaseline=o.b||'top';
+      if(o.max)g.fillText(String(s),m(x),m(y),m(o.max));else g.fillText(String(s),m(x),m(y))},
+    wrap(s,x,y,size,maxW,lh,o={}){const words=String(s).split(' ');let line='',n=0;
+      for(const w of words){const t=line?line+' '+w:w;if(line&&pg.width(t,size,o)>maxW){pg.text(line,x,y+n*lh,size,o);n++;line=w}else line=t}
+      if(line){pg.text(line,x,y+n*lh,size,o);n++}return n},
+    width(s,size,o={}){g.font=`${o.w||400} ${m(size)}px ${o.mono?MONO:SANS}`;return g.measureText(String(s)).width/PXMM},
+    box(x,y,w,h,fill,stroke,lw=0.3){if(fill){g.fillStyle=fill;g.fillRect(m(x),m(y),m(w),m(h))}if(stroke){g.strokeStyle=stroke;g.lineWidth=m(lw);g.strokeRect(m(x),m(y),m(w),m(h))}},
+    dot(x,y,r,fill,stroke,lw=0.3){g.beginPath();g.arc(m(x),m(y),m(r),0,Math.PI*2);if(fill){g.fillStyle=fill;g.fill()}if(stroke){g.strokeStyle=stroke;g.lineWidth=m(lw);g.stroke()}},
+    swatch(x,y,s,hex){pg.box(x,y,s,s,hex,MUTED,0.2)}};
+  return pg;
+}
+/* the 5 cm bar and page number at the foot of every page */
+function sheetFoot(pg,n,N){
+  const {P}=pg,y=P.h-MARGIN-4;
+  pg.text('Print at 100% (Actual size), not “Fit to page”. This bar should measure 5 cm:',MARGIN,y-0.2,2.8,{c:MUTED});
+  const x=MARGIN+pg.width('Print at 100% (Actual size), not “Fit to page”. This bar should measure 5 cm:',2.8)+3;
+  pg.box(x,y,50,2.6,INK);for(let i=1;i<5;i++)pg.box(x+i*10-0.15,y,0.3,2.6,'#FFFFFF');
+  pg.text(`Page ${n} of ${N}`,P.w-MARGIN,y-0.2,2.8,{a:'right',c:MUTED});
+}
+/* labels sized to fit a part, as in the Codes view */
+function sheetLabel(pg,code,col,cx,cy,w,h,round,maxSize){
+  const one=w>=2||code.length*0.6*0.42<=w*0.9,L=one?[code]:[col,code.slice(col.length)],n=Math.max(...L.map(s=>s.length));
+  const fs=Math.min(round?0.32:maxSize,0.9*w/(n*0.6),0.9*h/(L.length*1.12))*STUD;
+  L.forEach((s,j)=>pg.text(s,cx,cy+(j-(L.length-1)/2)*fs*1.12,fs,{w:600,mono:true,a:'center',b:'middle'}));
+}
+/* one 16 x 16 section at real size: parts are [{x,y,w,h,code,col,hex,round}] in mosaic coordinates */
+function sheetGrid(pg,X0,Y0,gx,gy,parts,empty){
+  const {g,m}=pg,S=16*STUD;
+  pg.box(gx,gy,S,S,'#EEF1F5','#9AA3B5',0.3);
+  for(let i=0;i<16;i++){pg.text(i+1,gx+i*STUD+STUD/2,gy-1.2,2.6,{a:'center',b:'bottom',c:MUTED});pg.text(i+1,gx-1.5,gy+i*STUD+STUD/2,2.6,{a:'right',b:'middle',c:MUTED})}
+  for(const [x,y] of empty)pg.dot(gx+(x-X0+0.5)*STUD,gy+(y-Y0+0.5)*STUD,1.6,'#C9CED8');
+  g.save();g.beginPath();g.rect(m(gx),m(gy),m(S),m(S));g.clip();
+  for(const q of parts){
+    const vx0=Math.max(q.x,X0),vy0=Math.max(q.y,Y0),vx1=Math.min(q.x+q.w,X0+16),vy1=Math.min(q.y+q.h,Y0+16);if(vx1<=vx0||vy1<=vy0)continue;
+    const px=gx+(q.x-X0)*STUD,py=gy+(q.y-Y0)*STUD,e=0.35;
+    if(q.round)pg.dot(px+STUD/2,py+STUD/2,STUD*0.46,wash(q.hex),'rgba(29,34,48,.8)',0.35);
+    else pg.box(px+e,py+e,q.w*STUD-2*e,q.h*STUD-2*e,wash(q.hex),'rgba(29,34,48,.8)',0.35);
+    const cx=gx+((vx0+vx1)/2-X0)*STUD,cy=gy+((vy0+vy1)/2-Y0)*STUD;
+    sheetLabel(pg,q.code,q.col,cx,cy,vx1-vx0,vy1-vy0,q.round,0.42);
+  }
+  g.restore();
+  for(let i=4;i<16;i+=4){g.strokeStyle='rgba(91,99,117,.35)';g.lineWidth=m(0.2);g.setLineDash([m(1),m(1)]);
+    g.beginPath();g.moveTo(m(gx+i*STUD),m(gy-0.5));g.lineTo(m(gx+i*STUD),m(gy));g.moveTo(m(gx-0.5),m(gy+i*STUD));g.lineTo(m(gx),m(gy+i*STUD));g.stroke();g.setLineDash([])}
+}
+/* a small map of the whole mosaic with this section filled in */
+function sheetMap(pg,x,y,wMax,hMax,cur){
+  const p=pattern,s=Math.min(wMax/p.Wpx,hMax/p.Hpx);
+  for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++){const X=x+(PAD+bc*(p.sw+GAP))*s,Y=y+(PAD+br*(p.sh+GAP))*s;
+    pg.box(X,Y,p.sw*s,p.sh*s,'#EEF1F5','#9AA3B5',0.2);
+    for(let sy=0;sy*SEC<p.sh;sy++)for(let sx=0;sx*SEC<p.sw;sx++){const id=bc+'.'+br+'.'+sx+'.'+sy;
+      pg.box(X+sx*SEC*s+0.25,Y+sy*SEC*s+0.25,SEC*s-0.5,SEC*s-0.5,id===cur?'#B23A17':null,id===cur?null:'#C9CED8',0.2)}}
+}
+/* every part and hidden plate, as drawn on the sheets */
+function sheetParts(){
+  const p=pattern,H=LEGO_BY.get(st.depth.hidden);
+  const top=p.pieces.map(q=>{const c=p.c[q.i],s=STYLES[p.sty[q.i]];return{x:q.x,y:q.y,w:q.w,h:q.h,code:kindCode(c,s,q.k),col:LEGO[c].code,hex:LEGO[c].hex,round:!!PARTS[s].round}});
+  const hid=p.hidden.map(q=>({x:q.x,y:q.y,w:q.w,h:q.h,code:kindCode(H.i,'plate',q.k),col:H.code,hex:H.hex,round:false,layer:q.layer}));
+  return{top,hid};
+}
+function sheetCounts(list,X0,Y0){const m=new Map();for(const q of list){if(q.x<X0||q.y<Y0||q.x>=X0+16||q.y>=Y0+16)continue;const o=m.get(q.code);if(o)o.n++;else m.set(q.code,{code:q.code,hex:q.hex,n:1})}
+  return[...m.values()].sort((a,b)=>a.code.localeCompare(b.code))}
+/* the pages, in build order */
+function sheetPlan(){
+  const p=pattern,secs=[];
+  for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++)for(let sy=0;sy*SEC<p.sh;sy++)for(let sx=0;sx*SEC<p.sw;sx++)
+    secs.push({bc,br,sx,sy,X0:bc*p.sw+sx*SEC,Y0:br*p.sh+sy*SEC,id:bc+'.'+br+'.'+sx+'.'+sy});
+  const {top,hid}=sheetParts(),pages=[{kind:'cover'}];
+  const {rows,hid:hrows}=partRows(),per=Math.floor((PAPER[st.paper].h-2*MARGIN-36)/5.2);
+  const all=rows.map(r=>({...r,where:''})).concat(hrows.map(r=>({...r,where:'hidden'})));
+  for(let i=0;i<all.length;i+=per)pages.push({kind:'parts',rows:all.slice(i,i+per),first:i===0});
+  for(const s of secs){
+    const inSec=q=>q.x<s.X0+16&&q.x+q.w>s.X0&&q.y<s.Y0+16&&q.y+q.h>s.Y0;
+    const layers=[...new Set(hid.filter(inSec).map(q=>q.layer))].sort((a,b)=>a-b),steps=layers.length+1;
+    layers.forEach((L,j)=>pages.push({kind:'sec',s,layer:L,step:j+1,steps,parts:hid.filter(q=>q.layer===L&&inSec(q))}));
+    pages.push({kind:'sec',s,layer:0,step:steps,steps,parts:top.filter(inSec)});
+  }
+  return pages;
+}
+function sheetDraw(page,n,N){
+  const P=PAPER[st.paper],pg=sheetCanvas(P),p=pattern,S=SHEETS[st.sheet],title=$('projName').value.trim()||'BIG mosaic';
+  if(page.kind==='cover'){
+    let y=MARGIN;pg.text(title,MARGIN,y,7,{w:700,max:P.w-2*MARGIN});y+=10;
+    const {rows,hid}=partRows(),tot=rows.reduce((a,r)=>a+r.qty,0),htot=hid.reduce((a,r)=>a+r.qty,0);
+    y+=5.2*pg.wrap(`${p.W} × ${p.H} studs (${(p.W*0.8).toFixed(1)} × ${(p.H*0.8).toFixed(1)} cm) on ${st.across*st.down} × ${S.name} (${S.id}). ${tot.toLocaleString()} parts`+(htot?` and ${htot.toLocaleString()} hidden plates`:'')+'.',MARGIN,y,3.4,P.w-2*MARGIN,5.2,{c:MUTED})+3;
+    const bw=P.w-2*MARGIN,bh=Math.min(105,bw*p.Hpx/p.Wpx),s=Math.min(bw/p.Wpx,bh/p.Hpx),ox=MARGIN+(bw-p.Wpx*s)/2;
+    for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++)pg.box(ox+(PAD+bc*(p.sw+GAP))*s,y+(PAD+br*(p.sh+GAP))*s,p.sw*s,p.sh*s,'#DCE1E8');
+    for(let i=0;i<p.W*p.H;i++){if(p.c[i]<0)continue;const x=i%p.W,yy=(i-x)/p.W;pg.box(ox+(p.X(x)-0.5)*s,y+(p.Y(yy)-0.5)*s,s+0.02,s+0.02,LEGO[p.c[i]].hex)}
+    for(let br=0;br<p.down;br++)for(let bc=0;bc<p.across;bc++){const X=ox+(PAD+bc*(p.sw+GAP))*s,Y=y+(PAD+br*(p.sh+GAP))*s;
+      for(let sy=0;sy*SEC<p.sh;sy++)for(let sx=0;sx*SEC<p.sw;sx++){pg.box(X+sx*SEC*s,Y+sy*SEC*s,SEC*s,SEC*s,null,'rgba(255,255,255,.9)',0.5);
+        const lab=(multiSheet()?`${bc+1}-${br+1} `:'')+'ABC'[sx]+(sy+1);pg.g.lineWidth=pg.m(0.6);pg.g.strokeStyle='#FFFFFF';
+        pg.g.font=`700 ${pg.m(3.2)}px ${SANS}`;pg.g.textAlign='left';pg.g.textBaseline='top';pg.g.strokeText(lab,pg.m(X+sx*SEC*s+1),pg.m(Y+sy*SEC*s+1));pg.text(lab,X+sx*SEC*s+1,Y+sy*SEC*s+1,3.2,{w:700})}}
+    y+=p.Hpx*s+7;
+    pg.text('How to use these sheets',MARGIN,y,4.2,{w:700});y+=6.5;
+    const steps=['Print at 100% (Actual size). The bar at the foot of each page should measure 5 cm.',
+      'Sort your pieces by code. A code is colour, size, then style. '+CODE_HOWTO,
+      'Build one section at a time, in page order. Each page is real size: lay pieces on the paper, then move them onto the plate.'];
+    if(htot)steps.push('A section with raised parts starts with its hidden plates, one page per layer, from the bottom up. Its visible parts then go on top.');
+    if(!st.join.sections)steps.push('Some parts cross section lines. They show on every page they touch and are counted on the page with their top-left corner.');
+    steps.forEach((t,i)=>{pg.text(`${i+1}.`,MARGIN,y,3.2,{w:700});y+=4.8*pg.wrap(t,MARGIN+5,y,3.2,P.w-2*MARGIN-5,4.8)+1.2});
+    y+=3;pg.text('Colours',MARGIN,y,4.2,{w:700});y+=6.5;
+    const cols=usedColours();if(htot&&!cols.includes(LEGO_BY.get(st.depth.hidden).i))cols.push(LEGO_BY.get(st.depth.hidden).i);
+    const cw=46,per=Math.max(1,Math.floor((P.w-2*MARGIN)/cw));
+    cols.forEach((c,j)=>{const x=MARGIN+(j%per)*cw,yy=y+Math.floor(j/per)*5.2;if(yy>P.h-MARGIN-14)return;pg.swatch(x,yy,3.6,LEGO[c].hex);pg.text(LEGO[c].code,x+5,yy+0.1,3.2,{w:700,mono:true});pg.text(LEGO[c].name,x+13,yy+0.2,2.9,{max:cw-14})});
+  }else if(page.kind==='parts'){
+    let y=MARGIN;pg.text(page.first?'Parts list':'Parts list, continued',MARGIN,y,6,{w:700});y+=10;
+    const cx=[MARGIN,MARGIN+6,MARGIN+24,MARGIN+70,MARGIN+128,MARGIN+156],R=P.w-MARGIN;
+    ['','Code','Colour','Part','BrickLink',''].forEach((h,i)=>pg.text(h,cx[i],y,2.9,{w:700,c:MUTED}));pg.text('Qty',R,y,2.9,{w:700,c:MUTED,a:'right'});y+=5;
+    let lastWhere='';
+    for(const r of page.rows){
+      if(r.where!==lastWhere&&r.where==='hidden'){pg.text('Hidden plates under raised parts',MARGIN,y+0.6,3,{w:700});y+=5.2}lastWhere=r.where;
+      pg.swatch(cx[0],y+0.4,3.4,r.hex);pg.text(r.code,cx[1],y+0.5,3.2,{w:700,mono:true});pg.text(r.name,cx[2],y+0.6,3,{max:44});pg.text(r.part,cx[3],y+0.6,3,{max:56});
+      pg.text(`${r.id}, colour ${r.bl}`,cx[4],y+0.6,3,{c:MUTED});pg.text(r.qty.toLocaleString(),R,y+0.6,3.2,{w:700,a:'right'});
+      pg.box(MARGIN,y+4.8,P.w-2*MARGIN,0.12,'#D5DAE3');y+=5.2}
+    if(st.spares)pg.text(`The BrickLink wanted list adds ${st.spares} spare${st.spares>1?'s':''} of each.`,MARGIN,y+2,2.9,{c:MUTED});
+  }else{
+    const s=page.s,name=(multiSheet()?`Sheet ${s.bc+1}-${s.br+1}, section `:'Section ')+'ABC'[s.sx]+(s.sy+1);
+    pg.text(name,MARGIN,MARGIN,6.4,{w:700});
+    const sub=page.steps>1?(page.layer?`Step ${page.step} of ${page.steps}: hidden plates, layer ${page.layer}`:`Step ${page.step} of ${page.steps}: the visible parts, on top of the hidden plates`):'The visible parts';
+    pg.text(sub,MARGIN,MARGIN+9,3.6,{c:MUTED});
+    sheetMap(pg,P.w-MARGIN-34,MARGIN,34,22,s.id);
+    const gx=(P.w-16*STUD)/2+2,gy=MARGIN+29,emp=[];
+    if(page.layer){const occ=new Set();for(const q of page.parts)for(let yy=q.y;yy<q.y+q.h;yy++)for(let xx=q.x;xx<q.x+q.w;xx++)occ.add(xx+','+yy);
+      for(let yy=s.Y0;yy<s.Y0+16;yy++)for(let xx=s.X0;xx<s.X0+16;xx++)if(!occ.has(xx+','+yy))emp.push([xx,yy])}
+    else for(let yy=s.Y0;yy<s.Y0+16;yy++)for(let xx=s.X0;xx<s.X0+16;xx++)if(p.c[yy*p.W+xx]<0)emp.push([xx,yy]);
+    sheetGrid(pg,s.X0,s.Y0,gx,gy,page.parts,emp);
+    let y=gy+16*STUD+6;const counts=sheetCounts(page.parts,s.X0,s.Y0),tot=counts.reduce((a,c)=>a+c.n,0);
+    pg.text(`Parts in this step: ${tot}`+(page.layer?' hidden plates':''),MARGIN,y,3.4,{w:700});y+=6;
+    const cw=36,per=Math.max(1,Math.floor((P.w-2*MARGIN)/cw)),rowsFit=Math.max(1,Math.floor((P.h-MARGIN-10-y)/5));
+    counts.forEach((c,j)=>{const r=Math.floor(j/per);if(r>=rowsFit){if(j===per*rowsFit)pg.text(`and ${counts.length-j} more codes: see the parts list`,MARGIN,y+r*5,2.9,{c:MUTED});return}
+      const x=MARGIN+(j%per)*cw,yy=y+r*5;pg.swatch(x,yy+0.3,3.2,c.hex);pg.text(c.code,x+4.6,yy+0.4,3.1,{w:700,mono:true});pg.text('× '+c.n,x+20,yy+0.5,3,{c:MUTED})});
+  }
+  sheetFoot(pg,n,N);
+  return pg.cv;
+}
+/* a PDF that holds one JPEG per page, each filling its page */
+function pdfOfJpegs(pages,wPt,hPt){
+  const enc=new TextEncoder(),parts=[],off=[];let pos=0;
+  const add=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);pos+=b.length};
+  const obj=(id,body,stream)=>{off[id]=pos;add(`${id} 0 obj\n${body}\n`);if(stream){add('stream\n');add(stream);add('\nendstream\n')}add('endobj\n')};
+  add('%PDF-1.4\n%âãÏÓ\n');
+  const kids=pages.map((_,i)=>`${3+3*i} 0 R`).join(' ');
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`);
+  pages.forEach((jp,i)=>{const pid=3+3*i,cid=pid+1,iid=pid+2,content=enc.encode(`q ${wPt} 0 0 ${hPt} 0 0 cm /Im${i} Do Q`);
+    obj(pid,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${wPt} ${hPt}] /Resources << /XObject << /Im${i} ${iid} 0 R >> >> /Contents ${cid} 0 R >>`);
+    obj(cid,`<< /Length ${content.length} >>`,content);
+    obj(iid,`<< /Type /XObject /Subtype /Image /Width ${jp.w} /Height ${jp.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jp.bytes.length} >>`,jp.bytes)});
+  const n=3+3*pages.length,xref=pos;
+  add(`xref\n0 ${n}\n0000000000 65535 f \n`+off.slice(1,n).map(o=>String(o).padStart(10,'0')+' 00000 n \n').join(''));
+  add(`trailer\n<< /Size ${n} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts,{type:'application/pdf'});
+}
+async function saveSheets(){
+  const btn=$('pdfBtn');if(!pattern||!els.length||btn.dataset.busy==='1')return;btn.dataset.busy='1';btn.disabled=true;
+  const msg=$('pdfMsg'),plan=sheetPlan(),N=plan.length,P=PAPER[st.paper],jp=[];
+  try{
+    for(let i=0;i<N;i++){
+      msg.textContent=`Making page ${i+1} of ${N}…`;await new Promise(r=>setTimeout(r,0));
+      const cv=sheetDraw(plan[i],i+1,N),b=await new Promise(r=>cv.toBlob(r,'image/jpeg',0.86));
+      if(!b)throw new Error('page');jp.push({bytes:new Uint8Array(await b.arrayBuffer()),w:cv.width,h:cv.height});cv.width=cv.height=1;
+    }
+    const pdf=pdfOfJpegs(jp,+(P.w/25.4*72).toFixed(2),+(P.h/25.4*72).toFixed(2));
+    const ok=await saveFile(fileBase()+'-build-sheets.pdf',pdf,msg);
+    if(ok)msg.textContent+=` ${plural(N,'page')} on ${P.name} paper, ${(pdf.size/1048576).toFixed(1)} MB.`;
+  }catch(e){msg.textContent='The build sheets could not be made here. Try a smaller mosaic, or open BIG in your web browser.'}
+  btn.dataset.busy='';btn.disabled=!(pattern&&els.length);
+}
+$('pdfBtn').addEventListener('click',saveSheets);
+})();
+</script>
+<script id="hh-helper">/* Home Screen helper from HTML App Generator 1.1 */
+(function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
+   Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
+   Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the
+   buttons. On a phone it shows once as a card at the bottom until it's dismissed; the steps also go in `mount` if given.
+   Self-contained, so it can also be added to apps the generator didn't make (FIG, BIG): homeHint({code, name, url, key, mount}). */
+function homeHint(cfg){
+  const d=document,ua=navigator.userAgent||'',code=String(cfg.code||'this app'),name=String(cfg.name||code);
+  const e=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),ios=ipad||/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+  let standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches}catch(x){}
+  let framed=false;try{framed=window.self!==window.top}catch(x){framed=true}
+  const web=/^https?:$/.test(location.protocol);
+  const inApp=/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|Pinterest|; wv\)/.test(ua)||(ios&&!/Safari\//.test(ua));
+  const iosOther=/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const where=standalone?'installed':!web?'file':framed?'framed':ios?(inApp?'ios-app':'ios'):android?(inApp?'android-app':'android'):'computer';
+  const url=cfg.url||(web&&!framed?location.href.split('#')[0]:'');
+  const key=(cfg.key||code.toLowerCase()+':')+'homeHint';
+  /* pictures of the buttons to tap (drawn here, not taken from any system) */
+  const svg=p=>`<span class="hh-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
+  const I={share:svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:svg('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+    plus:svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:svg('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
+    compass:svg('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>')};
+  let prompt=null;
+  function steps(){
+    if(where==='ios')return{lead:'It opens like an app, with its own icon.',list:[
+      `Tap ${I.share} <b>Share</b>${iosOther?' (in the address bar or the '+I.dots+' menu)':ipad?' (top right)':''}.`+(iosOther?'':` No Share button? Tap ${I.dots} first.`),
+      `Tap ${I.plus} <b>Add to Home Screen</b>.`,'Tap <b>Add</b>.'],note:'Best done before you start: the Home Screen app keeps its own copy of your work.'};
+    if(where==='ios-app')return{lead:'This page is open inside another app, which can’t add it to your Home Screen.',list:[
+      `Tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b>. (Or copy the link and paste it into Safari.)`,
+      `In Safari, tap ${I.share} <b>Share</b>, then ${I.plus} <b>Add to Home Screen</b>.`],copy:true};
+    if(where==='android')return{lead:'It opens like an app, with its own icon.',list:prompt?[`Tap <b>Install ${e(code)}</b> below.`]:[
+      `Tap ${I.kebab} (top right).`,'Tap <b>Add to Home screen</b> or <b>Install app</b>.','Tap <b>Install</b> or <b>Add</b>.']};
+    if(where==='android-app')return{lead:'This page is open inside another app, which can’t add it to your Home screen.',list:[
+      `Tap ${I.kebab} and choose <b>Open in Chrome</b> (or your browser).`,`Then tap ${I.kebab} again and <b>Add to Home screen</b>.`],copy:true};
+    if(where==='installed')return{lead:`${e(code)} is on your Home Screen. Open it from there any time.`,list:[]};
+    if(where==='file')return{lead:`You opened ${e(code)} as a file. It works here, but a phone can’t run a file like this.`+
+      (url?` On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a> instead and follow the steps it shows.`:' To use it on a phone, it needs a web address.'),list:[],copy:!!url};
+    return{lead:url?`On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a>, and it shows the two or three taps that put ${e(code)} on the Home Screen. On a computer, bookmark it.`:
+      `To put ${e(code)} on a phone, open its web address there.`,list:[],copy:!!url};
+  }
+  function html(withTitle){
+    const s=steps();
+    return(withTitle?`<div class="hh-t"><span>Put ${e(code)} on your Home Screen</span><button type="button" class="hh-x" aria-label="Close">×</button></div>`:'')+
+      `<p class="hh-lead">${s.lead}</p>`+(s.list.length?`<ol class="hh-steps">${s.list.map(l=>`<li>${l}</li>`).join('')}</ol>`:'')+(s.note?`<p class="hh-note">${s.note}</p>`:'')+
+      `<div class="hh-btns">${prompt?`<button type="button" class="hh-b hh-go" data-hh="install">Install ${e(code)}</button>`:''}${s.copy&&url?'<button type="button" class="hh-b" data-hh="copy">Copy link</button>':''}${withTitle?'<button type="button" class="hh-b" data-hh="later">Not now</button>':''}<span class="hh-msg" aria-live="polite"></span></div>`;
+  }
+  if(!d.getElementById('hh-style')){const st=d.createElement('style');st.id='hh-style';st.textContent=
+`#hh{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9999;max-width:520px;margin:0 auto;background:var(--panel,#fff);color:var(--ink,#1b1f24);border:1px solid var(--edge,#c3c9d2);border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.28);padding:12px 14px 10px;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+#hh .hh-t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.hh-lead{margin:4px 0}.hh-steps{margin:6px 0;padding-left:1.4em}.hh-steps li{margin:5px 0}
+.hh-i{display:inline-flex;vertical-align:-5px;width:24px;height:24px;align-items:center;justify-content:center;border-radius:7px;background:var(--chip,#e9edf2);color:var(--accent,#0E7C7B);margin:0 1px}.hh-i svg{width:18px;height:18px}
+.hh-note,.hh-msg{color:var(--muted,#5b6470);font-size:13px;margin:4px 0}.hh-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.hh-b{min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--edge,#c3c9d2);background:var(--chip,#e9edf2);color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.hh-go{background:var(--accent,#0E7C7B);color:var(--accent-ink,#fff);border-color:transparent}
+#hh .hh-x{min-width:44px;min-height:44px;border:0;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
+@media (prefers-color-scheme:dark){#hh{background:var(--panel,#1d2229);color:var(--ink,#e8ebef);border-color:var(--edge,#3a424d)}.hh-i,.hh-b{background:var(--chip,#2a313a)}}`;
+    d.head.appendChild(st)}
+  const phone=where==='ios'||where==='ios-app'||where==='android'||where==='android-app';
+  let later=0;try{later=+localStorage.getItem(key)||0}catch(x){}
+  let card=null;
+  function wire(box){box.addEventListener('click',async ev=>{
+    const b=ev.target.closest('[data-hh],.hh-x');if(!b)return;const m=box.querySelector('.hh-msg'),act=b.dataset.hh||'later';
+    if(act==='install'&&prompt){prompt.prompt();try{const r=await prompt.userChoice;if(r&&r.outcome==='accepted')hide()}catch(x){}prompt=null;draw()}
+    else if(act==='copy'){try{await navigator.clipboard.writeText(url);if(m)m.textContent='Link copied.'}catch(x){if(m)m.textContent=url}}
+    else if(act==='later'){try{localStorage.setItem(key,String(Date.now()))}catch(x){}hide()}
+  })}
+  function hide(){if(card){card.remove();card=null}}
+  function draw(){
+    if(cfg.mount){cfg.mount.innerHTML=html(false);if(!cfg.mount.dataset.hh){cfg.mount.dataset.hh='1';wire(cfg.mount)}}
+    if(card)card.innerHTML=html(true);
+  }
+  if(phone&&Date.now()-later>30*864e5){card=d.createElement('div');card.id='hh';card.setAttribute('role','dialog');card.setAttribute('aria-label','Put '+code+' on your Home Screen');d.body.appendChild(card);wire(card)}
+  window.addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();prompt=ev;draw()});
+  window.addEventListener('appinstalled',()=>{hide()});
+  draw();
+  return where;
+}
+
+homeHint({code:"BIG",name:"Brick Image Generator",url:"https://david-i-schwartz.github.io/web-mobile-apps/big/",key:"big:"});})();
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>

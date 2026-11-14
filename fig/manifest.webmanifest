@@ -1,0 +1,28 @@
+{
+  "name": "FIG: Fusebead Image Generator",
+  "short_name": "FIG",
+  "description": "Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand and keep several patterns.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F5F8",
+  "theme_color": "#0E7C7B",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

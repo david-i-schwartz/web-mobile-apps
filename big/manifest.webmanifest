@@ -1,0 +1,28 @@
+{
+  "name": "BIG: Brick Image Generator",
+  "short_name": "BIG",
+  "description": "Turn a picture into a brick mosaic on real LEGO® baseplates and plates, flat or raised in relief. Choose the parts, join studs into bigger pieces, and get a parts list. Everything stays in this browser.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F5F8",
+  "theme_color": "#0E7C7B",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

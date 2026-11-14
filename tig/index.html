@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7A3FB0">
+<meta name="generator" content="HTML App Generator 1.1">
+<title>TIG: Tile Image Generator</title>
+<script>document.documentElement.classList.remove('nojs')/* scripts run, so the app shows instead of the preview note */</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%237A3FB0%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2242%22%20font-family%3D%22system-ui%2Csans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%3ETIG%3C%2Ftext%3E%3C%2Fsvg%3E">
+<script type="application/json" id="app-spec">
+{
+ "code": "TIG",
+ "name": "Tile Image Generator",
+ "tagline": "Turn a picture into a tile mosaic on mesh sheets, then follow it tile by tile. Everything stays in this browser.",
+ "version": "1.0",
+ "date": "14 Nov 2026",
+ "unit": {
+  "one": "tile",
+  "many": "tiles"
+ },
+ "shape": "rounded",
+ "pitch": 20,
+ "accent": "#7A3FB0",
+ "accentDark": "",
+ "features": {
+  "board": true,
+  "picture": true,
+  "edit": true,
+  "progress": true,
+  "project": true,
+  "export": true
+ },
+ "grid": {
+  "minW": 4,
+  "maxW": 120,
+  "defW": 36,
+  "defH": 36,
+  "maxCells": 14400
+ },
+ "boards": [
+  {
+   "id": "mesh-sheet-12-12",
+   "name": "Mesh sheet 12 × 12",
+   "w": 12,
+   "h": 12
+  },
+  {
+   "id": "mesh-sheet-15-15",
+   "name": "Mesh sheet 15 × 15",
+   "w": 15,
+   "h": 15
+  }
+ ],
+ "palette": [
+  {
+   "name": "White",
+   "hex": "#FFFFFF"
+  },
+  {
+   "name": "Light grey",
+   "hex": "#C8CCD2"
+  },
+  {
+   "name": "Dark grey",
+   "hex": "#5E636B"
+  },
+  {
+   "name": "Black",
+   "hex": "#15171B"
+  },
+  {
+   "name": "Red",
+   "hex": "#D7262E"
+  },
+  {
+   "name": "Orange",
+   "hex": "#F07D1A"
+  },
+  {
+   "name": "Yellow",
+   "hex": "#F6CF2A"
+  },
+  {
+   "name": "Lime",
+   "hex": "#9BCB3C"
+  },
+  {
+   "name": "Green",
+   "hex": "#2E9A4B"
+  },
+  {
+   "name": "Teal",
+   "hex": "#138C8C"
+  },
+  {
+   "name": "Light blue",
+   "hex": "#6CB8E6"
+  },
+  {
+   "name": "Blue",
+   "hex": "#2457B8"
+  },
+  {
+   "name": "Purple",
+   "hex": "#6E3FA3"
+  },
+  {
+   "name": "Pink",
+   "hex": "#EE8CB4"
+  },
+  {
+   "name": "Tan",
+   "hex": "#D9B98C"
+  },
+  {
+   "name": "Brown",
+   "hex": "#7A4A2A"
+  }
+ ],
+ "sets": [
+  {
+   "name": "Greys",
+   "colours": [
+    "White",
+    "Light grey",
+    "Dark grey",
+    "Black"
+   ]
+  }
+ ],
+ "learn": [
+  {
+   "topic": "Colour",
+   "links": [
+    {
+     "title": "Color difference",
+     "url": "https://en.wikipedia.org/wiki/Color_difference",
+     "source": "Wikipedia"
+    },
+    {
+     "title": "Oklab",
+     "url": "https://bottosson.github.io/posts/oklab/",
+     "source": "Björn Ottosson"
+    }
+   ]
+  },
+  {
+   "topic": "Dithering",
+   "links": [
+    {
+     "title": "Dither",
+     "url": "https://en.wikipedia.org/wiki/Dither",
+     "source": "Wikipedia"
+    }
+   ]
+  }
+ ],
+ "changes": [
+  "An example app, made to show what HTML App Generator builds."
+ ],
+ "credits": [
+  "TIG is an example made with HTML App Generator, the generator behind FIG and BIG's shared core."
+ ],
+ "homeUrl": "https://david-i-schwartz.github.io/web-mobile-apps/tig/",
+ "oldCodes": [],
+ "key": "tig:",
+ "oldKeys": [],
+ "ext": ".tig.json",
+ "core": "1.1",
+ "generator": "1.1"
+}
+</script>
+<style>
+/* ==== CORE CSS: made by HTML App Generator 1.1 (core 1.1). Upgrade it with the generator rather than editing it here. ==== */
+/* Core stylesheet of HTML App Generator apps. It grew from the stylesheet FIG and BIG share.
+   The app's accent colours come after it, then the app's own styles (APP CSS). */
+
+:root{
+  --bg:#EEF1F5;--panel:#FFFFFF;--ink:#1D2230;--muted:#5B6375;--line:#D5DAE3;--accent:#0E7C7B;--accent-ink:#FFFFFF;--chip:#E3E8EF;--edge:#6F7888;
+  --board:#DCE1E8;--peg:#B4BBC6;--vp:#F5F7FA;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5}
+header{max-width:1180px;margin:0 auto;padding:18px 16px 2px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.1;margin:0 0 4px;letter-spacing:-0.01em;font-weight:800}
+header p{margin:0;color:var(--muted);max-width:62ch}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.wrap{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}.stage{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px}
+.controls{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+h2{font-size:19px;margin:0 0 8px;line-height:1.25;font-weight:750}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+h3{font-size:16px;margin:14px 0 4px;font-weight:700}
+.sub{font-size:14px;color:var(--muted);margin:2px 0 0}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:flex;background:var(--chip);border-radius:999px;padding:3px;gap:3px;margin:6px 0}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:7px 12px;border-radius:999px;cursor:pointer;min-height:44px;line-height:1.2}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.toolbar .seg{margin:0}
+.tapwrap{display:flex;align-items:center}
+.zoom{display:flex;gap:6px}
+.btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
+.ib{width:44px;padding:0;font-size:20px;line-height:1}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#vp{position:relative;overflow:auto;max-height:70vh;border-radius:12px;background:var(--vp);outline:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#vp:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+#board{display:block;margin:0 auto;touch-action:manipulation}
+#board .cell{pointer-events:all;cursor:pointer;transition:opacity .15s}
+#board .peg{fill:var(--peg);stroke:transparent;stroke-width:.6;pointer-events:all;cursor:pointer}
+#board .bd{fill:var(--board)}
+#board .cl{stroke:var(--muted);stroke-width:.07;opacity:.75}
+#board .ring{fill:none;stroke:var(--accent);stroke-width:.14;pointer-events:none}
+#board .lbl{fill:var(--ink);stroke:var(--board);stroke-width:.28;paint-order:stroke;font-weight:700;font-size:.9px;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#board .cell{transition:none}}
+#empty{padding:48px 20px;text-align:center;color:var(--muted)}
+#empty p{margin:0 auto 14px;max-width:34ch}
+#hud{display:flex;gap:10px;align-items:flex-start;margin:12px 2px 0;min-height:44px}
+#hudDot{width:26px;height:26px;border-radius:50%;flex:none;margin-top:2px;border:1px solid var(--line)}
+#hudDot.empty{background:transparent!important;border-style:dashed}
+#hudName{font-weight:700;font-size:17px;line-height:1.3}
+#hudWhere{font-size:14px;color:var(--muted)}
+.bar{height:10px;background:var(--chip);border-radius:99px;overflow:hidden;margin:4px 0 6px}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#pct{font-size:15px;color:var(--ink);margin:0 0 10px;font-variant-numeric:tabular-nums}
+#legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}
+.crow{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;font-size:15px;cursor:pointer;min-height:44px;text-align:left}
+.crow[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.crow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .ct{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+.crow.done .ct{color:var(--accent)}
+.dot{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);flex:none}
+.checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:15px}
+.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;align-items:center;gap:10px;margin:6px 0}
+.row label{color:var(--muted);font-size:15px}
+.row output{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;min-height:28px;accent-color:var(--accent)}
+#cropWrap{display:flex;justify-content:center;margin:8px 0 4px;background:var(--vp);border-radius:12px;padding:8px}
+#cropCv{display:block;touch-action:none;cursor:crosshair;border-radius:4px;max-width:100%}
+.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;vertical-align:middle;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
+.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.q::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+.tip{background:var(--chip);border-radius:10px;padding:8px 12px;margin:4px 0 8px}
+.tip p{margin:0 0 6px}.tip p:last-child{margin:0}
+input[type=color]{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+input[type=text],select{width:100%;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:44px}
+details summary{cursor:pointer;font-size:19px;font-weight:750}
+details.mini{margin-top:12px}
+details.mini summary{font-size:16px;font-weight:700;min-height:36px;display:list-item;padding:6px 0}
+details.mini summary span{font-weight:400;font-size:14px;color:var(--muted)}
+textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:8px;resize:vertical}
+#imgMsg,#copyMsg{font-size:14px;color:var(--muted)}
+button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible,label.btn:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.warn{margin:8px 0 0;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:14px;max-width:62ch}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sub.gap{margin:6px 0 0}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+.group ul{margin:6px 0 0;padding-left:20px}
+.group li{margin:4px 0}
+.seg.four{flex-wrap:wrap;border-radius:26px}
+.seg.four button{flex:1 1 40%}
+.row.wide{grid-template-columns:7.5em minmax(0,1fr) 3.4em}
+input.zero{--zero:linear-gradient(90deg,var(--line) calc(50% - 1px),var(--muted) calc(50% - 1px),var(--muted) calc(50% + 1px),var(--line) calc(50% + 1px))}
+input.zero::-webkit-slider-runnable-track{background:var(--zero)}
+input.zero::-moz-range-track{background:var(--zero)}
+#bgDot{width:26px;height:26px}
+#cropCv.picking{cursor:copy;outline:3px solid var(--accent);outline-offset:2px}
+#adjReset:disabled{opacity:.5;cursor:default}
+.tip{text-align:left}
+.tip ul{margin:0;padding-left:1.15em}
+.tip li{margin:0 0 6px}
+.tip li:last-child{margin-bottom:0}
+.tip h4{font-size:14px;font-weight:700;color:var(--ink);margin:10px 0 4px}
+.tip h4:first-child{margin-top:0}
+.tip p + ul,.tip ul + p{margin-top:6px}
+.tip a,#learn a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+h2 .q{margin-left:4px}
+details.mini .q{margin-left:4px}
+/* ---- editing ---- */
+.btn:disabled,.ib:disabled{opacity:.45;cursor:default}
+#editBar{margin:0 0 10px}
+.ebar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.ebar .seg{margin:0;flex:1 1 250px}
+.ebar .zoom{margin-left:auto}
+.pc{display:flex;align-items:center;gap:8px;margin:10px 2px 2px;font-size:15px;min-width:0}
+.pc .dot{width:22px;height:22px}
+.pc b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sws{display:flex;flex-wrap:wrap;gap:10px;padding:6px 6px 8px}
+.swb{position:relative;flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--edge);padding:0;cursor:pointer}
+.swb::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.swb[aria-pressed="true"]{box-shadow:0 0 0 2px var(--panel),0 0 0 5px var(--accent)}
+#editMsg{min-height:1.5em;margin:2px 2px 0}
+#board.editing .cell{cursor:crosshair}
+#board.lock{touch-action:none}
+.btn.sm{min-height:36px;padding:4px 12px;font-size:14px}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin:8px 0}
+/* ---- from BIG, made general ---- */
+#board .ov{pointer-events:none}
+#board .stud{fill:rgba(255,255,255,.16);stroke:rgba(0,0,0,.3);stroke-width:.06}
+#board .hole{fill:var(--board)}
+#board .cell{cursor:pointer}
+#board .bnum{fill:var(--muted);font-size:.8px;font-weight:700;pointer-events:none}
+.seg.six{flex-wrap:wrap;border-radius:26px}
+.seg.six button{flex:1 1 30%}
+.lsw[aria-pressed="false"]{opacity:.22;border-style:dashed}
+.lsw[aria-pressed="true"]{box-shadow:none}
+#palSw,#paintSw{max-height:228px;overflow-y:auto}
+#editBar .sws{padding:6px 2px 8px}
+.pasteBox{margin:12px auto 0;max-width:36ch;min-height:48px;padding:10px 14px;border:2px dashed var(--edge);border-radius:12px;color:var(--muted);font-size:14px;text-align:center;caret-color:transparent;outline:none;overflow:hidden;cursor:text;-webkit-user-select:text;user-select:text}
+.pasteBox:empty::before{content:attr(data-ph)}
+.pasteBox:focus{border-color:var(--accent);color:var(--ink)}
+.pasteBox:focus:empty::before{content:"Now paste: long-press here and choose Paste, or press Ctrl+V / \2318 V."}
+.pasteBox img{max-width:100%;max-height:80px}
+#empty .sub{max-width:40ch;margin:8px auto 0}
+.stepper{display:grid;grid-template-columns:7.5em 44px minmax(3em,auto) 44px;gap:8px;align-items:center;margin:6px 0}
+.stepper label{color:var(--muted);font-size:15px}
+.stepper output{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.controls.solo{max-width:760px;margin:0 auto;width:100%}
+.wrap.solo{grid-template-columns:minmax(0,1fr)!important}
+.foot{max-width:1180px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font-size:13px}
+/* ---- when scripts can't run (a phone's file preview): only the header and a note show ---- */
+.nojs-note{display:none}
+.nojs .nojs-note{display:block;max-width:640px;margin:8px auto 24px;padding:16px 18px;border:2px solid var(--accent);border-radius:14px;background:var(--panel);font-size:17px;line-height:1.5}
+.nojs .nojs-note a{color:var(--accent);font-weight:700;word-break:break-all}
+.nojs main,.nojs .foot{display:none}
+#homeHow .hh-lead{margin-top:0}
+/* ---- TIG's accent colours (from the spec) ---- */
+:root{--accent:#7A3FB0;--accent-ink:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#A982CC;--accent-ink:#1B1521}}
+:root[data-theme="dark"]{--accent:#A982CC;--accent-ink:#1B1521}
+/* ==== APP CSS START ==== */
+
+/* ==== APP CSS END ==== */
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="TIG">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="nojs-note" id="nojsNote"><p><b>This is only a preview, so TIG can’t run here.</b></p><p>To use it, open this link in Safari or Chrome: <a href="https://david-i-schwartz.github.io/web-mobile-apps/tig/">https://david-i-schwartz.github.io/web-mobile-apps/tig/</a></p></div>
+<header>
+  <h1 id="appTitle">TIG: Tile Image Generator</h1>
+  <p id="appTag">Turn a picture into a tile mosaic on mesh sheets, then follow it tile by tile. Everything stays in this browser.</p>
+</header>
+<main class="wrap">
+  <section class="stage" aria-label="Tile grid">
+    <div class="toolbar">
+      <div class="tapwrap" id="tapWrap">
+        <div class="seg" role="group" aria-label="What a tap does">
+          <button type="button" data-k="tap" data-v="inspect">Inspect</button>
+          <button type="button" data-k="tap" data-v="mark">Mark placed</button>
+          <button type="button" data-k="tap" data-v="edit">Edit</button>
+        </div>
+        <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: tapping">?</button>
+      </div>
+      <div class="zoom"><button type="button" class="ib" id="zout" aria-label="Zoom out">−</button><button type="button" class="ib" id="zin" aria-label="Zoom in">+</button><button type="button" class="btn" id="zfit">Fit</button></div>
+    </div>
+    <div class="sub tip" id="t-tap" hidden>
+      <ul>
+        <li><b>Inspect</b> shows a tile’s colour and place.</li>
+        <li><b>Mark placed</b> ticks a tile off, so you can follow your build. Tap it again to untick it.</li>
+        <li><b>Edit</b> paints colours onto tiles. Drag to paint a line. Undo is in the edit bar.</li>
+        <li>Zoom with + and −, or Ctrl and the mouse wheel. On a keyboard, the arrow keys move between tiles, and Space or Enter acts on the selected one.</li>
+      </ul>
+    </div>
+    <div id="editBar" hidden>
+      <div class="seg four" role="group" aria-label="Edit tool">
+        <button type="button" data-k="ed.tool" data-v="paint">Paint</button>
+        <button type="button" data-k="ed.tool" data-v="erase">Erase</button>
+        <button type="button" data-k="ed.tool" data-v="fill">Fill</button>
+        <button type="button" data-k="ed.tool" data-v="pick">Pick</button>
+      </div>
+      <div id="brushColour">
+        <div class="pc"><span class="dot" id="paintDot"></span><b id="paintName">Pick a colour</b></div>
+        <div class="sws" id="paintSw" role="group" aria-label="Paint colour"></div>
+      </div>
+      <div class="btns"><button type="button" class="btn sm" id="undo">Undo</button><button type="button" class="btn sm" id="redo">Redo</button><button type="button" class="btn sm" id="clearEdits">Clear all edits</button></div>
+      <p class="sub" id="editMsg" aria-live="polite"></p>
+    </div>
+    <div id="vp" tabindex="0" aria-label="The grid. Use the arrow keys to move between tiles.">
+      <div id="empty"><p id="emptyMsg">Choose a picture to turn it into tiles.</p><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label><div class="pasteBox" id="pasteEmpty" contenteditable="true" role="textbox" aria-label="Paste a picture here" inputmode="none" spellcheck="false" data-ph="Or paste a picture here: copy one, then tap this box and choose Paste (or press Ctrl+V / ⌘V)."></div><div class="btns" style="justify-content:center"><button type="button" class="btn" id="startBlank">Start with an empty grid</button></div><p class="sub" id="emptyNote" aria-live="polite"></p><p class="sub">If Choose image does nothing, the app you’re viewing this in may not allow file pickers. Paste instead, drop a file here, or open this page in your web browser.</p></div>
+      <svg id="board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tile grid" hidden></svg>
+    </div>
+    <div id="hud" aria-live="polite"><span id="hudDot" class="empty"></span><div><div id="hudName">Tap a tile</div><div id="hudWhere">Its colour and place show here.</div></div></div>
+    <!-- ==== APP STAGE START ==== -->
+
+<!-- ==== APP STAGE END ==== -->
+  </section>
+  <div class="controls">
+    <section class="group" id="picGroup">
+      <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
+      <div class="sub tip" id="t-pic" hidden><p>Your picture never leaves this browser. Each step below changes how it becomes tiles, and the grid updates as you go.</p></div>
+      <div id="picStart"><p class="sub">Choose a picture to start. You can also paste one, or drop a file on the grid area.</p><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div>
+      <div id="picBtns" hidden>
+        <div class="btns"><label class="btn pick">Choose another image<input type="file" accept="image/*" class="fileIn"></label><button type="button" class="btn" id="dropPic">Remove picture</button><button type="button" class="btn" id="resetPic">Reset picture settings</button></div>
+        <div class="pasteBox" id="pastePic" contenteditable="true" role="textbox" aria-label="Paste a new picture here" inputmode="none" spellcheck="false" data-ph="Or paste a new picture here."></div>
+      </div>
+      <p class="sub" id="imgMsg" aria-live="polite"></p>
+      <div id="imgSteps" hidden>
+        <h3>1. Crop <button type="button" class="q" aria-expanded="false" aria-controls="t-crop" aria-label="Help: crop">?</button></h3>
+        <div class="sub tip" id="t-crop" hidden><p>Drag the box to move it and its corners to resize it. The box keeps the shape of your boards. Auto-trim cuts away flat borders.</p></div>
+        <div id="cropWrap"><canvas id="cropCv" aria-label="The picture, with the crop box"></canvas></div>
+        <div class="btns"><button type="button" class="btn sm" id="autoTrim">Auto-trim</button><button type="button" class="btn sm" id="cropReset">Whole picture</button><span class="sub" id="cropMsg" aria-live="polite"></span></div>
+
+        <h3>2. Size <button type="button" class="q" aria-expanded="false" aria-controls="t-size" aria-label="Help: size">?</button></h3>
+      <div class="sub tip" id="t-size" hidden><p>The grid is made of whole boards. Choose a board, then how many go across and down.</p></div>
+      <div class="seg" role="group" aria-label="Board"><button type="button" data-k="size.board" data-v="mesh-sheet-12-12">Mesh sheet 12 × 12</button><button type="button" data-k="size.board" data-v="mesh-sheet-15-15">Mesh sheet 15 × 15</button></div>
+      <div class="stepper"><label>Across</label><button type="button" class="ib" data-step="size.across" data-d="-1" aria-label="One board fewer across">−</button><output id="acrossOut"></output><button type="button" class="ib" data-step="size.across" data-d="1" aria-label="One board more across">+</button></div>
+      <div class="stepper"><label>Down</label><button type="button" class="ib" data-step="size.down" data-d="-1" aria-label="One board fewer down">−</button><output id="downOut"></output><button type="button" class="ib" data-step="size.down" data-d="1" aria-label="One board more down">+</button></div>
+      <p class="sub" id="sizeInfo" aria-live="polite"></p>
+
+        <h3>3. Background <button type="button" class="q" aria-expanded="false" aria-controls="t-bg" aria-label="Help: background">?</button></h3>
+        <div class="sub tip" id="t-bg" hidden><p>Leave background empty clears the colour round the picture’s edges, so those tiles stay empty. Raise the tolerance to clear more. If the background isn’t at the edges, pick its colour in the crop picture.</p></div>
+        <div class="checks"><label><input type="checkbox" id="bgOn"> Leave background empty</label></div>
+        <div class="row"><label for="bgTol">Tolerance</label><input type="range" id="bgTol" min="0" max="160"><output id="bgTolOut"></output></div>
+        <div class="btns"><button type="button" class="btn sm" id="bgPick" aria-pressed="false">Pick background colour</button><span class="dot" id="bgDot" hidden></span><button type="button" class="btn sm" id="bgAuto" hidden>Use the edges again</button></div>
+        <p class="sub" id="bgMsg" aria-live="polite"></p>
+
+        <details class="mini" id="adjBox" data-ui="adj"><summary>4. Adjust <span id="adjSum"></span></summary>
+          <div class="row"><label for="adjB">Brightness</label><input type="range" class="zero" id="adjB" min="-100" max="100"><output id="adjBOut"></output></div>
+          <div class="row"><label for="adjC">Contrast</label><input type="range" class="zero" id="adjC" min="-100" max="100"><output id="adjCOut"></output></div>
+          <div class="row"><label for="adjS">Saturation</label><input type="range" class="zero" id="adjS" min="-100" max="100"><output id="adjSOut"></output></div>
+          <div class="row"><label for="adjH">Hue</label><input type="range" class="zero" id="adjH" min="-180" max="180"><output id="adjHOut"></output></div>
+          <div class="row"><label for="adjW">Warmth</label><input type="range" class="zero" id="adjW" min="-100" max="100"><output id="adjWOut"></output></div>
+          <div class="btns"><button type="button" class="btn sm" id="adjReset">Reset adjustments</button></div>
+        </details>
+
+        <h3>5. Colours <button type="button" class="q" aria-expanded="false" aria-controls="t-col" aria-label="Help: colours">?</button></h3>
+        <div class="sub tip" id="t-col" hidden><p>Tap a colour to leave it out or put it back. Max colours keeps only the most useful ones.</p></div>
+        <div class="btns"><button type="button" class="btn sm" data-pset="0">Greys</button><button type="button" class="btn sm" data-pset="-1">All colours</button></div>
+        <div class="sws" id="palSw" role="group" aria-label="Colours to use"></div>
+        <div class="row"><label for="maxC">Max colours</label><input type="range" id="maxC" min="2" max="16"><output id="maxCOut"></output></div>
+        <p class="sub" id="colMsg" aria-live="polite"></p>
+
+        <h3>6. Matching and dithering <button type="button" class="q" aria-expanded="false" aria-controls="t-dith" aria-label="Help: matching and dithering">?</button></h3>
+        <div class="sub tip" id="t-dith" hidden><ul>
+          <li><b>Match by</b>: how “closest colour” is measured. RGB is quick; CIE76, CIEDE2000 and Oklab follow how eyes see colour.</li>
+          <li><b>Sample by</b>: how one tile’s colour is taken from the pixels under it. Centre pixel suits pixel art.</li>
+          <li><b>Dithering</b> mixes colours in patterns to suggest shades the palette lacks.</li>
+          <li><b>Merge rare</b> gives colours used fewer times than this to their nearest neighbour.</li>
+        </ul></div>
+        <p class="sub">Match by</p>
+        <div class="seg four" role="group" aria-label="Match colours by"><button type="button" data-k="img.metric" data-v="rgb">RGB</button><button type="button" data-k="img.metric" data-v="cie76">CIE76</button><button type="button" data-k="img.metric" data-v="de2000">CIEDE2000</button><button type="button" data-k="img.metric" data-v="oklab">Oklab</button></div>
+        <p class="sub">Sample by</p>
+        <div class="seg four" role="group" aria-label="Sample each cell by"><button type="button" data-k="img.sampling" data-v="average">Average</button><button type="button" data-k="img.sampling" data-v="nearest">Centre pixel</button><button type="button" data-k="img.sampling" data-v="dominant">Most common</button><button type="button" data-k="img.sampling" data-v="median">Middle brightness</button></div>
+        <p class="sub">Dithering</p>
+        <div class="seg four" role="group" aria-label="Dithering"><button type="button" data-k="img.dither" data-v="none">None</button><button type="button" data-k="img.dither" data-v="fs">Floyd–Steinberg</button><button type="button" data-k="img.dither" data-v="atk">Atkinson</button><button type="button" data-k="img.dither" data-v="ordered">Ordered</button></div>
+        <div class="row" id="dAmtRow"><label for="dAmt">Strength</label><input type="range" id="dAmt" min="10" max="100" step="5"><output id="dAmtOut"></output></div>
+        <div class="row"><label for="rare">Merge rare</label><input type="range" id="rare" min="0" max="40"><output id="rareOut"></output></div>
+
+        <details class="mini" id="cleanBox" data-ui="clean"><summary>7. Clean up <span id="cleanSum"></span></summary>
+          <div class="row"><label for="specks">Specks</label><input type="range" id="specks" min="0" max="8"><output id="specksOut"></output></div>
+          <div class="row"><label for="smooth">Smooth</label><input type="range" id="smooth" min="0" max="3"><output id="smoothOut"></output></div>
+          <p class="sub">Outline in the darkest colour</p>
+          <div class="seg" role="group" aria-label="Outline"><button type="button" data-k="img.outline" data-v="none">None</button><button type="button" data-k="img.outline" data-v="in">Inside</button><button type="button" data-k="img.outline" data-v="out">Outside</button></div>
+          <p class="sub" id="cleanInfo"></p>
+        </details>
+      </div>
+    </section>
+    <!-- ==== APP PANELS START ==== -->
+
+<!-- ==== APP PANELS END ==== -->    <section class="group" id="progGroup" hidden>
+      <h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2>
+      <div class="sub tip" id="t-prog" hidden><p>Choose Mark placed above the grid, then tap tiles as you place them. Tap a colour below to show only that colour.</p></div>
+      <div class="bar"><span id="barFill"></span></div>
+      <p id="pct"></p>
+      <details class="mini" id="legendBox" data-ui="legend" open><summary>Colours</summary>
+        <div id="legend"></div>
+        <div class="btns" id="isoBtns" hidden><span class="sub">Only <b id="isoName"></b>:</span><button type="button" class="btn sm" id="isoMark">Mark all placed</button><button type="button" class="btn sm" id="isoClear">Clear</button></div>
+      </details>
+      <div class="checks"><label><input type="checkbox" data-k="fade"> Fade placed tiles</label></div>
+      <div class="btns"><button type="button" class="btn sm" id="resetProg">Reset progress</button></div>
+    </section>
+    <section class="group">
+      <h2>Save and open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2>
+      <div class="sub tip" id="t-proj" hidden><p>A project file keeps the picture, every setting, your edits and your progress, so your work reopens exactly. It stays on your device: nothing is uploaded.</p></div>
+      <div class="frow"><input type="text" id="projName" placeholder="Project name" maxlength="60" aria-label="Project name"></div>
+      <div class="btns"><button type="button" class="btn" id="projSave">Save project file</button><label class="btn pick">Open project file<input type="file" id="projIn" accept=".tig.json,.json,application/json"></label></div>
+      <p class="sub" id="projMsg" aria-live="polite"></p>
+      <p class="sub" id="saveMsg" hidden>This browser isn’t keeping your work between visits. Save a project file to keep it.</p>
+    </section>
+    <section class="group">
+      <h2>Export</h2>
+      <div class="btns"><button type="button" class="btn" id="pngSave">Save picture</button></div>
+      <p class="sub" id="pngMsg" aria-live="polite"></p>
+      <details class="mini" id="expDetails"><summary>Lists</summary>
+        <select id="expKind" aria-label="List to show"></select>
+        <textarea id="expText" readonly aria-label="List text"></textarea>
+        <div class="btns"><button type="button" class="btn" id="copyBtn">Copy</button><button type="button" class="btn" id="listSave">Save list file</button><span id="copyMsg" aria-live="polite"></span></div>
+      </details>
+    </section>
+    <section class="group" id="learn">
+      <h2>Learn the ideas</h2>
+      <ul class="sub" id="learnList"></ul>
+    </section>
+    <details class="group" id="homeBox">
+      <summary>On your phone</summary>
+      <div class="sub" id="homeHow"></div>
+    </details>
+    <details class="group">
+      <summary>About this version <span class="sub" id="aboutWhen"></span></summary>
+      <ul class="sub" id="aboutList"></ul>
+    </details>
+    <details class="group">
+      <summary>Credits</summary>
+      <ul class="sub" id="creditList"></ul>
+    </details>
+  </div>
+</main>
+<p class="foot">TIG 1.0, made with HTML App Generator 1.1. One file, no server: everything stays in this browser.</p>
+<div id="sr" class="sr" aria-live="polite"></div>
+<script>
+/* TIG: Tile Image Generator 1.0. Made with HTML App Generator 1.1 (core 1.1).
+   The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
+(()=>{
+'use strict';
+const HAS={"board":true,"picture":true,"edit":true,"progress":true,"project":true,"export":true};
+/* ---------- base: helpers, storage, settings, controls and files. Every app has this part. ---------- */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const plural=(n,one,many)=>n.toLocaleString()+' '+(n===1?one:(many||one+'s'));
+const txt=(id,t)=>{const e=$(id);if(e&&e.textContent!==t)e.textContent=t};
+const signed=v=>v>0?'+'+v:v<0?'−'+(-v):'0';
+const hashStr=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(36)};
+
+/* The app spec: name, version, colours, sizes and words, written by the generator. The page reads it at start-up. */
+const SPEC=JSON.parse($('app-spec').textContent);
+const VERSION=SPEC.version,KEY=SPEC.key;
+
+/* ---------- storage: localStorage when it works, memory when it doesn't ---------- */
+const mem={},unsaved=new Set();
+const store={
+  get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
+  set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok},
+  del(k){delete mem[k];unsaved.delete(k);try{localStorage.removeItem(k)}catch(e){}}
+};
+/* An app that was renamed moves what this browser saved under its old names (SPEC.oldKeys). */
+try{for(const ok of SPEC.oldKeys||[]){const old=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(ok))old.push(k)}
+  for(const k of old){const n=KEY+k.slice(ok.length);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}
+
+/* ---------- hooks: the app's own code (APP CODE) can set any of these ---------- */
+const APP={
+  unit:{one:SPEC.unit.one,many:SPEC.unit.many},
+  palette:SPEC.palette.map((c,i)=>({name:c.name,hex:c.hex.toUpperCase(),code:c.code||'',i})),
+  describe:null,     /* (x, y, colourIndex) => {name, where}: what the readout says about a tapped cell */
+  cellSvg:null,      /* (cell) => SVG markup for one cell; cell has i, x, y, cx, cy, c, hex */
+  cellPaint:null,    /* (g, cell, u) => draws one cell on a canvas for Save picture; u is pixels per cell */
+  lists:[],          /* more lists under Export: {id, label, ext, make: () => text} */
+  onPattern:null,    /* (pattern) => after every rebuild */
+  onSync:null,       /* () => keep the app's own controls in step with the settings */
+  onRefresh:null,    /* () => after every redraw of the cell states */
+  projectOut:null,   /* () => extra data to keep in project files */
+  projectIn:null,    /* (data) => read that data back (tidy it first: files can be old or hand-made) */
+  onStart:null       /* () => once, when the page has loaded */
+};
+const PAL_BY=new Map(APP.palette.map(c=>[c.name,c]));
+const units=n=>plural(n,APP.unit.one,APP.unit.many);   /* "3 beads", "1 bead" */
+const HOOK={load:[],start:[],sync:[],refresh:[],compose:[],after:[],resize:[]};
+
+/* ---------- settings: defaults, allowed choices and number limits, gathered from each part and from the app ---------- */
+const DEF={tap:'inspect',ui:{}},CHOICES={tap:['inspect']},LIMITS={},TIDY=[];
+function addSettings(def,choices,limits,tidyFn){
+  (function deep(d,s){for(const k in s){if(s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k])){if(!d[k]||typeof d[k]!=='object')d[k]={};deep(d[k],s[k])}else d[k]=s[k]}})(DEF,def||{});
+  for(const k in choices||{})CHOICES[k]=[...new Set([...(CHOICES[k]||[]),...choices[k]])];
+  Object.assign(LIMITS,limits||{});if(tidyFn)TIDY.push(tidyFn);
+}
+const getIn=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const setIn=(o,p,v)=>{const ks=p.split('.'),l=ks.pop();ks.reduce((a,k)=>a[k],o)[l]=v};
+function merge(d,s){
+  if(d===null)return null;   /* null defaults are read back by that part's own tidy step */
+  if(Array.isArray(d))return Array.isArray(s)?s.slice(0,500):d.slice();
+  if(typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&typeof s==='object'&&!Array.isArray(s)?s[k]:undefined);return o}
+  return typeof s===typeof d&&(typeof s!=='number'||Number.isFinite(s))?s:d;
+}
+/* tidy: anything read from storage or a file becomes valid settings */
+function tidy(s){
+  if(!s||typeof s!=='object')s={};
+  const o=merge(DEF,s);
+  for(const p in CHOICES)if(!CHOICES[p].includes(getIn(o,p)))setIn(o,p,getIn(DEF,p));
+  for(const p in LIMITS){const[a,b,f]=LIMITS[p],v=Number(getIn(o,p)),d=getIn(DEF,p);setIn(o,p,clamp(Number.isFinite(v)?(f?v:Math.round(v)):d,a,b))}
+  const ui={};if(s.ui&&typeof s.ui==='object')for(const k in s.ui)if(/^\w{1,30}$/.test(k))ui[k]=!!s.ui[k];o.ui=ui;
+  for(const f of TIDY)f(o,s);
+  return o;
+}
+let st=null;
+const saveSettings=()=>store.set(KEY+'settings',st);
+
+/* one-off messages for screen readers */
+function say(t){const e=$('sr');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=t},60)}
+
+/* ---------- controls ----------
+   .seg buttons with data-k (a setting path) and data-v (its value), checkboxes with data-k, and sliders set up with slider().
+   watch(test, fn) says what happens after a setting changes; anything unclaimed rebuilds. */
+const WATCH=[];
+function watch(test,fn){WATCH.push([test,fn])}
+function changed(k){for(const[t,f]of WATCH)if(typeof t==='function'?t(k):t.test(k)){f(k);return}rebuild()}
+function asValue(k,v){const d=getIn(DEF,k);return typeof d==='number'?Number(v):typeof d==='boolean'?v==='true':v}
+document.querySelectorAll('.seg button[data-k]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.k;setIn(st,k,asValue(k,b.dataset.v));changed(k)}));
+document.querySelectorAll('input[type=checkbox][data-k]').forEach(c=>c.addEventListener('change',()=>{setIn(st,c.dataset.k,c.checked);changed(c.dataset.k)}));
+const OUT={},FMT={};
+function readout(id,v){const t=(FMT[id]||String)(v),o=$(OUT[id]||id+'Out');if(o&&o.textContent!==t)o.textContent=t;const e=$(id);if(e)e.setAttribute('aria-valuetext',t)}
+function put(id,v){const e=$(id);if(!e)return;e.value=v;readout(id,v)}
+/* fmt: value to text; commit: once when the drag ends; live: on every step of the drag */
+function slider(id,fmt,commit,live){FMT[id]=fmt;const e=$(id);if(!e)return;e.addEventListener('input',()=>{if(live)live(+e.value);readout(id,+e.value)});e.addEventListener('change',()=>commit(+e.value))}
+/* a slider tied straight to a setting */
+function bindSlider(id,key,fmt){slider(id,fmt||String,v=>{setIn(st,key,v);changed(key)});HOOK.sync.push(()=>put(id,getIn(st,key)))}
+function fillBox(id,html){const b=$(id);if(b&&b.dataset.h!==html){b.innerHTML=html;b.dataset.h=html}}
+/* a button that needs a second tap within 3 seconds, for things that can't be undone */
+function twoTap(id,again,fn){const b=$(id);if(!b)return;const label=b.textContent;let armed=0;
+  b.addEventListener('click',()=>{if(!armed){b.textContent=again;armed=setTimeout(()=>{armed=0;b.textContent=label},3000);return}
+    clearTimeout(armed);armed=0;b.textContent=label;fn()})}
+
+/* the three steps every change goes through: rebuild (remake what's shown), sync (controls), refresh (cell states) */
+let rebuild=()=>{saveSettings();sync();refresh()};
+function sync(){
+  document.querySelectorAll('.seg button[data-k]').forEach(b=>b.setAttribute('aria-pressed',String(String(getIn(st,b.dataset.k))===b.dataset.v)));
+  document.querySelectorAll('input[type=checkbox][data-k]').forEach(c=>{c.checked=!!getIn(st,c.dataset.k)});
+  for(const f of HOOK.sync)f();
+  if(APP.onSync)APP.onSync();
+}
+function refresh(){for(const f of HOOK.refresh)f();if(APP.onRefresh)APP.onRefresh()}
+
+/* ---------- files ---------- */
+/* hand a file to the person: through the host's save box where there is one, otherwise as an ordinary download. True if it went. */
+async function saveFile(name,blob,msg){
+  let dl=null;
+  try{if(window.claude&&typeof window.claude.use==='function')dl=await window.claude.use('downloads')}catch(e){}
+  if(dl){
+    try{await dl.save({filename:name,data:blob});msg.textContent='Saved '+name+'.';return true}
+    catch(e){msg.textContent=e&&e.code==='declined'?'Save cancelled.':'Saving isn’t available here. Open the page in your browser instead.';return false}
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);msg.textContent='Downloaded '+name+'.';return true;
+}
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+const fileBase=()=>{const n=$('projName');return slug(n&&n.value.trim()||'')||slug(SPEC.code+' '+SPEC.unit.one+'s')||'app'};
+/* a CSV cell: quoted when needed, and never read as a formula by a spreadsheet */
+const csv=v=>{let s=String(v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+
+/* ---------- the parts of the page written from the spec: header, Learn the ideas, About, Credits ---------- */
+function specText(){
+  document.title=SPEC.code+': '+SPEC.name;txt('appTitle',SPEC.code+': '+SPEC.name);txt('appTag',SPEC.tagline);
+  const L=$('learnList');if(L)L.innerHTML=(SPEC.learn||[]).map(t=>`<li><b>${esc(t.topic)}</b>: `+t.links.map(l=>
+    `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.title)}</a>`+(l.source?` (${esc(l.source)})`:'')).join(', ')+'.</li>').join('');
+  const lg=$('learn');if(lg)lg.hidden=!(SPEC.learn||[]).length;
+  txt('aboutWhen',SPEC.version+' · '+SPEC.date);
+  const A=$('aboutList');if(A)A.innerHTML=(SPEC.changes||[]).map(c=>`<li>${esc(c)}</li>`).join('');
+  const C=$('creditList');if(C)C.innerHTML=(SPEC.credits||[]).concat(CREDITS).map(c=>`<li>${esc(c)}</li>`).join('');
+}
+const CREDITS=[];   /* each part adds the credits it needs */
+
+/* ---------- start-up ---------- */
+function start(){
+  st=tidy(store.get(KEY+'settings'));
+  for(const f of HOOK.load)f();
+  specText();
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const t=$(b.getAttribute('aria-controls'));if(!t)return;const open=t.hidden;t.hidden=!open;b.setAttribute('aria-expanded',String(open))}));
+  document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
+    d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
+  for(const f of HOOK.start)f();
+  if(APP.onStart)APP.onStart();
+  rebuild();
+  homeHint({code:SPEC.code,name:SPEC.name,url:SPEC.homeUrl||'',key:KEY,mount:$('homeHow')});
+}
+
+/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
+   Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
+   Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the
+   buttons. On a phone it shows once as a card at the bottom until it's dismissed; the steps also go in `mount` if given.
+   Self-contained, so it can also be added to apps the generator didn't make (FIG, BIG): homeHint({code, name, url, key, mount}). */
+function homeHint(cfg){
+  const d=document,ua=navigator.userAgent||'',code=String(cfg.code||'this app'),name=String(cfg.name||code);
+  const e=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),ios=ipad||/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+  let standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches}catch(x){}
+  let framed=false;try{framed=window.self!==window.top}catch(x){framed=true}
+  const web=/^https?:$/.test(location.protocol);
+  const inApp=/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|Pinterest|; wv\)/.test(ua)||(ios&&!/Safari\//.test(ua));
+  const iosOther=/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const where=standalone?'installed':!web?'file':framed?'framed':ios?(inApp?'ios-app':'ios'):android?(inApp?'android-app':'android'):'computer';
+  const url=cfg.url||(web&&!framed?location.href.split('#')[0]:'');
+  const key=(cfg.key||code.toLowerCase()+':')+'homeHint';
+  /* pictures of the buttons to tap (drawn here, not taken from any system) */
+  const svg=p=>`<span class="hh-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
+  const I={share:svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:svg('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+    plus:svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:svg('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
+    compass:svg('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>')};
+  let prompt=null;
+  function steps(){
+    if(where==='ios')return{lead:'It opens like an app, with its own icon.',list:[
+      `Tap ${I.share} <b>Share</b>${iosOther?' (in the address bar or the '+I.dots+' menu)':ipad?' (top right)':''}.`+(iosOther?'':` No Share button? Tap ${I.dots} first.`),
+      `Tap ${I.plus} <b>Add to Home Screen</b>.`,'Tap <b>Add</b>.'],note:'Best done before you start: the Home Screen app keeps its own copy of your work.'};
+    if(where==='ios-app')return{lead:'This page is open inside another app, which can’t add it to your Home Screen.',list:[
+      `Tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b>. (Or copy the link and paste it into Safari.)`,
+      `In Safari, tap ${I.share} <b>Share</b>, then ${I.plus} <b>Add to Home Screen</b>.`],copy:true};
+    if(where==='android')return{lead:'It opens like an app, with its own icon.',list:prompt?[`Tap <b>Install ${e(code)}</b> below.`]:[
+      `Tap ${I.kebab} (top right).`,'Tap <b>Add to Home screen</b> or <b>Install app</b>.','Tap <b>Install</b> or <b>Add</b>.']};
+    if(where==='android-app')return{lead:'This page is open inside another app, which can’t add it to your Home screen.',list:[
+      `Tap ${I.kebab} and choose <b>Open in Chrome</b> (or your browser).`,`Then tap ${I.kebab} again and <b>Add to Home screen</b>.`],copy:true};
+    if(where==='installed')return{lead:`${e(code)} is on your Home Screen. Open it from there any time.`,list:[]};
+    if(where==='file')return{lead:`You opened ${e(code)} as a file. It works here, but a phone can’t run a file like this.`+
+      (url?` On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a> instead and follow the steps it shows.`:' To use it on a phone, it needs a web address.'),list:[],copy:!!url};
+    return{lead:url?`On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a>, and it shows the two or three taps that put ${e(code)} on the Home Screen. On a computer, bookmark it.`:
+      `To put ${e(code)} on a phone, open its web address there.`,list:[],copy:!!url};
+  }
+  function html(withTitle){
+    const s=steps();
+    return(withTitle?`<div class="hh-t"><span>Put ${e(code)} on your Home Screen</span><button type="button" class="hh-x" aria-label="Close">×</button></div>`:'')+
+      `<p class="hh-lead">${s.lead}</p>`+(s.list.length?`<ol class="hh-steps">${s.list.map(l=>`<li>${l}</li>`).join('')}</ol>`:'')+(s.note?`<p class="hh-note">${s.note}</p>`:'')+
+      `<div class="hh-btns">${prompt?`<button type="button" class="hh-b hh-go" data-hh="install">Install ${e(code)}</button>`:''}${s.copy&&url?'<button type="button" class="hh-b" data-hh="copy">Copy link</button>':''}${withTitle?'<button type="button" class="hh-b" data-hh="later">Not now</button>':''}<span class="hh-msg" aria-live="polite"></span></div>`;
+  }
+  if(!d.getElementById('hh-style')){const st=d.createElement('style');st.id='hh-style';st.textContent=
+`#hh{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9999;max-width:520px;margin:0 auto;background:var(--panel,#fff);color:var(--ink,#1b1f24);border:1px solid var(--edge,#c3c9d2);border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.28);padding:12px 14px 10px;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+#hh .hh-t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.hh-lead{margin:4px 0}.hh-steps{margin:6px 0;padding-left:1.4em}.hh-steps li{margin:5px 0}
+.hh-i{display:inline-flex;vertical-align:-5px;width:24px;height:24px;align-items:center;justify-content:center;border-radius:7px;background:var(--chip,#e9edf2);color:var(--accent,#0E7C7B);margin:0 1px}.hh-i svg{width:18px;height:18px}
+.hh-note,.hh-msg{color:var(--muted,#5b6470);font-size:13px;margin:4px 0}.hh-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.hh-b{min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--edge,#c3c9d2);background:var(--chip,#e9edf2);color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.hh-go{background:var(--accent,#0E7C7B);color:var(--accent-ink,#fff);border-color:transparent}
+#hh .hh-x{min-width:44px;min-height:44px;border:0;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
+@media (prefers-color-scheme:dark){#hh{background:var(--panel,#1d2229);color:var(--ink,#e8ebef);border-color:var(--edge,#3a424d)}.hh-i,.hh-b{background:var(--chip,#2a313a)}}`;
+    d.head.appendChild(st)}
+  const phone=where==='ios'||where==='ios-app'||where==='android'||where==='android-app';
+  let later=0;try{later=+localStorage.getItem(key)||0}catch(x){}
+  let card=null;
+  function wire(box){box.addEventListener('click',async ev=>{
+    const b=ev.target.closest('[data-hh],.hh-x');if(!b)return;const m=box.querySelector('.hh-msg'),act=b.dataset.hh||'later';
+    if(act==='install'&&prompt){prompt.prompt();try{const r=await prompt.userChoice;if(r&&r.outcome==='accepted')hide()}catch(x){}prompt=null;draw()}
+    else if(act==='copy'){try{await navigator.clipboard.writeText(url);if(m)m.textContent='Link copied.'}catch(x){if(m)m.textContent=url}}
+    else if(act==='later'){try{localStorage.setItem(key,String(Date.now()))}catch(x){}hide()}
+  })}
+  function hide(){if(card){card.remove();card=null}}
+  function draw(){
+    if(cfg.mount){cfg.mount.innerHTML=html(false);if(!cfg.mount.dataset.hh){cfg.mount.dataset.hh='1';wire(cfg.mount)}}
+    if(card)card.innerHTML=html(true);
+  }
+  if(phone&&Date.now()-later>30*864e5){card=d.createElement('div');card.id='hh';card.setAttribute('role','dialog');card.setAttribute('aria-label','Put '+code+' on your Home Screen');d.body.appendChild(card);wire(card)}
+  window.addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();prompt=ev;draw()});
+  window.addEventListener('appinstalled',()=>{hide()});
+  draw();
+  return where;
+}
+
+/* ---------- board: the grid of cells on the stage, with sizes, zoom, tapping, the keyboard and the readout ----------
+   A pattern is W x H cells, each a palette number (-1 for an empty cell). With boards in the spec the grid is made of
+   whole boards (across x down), drawn with a small gap between them, as FIG does with pegboards and BIG with sheets. */
+const BOARDS=SPEC.boards||[],GRID=SPEC.grid,SHAPE=SPEC.shape||'circle';
+const PAD=0.6,GAP=BOARDS.length?0.5:0;   /* drawing: margin round the grid and gap between boards, in cells */
+const B0=BOARDS[0];   /* with boards, the first board, as many across and down as come closest to the spec's starting size */
+addSettings({size:{board:B0?B0.id:'',across:B0?Math.max(1,Math.round(GRID.defW/B0.w)):1,down:B0?Math.max(1,Math.round(GRID.defH/B0.h)):1,w:GRID.defW,h:GRID.defH},blank:false},
+  BOARDS.length?{'size.board':BOARDS.map(b=>b.id)}:{},
+  {'size.across':[1,64],'size.down':[1,64],'size.w':[GRID.minW,GRID.maxW],'size.h':[GRID.minW,GRID.maxW]},
+  o=>fitCount(o));
+let picAspect=()=>0;     /* the picture part sets this: width / height of the crop, when the height follows it */
+let CONVERT=null;        /* the picture part sets this: (dims) => {W, H, c0} */
+let emptyWhy=()=>'';     /* text for the empty stage, or '' when the grid shows */
+function boardOf(o=st){return BOARDS.length?(BOARDS.find(b=>b.id===o.size.board)||BOARDS[0]):null}
+/* keep the whole grid within the spec's largest width and cell count */
+function fitCount(o=st){
+  const B=boardOf(o);if(!B)return;
+  const maxA=Math.max(1,Math.floor(GRID.maxW/B.w)),maxD=Math.max(1,Math.floor(GRID.maxW/B.h));
+  o.size.across=clamp(o.size.across,1,maxA);o.size.down=clamp(o.size.down,1,maxD);
+  while(o.size.across*B.w*o.size.down*B.h>GRID.maxCells&&(o.size.across>1||o.size.down>1)){if(o.size.across>=o.size.down)o.size.across--;else o.size.down--}
+}
+function dims(o=st){
+  const B=boardOf(o);
+  if(B)return{W:B.w*o.size.across,H:B.h*o.size.down,bw:B.w,bh:B.h,across:o.size.across,down:o.size.down,B};
+  let W=o.size.w,H=o.size.h;const A=picAspect();
+  if(A)H=clamp(Math.round(W/A),1,GRID.maxW);
+  while(W*H>GRID.maxCells&&W>GRID.minW){W--;if(A)H=clamp(Math.round(W/A),1,GRID.maxW)}
+  return{W,H,bw:W,bh:H,across:1,down:1,B:null};
+}
+
+/* ---------- state ---------- */
+let conv=null,pattern=null,sel=-1,zoom=1,els=[],alpha=null;
+const ALPHA=[];   /* (i) => opacity for cell i (1 = solid); the parts that fade cells add one */
+
+function compose(){
+  const d=dims(),n=d.W*d.H,c=new Int16Array(n).fill(-1);
+  if(conv&&conv.W===d.W&&conv.H===d.H)c.set(conv.c0);
+  const p={W:d.W,H:d.H,c,bw:d.bw,bh:d.bh,across:d.across,down:d.down,B:d.B,base:conv&&conv.W===d.W&&conv.H===d.H?conv.c0:null};
+  p.X=x=>PAD+Math.floor(x/d.bw)*(d.bw+GAP)+(x%d.bw)+0.5;
+  p.Y=y=>PAD+Math.floor(y/d.bh)*(d.bh+GAP)+(y%d.bh)+0.5;
+  p.Wpx=2*PAD+d.W+(d.across-1)*GAP;p.Hpx=2*PAD+d.H+(d.down-1)*GAP;
+  for(const f of HOOK.compose)f(p);
+  if(APP.onPattern)APP.onPattern(p);
+  return p;
+}
+const shown=()=>!!pattern&&!emptyWhy();
+const n2=v=>+v.toFixed(2);
+
+/* ---------- drawing (SVG): one group per cell, in cell order, so els[i] is cell i ---------- */
+function cellInner(p,i){
+  const x=i%p.W,y=(i-x)/p.W,cx=n2(p.X(x)),cy=n2(p.Y(y)),c=p.c[i];
+  if(c<0)return`<circle class="peg" cx="${cx}" cy="${cy}" r=".2"/>`;
+  const hex=APP.palette[c].hex;
+  if(APP.cellSvg){const s=APP.cellSvg({i,x,y,cx,cy,c,hex});if(s)return s}
+  if(SHAPE==='square')return`<rect x="${n2(cx-.5)}" y="${n2(cy-.5)}" width="1.02" height="1.02" fill="${hex}"/>`;
+  if(SHAPE==='rounded')return`<rect x="${n2(cx-.46)}" y="${n2(cy-.46)}" width=".92" height=".92" rx=".2" fill="${hex}"/>`;
+  if(SHAPE==='stud')return`<rect x="${n2(cx-.5)}" y="${n2(cy-.5)}" width="1.02" height="1.02" fill="${hex}"/><circle class="ov stud" cx="${cx}" cy="${cy}" r=".3"/>`;
+  if(SHAPE==='bead')return`<circle cx="${cx}" cy="${cy}" r=".46" fill="${hex}"/><circle class="ov hole" cx="${cx}" cy="${cy}" r=".16"/>`;
+  return`<circle cx="${cx}" cy="${cy}" r=".46" fill="${hex}"/>`;
+}
+const cellMarkup=(p,i)=>`<g class="cell" data-i="${i}">${cellInner(p,i)}</g>`;
+function render(){
+  const svg=$('board');if(!svg)return;
+  const p=pattern;els=[];alpha=null;
+  if(!shown()){svg.toggleAttribute('hidden',true);svg.innerHTML='';return}
+  svg.toggleAttribute('hidden',false);   /* an <svg> has no hidden property, only the attribute */
+  svg.setAttribute('viewBox',`0 0 ${n2(p.Wpx)} ${n2(p.Hpx)}`);
+  const h=[];
+  for(let by=0;by<p.down;by++)for(let bx=0;bx<p.across;bx++)
+    h.push(`<rect class="bd" x="${n2(PAD-.1+bx*(p.bw+GAP))}" y="${n2(PAD-.1+by*(p.bh+GAP))}" width="${n2(p.bw+.2)}" height="${n2(p.bh+.2)}" rx=".3"/>`);
+  for(let i=0;i<p.W*p.H;i++)h.push(cellMarkup(p,i));
+  h.push('<rect id="selRing" class="ring" width="1" height="1" rx=".22" visibility="hidden"/>');
+  svg.innerHTML=h.join('');
+  els=Array.from(svg.querySelectorAll('[data-i]'));
+}
+/* redraw only some cells, for quick feedback while painting */
+function patchCells(list){
+  const svg=$('board'),t=document.createElementNS(NS,'g');
+  for(const i of list){if(!els[i])continue;t.innerHTML=cellMarkup(pattern,i);const g=t.firstChild;svg.replaceChild(g,els[i]);els[i]=g;if(alpha)alpha[i]=1}
+}
+
+/* ---------- what each cell looks like right now, and the readout ---------- */
+function paintStates(){
+  if(!shown()||!els.length)return;
+  const p=pattern,n=p.W*p.H;if(!alpha||alpha.length!==n)alpha=new Float32Array(n).fill(1);
+  for(let i=0;i<n;i++){let a=1;for(const f of ALPHA){const v=f(i);if(v<a)a=v}if(a!==alpha[i]){alpha[i]=a;els[i].style.opacity=a===1?'':String(a)}}
+  const r=$('selRing');
+  if(r){if(sel>=0&&sel<n){const x=sel%p.W,y=(sel-x)/p.W;r.setAttribute('x',n2(p.X(x)-.5));r.setAttribute('y',n2(p.Y(y)-.5));r.setAttribute('visibility','visible')}else r.setAttribute('visibility','hidden')}
+}
+function where(x,y){
+  const p=pattern;
+  if(p.across>1||p.down>1){const bx=Math.floor(x/p.bw),by=Math.floor(y/p.bh);
+    return`Board ${bx+1} across, ${by+1} down: column ${x%p.bw+1}, row ${y%p.bh+1}. Overall column ${x+1}, row ${y+1}.`}
+  return`Column ${x+1}, row ${y+1}.`;
+}
+const STATUS=[];   /* (i) => words added after the colour name, such as ", placed" */
+function hud(){
+  const dot=$('hudDot');if(!dot)return;
+  const One=APP.unit.one[0].toUpperCase()+APP.unit.one.slice(1);
+  if(!shown()||sel<0||sel>=pattern.W*pattern.H){dot.className='empty';dot.style.background='';txt('hudName','Tap a '+APP.unit.one);txt('hudWhere','Its colour and place show here.');return}
+  const p=pattern,x=sel%p.W,y=(sel-x)/p.W,c=p.c[sel];
+  dot.className=c<0?'empty':'';dot.style.background=c<0?'':APP.palette[c].hex;
+  let d=APP.describe?APP.describe(x,y,c):null;
+  if(!d){const P=c<0?null:APP.palette[c];d={name:P?P.name+(P.code?' ('+P.code+')':''):'Empty '+APP.unit.one,where:where(x,y)}}
+  txt('hudName',d.name+(c<0?'':STATUS.map(f=>f(sel)).join('')));txt('hudWhere',d.where);
+}
+HOOK.refresh.push(paintStates,hud);
+
+/* ---------- size controls ---------- */
+const mm=SPEC.pitch||0,cmOf=n=>(n*mm/10).toFixed(1).replace(/\.0$/,''),inOf=n=>(n*mm/25.4).toFixed(1).replace(/\.0$/,'');
+function syncSize(){
+  const d=dims(),B=d.B,many=APP.unit.many;
+  if(B){
+    txt('acrossOut',String(st.size.across));txt('downOut',String(st.size.down));
+    const step=(k,dd)=>document.querySelector(`[data-step="${k}"][data-d="${dd}"]`);
+    const up=(a,dn)=>{const t=clone(st);t.size[a?'across':'down']++;fitCount(t);return a?t.size.across>st.size.across:t.size.down>st.size.down};
+    if(step('size.across',1)){step('size.across',1).disabled=!up(true);step('size.down',1).disabled=!up(false);
+      step('size.across',-1).disabled=st.size.across<=1;step('size.down',-1).disabled=st.size.down<=1}
+  }else{
+    put('sizeW',st.size.w);put('sizeH',st.size.h);
+    const hr=$('sizeHRow');if(hr)hr.hidden=!!picAspect();
+  }
+  const n=d.across*d.down;
+  txt('sizeInfo',`${d.W} × ${d.H} ${many}`+(B?` on ${plural(n,'board')} (${B.name}, ${d.across} across × ${d.down} down)`:'')+
+    (mm?`, ${cmOf(d.W)} × ${cmOf(d.H)} cm (${inOf(d.W)} × ${inOf(d.H)} in)`:'')+'.'+(!B&&picAspect()?' The height follows the crop.':''));
+}
+HOOK.sync.push(syncSize);
+document.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{
+  const k=b.dataset.step;setIn(st,k,getIn(st,k)+(+b.dataset.d));fitCount();changed(k)}));
+slider('sizeW',v=>String(v),v=>{st.size.w=v;changed('size.w')});
+slider('sizeH',v=>String(v),v=>{st.size.h=v;changed('size.h')});
+
+/* ---------- rebuild: remake the conversion (reconvert) and the pattern, then draw ---------- */
+rebuild=function(reconvert=true){
+  const d=dims();
+  if(reconvert||!conv||conv.W!==d.W||conv.H!==d.H)conv=CONVERT?CONVERT(d):null;
+  const old=pattern;pattern=compose();
+  if(sel>=pattern.W*pattern.H)sel=-1;
+  if(!old||old.Wpx!==pattern.Wpx||old.Hpx!==pattern.Hpx)zoom=1;
+  render();
+  for(const f of HOOK.after)f('rebuild');
+  const e=$('empty'),why=emptyWhy();if(e)e.hidden=!why;txt('emptyMsg',why);
+  if(shown()){zoom=Math.max(zoom,fitZoom());size()}
+  saveSettings();sync();refresh();
+};
+/* redraw after an edit, without reconverting the picture */
+function redraw(){pattern=compose();render();for(const f of HOOK.after)f('edit');if(shown())size();sync();refresh()}
+watch(/^tap$/,()=>{saveSettings();sync();refresh()});
+
+/* ---------- zoom and scrolling ---------- */
+const vp=$('vp');
+const maxH=()=>Math.max(240,window.innerHeight*0.7);
+function fitZoom(){if(!pattern)return 1;const h=vp.clientWidth*pattern.Hpx/pattern.Wpx;return Math.min(1,maxH()/h)}
+const ppu=()=>vp.clientWidth*zoom/pattern.Wpx;
+function size(){if(!pattern)return;const w=vp.clientWidth*zoom,svg=$('board');svg.style.width=w+'px';svg.style.height=(w*pattern.Hpx/pattern.Wpx)+'px'}
+function setZoom(z,cx,cy){
+  if(!shown())return;const old=ppu();
+  if(cx===undefined){cx=(vp.scrollLeft+vp.clientWidth/2)/old;cy=(vp.scrollTop+vp.clientHeight/2)/old}
+  zoom=Math.max(fitZoom(),Math.min(12,z));size();
+  const q=ppu();vp.scrollLeft=cx*q-vp.clientWidth/2;vp.scrollTop=cy*q-vp.clientHeight/2;
+}
+function ensureVisible(i){
+  const p=pattern,x=i%p.W,y=(i-x)/p.W,q=ppu(),X=p.X(x)*q,Y=p.Y(y)*q,m=40;
+  if(X<vp.scrollLeft+m)vp.scrollLeft=X-m*2;else if(X>vp.scrollLeft+vp.clientWidth-m)vp.scrollLeft=X-vp.clientWidth+m*2;
+  if(Y<vp.scrollTop+m)vp.scrollTop=Y-m*2;else if(Y>vp.scrollTop+vp.clientHeight-m)vp.scrollTop=Y-vp.clientHeight+m*2;
+}
+$('zin').addEventListener('click',()=>setZoom(zoom*1.5));
+$('zout').addEventListener('click',()=>setZoom(zoom/1.5));
+$('zfit').addEventListener('click',()=>{if(pattern)setZoom(0,pattern.Wpx/2,pattern.Hpx/2)});
+vp.addEventListener('wheel',e=>{if(!e.ctrlKey||!shown())return;e.preventDefault();const r=$('board').getBoundingClientRect(),q=ppu();
+  setZoom(zoom*(e.deltaY<0?1.15:1/1.15),(e.clientX-r.left)/q,(e.clientY-r.top)/q)},{passive:false});
+let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(shown()){zoom=Math.max(zoom,fitZoom());size()}for(const f of HOOK.resize)f()},120)});
+
+/* ---------- tapping and the keyboard ---------- */
+/* the cell under a pointer, from its position (so small and empty cells are as easy to hit as big ones) */
+function cellAt(e){
+  const p=pattern,r=$('board').getBoundingClientRect(),q=r.width/p.Wpx,x=(e.clientX-r.left)/q,y=(e.clientY-r.top)/q;
+  const bx=Math.floor((x-PAD)/(p.bw+GAP)),by=Math.floor((y-PAD)/(p.bh+GAP)),lx=Math.floor(x-PAD-bx*(p.bw+GAP)),ly=Math.floor(y-PAD-by*(p.bh+GAP));
+  if(bx<0||by<0||bx>=p.across||by>=p.down||lx<0||ly<0||lx>=p.bw||ly>=p.bh)return-1;
+  return(by*p.bh+ly)*p.W+bx*p.bw+lx;
+}
+const TAP={};   /* what a tap does in each tap mode other than Inspect: TAP[mode] = (i) => {} */
+function select(i){sel=i;refresh()}
+$('board').addEventListener('click',e=>{
+  if(!shown()||st.tap==='edit')return;const i=cellAt(e);if(i<0)return;
+  sel=i;if(TAP[st.tap])TAP[st.tap](i);refresh();
+});
+vp.addEventListener('keydown',e=>{
+  if(!shown())return;
+  const d={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key],p=pattern;
+  if(d){e.preventDefault();
+    if(sel<0){const i=p.c.findIndex(c=>c>=0);select(i<0?0:i)}
+    else{const x=clamp(sel%p.W+d[0],0,p.W-1),y=clamp(Math.floor(sel/p.W)+d[1],0,p.H-1);select(y*p.W+x)}
+    ensureVisible(sel);
+  }else if((e.key===' '||e.key==='Enter')&&sel>=0&&TAP[st.tap]){e.preventDefault();TAP[st.tap](sel,true);refresh()}
+});
+HOOK.sync.push(()=>{const w=$('tapWrap');if(w)w.hidden=CHOICES.tap.length<2||!shown();
+  const z=document.querySelector('.zoom');if(z)z.hidden=!shown()});
+
+/* ---------- picture: a picture in, one palette colour per cell out ----------
+   Choose, paste or drop a picture; crop it; leave its background empty; adjust it; then match every cell to the palette
+   with dithering and clean-up. This is the pipeline FIG and BIG share, made general. */
+const SRC_MAX=600;                       /* a loaded picture is shrunk so its longer side is at most this many pixels */
+const ALL_COLOURS=APP.palette.length;    /* the top of the Max colours slider, shown as "All" */
+const BAYER_SPREAD=64;                   /* ordered-dither strength at 100% */
+const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+const box01=c=>{if(!c||![c.x,c.y,c.w,c.h].every(Number.isFinite)||c.w<=0||c.h<=0)return{x:0,y:0,w:1,h:1};
+  const w=clamp(c.w,0.001,1),h=clamp(c.h,0.001,1);return{x:clamp(c.x,0,1-w),y:clamp(c.y,0,1-h),w,h}};
+addSettings({img:{crop:{x:0,y:0,w:1,h:1},free:{x:0,y:0,w:1,h:1},sampling:'average',metric:'cie76',dither:'none',ditherAmt:100,rare:0,maxColors:ALL_COLOURS,off:[],
+    bg:false,bgTol:40,bgCol:null,bgPt:null,adjB:0,adjC:0,adjS:0,adjH:0,adjW:0,specks:0,smooth:0,outline:'none'}},
+  {'img.sampling':['average','nearest','dominant','median'],'img.metric':['rgb','cie76','de2000','oklab'],'img.dither':['none','fs','atk','ordered'],'img.outline':['none','in','out']},
+  {'img.ditherAmt':[10,100],'img.rare':[0,40],'img.maxColors':[2,ALL_COLOURS],'img.bgTol':[0,160],'img.adjB':[-100,100],'img.adjC':[-100,100],
+   'img.adjS':[-100,100],'img.adjH':[-180,180],'img.adjW':[-100,100],'img.specks':[0,8],'img.smooth':[0,3]},
+  (o,s)=>{const I=s.img&&typeof s.img==='object'?s.img:{};
+    o.img.bgCol=typeof I.bgCol==='string'&&/^#[0-9A-F]{6}$/i.test(I.bgCol)?I.bgCol.toUpperCase():null;
+    o.img.bgPt=I.bgPt&&Number.isFinite(I.bgPt.x)&&Number.isFinite(I.bgPt.y)?{x:clamp(I.bgPt.x,0,1),y:clamp(I.bgPt.y,0,1)}:null;
+    o.img.crop=box01(o.img.crop);o.img.free=box01(o.img.free);
+    o.img.off=[...new Set(o.img.off.filter(n=>typeof n==='string'&&PAL_BY.has(n)))];if(o.img.off.length>ALL_COLOURS-2)o.img.off=[]});
+CREDITS.push('Oklab is by Björn Ottosson, published in the public domain. CIEDE2000 follows Sharma, Wu and Dalal (2005).');
+
+let srcImg=null,imgCv=null,srcUrl='',outlined=0,picking=false,loadSeq=0;
+
+/* ---------- colour helpers shared with FIG and BIG ---------- */
+/* Oklab (Björn Ottosson, 2020; published in the public domain): a perceptual colour space. Input is sRGB, 0 to 255. */
+function toOklab(r,g,b){
+  const f=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)};
+  const R=f(r),G=f(g),B=f(b);
+  const l=Math.cbrt(0.4122214708*R+0.5363325363*G+0.0514459929*B),m=Math.cbrt(0.2119034982*R+0.6806995451*G+0.1073969566*B),s=Math.cbrt(0.0883024619*R+0.2817188376*G+0.6299787005*B);
+  return[0.2104542553*l+0.7936177850*m-0.0040720468*s,1.9779984951*l-2.4285922050*m+0.4505937099*s,0.0259040371*l+0.7827717662*m-0.8086757660*s];
+}
+/* Picture adjustments on the sampled colours (three numbers per cell in `rgb`), for every cell where ok(k) is true.
+   br, ct, sat and warm run from -100 to 100 and hue from -180 to 180 degrees; 0 changes nothing. */
+function adjustRgb(rgb,n,ok,a){
+  const C=a.ct*1.5,f=(259*(C+255))/(255*(259-C)),sat=1+a.sat/100,w=a.warm*0.4,h=a.hue*Math.PI/180,ch=Math.cos(h),sh=Math.sin(h),turn=a.sat!==0||a.hue!==0;
+  const cl=v=>v<0?0:v>255?255:v;
+  for(let k=0;k<n;k++){
+    if(!ok(k))continue;
+    let r=f*(rgb[k*3]+w-128)+128+a.br,g=f*(rgb[k*3+1]-128)+128+a.br,b=f*(rgb[k*3+2]-w-128)+128+a.br;
+    if(turn){   /* YIQ: Y is brightness; the colour part (I, Q) is scaled for saturation and rotated for hue */
+      const y=0.299*r+0.587*g+0.114*b,i=(0.596*r-0.274*g-0.322*b)*sat,q=(0.211*r-0.523*g+0.312*b)*sat,i2=i*ch-q*sh,q2=i*sh+q*ch;
+      r=y+0.956*i2+0.621*q2;g=y-0.272*i2-0.647*q2;b=y-1.106*i2+1.703*q2;
+    }
+    rgb[k*3]=cl(r);rgb[k*3+1]=cl(g);rgb[k*3+2]=cl(b);
+  }
+}
+/* One cell's colour from the pixels of its area (columns x0 to x1, rows y0 to y1 of an RGBA picture `sw` pixels wide).
+   'dominant' = the most common colour, counted in coarse steps of 16 per channel; 'median' = the pixel of middle brightness.
+   See-through pixels do not vote. Returns [r, g, b, average alpha]. */
+function cellPick(data,sw,x0,x1,y0,y1,mode){
+  let sa=0,m=0;const px=[];
+  for(let yy=y0;yy<y1;yy++)for(let xx=x0;xx<x1;xx++){const i=(yy*sw+xx)*4;sa+=data[i+3];m++;if(data[i+3]>=128)px.push(i)}
+  const a=m?sa/m:0;if(!px.length)return[0,0,0,a];
+  if(mode==='median'){
+    const lum=i=>0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+    px.sort((p,q)=>lum(p)-lum(q)||p-q);const i=px[(px.length-1)>>1];return[data[i],data[i+1],data[i+2],a];
+  }
+  const bins=new Map();let best=null;
+  for(const i of px){
+    const key=(data[i]>>4)<<8|(data[i+1]>>4)<<4|data[i+2]>>4;let t=bins.get(key);if(!t){t=[0,0,0,0];bins.set(key,t)}
+    t[0]++;t[1]+=data[i];t[2]+=data[i+1];t[3]+=data[i+2];if(!best||t[0]>best[0])best=t;
+  }
+  return[best[1]/best[0],best[2]/best[0],best[3]/best[0],a];
+}
+/* The clean-up steps work on `pick`: one palette number per cell, -1 for an empty cell. `near(k)` lists cell k's neighbours.
+   Smooth: a cell takes the colour that more than half of its neighbourhood (itself included) shares. Empty cells do not vote and stay empty. */
+function smoothPick(pick,n,near,passes){
+  for(let p=0;p<passes;p++){
+    const was=Int16Array.from(pick);let changed=0;
+    for(let k=0;k<n;k++){
+      if(was[k]<0)continue;
+      const cnt=new Map([[was[k],1]]);let tot=1,bi=was[k],bc=1;
+      for(const j of near(k)){const c=was[j];if(c<0)continue;tot++;const v=(cnt.get(c)||0)+1;cnt.set(c,v);if(v>bc){bc=v;bi=c}}
+      if(bi!==was[k]&&bc*2>tot){pick[k]=bi;changed++}
+    }
+    if(!changed)break;
+  }
+}
+/* Remove specks: a connected patch of one colour with `max` cells or fewer is given to the colour that touches it most.
+   A patch that touches no other cell (an island among empty cells) is left alone. */
+function mergeSpecks(pick,n,near,max){
+  for(let round=0;round<4;round++){
+    const seen=new Uint8Array(n);let changed=0;
+    for(let s=0;s<n;s++){
+      if(seen[s]||pick[s]<0)continue;
+      const col=pick[s],patch=[s];seen[s]=1;
+      for(let h=0;h<patch.length;h++)for(const j of near(patch[h]))if(!seen[j]&&pick[j]===col){seen[j]=1;patch.push(j)}
+      if(patch.length>max)continue;
+      const around=new Map();let bi=-1,bc=0;
+      for(const k of patch)for(const j of near(k)){const c=pick[j];if(c<0||c===col)continue;const v=(around.get(c)||0)+1;around.set(c,v);if(v>bc){bc=v;bi=c}}
+      if(bi<0)continue;
+      for(const k of patch)pick[k]=bi;changed++;
+    }
+    if(!changed)break;
+  }
+}
+/* Outline: a one-cell line of palette colour `oc` where cells meet empty ones. 'in' recolours the edge cells; 'out' fills the
+   empty cells beside them. Returns how many cells it changed. */
+function outlinePick(pick,n,near,mode,oc){
+  const inside=mode==='in',hit=[];
+  for(let k=0;k<n;k++){
+    const full=pick[k]>=0;if(full!==inside)continue;
+    for(const j of near(k))if((pick[j]>=0)!==full){hit.push(k);break}
+  }
+  for(const k of hit)pick[k]=oc;
+  return hit.length;
+}
+function hexRgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function dist(a,b){const rm=(a[0]+b[0])/2,dr=a[0]-b[0],dg=a[1]-b[1],db=a[2]-b[2];return(2+rm/256)*dr*dr+4*dg*dg+(2+(255-rm)/256)*db*db}
+function toLab(r,g,b){
+  const f=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)};
+  const R=f(r),G=f(g),B=f(b),h=t=>t>0.008856?Math.cbrt(t):7.787*t+16/116;
+  const X=h((R*0.4124+G*0.3576+B*0.1805)/0.95047),Y=h(R*0.2126+G*0.7152+B*0.0722),Z=h((R*0.0193+G*0.1192+B*0.9505)/1.08883);
+  return[116*Y-16,500*(X-Y),200*(Y-Z)];
+}
+/* nearest palette colour in Lab, then drop the least useful colours until at most maxC remain */
+function catalogAssign(P,rgb,solid,empty,n,maxC){
+  const NP=P.length,PL=new Float32Array(NP*3);
+  P.forEach((p,i)=>{const c=hexRgb(p.hex),l=toLab(c[0],c[1],c[2]);PL[i*3]=l[0];PL[i*3+1]=l[1];PL[i*3+2]=l[2]});
+  const idx=[];for(let k=0;k<n;k++)if(solid[k]&&!empty[k])idx.push(k);
+  const m=idx.length,BL=new Float32Array(m*3);
+  idx.forEach((k,j)=>{const l=toLab(rgb[k*3],rgb[k*3+1],rgb[k*3+2]);BL[j*3]=l[0];BL[j*3+1]=l[1];BL[j*3+2]=l[2]});
+  const best=new Int32Array(m),sec=new Int32Array(m),d1=new Float64Array(m),d2=new Float64Array(m);
+  let S=[];for(let i=0;i<NP;i++)S.push(i);
+  const scan=j=>{const a=BL[j*3],b=BL[j*3+1],c=BL[j*3+2];let bi=-1,si=-1,bd=Infinity,sd=Infinity;
+    for(const i of S){const x=a-PL[i*3],y=b-PL[i*3+1],z=c-PL[i*3+2],v=x*x+y*y+z*z;
+      if(v<bd){si=bi;sd=bd;bi=i;bd=v}else if(v<sd){si=i;sd=v}}
+    best[j]=bi;sec[j]=si;d1[j]=bd;d2[j]=sd};
+  for(let j=0;j<m;j++)scan(j);
+  S=[...new Set(best)];for(let j=0;j<m;j++)scan(j);
+  const cost=new Float64Array(NP);
+  while(S.length>Math.max(1,maxC)){
+    S.forEach(i=>cost[i]=0);
+    for(let j=0;j<m;j++)cost[best[j]]+=sec[j]>=0?d2[j]-d1[j]:1e12;
+    let drop=S[0];for(const i of S)if(cost[i]<cost[drop])drop=i;
+    S=S.filter(i=>i!==drop);
+    for(let j=0;j<m;j++)if(best[j]===drop||sec[j]===drop)scan(j);
+  }
+  return{idx,best};
+}
+/* CIEDE2000 colour difference (Sharma, Wu and Dalal 2005) */
+function de2000(L1,a1,b1,L2,a2,b2){
+  const D=Math.PI/180,P7=6103515625,C1=Math.hypot(a1,b1),C2=Math.hypot(a2,b2),Cb=(C1+C2)/2,Cb7=Cb**7;
+  const G=0.5*(1-Math.sqrt(Cb7/(Cb7+P7))),a1p=(1+G)*a1,a2p=(1+G)*a2,C1p=Math.hypot(a1p,b1),C2p=Math.hypot(a2p,b2);
+  const hue=(b,a)=>{if(a===0&&b===0)return 0;const t=Math.atan2(b,a)/D;return t<0?t+360:t};
+  const h1=hue(b1,a1p),h2=hue(b2,a2p),zero=C1p*C2p===0;
+  let dh=0;if(!zero){dh=h2-h1;if(dh>180)dh-=360;else if(dh<-180)dh+=360}
+  const dL=L2-L1,dC=C2p-C1p,dH=2*Math.sqrt(C1p*C2p)*Math.sin(dh*D/2),Lb=(L1+L2)/2,Cbp=(C1p+C2p)/2;
+  let hb=h1+h2;if(!zero)hb=Math.abs(h1-h2)>180?(hb<360?hb+360:hb-360)/2:hb/2;
+  const T=1-0.17*Math.cos((hb-30)*D)+0.24*Math.cos(2*hb*D)+0.32*Math.cos((3*hb+6)*D)-0.20*Math.cos((4*hb-63)*D);
+  const dT=30*Math.exp(-(((hb-275)/25)**2)),Cbp7=Cbp**7,RC=2*Math.sqrt(Cbp7/(Cbp7+P7));
+  const SL=1+0.015*(Lb-50)**2/Math.sqrt(20+(Lb-50)**2),SC=1+0.045*Cbp,SH=1+0.015*Cbp*T,RT=-Math.sin(2*dT*D)*RC;
+  return Math.sqrt((dL/SL)**2+(dC/SC)**2+(dH/SH)**2+RT*(dC/SC)*(dH/SH));
+}
+/* Auto-trim: shave rows and columns off each edge while 99% of their pixels are one flat colour */
+function autoTrimBox(){
+  const {w,h,data}=srcImg,T=24;
+  const px=(x,y)=>{const i=(y*w+x)*4;return[data[i],data[i+1],data[i+2],data[i+3]]};
+  const same=(p,q)=>(p[3]<128&&q[3]<128)||(p[3]>=128&&q[3]>=128&&Math.abs(p[0]-q[0])<=T&&Math.abs(p[1]-q[1])<=T&&Math.abs(p[2]-q[2])<=T);
+  const flat=pts=>{const n=pts.length,cand=[pts[0],pts[n>>2],pts[n>>1],pts[(3*n)>>2],pts[n-1]];
+    let best=0;for(const c of cand){let k=0;for(const p of pts)if(same(p,c))k++;best=Math.max(best,k)}return best>=n*0.99};
+  const row=(y,x0,x1)=>{const a=[];for(let x=x0;x<x1;x++)a.push(px(x,y));return a};
+  const col=(x,y0,y1)=>{const a=[];for(let y=y0;y<y1;y++)a.push(px(x,y));return a};
+  let t=0,b=h,l=0,r=w;const MIN=4;
+  let moved=true;
+  while(moved){moved=false;
+    if(b-t>MIN&&flat(row(t,l,r))){t++;moved=true}
+    if(b-t>MIN&&flat(row(b-1,l,r))){b--;moved=true}
+    if(r-l>MIN&&flat(col(l,t,b))){l++;moved=true}
+    if(r-l>MIN&&flat(col(r-1,t,b))){r--;moved=true}
+  }
+  return {x:l/w,y:t/h,w:(r-l)/w,h:(b-t)/h,changed:t>0||l>0||b<h||r<w};
+}
+
+/* ---------- conversion ---------- */
+function usePal(){const off=new Set(st.img.off);return APP.palette.filter(c=>!off.has(c.name))}
+function cropPx(){const c=st.img.crop;return{x:c.x*srcImg.w,y:c.y*srcImg.h,w:Math.max(1,c.w*srcImg.w),h:Math.max(1,c.h*srcImg.h)}}
+const hasAdj=()=>{const a=st.img;return!!(a.adjB||a.adjC||a.adjS||a.adjH||a.adjW)};
+const adjArgs=()=>({br:st.img.adjB,ct:st.img.adjC,sat:st.img.adjS,hue:st.img.adjH,warm:st.img.adjW});
+/* the darkest colour in a palette, for the outline */
+function darkest(P){let bi=-1,bl=Infinity;P.forEach((p,i)=>{const c=hexRgb(p.hex),L=toLab(c[0],c[1],c[2])[0];if(L<bl){bl=L;bi=i}});return bi}
+/* Pick a palette entry for every sample: colour limit, then matching with dithering, then clean-up and the rare-colour merge.
+   o.fwd / o.fwdA list [neighbour, weight] pairs for error diffusion and o.xy gives grid coordinates for ordered dithering. */
+function assign(P,rgb,solid,empty,n,o){
+  const pick=new Int16Array(n).fill(-1),live=k=>solid[k]&&!empty[k];
+  let S;
+  if(st.img.maxColors<ALL_COLOURS){const {best}=catalogAssign(P,rgb,solid,empty,n,st.img.maxColors);S=[...new Set(best)].filter(i=>i>=0)}
+  else S=P.map((p,i)=>i);
+  if(!S.length)return pick;
+  const M=st.img.metric,PR=P.map(p=>hexRgb(p.hex)),PL=PR.map(c=>toLab(c[0],c[1],c[2]));
+  /* closest entry; for the Lab formulas the search runs outward in lightness and stops once the lightness gap rules out the rest */
+  const finder=set=>{
+    if(M==='rgb')return(r,g,b)=>{const px=[r,g,b];let bi=-1,bd=Infinity;for(const i of set){const d=dist(px,PR[i]);if(d<bd){bd=d;bi=i}}return bi};
+    if(M==='oklab'){
+      const O=new Float64Array(set.length*3);set.forEach((i,p)=>{const v=toOklab(PR[i][0],PR[i][1],PR[i][2]);O[p*3]=v[0];O[p*3+1]=v[1];O[p*3+2]=v[2]});
+      return(r,g,b)=>{const v=toOklab(r,g,b);let bp=-1,bd=Infinity;
+        for(let p=0;p<set.length;p++){const x=v[0]-O[p*3],y=v[1]-O[p*3+1],z=v[2]-O[p*3+2],d=x*x+y*y+z*z;if(d<bd){bd=d;bp=p}}
+        return bp<0?-1:set[bp]};
+    }
+    const m=set.length,de=M==='de2000',ord=set.map((_,p)=>p).sort((a,b)=>PL[set[a]][0]-PL[set[b]][0]),Ls=ord.map(p=>PL[set[p]][0]);
+    const F=new Float64Array(m*3);set.forEach((i,p)=>{F[p*3]=PL[i][0];F[p*3+1]=PL[i][1];F[p*3+2]=PL[i][2]});
+    return(r,g,b)=>{
+      const l=toLab(r,g,b),L=l[0];let lo=0,hi=m;
+      while(lo<hi){const mid=(lo+hi)>>1;if(Ls[mid]<L)lo=mid+1;else hi=mid}
+      let up=lo,dn=lo-1,bd=Infinity,bp=-1;
+      if(de){let sv=Infinity,sp=-1;for(let p=0;p<m;p++){const x=L-F[p*3],y=l[1]-F[p*3+1],z=l[2]-F[p*3+2],v=x*x+y*y+z*z;if(v<sv){sv=v;sp=p}}
+        if(sp>=0){bd=de2000(L,l[1],l[2],F[sp*3],F[sp*3+1],F[sp*3+2]);bp=sp}}
+      for(;;){
+        const du=up<m?Ls[up]-L:Infinity,dd=dn>=0?L-Ls[dn]:Infinity,gap=Math.min(du,dd);
+        if(!(gap<Infinity)||(de?gap/1.75:gap*gap)>bd)break;
+        const p=du<=dd?ord[up++]:ord[dn--];
+        const d=de?de2000(L,l[1],l[2],F[p*3],F[p*3+1],F[p*3+2]):(L-F[p*3])**2+(l[1]-F[p*3+1])**2+(l[2]-F[p*3+2])**2;
+        if(d<bd||(d===bd&&p<bp)){bd=d;bp=p}
+      }
+      return bp<0?-1:set[bp]};
+  };
+  const find=finder(S);
+  const amt=st.img.ditherAmt/100,DM=st.img.dither,fw=DM==='fs'?o.fwd:DM==='atk'?o.fwdA:null;
+  if(fw){
+    const w=Float32Array.from(rgb);
+    for(let k=0;k<n;k++){if(!live(k))continue;
+      const r=clamp(w[k*3],0,255),g=clamp(w[k*3+1],0,255),b=clamp(w[k*3+2],0,255),i=find(r,g,b);pick[k]=i;if(i<0)continue;
+      const er=(r-PR[i][0])*amt,eg=(g-PR[i][1])*amt,eb=(b-PR[i][2])*amt;
+      for(const [j,f] of fw(k))if(live(j)){w[j*3]+=er*f;w[j*3+1]+=eg*f;w[j*3+2]+=eb*f}}
+  }else if(DM==='ordered'){
+    const sp=BAYER_SPREAD*amt;
+    for(let k=0;k<n;k++){if(!live(k))continue;const [x,y]=o.xy(k),t=((BAYER[(x&3)+((y&3)<<2)]+0.5)/16-0.5)*sp;
+      pick[k]=find(clamp(rgb[k*3]+t,0,255),clamp(rgb[k*3+1]+t,0,255),clamp(rgb[k*3+2]+t,0,255))}
+  }else for(let k=0;k<n;k++)if(live(k))pick[k]=find(rgb[k*3],rgb[k*3+1],rgb[k*3+2]);
+  if(o.post)o.post(pick);
+  const R=st.img.rare;
+  if(R>0)for(;;){
+    const cnt=new Map();for(let k=0;k<n;k++)if(pick[k]>=0)cnt.set(pick[k],(cnt.get(pick[k])||0)+1);
+    if(cnt.size<=1)break;
+    let lo=-1,lc=Infinity;cnt.forEach((c,i)=>{if(c<lc){lc=c;lo=i}});
+    if(lc>=R)break;
+    const again=finder([...cnt.keys()].filter(i=>i!==lo));
+    for(let k=0;k<n;k++)if(pick[k]===lo)pick[k]=again(rgb[k*3],rgb[k*3+1],rgb[k*3+2]);
+  }
+  return pick;
+}
+/* the whole conversion: c0 = palette number per cell (-1 empty), lum = lightness 0 to 1 per cell */
+CONVERT=function(d){
+  const iw=d.W,ih=d.H,n=iw*ih,out={W:iw,H:ih,c0:new Int16Array(n).fill(-1),lum:new Float32Array(n)};
+  outlined=0;
+  if(!srcImg)return out;
+  const {w:sw,h:sh,data}=srcImg,c=cropPx();
+  const rgb=new Float32Array(n*3),solid=new Uint8Array(n),mode=st.img.sampling,near=mode==='nearest';
+  for(let y=0;y<ih;y++)for(let x=0;x<iw;x++){
+    let r,g,b,a;
+    if(near){
+      const sx=clamp(Math.floor(c.x+(x+0.5)*c.w/iw),0,sw-1),sy=clamp(Math.floor(c.y+(y+0.5)*c.h/ih),0,sh-1),i=(sy*sw+sx)*4;
+      r=data[i];g=data[i+1];b=data[i+2];a=data[i+3];
+    }else{
+      const x0=clamp(Math.floor(c.x+x*c.w/iw),0,sw-1),x1=clamp(Math.max(x0+1,Math.floor(c.x+(x+1)*c.w/iw)),1,sw);
+      const y0=clamp(Math.floor(c.y+y*c.h/ih),0,sh-1),y1=clamp(Math.max(y0+1,Math.floor(c.y+(y+1)*c.h/ih)),1,sh);
+      if(mode!=='average')[r,g,b,a]=cellPick(data,sw,x0,x1,y0,y1,mode);
+      else{let sr=0,sg=0,sb=0,sa=0,m=0;
+        for(let yy=y0;yy<y1;yy++)for(let xx=x0;xx<x1;xx++){const i=(yy*sw+xx)*4,al=data[i+3];sr+=data[i]*al;sg+=data[i+1]*al;sb+=data[i+2]*al;sa+=al;m++}
+        a=m?sa/m:0;r=sa?sr/sa:0;g=sa?sg/sa:0;b=sa?sb/sa:0}
+    }
+    const k=y*iw+x;rgb[k*3]=r;rgb[k*3+1]=g;rgb[k*3+2]=b;solid[k]=a>=128?1:0;
+  }
+  /* background: flood from the picture's edges (and a tapped spot) through colours close to the background colour */
+  const empty=new Uint8Array(n);
+  if(st.img.bg){
+    const d2=(k,q)=>{const dr=rgb[k*3]-q[0],dg=rgb[k*3+1]-q[1],db=rgb[k*3+2]-q[2];return dr*dr+dg*dg+db*db};
+    const cs=[0,iw-1,(ih-1)*iw,ih*iw-1].filter(k=>solid[k]).map(k=>[rgb[k*3],rgb[k*3+1],rgb[k*3+2]]);
+    const pc=st.img.bgCol?hexRgb(st.img.bgCol):null;
+    if(pc||cs.length){
+      let bg=pc||cs[0],bs=Infinity;
+      if(!pc)cs.forEach(q=>{let t=0;cs.forEach(o=>{t+=(q[0]-o[0])**2+(q[1]-o[1])**2+(q[2]-o[2])**2});if(t<bs){bs=t;bg=q}});
+      const T=st.img.bgTol*st.img.bgTol,ok=k=>solid[k]&&!empty[k]&&d2(k,bg)<=T,qu=[];
+      const push=k=>{if(ok(k)){empty[k]=1;qu.push(k)}};
+      for(let x=0;x<iw;x++){push(x);push((ih-1)*iw+x)}
+      for(let y=0;y<ih;y++){push(y*iw);push(y*iw+iw-1)}
+      if(pc&&st.img.bgPt){const x=Math.floor((st.img.bgPt.x*sw-c.x)/c.w*iw),y=Math.floor((st.img.bgPt.y*sh-c.y)/c.h*ih);if(x>=0&&x<iw&&y>=0&&y<ih)push(y*iw+x)}
+      while(qu.length){const k=qu.pop(),x=k%iw,y=(k-x)/iw;if(x>0)push(k-1);if(x<iw-1)push(k+1);if(y>0)push(k-iw);if(y<ih-1)push(k+iw)}
+    }
+  }
+  if(hasAdj())adjustRgb(rgb,n,k=>solid[k]&&!empty[k],adjArgs());
+  for(let k=0;k<n;k++)out.lum[k]=toLab(rgb[k*3],rgb[k*3+1],rgb[k*3+2])[0]/100;
+  const P=usePal();
+  const near4=k=>{const x=k%iw,y=(k-x)/iw,o=[];if(x>0)o.push(k-1);if(x+1<iw)o.push(k+1);if(y>0)o.push(k-iw);if(y+1<ih)o.push(k+iw);return o};
+  const near8=k=>{const x=k%iw,y=(k-x)/iw,o=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const X=x+dx,Y=y+dy;if((dx||dy)&&X>=0&&X<iw&&Y>=0&&Y<ih)o.push(Y*iw+X)}return o};
+  const post=st.img.smooth||st.img.specks?pick=>{if(st.img.smooth)smoothPick(pick,n,near8,st.img.smooth);if(st.img.specks)mergeSpecks(pick,n,near4,st.img.specks)}:null;
+  const pick=assign(P,rgb,solid,empty,n,{
+    fwd:k=>{const x=k%iw,y=(k-x)/iw,o=[];if(x+1<iw)o.push([k+1,7/16]);
+      if(y+1<ih){if(x>0)o.push([k+iw-1,3/16]);o.push([k+iw,5/16]);if(x+1<iw)o.push([k+iw+1,1/16])}return o},
+    fwdA:k=>{const x=k%iw,y=(k-x)/iw,o=[],e=1/8;if(x+1<iw)o.push([k+1,e]);if(x+2<iw)o.push([k+2,e]);
+      if(y+1<ih){if(x>0)o.push([k+iw-1,e]);o.push([k+iw,e]);if(x+1<iw)o.push([k+iw+1,e])}if(y+2<ih)o.push([k+2*iw,e]);return o},
+    xy:k=>[k%iw,Math.floor(k/iw)],post});
+  if(st.img.outline!=='none'){const oc=darkest(P);if(oc>=0)outlined=outlinePick(pick,n,near4,st.img.outline,oc)}
+  for(let k=0;k<n;k++)out.c0[k]=pick[k]>=0?P[pick[k]].i:-1;
+  return out;
+};
+
+/* ---------- crop: with boards the box keeps their shape; without, it is free and the height follows it ---------- */
+const lockA=()=>BOARDS.length?(()=>{const d=dims();return d.W/d.H})():0;
+picAspect=()=>!BOARDS.length&&srcImg?(st.img.crop.w*srcImg.w)/(st.img.crop.h*srcImg.h):0;
+/* the biggest box of the locked shape inside box b (fractions of the picture), centred in it */
+function fitBox(b){if(!lockA())return box01(b);const sw=srcImg.w,sh=srcImg.h,A=lockA();let w=b.w*sw,h=b.h*sh;if(w/h>A)w=h*A;else h=w/A;
+  return{x:b.x+(b.w-w/sw)/2,y:b.y+(b.h-h/sh)/2,w:w/sw,h:h/sh}}
+/* after the boards change shape: keep the crop's centre and how far it is zoomed in, relative to the biggest box that fits */
+function maxWH(A){const f=st.img.free;let w=f.w*srcImg.w,h=f.h*srcImg.h;if(w/h>A)w=h*A;else h=w/A;return[w,h]}
+function reAspect(){
+  if(!srcImg||!lockA())return;const sw=srcImg.w,sh=srcImg.h,c=st.img.crop,oldA=c.w*sw/(c.h*sh),A=lockA();
+  const z=clamp(c.w*sw/maxWH(oldA)[0],0.05,1);let[w,h]=maxWH(A);w*=z;h*=z;
+  const cx=(c.x+c.w/2)*sw,cy=(c.y+c.h/2)*sh;
+  st.img.crop={x:clamp(cx-w/2,0,sw-w)/sw,y:clamp(cy-h/2,0,sh-h)/sh,w:w/sw,h:h/sh};
+}
+watch(/^size\.(board|across|down)$/,()=>{reAspect();rebuild()});
+function drawCrop(){
+  const cv=$('cropCv');if(!cv||!srcImg||!imgCv||$('imgSteps').hidden)return;
+  const wrap=$('cropWrap'),avail=Math.max(120,wrap.clientWidth-16),s=Math.min(avail/srcImg.w,320/srcImg.h);
+  const W=Math.max(1,Math.round(srcImg.w*s)),H=Math.max(1,Math.round(srcImg.h*s)),dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  cv.style.width=W+'px';cv.style.height=H+'px';
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  g.imageSmoothingEnabled=s<1;g.drawImage(imgCv,0,0,W,H);
+  const c=st.img.crop,x=c.x*W,y=c.y*H,w=c.w*W,h=c.h*H,d=dims();
+  g.fillStyle='rgba(0,0,0,.58)';g.fillRect(0,0,W,y);g.fillRect(0,y+h,W,H-y-h);g.fillRect(0,y,x,h);g.fillRect(x+w,y,W-x-w,h);
+  const acc=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#0E7C7B';
+  g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=1;g.setLineDash([4,4]);g.beginPath();
+  for(let i=1;i<d.across;i++){const X=x+w*i/d.across;g.moveTo(X,y);g.lineTo(X,y+h)}
+  for(let i=1;i<d.down;i++){const Y=y+h*i/d.down;g.moveTo(x,Y);g.lineTo(x+w,Y)}
+  g.stroke();g.setLineDash([]);
+  g.strokeStyle=acc;g.lineWidth=2;g.strokeRect(x,y,w,h);
+  g.fillStyle=acc;g.strokeStyle='#fff';g.lineWidth=1.5;
+  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([X,Y])=>{g.beginPath();g.rect(X-6,Y-6,12,12);g.fill();g.stroke()});
+}
+HOOK.after.push(drawCrop);HOOK.resize.push(drawCrop);
+let cdrag=null;
+function cropPt(e){const r=$('cropCv').getBoundingClientRect();return{px:clamp((e.clientX-r.left)/r.width,0,1),py:clamp((e.clientY-r.top)/r.height,0,1),r}}
+function colourAt(px,py){
+  const {w,h,data}=srcImg,cx=clamp(Math.floor(px*w),0,w-1),cy=clamp(Math.floor(py*h),0,h-1);let r=0,g=0,b=0,m=0;
+  for(let y=Math.max(0,cy-1);y<=Math.min(h-1,cy+1);y++)for(let x=Math.max(0,cx-1);x<=Math.min(w-1,cx+1);x++){const i=(y*w+x)*4;if(data[i+3]>=128){r+=data[i];g+=data[i+1];b+=data[i+2];m++}}
+  return m?'#'+[r,g,b].map(v=>Math.round(v/m).toString(16).padStart(2,'0')).join('').toUpperCase():null;
+}
+$('cropCv').addEventListener('pointerdown',e=>{
+  if(!srcImg)return;
+  if(picking){e.preventDefault();const q=cropPt(e),col=colourAt(q.px,q.py);
+    if(!col){txt('bgMsg','That spot is see-through. Tap a solid colour.');return}
+    st.img.bgCol=col;st.img.bgPt={x:q.px,y:q.py};st.img.bg=true;picking=false;rebuild();return}
+  const {px,py,r}=cropPt(e),c=st.img.crop;
+  const cs=[[c.x,c.y,c.x+c.w,c.y+c.h],[c.x+c.w,c.y,c.x,c.y+c.h],[c.x,c.y+c.h,c.x+c.w,c.y],[c.x+c.w,c.y+c.h,c.x,c.y]];
+  let best=null,bd=26;
+  cs.forEach(([cx,cy,ax,ay])=>{const d=Math.hypot((px-cx)*r.width,(py-cy)*r.height);if(d<bd){bd=d;best={mode:'corner',ax,ay}}});
+  if(!best&&px>=c.x&&px<=c.x+c.w&&py>=c.y&&py<=c.y+c.h)best={mode:'move',ox:px-c.x,oy:py-c.y};
+  if(!best)return;cdrag=best;$('cropCv').setPointerCapture(e.pointerId);e.preventDefault();
+});
+$('cropCv').addEventListener('pointermove',e=>{
+  if(!cdrag)return;const {px,py}=cropPt(e),c=st.img.crop,sw=srcImg.w,sh=srcImg.h;
+  if(cdrag.mode==='move')st.img.crop={x:clamp(px-cdrag.ox,0,1-c.w),y:clamp(py-cdrag.oy,0,1-c.h),w:c.w,h:c.h};
+  else{const {ax,ay}=cdrag,sx=px>=ax?1:-1,sy=py>=ay?1:-1,MIN=4,A=lockA();
+    const dx=Math.abs(px-ax)*sw,dy=Math.abs(py-ay)*sh,maxW=(sx>0?1-ax:ax)*sw,maxH=(sy>0?1-ay:ay)*sh;
+    let w,h;
+    if(A){w=Math.max(dx,dy*A,MIN);h=w/A;if(w>maxW){w=maxW;h=w/A}if(h>maxH){h=maxH;w=h*A}}
+    else{w=clamp(dx,MIN,maxW);h=clamp(dy,MIN,maxH)}
+    st.img.crop={x:sx>0?ax:ax-w/sw,y:sy>0?ay:ay-h/sh,w:w/sw,h:h/sh};if(!A)st.img.free=clone(st.img.crop)}
+  drawCrop();
+});
+const endDrag=()=>{if(!cdrag)return;cdrag=null;txt('cropMsg','');rebuild()};
+$('cropCv').addEventListener('pointerup',endDrag);
+$('cropCv').addEventListener('pointercancel',endDrag);
+$('autoTrim').addEventListener('click',()=>{
+  if(!srcImg)return;const b=autoTrimBox();
+  if(!b.changed){txt('cropMsg','No flat edges found. Drag the corners instead.');return}
+  st.img.free={x:b.x,y:b.y,w:b.w,h:b.h};st.img.crop=fitBox(st.img.free);txt('cropMsg','Trimmed.');rebuild();
+});
+$('cropReset').addEventListener('click',()=>{if(!srcImg)return;st.img.free={x:0,y:0,w:1,h:1};st.img.crop=fitBox(st.img.free);txt('cropMsg','');rebuild()});
+
+/* ---------- picture controls ---------- */
+slider('maxC',v=>v>=ALL_COLOURS?'All':String(v),v=>{st.img.maxColors=v;rebuild()});
+slider('dAmt',v=>v+'%',v=>{st.img.ditherAmt=v;rebuild()});
+slider('rare',v=>v?'<'+v:'Off',v=>{st.img.rare=v;rebuild()});
+slider('bgTol',String,()=>rebuild(),v=>{st.img.bgTol=v});
+slider('specks',v=>v?String(v):'Off',v=>{st.img.specks=v;rebuild()});
+slider('smooth',v=>v?v+'×':'Off',v=>{st.img.smooth=v;rebuild()});
+const ADJ=[['adjB','brightness',''],['adjC','contrast',''],['adjS','saturation',''],['adjH','hue','°'],['adjW','warmth','']];
+ADJ.forEach(([id,,unit])=>slider(id,v=>signed(v)+unit,v=>{st.img[id]=v;rebuild()}));
+$('adjReset').addEventListener('click',()=>{ADJ.forEach(([id])=>{st.img[id]=0});rebuild()});
+$('bgPick').addEventListener('click',()=>{picking=!picking;sync();if(picking)$('cropWrap').scrollIntoView({block:'center',behavior:'smooth'})});
+$('bgAuto').addEventListener('click',()=>{st.img.bgCol=null;st.img.bgPt=null;picking=false;rebuild()});
+$('palSw').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pc]');if(!b)return;const c=APP.palette[+b.dataset.pc],off=new Set(st.img.off);
+  if(off.has(c.name))off.delete(c.name);else{if(ALL_COLOURS-off.size<=2){txt('colMsg','Keep at least two colours.');return}off.add(c.name)}
+  st.img.off=[...off];rebuild();
+});
+document.querySelectorAll('[data-pset]').forEach(b=>b.addEventListener('click',()=>{
+  const S=(SPEC.sets||[])[+b.dataset.pset],keep=S?new Set(S.colours):null;
+  st.img.off=keep?APP.palette.filter(c=>!keep.has(c.name)).map(c=>c.name):[];rebuild()}));
+$('resetPic').addEventListener('click',()=>{
+  const keep={crop:st.img.crop,free:st.img.free};st.img=clone(DEF.img);st.img.crop=keep.crop;st.img.free=keep.free;
+  rebuild();picSay('Picture settings reset. Your crop and edits are kept.');
+});
+$('dropPic').addEventListener('click',()=>{srcImg=null;imgCv=null;srcUrl='';store.del(KEY+'img');picking=false;rebuild();picSay('Picture removed.')});
+const blankBtn=$('startBlank');if(blankBtn)blankBtn.addEventListener('click',()=>{st.blank=true;rebuild()});
+
+/* ---------- keeping the picture controls in step ---------- */
+HOOK.sync.push(()=>{
+  const has=!!srcImg;
+  $('imgSteps').hidden=!has;$('picBtns').hidden=!has;$('picStart').hidden=has;
+  $('bgOn').checked=st.img.bg;put('bgTol',st.img.bgTol);
+  $('bgPick').setAttribute('aria-pressed',String(picking));txt('bgPick',picking?'Cancel picking':'Pick background colour');
+  $('cropCv').classList.toggle('picking',picking);
+  const bd=$('bgDot');bd.hidden=!st.img.bgCol;bd.style.background=st.img.bgCol||'';$('bgAuto').hidden=!st.img.bgCol;
+  txt('bgMsg',picking?'Now tap the background in the crop picture above.':st.img.bgCol&&st.img.bg?'Emptying the colour you picked. If a rim of it stays, raise the tolerance.':st.img.bgCol?'Tick Leave background empty to use the colour you picked.':'');
+  ADJ.forEach(([id])=>put(id,st.img[id]));
+  const on=ADJ.filter(([id])=>st.img[id]).map(([id,name,unit])=>name+' '+signed(st.img[id])+unit);
+  txt('adjSum',on.length?'('+on.join(', ')+')':'(off)');$('adjReset').disabled=!on.length;
+  const I=st.img,cl=[];put('specks',I.specks);put('smooth',I.smooth);
+  if(I.specks)cl.push('specks '+I.specks);if(I.smooth)cl.push('smooth '+I.smooth+'×');if(I.outline!=='none')cl.push('outline '+(I.outline==='in'?'inside':'outside'));
+  txt('cleanSum',cl.length?'('+cl.join(', ')+')':'(off)');
+  txt('cleanInfo',I.outline!=='none'&&has?(outlined?`The outline uses ${usePal()[darkest(usePal())].name} on ${units(outlined)}.`:'Nothing to outline: no cell inside the picture is empty. Turn on Leave background empty first.'):'');
+  const off=new Set(st.img.off),used=new Set();if(pattern)for(const c of pattern.c)if(c>=0)used.add(c);
+  fillBox('palSw',APP.palette.map((c,i)=>`<button type="button" class="swb lsw" data-pc="${i}" style="background:${c.hex}" title="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${!off.has(c.name)}"></button>`).join(''));
+  put('maxC',st.img.maxColors);
+  txt('colMsg',`Choosing from ${ALL_COLOURS-off.size} of ${ALL_COLOURS} colours`+(used.size&&has?`; this picture uses ${used.size}.`:'.'));
+  $('dAmtRow').hidden=st.img.dither==='none';put('dAmt',st.img.ditherAmt);put('rare',st.img.rare);
+});
+emptyWhy=()=>srcImg||st.blank?'':'Choose a picture to turn it into '+APP.unit.many+'.';
+
+/* ---------- loading a picture ---------- */
+/* picture messages go to the Picture section and, while no picture is loaded, under the big Choose image button */
+function picSay(m){txt('imgMsg',m);const e=$('empty');txt('emptyNote',e&&!e.hidden?m:'');say(m)}
+function loadImage(url,fresh,seq=++loadSeq){
+  const im=new Image();
+  im.onload=()=>{
+    if(seq!==loadSeq)return;
+    let w=im.naturalWidth,h=im.naturalHeight;const s=Math.min(1,SRC_MAX/Math.max(w,h));
+    w=Math.max(1,Math.round(w*s));h=Math.max(1,Math.round(h*s));
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    const cx=cv.getContext('2d');cx.imageSmoothingEnabled=s<1;cx.drawImage(im,0,0,w,h);
+    let data;try{data=cx.getImageData(0,0,w,h).data}catch(e){picSay('That image could not be read here. Try saving it as a PNG or JPEG first.');return}
+    srcImg={w,h,data};imgCv=cv;picking=false;
+    try{srcUrl=cv.toDataURL('image/png');store.set(KEY+'img',srcUrl)}catch(e){srcUrl=url}
+    if(fresh){
+      st.img.bgCol=null;st.img.bgPt=null;st.img.free={x:0,y:0,w:1,h:1};st.img.crop=fitBox(st.img.free);
+      st.img.sampling=im.naturalWidth<=GRID.maxW&&im.naturalHeight<=GRID.maxW?'nearest':'average';
+      txt('cropMsg','');picSay(`${im.naturalWidth} × ${im.naturalHeight} px loaded.`);
+    }
+    else if(lockA()){const c=st.img.crop,A=c.w*w/(c.h*h);if(Math.abs(A/lockA()-1)>0.01)reAspect()}   /* a crop saved for other boards takes their shape */
+    rebuild();
+  };
+  im.onerror=()=>picSay('That file could not be read as an image. Photos in HEIC format often can’t be: save it as a JPEG or PNG and try again.');
+  im.src=url;
+}
+function takeFile(f){
+  if(!f)return;if(f.type&&!/^image\//.test(f.type)){picSay('That isn’t an image file.');return}
+  picSay('Loading the picture…');
+  const rd=new FileReader(),seq=++loadSeq;rd.onload=()=>{if(seq===loadSeq)loadImage(rd.result,true,seq)};rd.onerror=()=>picSay('That file could not be read.');rd.readAsDataURL(f);
+}
+document.querySelectorAll('.fileIn').forEach(i=>i.addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];takeFile(f);e.target.value=''}));
+/* Pasting works in viewers that block file pickers. A pasted picture arrives as a file on the paste event,
+   or (from some phone keyboards) as an <img> dropped into a paste box. */
+document.addEventListener('paste',e=>{const items=e.clipboardData&&e.clipboardData.items;if(!items)return;
+  for(const it of items){if(it.kind==='file'&&it.type.startsWith('image/')){e.preventDefault();takeFile(it.getAsFile());return}}
+  if(e.target.closest&&e.target.closest('.pasteBox')){e.preventDefault();picSay('That was text, not a picture. Copy the picture itself, then paste.')}});
+document.querySelectorAll('.pasteBox').forEach(b=>{
+  b.addEventListener('input',()=>{const im=b.querySelector('img'),src=im&&im.getAttribute('src');b.textContent='';
+    if(src&&/^(data:image\/|blob:)/.test(src)){picSay('Loading the picture…');loadImage(src,true)}
+    else if(src)picSay('That picture could not be taken from here. Save it, then paste or choose the file.')});
+  b.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey)&&e.key.length===1)e.preventDefault()});
+  b.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)takeFile(f)});
+});
+vp.addEventListener('dragover',e=>e.preventDefault());
+vp.addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];takeFile(f)});
+HOOK.start.push(()=>{const s=store.get(KEY+'img');if(typeof s==='string'&&s.startsWith('data:image/png;base64,'))loadImage(s,false)});
+
+/* ---------- editing: paint, erase, fill and pick, with undo ----------
+   Edits are kept by cell ("x,y"), on top of the picture, so they stay put when the picture is made again. */
+addSettings({ed:{tool:'paint',paint:null}},{'ed.tool':['paint','erase','fill','pick'],tap:['edit']},{},
+  (o,s)=>{const p=s.ed&&s.ed.paint;o.ed.paint=typeof p==='string'&&PAL_BY.has(p)?p:null});
+const newEdits=()=>({col:{}});
+function tidyEdits(o){
+  const E=newEdits();if(!o||typeof o!=='object'||!o.col||typeof o.col!=='object')return E;
+  let n=0;for(const k in o.col){if(n++>200000)break;const v=o.col[k];if(/^\d{1,4},\d{1,4}$/.test(k)&&(v===''||(typeof v==='string'&&PAL_BY.has(v))))E.col[k]=v}
+  return E;
+}
+let E=newEdits(),undoStack=[],redoStack=[];
+HOOK.load.push(()=>{E=tidyEdits(store.get(KEY+'edits'))});
+const saveEdits=()=>store.set(KEY+'edits',E);
+const editCount=()=>Object.keys(E.col).length;
+const keyXY=(x,y)=>x+','+y;
+HOOK.compose.push(p=>{for(const k in E.col){const j=k.indexOf(','),x=+k.slice(0,j),y=+k.slice(j+1);if(x<p.W&&y<p.H){const v=E.col[k];p.c[y*p.W+x]=v===''?-1:PAL_BY.get(v).i}}});
+/* with the picture part, the stage stays empty until there is a picture, a blank start or an edit */
+const _why=emptyWhy;emptyWhy=()=>editCount()?'':_why();
+
+const note=t=>{txt('editMsg',t);if(t)say(t)};
+function setE(k,val,ch){const before=E.col[k];if(before===val)return;ch.push([k,before,val]);if(val===undefined)delete E.col[k];else E.col[k]=val}
+/* the edit for one cell, given the tool: undefined means "as the picture has it" */
+function applyTool(i,ch){
+  const p=pattern,x=i%p.W,y=(i-x)/p.W,k=keyXY(x,y),t=st.ed.tool,base=p.base?p.base[i]:-1;
+  if(t==='paint'){const P=st.ed.paint;if(!P)return;setE(k,base===PAL_BY.get(P).i?undefined:P,ch)}
+  else if(t==='erase')setE(k,base<0?undefined:'',ch);
+  const v=E.col[k];p.c[i]=v===undefined?base:v===''?-1:PAL_BY.get(v).i;
+}
+function describe(t,ch){
+  const n=ch.length;
+  return t==='paint'?`Painted ${units(n)} ${st.ed.paint}`:t==='erase'?`Erased ${units(n)}`:t==='fill'?`Filled ${units(n)} with ${st.ed.paint}`:`Changed ${units(n)}`;
+}
+function pushUndo(what,ch){undoStack.push({what,ch});if(undoStack.length>100)undoStack.shift();redoStack=[]}
+function afterEdit(){saveEdits();redraw()}
+function needs(){if((st.ed.tool==='paint'||st.ed.tool==='fill')&&!st.ed.paint){note('Pick a paint colour first: tap a swatch, or use Pick on the grid.');return false}return true}
+/* one tap: fill and pick act once; the other tools change one cell */
+function strokeAt(i){
+  if(!pattern||i<0)return;sel=i;const t=st.ed.tool,p=pattern;
+  if(t==='pick'){if(p.c[i]<0){note('That '+APP.unit.one+' is empty. Tap a coloured one to pick its colour.');refresh();return}
+    st.ed.paint=APP.palette[p.c[i]].name;st.ed.tool='paint';saveSettings();note('Picked '+st.ed.paint+'. Paint is ready.');sync();refresh();return}
+  if(!needs())return;
+  const ch=[];
+  if(t==='fill'){
+    const target=p.c[i],ci=PAL_BY.get(st.ed.paint).i;
+    if(target===ci){note('That is already '+st.ed.paint+'.');refresh();return}
+    const seen=new Uint8Array(p.W*p.H),q=[i];seen[i]=1;
+    while(q.length){const j=q.pop(),x=j%p.W,y=(j-x)/p.W,base=p.base?p.base[j]:-1;setE(keyXY(x,y),base===ci?undefined:st.ed.paint,ch);
+      for(const n of[x>0?j-1:-1,x<p.W-1?j+1:-1,y>0?j-p.W:-1,y<p.H-1?j+p.W:-1])if(n>=0&&!seen[n]&&p.c[n]===target){seen[n]=1;q.push(n)}}
+  }else applyTool(i,ch);
+  if(!ch.length){note(t==='erase'?'That '+APP.unit.one+' is already empty.':'Nothing to change there.');refresh();return}
+  pushUndo(describe(t,ch),ch);note(describe(t,ch)+'.');afterEdit();
+}
+TAP.edit=i=>strokeAt(i);
+let stroke=null,strokeRaf=0,dirty=[];
+function line(a,b){   /* the cells on a straight line between two cells, so a fast drag leaves no gaps */
+  const W=pattern.W,x0=a%W,y0=(a-x0)/W,x1=b%W,y1=(b-x1)/W,n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0)),o=[];
+  for(let s=1;s<=n;s++)o.push(Math.round(y0+(y1-y0)*s/n)*W+Math.round(x0+(x1-x0)*s/n));return o;
+}
+$('board').addEventListener('pointerdown',e=>{
+  if(st.tap!=='edit'||!shown())return;
+  const i=cellAt(e);if(i<0)return;e.preventDefault();
+  const t=st.ed.tool;if(t==='pick'||t==='fill'){strokeAt(i);return}
+  if(!needs())return;
+  stroke={ch:[],last:i,t};$('board').setPointerCapture(e.pointerId);sel=i;applyTool(i,stroke.ch);patchCells([i]);refresh();
+});
+$('board').addEventListener('pointermove',e=>{
+  if(!stroke)return;const i=cellAt(e);if(i<0||i===stroke.last)return;
+  for(const j of line(stroke.last,i)){applyTool(j,stroke.ch);dirty.push(j)}stroke.last=i;sel=i;
+  if(!strokeRaf)strokeRaf=requestAnimationFrame(()=>{strokeRaf=0;patchCells(dirty);dirty=[];refresh()});
+});
+function endStroke(){
+  if(!stroke)return;const s=stroke;stroke=null;
+  if(s.ch.length){pushUndo(describe(s.t,s.ch),s.ch);note(describe(s.t,s.ch)+'.')}
+  else note(s.t==='erase'?'That '+APP.unit.one+' is already empty.':'Nothing to change there.');
+  afterEdit();
+}
+$('board').addEventListener('pointerup',endStroke);
+$('board').addEventListener('pointercancel',endStroke);
+function replay(d,dir){for(const[k,before,after]of(dir?d.ch:[...d.ch].reverse())){const v=dir?after:before;if(v===undefined)delete E.col[k];else E.col[k]=v}}
+$('undo').addEventListener('click',()=>{const d=undoStack.pop();if(!d)return;replay(d,0);redoStack.push(d);note('Undid: '+d.what+'.');afterEdit()});
+$('redo').addEventListener('click',()=>{const d=redoStack.pop();if(!d)return;replay(d,1);undoStack.push(d);note('Redid: '+d.what+'.');afterEdit()});
+$('clearEdits').addEventListener('click',()=>{
+  const ch=[];for(const k in E.col)ch.push([k,E.col[k],undefined]);
+  if(!ch.length){note('There are no edits to clear.');return}
+  replay({ch},1);pushUndo('cleared '+plural(ch.length,'edit'),ch);note('Cleared '+plural(ch.length,'edit')+'. Undo brings them back.');afterEdit();
+});
+$('paintSw').addEventListener('click',e=>{const b=e.target.closest('[data-pc]');if(!b)return;st.ed.paint=APP.palette[+b.dataset.pc].name;if(st.ed.tool!=='fill')st.ed.tool='paint';saveSettings();sync()});
+watch(/^ed\./,()=>{note('');saveSettings();sync();refresh()});
+HOOK.sync.push(()=>{
+  const ed=st.tap==='edit'&&shown();$('editBar').hidden=!ed;$('board').classList.toggle('editing',ed);$('board').classList.toggle('lock',ed);
+  if(!ed)return;
+  const t=st.ed.tool;$('brushColour').hidden=!(t==='paint'||t==='fill');
+  const pc=st.ed.paint?PAL_BY.get(st.ed.paint):null;$('paintDot').style.background=pc?pc.hex:'transparent';txt('paintName',pc?pc.name:'Pick a colour');
+  fillBox('paintSw',APP.palette.map((c,i)=>`<button type="button" class="swb" data-pc="${i}" style="background:${c.hex}" title="${esc(c.name)}" aria-label="Paint ${esc(c.name)}" aria-pressed="${st.ed.paint===c.name}"></button>`).join(''));
+  $('undo').disabled=!undoStack.length;$('redo').disabled=!redoStack.length;$('clearEdits').disabled=!editCount();
+});
+
+/* ---------- progress: mark cells placed while you build, with a colour legend ----------
+   Progress is kept per pattern, so going back to an earlier version of a pattern brings its ticks back. */
+addSettings({fade:true,iso:null},{tap:['mark']},{},(o,s)=>{o.iso=Number.isInteger(s.iso)&&s.iso>=0&&s.iso<APP.palette.length?s.iso:null});
+let prog=new Set(),progKey='',pendingProg=null;
+const saveProg=()=>{if(progKey)prog.size?store.set(progKey,[...prog]):store.del(progKey)};
+function loadProg(carry){
+  if(!shown()){prog=new Set();progKey='';return}
+  const p=pattern,key=KEY+'prog:'+p.W+'x'+p.H+':'+hashStr(Array.from(p.c).join(','));
+  if(key===progKey)return;
+  const had=prog;progKey=key;const v=store.get(key);
+  prog=new Set(Array.isArray(v)?v.filter(k=>typeof k==='string'):[]);
+  if(pendingProg){if(pendingProg.W===p.W&&pendingProg.H===p.H){prog=new Set(pendingProg.keys);saveProg()}pendingProg=null}
+  else if(carry&&!Array.isArray(v)&&had.size){   /* the pattern changed by an edit: keep the ticks on cells that still have a colour */
+    for(const k of had){const[x,y]=k.split(',').map(Number);if(x<p.W&&y<p.H&&p.c[y*p.W+x]>=0)prog.add(k)}saveProg()}
+}
+HOOK.after.push(why=>loadProg(why==='edit'));
+const kOf=i=>{const x=i%pattern.W;return x+','+(i-x)/pattern.W};
+function toggle(i,force){if(pattern.c[i]<0)return;const k=kOf(i),on=force===undefined?!prog.has(k):force;on?prog.add(k):prog.delete(k)}
+TAP.mark=i=>{toggle(i);saveProg()};
+STATUS.push(i=>prog.has(kOf(i))?', placed':', not placed yet');
+ALPHA.push(i=>{const c=pattern.c[i];if(st.iso!=null&&c!==st.iso)return 0.14;return st.fade&&c>=0&&prog.has(kOf(i))?0.3:1});
+function markWhere(pred,val){const p=pattern;for(let i=0;i<p.W*p.H;i++)if(p.c[i]>=0&&pred(i))toggle(i,val);saveProg();refresh()}
+$('legend').addEventListener('click',e=>{const b=e.target.closest('.crow');if(!b)return;const c=+b.dataset.c;st.iso=st.iso===c?null:c;saveSettings();refresh()});
+$('isoMark').addEventListener('click',()=>markWhere(i=>pattern.c[i]===st.iso,true));
+$('isoClear').addEventListener('click',()=>markWhere(i=>pattern.c[i]===st.iso,false));
+twoTap('resetProg','Tap again to clear all progress',()=>{prog.clear();saveProg();refresh();say('Progress cleared.')});
+watch(/^fade$/,()=>{saveSettings();refresh()});
+function progress(){
+  const has=shown();$('progGroup').hidden=!has;if(!has)return;
+  const p=pattern,cnt=new Map();let tot=0,done=0;
+  for(let i=0;i<p.W*p.H;i++){const c=p.c[i];if(c<0)continue;tot++;const r=cnt.get(c)||[0,0];r[0]++;if(prog.has(kOf(i))){r[1]++;done++}cnt.set(c,r)}
+  $('barFill').style.width=tot?(100*done/tot)+'%':'0';
+  txt('pct',`${done.toLocaleString()} of ${units(tot)} placed`+(tot?` (${Math.round(100*done/tot)}%)`:''));
+  if(st.iso!=null&&!cnt.has(st.iso))st.iso=null;
+  const rows=[...cnt.keys()].sort((a,b)=>cnt.get(b)[0]-cnt.get(a)[0]||a-b);
+  fillBox('legend',rows.map(c=>{const P=APP.palette[c],[n,d]=cnt.get(c);
+    return`<button type="button" class="crow${d===n?' done':''}" data-c="${c}" aria-pressed="${st.iso===c}"><span class="dot" style="background:${P.hex}"></span><span class="nm">${esc(P.name)}</span><span class="ct">${d}/${n}</span></button>`}).join(''));
+  $('isoBtns').hidden=st.iso==null;
+  if(st.iso!=null)txt('isoName',APP.palette[st.iso].name);
+}
+HOOK.refresh.push(progress);
+
+/* ---------- project files: the picture, every setting, the edits and the progress in one file, so the work reopens exactly ---------- */
+const PROJ_MAX=30e6;
+HOOK.load.push(()=>{const nm=store.get(KEY+'name');if(typeof nm==='string')$('projName').value=nm.slice(0,60)});
+$('projName').addEventListener('change',()=>store.set(KEY+'name',$('projName').value.trim().slice(0,60)));
+function makeProject(){
+  const o={app:SPEC.code,version:VERSION,core:SPEC.core,saved:new Date().toISOString(),name:$('projName').value.trim().slice(0,60)||SPEC.code+' project',settings:st};
+  if(HAS.edit)o.edits=E;
+  if(HAS.picture)o.image=srcUrl||null;
+  if(HAS.progress&&shown())o.progress={W:pattern.W,H:pattern.H,keys:[...prog]};
+  if(APP.projectOut)o.data=APP.projectOut();
+  return JSON.stringify(o);
+}
+$('projSave').addEventListener('click',()=>saveFile(fileBase()+SPEC.ext,new Blob([makeProject()],{type:'application/json'}),$('projMsg')));
+$('projIn').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  if(f.size>PROJ_MAX){txt('projMsg','That file is too big to be a '+SPEC.code+' project.');return}
+  const rd=new FileReader();rd.onload=()=>openProject(String(rd.result));rd.onerror=()=>txt('projMsg','That file could not be read.');rd.readAsText(f);
+});
+function openProject(text){
+  let o;try{o=JSON.parse(text)}catch(e){txt('projMsg','That file isn’t a '+SPEC.code+' project.');return}
+  if(!o||typeof o!=='object'||![SPEC.code,...(SPEC.oldCodes||[])].includes(o.app)){txt('projMsg','That file isn’t a '+SPEC.code+' project.');return}
+  st=tidy(o.settings);saveSettings();
+  if(HAS.edit){E=tidyEdits(o.edits);undoStack=[];redoStack=[];saveEdits()}
+  if(HAS.progress){const P=o.progress;pendingProg=P&&Number.isInteger(P.W)&&Number.isInteger(P.H)&&Array.isArray(P.keys)?{W:P.W,H:P.H,keys:P.keys.filter(k=>typeof k==='string'&&/^\d{1,4},\d{1,4}$/.test(k)).slice(0,200000)}:null;progKey=''}
+  if(APP.projectIn)APP.projectIn(o.data);
+  const name=typeof o.name==='string'?o.name.slice(0,60):'';$('projName').value=name;store.set(KEY+'name',name);
+  txt('projMsg','Opened “'+(name||'the project')+'”.');say('Project opened.');
+  if(HAS.picture){
+    if(typeof o.image==='string'&&/^data:image\/(png|jpeg|webp|gif);base64,/.test(o.image)){loadImage(o.image,false);return}
+    srcImg=null;imgCv=null;srcUrl='';store.del(KEY+'img');
+  }
+  rebuild();
+}
+
+/* ---------- export: a picture of the pattern, and lists to copy or save ---------- */
+function paintPNG(){
+  const p=pattern,U=Math.max(8,Math.floor(2400/Math.max(p.Wpx,p.Hpx))),cv=document.createElement('canvas');
+  cv.width=Math.ceil(p.Wpx*U);cv.height=Math.ceil(p.Hpx*U);const g=cv.getContext('2d');
+  g.fillStyle='#FFFFFF';g.fillRect(0,0,cv.width,cv.height);
+  for(let by=0;by<p.down;by++)for(let bx=0;bx<p.across;bx++){g.fillStyle='#DCE1E8';g.fillRect((PAD-.1+bx*(p.bw+GAP))*U,(PAD-.1+by*(p.bh+GAP))*U,(p.bw+.2)*U,(p.bh+.2)*U)}
+  for(let i=0;i<p.W*p.H;i++){const x=i%p.W,y=(i-x)/p.W,X=p.X(x)*U,Y=p.Y(y)*U,c=p.c[i];
+    const dot=(r,f)=>{g.beginPath();g.arc(X,Y,r*U,0,Math.PI*2);g.fillStyle=f;g.fill()};
+    if(c<0){dot(0.2,'#B4BBC6');continue}
+    const hex=APP.palette[c].hex;
+    if(APP.cellPaint&&APP.cellPaint(g,{i,x,y,cx:X,cy:Y,c,hex},U)!==false)continue;
+    if(SHAPE==='square'||SHAPE==='stud'){g.fillStyle=hex;g.fillRect(X-U/2,Y-U/2,U+0.5,U+0.5)}
+    else if(SHAPE==='rounded'){g.fillStyle=hex;g.beginPath();if(g.roundRect)g.roundRect(X-.46*U,Y-.46*U,.92*U,.92*U,.2*U);else g.rect(X-.46*U,Y-.46*U,.92*U,.92*U);g.fill()}
+    else dot(0.46,hex);
+    if(SHAPE==='stud'){g.beginPath();g.arc(X,Y,0.3*U,0,Math.PI*2);g.fillStyle='rgba(255,255,255,.16)';g.fill();g.strokeStyle='rgba(0,0,0,.3)';g.lineWidth=0.06*U;g.stroke()}
+    if(SHAPE==='bead')dot(0.16,'#DCE1E8');
+  }
+  return cv;
+}
+$('pngSave').addEventListener('click',()=>{
+  if(!shown())return;
+  paintPNG().toBlob(b=>{if(b)saveFile(fileBase()+'.png',b,$('pngMsg'));else txt('pngMsg','The picture could not be made here.')},'image/png');
+});
+const placedOf=i=>HAS.progress&&prog.has(kOf(i))?'yes':'no';
+const LISTS=[
+  {id:'colours',label:'Colour counts (CSV)',ext:'.csv',make(){
+    const p=pattern,cnt=new Map();for(let i=0;i<p.W*p.H;i++){const c=p.c[i];if(c<0)continue;const r=cnt.get(c)||[0,0];r[0]++;if(placedOf(i)==='yes')r[1]++;cnt.set(c,r)}
+    return'colour,code,hex,count,placed\n'+[...cnt.keys()].sort((a,b)=>cnt.get(b)[0]-cnt.get(a)[0]||a-b).map(c=>{const P=APP.palette[c];return[csv(P.name),csv(P.code),P.hex,cnt.get(c)[0],cnt.get(c)[1]].join(',')}).join('\n')}},
+  {id:'cells',label:'Every '+APP.unit.one+' (CSV)',ext:'.csv',make(){
+    const p=pattern,many=p.across>1||p.down>1,out=[(many?'board_across,board_down,column,row,':'')+'overall_column,overall_row,colour,code,placed'];
+    for(let i=0;i<p.W*p.H;i++){const c=p.c[i];if(c<0)continue;const x=i%p.W,y=(i-x)/p.W,P=APP.palette[c];
+      out.push((many?[Math.floor(x/p.bw)+1,Math.floor(y/p.bh)+1,x%p.bw+1,y%p.bh+1,'']:[]).join(',')+[x+1,y+1,csv(P.name),csv(P.code),placedOf(i)].join(','))}
+    return out.join('\n')}}];
+const allLists=()=>LISTS.concat(APP.lists||[]);
+HOOK.start.push(()=>{$('expKind').innerHTML=allLists().map(l=>`<option value="${esc(l.id)}">${esc(l.label)}</option>`).join('')});
+function exportText(){if(!shown())return'';const l=allLists().find(l=>l.id===$('expKind').value)||allLists()[0];return l?l.make():''}
+$('expDetails').addEventListener('toggle',()=>{if($('expDetails').open)$('expText').value=exportText()});
+$('expKind').addEventListener('change',()=>{$('expText').value=exportText()});
+HOOK.after.push(()=>{if($('expDetails').open)$('expText').value=exportText()});
+$('copyBtn').addEventListener('click',async()=>{const t=$('expText');t.value=exportText();
+  try{await navigator.clipboard.writeText(t.value);txt('copyMsg','Copied.')}catch(e){t.select();txt('copyMsg','The list is selected: copy it with Ctrl+C or ⌘C.')}});
+$('listSave').addEventListener('click',()=>{const l=allLists().find(l=>l.id===$('expKind').value);if(!l||!shown())return;
+  saveFile(fileBase()+'-'+l.id+(l.ext||'.txt'),new Blob([l.make()],{type:'text/plain'}),$('copyMsg'))});
+HOOK.sync.push(()=>{const ok=shown();$('pngSave').disabled=!ok;$('listSave').disabled=!ok;$('copyBtn').disabled=!ok});
+
+/* ==== APP CODE START ==== */
+/* TIG's own code. Everything between the APP CODE markers is kept when the generator upgrades the core.
+   It runs once, before start-up, so read settings (st) inside functions and hooks, not at the top level.
+   Hooks (all optional):
+     APP.describe = (x, y, c) => ({name, where})   the readout for a tapped cell (c is a palette number, -1 if empty)
+     APP.cellSvg = cell => 'svg markup'            how one cell is drawn; cell.cx, cell.cy is its centre, 1 is one cell wide
+     APP.cellPaint = (g, cell, u) => {}            the same for Save picture, on a canvas with u pixels per cell
+     APP.lists.push({id, label, ext, make})        more lists under Export; make() returns the text
+     APP.onPattern = p => {}                       change the pattern after every rebuild (p.W, p.H, p.c = palette numbers)
+     APP.onSync, APP.onRefresh, APP.onStart        keep your controls in step, after each redraw, once at start-up
+     APP.projectOut = () => data, APP.projectIn = data => {}   your own data in project files (tidy what you read)
+   Your own settings: addSettings({mine:{on:false}}) here, then <input type="checkbox" data-k="mine.on"> in APP PANELS.
+   Helpers: $, esc, clamp, plural, units, txt, say, store (keys start with KEY), saveFile, csv, watch, rebuild, sync, refresh. */
+/* ==== APP CODE END ==== */
+
+start();
+})();
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>

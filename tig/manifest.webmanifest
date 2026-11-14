@@ -1,0 +1,28 @@
+{
+  "name": "TIG: Tile Image Generator",
+  "short_name": "TIG",
+  "description": "Turn a picture into a tile mosaic on mesh sheets, then follow it tile by tile. Everything stays in this browser.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F5F8",
+  "theme_color": "#7A3FB0",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
