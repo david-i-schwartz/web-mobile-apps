@@ -1,0 +1,6 @@
+{
+  "_note": "Settings file for Mechanics Overlay Lab's optional AI tutor. Leave baseUrl empty so each person picks their own AI. A school hosting its own copy can fill in label, baseUrl and model. Never put an API key here: anyone can read this file.",
+  "label": "",
+  "baseUrl": "",
+  "model": ""
+}

@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IPAR: Image, Preserve, Analyze, Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a cork case board (left) beside a case-file panel (right); stacks on phones. Heritage: the 2015 IPAR teal frame around a tan cork board. */
+:root{
+  --bg:#e9efed; --chrome:#f5f8f7; --chrome-2:#d6e1de; --line:#c3d1cd;
+  --ink:#16272a; --ink-2:#4a5f62; --ink-3:#6d8184;
+  --teal:#0d6b6f; --teal-ink:#0a5356; --teal-soft:#d4ebe9;
+  --cork:#c69a69; --cork-2:#b9895a; --cork-dot:#a87b4e; --frame:#6e4c2d;
+  --string:#b3261e; --contra:#2457a6; --thread:#5b4330;
+  --good:#2d7a39; --good-soft:#dcefdc; --warn:#9a6200; --warn-soft:#f6e7c8; --bad:#b3261e; --bad-soft:#f6d9d5;
+  --card-ink:#231f1a; --card-ink-2:#5d5448;
+  --f-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --f-ui:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --f-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1517; --chrome:#11201f; --chrome-2:#1c3133; --line:#29433f;
+  --ink:#e3eeec; --ink-2:#a7bbb8; --ink-3:#7f9592;
+  --teal:#56c2bd; --teal-ink:#8fe0da; --teal-soft:#16393a;
+  --cork:#8d6a46; --cork-2:#7e5e3d; --cork-dot:#6f5234; --frame:#3a2918;
+  --string:#e8584c; --contra:#73a0ee; --thread:#2b1f14;
+  --good:#71cf7c; --good-soft:#173321; --warn:#e3aa3e; --warn-soft:#3a2c10; --bad:#f06b5f; --bad-soft:#3d1916;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0b1517; --chrome:#11201f; --chrome-2:#1c3133; --line:#29433f;
+  --ink:#e3eeec; --ink-2:#a7bbb8; --ink-3:#7f9592;
+  --teal:#56c2bd; --teal-ink:#8fe0da; --teal-soft:#16393a;
+  --cork:#8d6a46; --cork-2:#7e5e3d; --cork-dot:#6f5234; --frame:#3a2918;
+  --string:#e8584c; --contra:#73a0ee; --thread:#2b1f14;
+  --good:#71cf7c; --good-soft:#173321; --warn:#e3aa3e; --warn-soft:#3a2c10; --bad:#f06b5f; --bad-soft:#3d1916;
+  color-scheme:dark;}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-ui);}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.app{display:grid;grid-template-rows:auto 1fr;grid-template-columns:minmax(0,1fr);height:100%;min-height:0}
+/* header */
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--chrome);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand b{font:700 22px/1 var(--f-display);letter-spacing:.06em;color:var(--teal-ink)}
+.brand span{font:600 14px/1.2 var(--f-display);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phases{display:flex;gap:4px;flex:1 1 auto;justify-content:center;min-width:0;overflow-x:auto;scrollbar-width:none}
+.phase{border:1px solid transparent;background:none;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);display:flex;gap:6px;align-items:center;white-space:nowrap}
+.phase[aria-current="true"]{background:var(--teal);color:var(--chrome)}
+.phase.done:not([aria-current="true"]){color:var(--teal-ink)}
+.phase:disabled{cursor:not-allowed;opacity:.55}
+.phase .n{font:600 11px var(--f-mono);opacity:.75}
+.status{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--chrome);white-space:nowrap}
+.chip i{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+.chip.good{color:var(--good);background:var(--good-soft);border-color:transparent}
+.chip.warn{color:var(--warn);background:var(--warn-soft);border-color:transparent}
+.chip.bad{color:var(--bad);background:var(--bad-soft);border-color:transparent}
+.btn{border:1px solid var(--line);background:var(--chrome);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600}
+.btn:hover{border-color:var(--teal)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--chrome)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+/* stage */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 420px;min-height:0}
+.boardwrap{position:relative;display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--frame);padding:10px}
+.boardhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 8px;color:#f4e9da}
+.boardhead h2{margin:0;font:600 15px/1.2 var(--f-display);letter-spacing:.03em}
+.boardhead h2 small{font:500 12px var(--f-ui);opacity:.75;margin-left:8px;letter-spacing:0}
+.boardctl{display:flex;gap:4px}
+.boardctl button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#f4e9da;border-radius:6px;min-width:34px;height:32px;font-size:13px;font-weight:600;padding:0 8px}
+.boardctl button[aria-pressed="true"]{background:#f4e9da;color:#3a2918}
+#board{flex:1 1 auto;min-height:0;width:100%;border-radius:6px;touch-action:none;user-select:none;-webkit-user-select:none;background:var(--cork);display:block}
+.boardlist{flex:1 1 auto;overflow:auto;background:var(--cork);border-radius:6px;padding:12px;display:grid;gap:8px;align-content:start}
+.boardlist button{display:flex;gap:10px;align-items:flex-start;text-align:left;background:#fbf7ec;color:var(--card-ink);border:1px solid rgba(0,0,0,.15);border-radius:6px;padding:10px 12px}
+.boardlist .k{font:600 11px var(--f-mono);text-transform:uppercase;color:var(--card-ink-2);min-width:76px}
+/* panel */
+.panel{display:flex;flex-direction:column;min-height:0;background:var(--chrome);border-left:1px solid var(--line)}
+.tabs{display:flex;border-bottom:1px solid var(--line);padding:0 8px}
+.tab{flex:1;border:0;background:none;padding:12px 6px 10px;font-size:13px;font-weight:600;color:var(--ink-3);border-bottom:2px solid transparent;position:relative}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--teal)}
+.tab .dot{position:absolute;top:8px;margin-left:3px;width:7px;height:7px;border-radius:50%;background:var(--string)}
+.panelbody{flex:1 1 auto;overflow:auto;padding:18px 20px 28px;min-height:0}
+.kicker{font:600 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.ptitle{font:600 23px/1.2 var(--f-display);margin:4px 0 10px;text-wrap:balance}
+.pbody{color:var(--ink-2);margin:0 0 12px}
+.prompt{font-weight:600;margin:14px 0 10px}
+.opts{display:grid;gap:8px}
+.opt{display:grid;grid-template-columns:26px 1fr;gap:8px;text-align:left;border:1px solid var(--line);background:var(--chrome);border-radius:8px;padding:10px 12px;line-height:1.4}
+.opt:hover:not(:disabled){border-color:var(--teal);background:var(--teal-soft)}
+.opt .l{font:700 13px/1.4 var(--f-mono);color:var(--teal-ink)}
+.opt:disabled{cursor:default}
+.opt.chosen{border-width:2px}
+.opt.r-best{border-color:var(--good)} .opt.r-acceptable{border-color:var(--warn)} .opt.r-harmful{border-color:var(--bad)}
+.opt.dim{opacity:.55}
+.fb{border-radius:8px;padding:12px 14px;margin-top:12px;border:1px solid var(--line);background:var(--chrome)}
+.fb.best{background:var(--good-soft);border-color:transparent}
+.fb.acceptable{background:var(--warn-soft);border-color:transparent}
+.fb.harmful{background:var(--bad-soft);border-color:transparent}
+.fb.neutral{background:var(--teal-soft);border-color:transparent}
+.fb p{margin:6px 0 0}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font:700 11px/1.5 var(--f-mono);letter-spacing:.05em;text-transform:uppercase}
+.pill.best{background:var(--good);color:var(--chrome)} .pill.acceptable{background:var(--warn);color:var(--chrome)} .pill.harmful{background:var(--bad);color:var(--chrome)}
+.pill.plain{background:var(--chrome-2);color:var(--ink-2)}
+.hint{margin-top:14px;font-size:13px;color:var(--ink-2)}
+.hint button{border:0;background:none;color:var(--teal-ink);font-weight:600;padding:0;text-decoration:underline;text-underline-offset:3px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stack{display:grid;gap:10px}
+select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg);color:var(--ink);font:inherit;min-height:44px}
+input[type=text],textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:84px;resize:vertical}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.hashgrid{display:grid;gap:6px;margin:10px 0;font:12.5px/1.45 var(--f-mono)}
+.hashgrid div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px}
+.hashgrid span:first-child{color:var(--ink-3);font-family:var(--f-ui);font-size:12px}
+.hashgrid code{word-break:break-all}
+.needs{display:grid;gap:6px;margin:10px 0;padding:0;list-style:none}
+.needs li{display:flex;gap:8px;align-items:center;font-size:14px}
+.needs li .box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink-3);display:inline-grid;place-items:center;font-size:12px;flex:none}
+.needs li.ok .box{background:var(--good);border-color:var(--good);color:var(--chrome)}
+.callout{margin-top:16px;padding:12px 14px;border-radius:8px;background:var(--teal-soft);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+/* bench */
+.tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tool{border:1px solid var(--line);background:var(--chrome);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.tool[aria-pressed="true"]{background:var(--ink);color:var(--chrome);border-color:var(--ink)}
+.tool:disabled{opacity:.45;cursor:not-allowed}
+.tooldesc{font-size:13px;color:var(--ink-2);margin:0 0 12px}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.tbl th{text-align:left;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);border-bottom:1px solid var(--line);padding:6px 6px}
+.tbl td{border-bottom:1px solid var(--line);padding:7px 6px;vertical-align:top}
+.tbl tr.del td{color:var(--bad)}
+.tbl tr.vol td{color:var(--ink-3)}
+.tbl .name{font-family:var(--f-mono);font-weight:600;white-space:nowrap}
+.scroll{overflow-x:auto;max-width:100%}
+.entry{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:4px}
+.entry.del{border-color:var(--bad)}
+.entry .name{font:700 14px var(--f-mono)}
+.entry .meta{font:12px/1.5 var(--f-mono);color:var(--ink-2)}
+.entry .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.sm{border:1px solid var(--line);background:var(--chrome);border-radius:6px;padding:3px 9px;font-size:12px;font-weight:600}
+.sm.pin{border-color:var(--string);color:var(--string)}
+.sm.pin[disabled]{border-color:var(--line);color:var(--ink-3)}
+.hex{font:12px/1.55 var(--f-mono);white-space:pre;overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.hex .z{color:var(--ink-3)} .hex .e5{background:var(--bad);color:var(--chrome);border-radius:2px} .hex .sig{background:var(--teal);color:var(--chrome);border-radius:2px} .hex .off{color:var(--teal-ink)}
+.filetext{font:12.5px/1.55 var(--f-mono);white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;max-height:300px;overflow:auto}
+.cmp mark{background:var(--warn-soft);color:var(--ink);border-bottom:2px solid var(--warn);padding:0 1px}
+.cmpcols{display:grid;grid-template-columns:1fr;gap:10px}
+.progress{height:6px;background:var(--chrome-2);border-radius:3px;overflow:hidden;margin:8px 0}
+.progress i{display:block;height:100%;background:var(--teal);width:0;transition:width .5s}
+.imgprev{border:1px solid var(--line);border-radius:8px;max-width:100%;display:block;margin-top:8px}
+/* inbox & evidence lists */
+.msg{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:var(--chrome)}
+.msg.unread{border-left:3px solid var(--string)}
+.msg h4{margin:2px 0 6px;font:600 16px/1.3 var(--f-display)}
+.msg p{margin:6px 0 0;color:var(--ink-2);font-size:14px}
+.evi{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:grid;gap:3px}
+.evi b{font-family:var(--f-display);font-size:16px}
+.evi small{color:var(--ink-3);font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.05em}
+/* board svg */
+.card{cursor:pointer}
+.card:focus{outline:none}
+.card:focus-visible .paper{stroke:var(--teal);stroke-width:4}
+.card.sel .paper{stroke:var(--teal);stroke-width:4}
+.card.pick .paper{stroke:var(--string);stroke-width:4}
+.card.fresh{animation:fresh 1.2s ease-out 2}
+@keyframes fresh{0%{opacity:.35}100%{opacity:1}}
+.strings line{transition:opacity .3s}
+@media (prefers-reduced-motion: reduce){.card.fresh{animation:none}.progress i{transition:none}}
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(8,18,19,.62);display:grid;place-items:start center;overflow:auto;
+  padding-block:max(24px,env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet{background:var(--chrome);color:var(--ink);border-radius:14px;width:min(980px,100%);padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.35);margin-bottom:24px}
+.sheet h1{font:700 44px/1 var(--f-display);letter-spacing:.06em;margin:0;color:var(--teal-ink)}
+.sheet h2{font:600 26px/1.2 var(--f-display);margin:0 0 8px;text-wrap:balance}
+.sheet h3{font:600 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:22px 0 10px}
+.lede{font:500 17px/1.5 var(--f-display);color:var(--ink-2);max-width:62ch;margin:10px 0 0}
+.ipar{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.ipar span{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--ink-2)}
+.ipar span b{color:var(--string)}
+.cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.case{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:6px;align-content:start;background:var(--chrome)}
+.case.live{border:2px solid var(--teal);background:var(--teal-soft)}
+.case h4{margin:0;font:600 18px/1.25 var(--f-display)}
+.case p{margin:0;font-size:13px;color:var(--ink-2)}
+.case .meta{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3)}
+.case.soon{opacity:.72}
+.modes{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.modes button{border:0;background:none;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--chrome)}
+.howto{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.howto li{font-size:14px;color:var(--ink-2)}
+.howto li b{display:block;color:var(--ink);font-family:var(--f-display);font-size:16px}
+.fine{font-size:12px;color:var(--ink-3);margin-top:20px}
+.brief p{font:16px/1.6 var(--f-display);color:var(--ink);max-width:66ch}
+.form{border:1px dashed var(--ink-3);border-radius:8px;padding:12px 14px;font:12.5px/1.6 var(--f-mono);margin-top:14px;display:grid;gap:2px}
+.form b{font-family:var(--f-ui)}
+.stars{font-size:30px;letter-spacing:4px;color:var(--warn)}
+.stars .off{color:var(--chrome-2)}
+.bars{display:grid;gap:8px;max-width:520px}
+.bar{display:grid;grid-template-columns:110px 1fr 48px;gap:10px;align-items:center;font-size:13px}
+.bar .t{height:10px;border-radius:5px;background:var(--chrome-2);overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--teal)}
+.bar .v{font:600 12px var(--f-mono);text-align:right}
+.path td:nth-child(3){white-space:nowrap}
+.itabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.code{font:12px/1.5 var(--f-mono);white-space:pre;overflow:auto;max-height:52vh;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:14px}
+.checks li .m{font-weight:700} .checks li.ok .m{color:var(--good)} .checks li.no .m{color:var(--bad)}
+.checks small{display:block;color:var(--ink-3)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(30px);opacity:0;z-index:60;background:var(--ink);color:var(--chrome);padding:10px 16px;border-radius:8px;font-size:14px;font-weight:600;transition:all .25s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.links{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.links a{color:var(--teal-ink);font-weight:600}
+.versions{margin:0;padding:0;list-style:none;display:grid;gap:10px;font-size:14px}
+.versions b{font-family:var(--f-mono);font-size:12px}
+.versions ul{margin:4px 0 0;padding-left:18px;color:var(--ink-2)}
+.nojs{max-width:34em;margin:40px auto;padding:20px;font:17px/1.5 var(--f-ui);color:var(--ink)}
+.nojs a{color:var(--teal-ink);word-break:break-all}
+@media (pointer:coarse){.btn,.sm,.tool,.tab,.phase,.boardctl button,.modes button{min-height:44px}.sm{padding:6px 12px}.hint button{min-height:44px}}
+/* narrow */
+@media (max-width:900px){
+  .app{height:auto;min-height:100%}
+  .stage{grid-template-columns:1fr}
+  .boardwrap{height:58vh;min-height:360px;padding:8px}
+  .panel{border-left:0;border-top:1px solid var(--line)}
+  .panelbody{overflow:visible;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .phases{order:3;flex-basis:100%;justify-content:flex-start}
+  .sheet{padding:20px}
+  .sheet h1{font-size:36px}
+  #scoreChip{display:none}
+  .phase{padding:6px 9px;letter-spacing:.02em}
+  .top{gap:10px}
+}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><b>IPAR</b><span id="caseName">The Copied Lab</span></div>
+    <nav class="phases" id="phases" aria-label="Investigation phases"></nav>
+    <div class="status">
+      <span id="integrity" class="chip good"><i></i>Chain intact</span>
+      <span id="scoreChip" class="chip">Score —</span>
+      <button class="btn" data-act="about">About</button>
+      <button class="btn" data-act="instructor">Instructor</button>
+      <button class="btn" data-act="cases">Cases</button>
+    </div>
+  </header>
+  <main class="stage">
+    <section class="boardwrap" aria-label="Case board">
+      <div class="boardhead">
+        <h2 id="boardTitle">Image board</h2>
+        <div class="boardctl">
+          <button data-act="zoomIn" aria-label="Zoom in">+</button>
+          <button data-act="zoomOut" aria-label="Zoom out">−</button>
+          <button data-act="fit">Fit</button>
+          <button data-act="listview" id="listBtn" aria-pressed="false">List</button>
+        </div>
+      </div>
+      <svg id="board" role="group" aria-label="Case board"></svg>
+      <div id="boardList" class="boardlist" hidden></div>
+    </section>
+    <aside class="panel" aria-label="Case file">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="panelbody" id="panel" aria-live="polite"></div>
+    </aside>
+  </main>
+</div>
+
+<div class="overlay" id="ovStart"><div class="sheet" id="startSheet"></div></div>
+<div class="overlay" id="ovBrief" hidden><div class="sheet brief" id="briefSheet"></div></div>
+<div class="overlay" id="ovDebrief" hidden><div class="sheet" id="debriefSheet"></div></div>
+<div class="overlay" id="ovInstructor" hidden><div class="sheet" id="instrSheet"></div></div>
+<div class="overlay" id="ovAbout" hidden><div class="sheet" id="aboutSheet"></div></div>
+<noscript><style>.app,.overlay,.toast{display:none!important}</style><div class="nojs"><p><b>IPAR</b></p><p>This is only a preview, so the app can't run here. To use it, open this link in Safari or Chrome:</p><p><a href="https://david-i-schwartz.github.io/web-mobile-apps/ipar/">https://david-i-schwartz.github.io/web-mobile-apps/ipar/</a></p></div></noscript>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script type="application/json" id="case-data">{"schema":"ipar-case/1","id":"copied-lab","title":"The Copied Lab","version":"demo-0.1","level":100,"minutes":20,"outcomes":["Receive evidence and document chain of custody","Acquire a device with write blocking and a bit-stream image","Verify an image with cryptographic hashes","Find and recover a deleted FAT file, and explain the 0xE5 marker","Detect a file whose signature does not match its extension","Order file-system timestamps into a timeline","Tie evidence to claims and report without overstating"],"fiction":"Fictional case. People, courses and events are invented.","brief":{"from":"Dr. M. Alvarez, Academic Integrity Office","subject":"Case AI-2026-031: two Lab 3 reports","body":["Two CSEC 101 Lab 3 reports share whole sentences. Priya Shah submitted hers on Sunday, Oct 11 at 18:52. Jordan Lee submitted his on Tuesday, Oct 13 at 08:55.","Jordan says he never had Priya's report and that the overlap comes from the shared template. He signed a consent form for an examination of a USB drive he left in the lab. Campus Security bagged it and imaged it at seizure.","Your job: image and verify the drive, find out what it can and cannot show, and send me findings the board can rely on."]},"device":{"item":"Item 01","label":"USB drive, volume JLEE_USB","bag":"IA-2026-0417","from":"Ofc. D. Okafor, Campus Security","note":"A cheap promotional stick. To keep the demo small, its volume is a 1.44 MB FAT12 file system.","imageName":"JLEE-USB-01.dd","referenceHashes":{"md5":"5677325296e006f0e892122935e9aaff","sha256":"e2c8b4c695c51b7d5bb2a3bb68f664900b57492ad810913107e431303533e749"}},"boards":[{"id":"image","name":"Image","requires":["I1","I2","I3","I4"],"next":"preserve"},{"id":"preserve","name":"Preserve","requires":["P1","P2","P3","P4"],"next":"analyze"},{"id":"analyze","name":"Analyze","requires":["A1","A2","A3","A4","A5","A6"],"next":"report"},{"id":"report","name":"Report","requires":["R0","R1"],"next":null}],"nodes":[{"id":"I1","board":"image","x":50,"y":60,"card":"form","start":true,"title":"Evidence intake","body":"Item 01 arrives in evidence bag IA-2026-0417 from Ofc. D. Okafor. The custody form lists two reference hashes taken at seizure with a write blocker.","prompt":"The bag is sealed and the custody form is attached. What do you do first?","hint":"Every handoff is a link in a chain. Which link is this?","q":{"type":"mc","options":[{"t":"Check the seal and the form against the item, then sign for it with the date and time.","r":"best","fb":"Receipt is the first link in the chain of custody. A gap here is the first thing a defense attorney looks for."},{"t":"Open the bag and plug the drive into your laptop to see what's on it.","r":"harmful","effect":"alterDevice","fb":"Your laptop wrote to the drive the moment you browsed it: last-access dates changed. The drive no longer matches the reference hash, and that will follow you into Preserve."},{"t":"Start imaging now and do the paperwork later.","r":"harmful","retry":true,"fb":"An undocumented handoff is a broken link. Sign for the item before you touch it. Choose again."}]},"unlocks":["I2"]},{"id":"I2","board":"image","x":280,"y":300,"card":"note","title":"Connect the drive","body":"Your forensic workstation is ready. The drive has no write-protect switch.","prompt":"How do you connect it?","hint":"Operating systems write to drives on their own, even when you only read.","q":{"type":"mc","options":[{"t":"Through a hardware write blocker.","r":"best","fb":"The blocker passes reads and drops every write. The drive can't change while you image it."},{"t":"Directly, after turning on the operating system's USB write-protect setting.","r":"acceptable","fb":"Software write protection works when it's set correctly, but it depends on the OS and is harder to prove later. A hardware blocker is the stronger choice."},{"t":"Directly. You'll only be reading from it.","r":"harmful","effect":"alterDevice","fb":"The OS updated last-access dates and may add its own folders. Reading without a blocker still changed the drive."}]},"unlocks":["I3"]},{"id":"I3","board":"image","x":520,"y":70,"card":"note","title":"Acquire the evidence","body":"The drive is connected. Time to capture it.","prompt":"How do you capture the drive?","hint":"In a case about a file that may have been deleted, where would that file be?","q":{"type":"mc","options":[{"t":"Make a bit-stream image of the whole device: every sector, used or not.","r":"best","effect":"acquire","fb":"A bit-stream image copies every sector, including deleted entries and unallocated space, and its hash can be checked against the original."},{"t":"Copy the files you can see to your workstation.","r":"harmful","retry":true,"fb":"A file copy keeps only live files. Deleted entries and unallocated space stay behind, and in this case that may be the evidence. Choose again."},{"t":"Clone the drive onto a second USB stick and analyze that.","r":"acceptable","effect":"acquire","fb":"A clone copies every sector, but a second physical drive is harder to hash, store and share than an image file. Most labs image to a file."}]},"unlocks":["I4"]},{"id":"I4","board":"image","x":760,"y":300,"card":"index","title":"Why is it so big?","body":"JLEE-USB-01.dd is 1,474,560 bytes. The files you can see total under 8 KB.","prompt":"What fills the rest of the image?","hint":"A bit-stream image is the size of the volume, not the size of its files.","q":{"type":"mc","options":[{"t":"Every sector of the volume: boot sector, file allocation tables, directory, and unallocated space, deleted data included.","r":"best","fb":"Right. The image mirrors the volume sector for sector, which is why deleted data is still in it."},{"t":"Padding the imaging tool adds so the file is a round size.","r":"harmful","fb":"A raw image isn't padded. Every byte in it came from the device."},{"t":"Hidden system files installed by the drive's maker.","r":"harmful","fb":"There are no hidden files on this volume. The size comes from imaging every sector."}]},"unlocks":[]},{"id":"P1","board":"preserve","x":60,"y":230,"card":"note","start":true,"title":"Hash your image","body":"Open the Bench and run the Hash tool on JLEE-USB-01.dd.","prompt":"Compute MD5 and SHA-256 of your working image.","hint":"Bench → Hash → Compute.","q":{"type":"tool","needs":"hashDone"},"unlocks":["P2"]},{"id":"P2","board":"preserve","x":300,"y":60,"card":"form","title":"Compare with the reference","body":"The custody form lists the SHA-256 Campus Security recorded at seizure.","prompt":"Compare your SHA-256 with the reference. What do you record?","hint":"Compare every character, not just the ends.","showHashes":true,"q":{"type":"mc","dynamic":"hashMatch","options":[{"t":"They match. Record both values on the custody form.","r":{"match":"best","mismatch":"harmful"},"effect":{"mismatch":"integrityBroken"},"fb":{"match":"Verified. Your image is a faithful copy of the drive as seized, and you can prove it.","mismatch":"They don't match. Recording a match that isn't there falsifies the record, and everything after this is tainted."}},{"t":"They don't match. Stop and report the mismatch before going further.","r":{"match":"harmful","mismatch":"best"},"retry":{"match":true,"mismatch":false},"unlocks":{"mismatch":["P2R"],"match":[]},"fb":{"match":"Read them again, character by character. They match. Choose again.","mismatch":"Right call. A mismatch means the image and the seized drive differ. Stop, and work out why before anything else."}},{"t":"Close enough: the first and last characters agree.","r":{"match":"harmful","mismatch":"harmful"},"retry":{"match":true,"mismatch":false},"effect":{"mismatch":"integrityBroken"},"fb":{"match":"Hashes have no 'close enough'. One changed bit changes the whole value. Compare every character. Choose again.","mismatch":"They differ. One changed bit changes the whole hash, and calling it close enough leaves your evidence undefended."}}]},"unlocks":["P3"]},{"id":"P2R","board":"preserve","x":300,"y":330,"card":"note","title":"Mismatch: what now?","body":"Your image doesn't match the drive as it was seized. The drive changed after seizure.","prompt":"How do you recover?","hint":"The reference image was made before anything changed.","q":{"type":"mc","options":[{"t":"Write down exactly what happened, tell the case lead, and work from Campus Security's reference image.","r":"best","effect":"useReference","fb":"Disclosed and documented. Your error is on the record, and the reference image, made before the change, carries the case."},{"t":"Re-image the drive with a write blocker. The new hash will match.","r":"harmful","retry":true,"fb":"The drive itself changed. A new image would match the changed drive, not the reference. Choose again."},{"t":"Keep your image and leave the mismatch out of your notes. The files look the same.","r":"harmful","effect":"integrityBroken","fb":"Undisclosed changes are how evidence gets excluded. Everything you find from here carries that taint."}]},"unlocks":["P3"]},{"id":"P3","board":"preserve","x":560,"y":90,"card":"form","title":"Chain of custody","body":"The log travels with the evidence. Someone you'll never meet should be able to check every step.","prompt":"Which custody-log entry do you sign?","hint":"Who, what, when, how, and proof.","q":{"type":"mc","options":[{"t":"Nov 6, 14:20. Received Item 01 (bag IA-2026-0417, seal intact) from Ofc. D. Okafor. Imaged through a write blocker to JLEE-USB-01.dd. Hashes recorded. Initials.","r":"best","fb":"Complete: time, item, seal, source, method, and proof."},{"t":"Received Item 01 from Ofc. Okafor and imaged it.","r":"acceptable","fb":"Better than nothing, but there's no time, no seal check and no hash. A stranger couldn't verify it."},{"t":"Got the USB from security, made a copy, looks fine.","r":"harmful","retry":true,"fb":"Who, when and how are missing. This is the entry a defense attorney reads aloud. Choose again."}]},"unlocks":["P4"]},{"id":"P4","board":"preserve","x":790,"y":300,"card":"note","title":"Pick your working copy","body":"The original goes back in the sealed bag.","prompt":"What do you analyze?","hint":"The original should come out of the bag as rarely as possible.","q":{"type":"mc","options":[{"t":"A verified copy of the image, opened read-only.","r":"best","fb":"Verified, read-only, and repeatable. Anyone can redo your analysis from the same copy."},{"t":"The original drive, so nothing is lost in copying.","r":"harmful","retry":true,"fb":"Every analysis step risks changing the original. Work on a verified copy. Choose again."},{"t":"The image file, mounted read-write so the tools run faster.","r":"harmful","retry":true,"fb":"A read-write mount can change the image and its hash. Open it read-only. Choose again."}]},"unlocks":[]},{"id":"A1","board":"analyze","x":40,"y":50,"card":"note","start":true,"title":"What's on the drive?","body":"List every directory entry, including deleted ones.","prompt":"Open Bench → Directory. Find the entry that matters to this case and pin it to the board.","hint":"FAT keeps a deleted entry's size, dates and starting cluster. Only the first letter of its name is lost.","q":{"type":"pin","needs":["E_DEL"]},"unlocks":["A2","A3","M1"]},{"id":"A2","board":"analyze","x":40,"y":330,"card":"index","title":"Why the question mark?","body":"The deleted entry shows as ?SHAH_L3.TXT.","prompt":"Why does the name start with a question mark?","hint":"Open the root directory in the Hex tool and look at that entry's first byte.","q":{"type":"mc","options":[{"t":"FAT marks a deleted entry by overwriting the first byte of its name with 0xE5.","r":"best","fb":"Right. The rest of the entry survives, so tools show the lost letter as '?'. Here it was almost certainly P."},{"t":"The file was corrupted when it was deleted.","r":"harmful","fb":"Nothing was corrupted. One byte changed, and it changed to 0xE5, FAT's deleted marker."},{"t":"Jordan renamed it with a special character to hide it.","r":"harmful","fb":"No rename is needed. Deleting a FAT file changes the first byte to 0xE5, which tools display as '?'."}]},"unlocks":[]},{"id":"A3","board":"analyze","x":290,"y":190,"card":"note","title":"Bring it back","body":"The deleted file's clusters haven't been reused.","prompt":"Recover the deleted file (Directory → Recover). Whose lab report is it?","hint":"Read the second line of the recovered text.","q":{"type":"value","accept":["priya shah","priya","shah","p shah","p. shah","priya s"],"fbRight":"It's Priya Shah's Lab 3 report, sitting deleted on Jordan's drive. Pin the recovered file if you haven't.","fbWrong":"Not what the file says. Recover it from the Directory tool and read the name line."},"effectOnSolve":"pinRecovered","unlocks":["A4","A5"]},{"id":"M1","board":"analyze","x":290,"y":450,"card":"message","title":"Jordan's statement","body":"\"I never had Priya's report. We used the same template, so of course they look alike.\" — Jordan Lee, interview notes, Oct 15","q":{"type":"message"},"unlocks":[]},{"id":"A4","board":"analyze","x":540,"y":50,"card":"note","title":"A text file that isn't","body":"Extensions are labels. File signatures are contents.","prompt":"Run Bench → Signatures. Which file's contents don't match its extension? Pin it.","hint":"Look at the first eight bytes of each file.","q":{"type":"pin","needs":["E_SIG"]},"unlocks":["A6"]},{"id":"A5","board":"analyze","x":540,"y":330,"card":"note","title":"Read them side by side","body":"Jordan says the overlap comes from the template.","prompt":"Open Bench → Compare. Pin what the two reports share.","hint":"Compare needs the recovered file. Recover it first.","q":{"type":"pin","needs":["E_CMP"]},"unlocks":["A6"]},{"id":"A6","board":"analyze","x":790,"y":190,"card":"index","title":"Put it in order","body":"Bench → Timeline lists every created, modified and accessed time on the volume.","prompt":"On the evening of Oct 12, what happened first on this drive?","hint":"Sort by time and read the Created events.","q":{"type":"mc","options":[{"t":"Priya's report was copied onto the drive (created 21:14).","r":"best","effect":"pinJordan","fb":"Right. Priya's file arrived at 21:14, the screenshot followed, and Jordan's report wasn't created until 22:03."},{"t":"Jordan's report was created (22:03).","r":"harmful","fb":"Jordan's report came 49 minutes after Priya's file arrived. Check the Created column."},{"t":"The screenshot NOTES.TXT was taken (21:15).","r":"harmful","fb":"Close. The screenshot was taken at 21:15, one minute after Priya's file arrived at 21:14."}]},"unlocks":[]},{"id":"R0","board":"report","x":380,"y":40,"card":"note","start":true,"title":"String the board","body":"Each finding needs evidence behind it. Some claims on this board have none.","prompt":"Tap an evidence card, then a claim, and choose Supports or Contradicts. Give each finding you can back at least one string.","hint":"Test Jordan's statement too: what on the drive contradicts it?","q":{"type":"strings","needs":{"C1":"supports","C2":"supports","C3":"supports","C4":"contradicts"}},"unlocks":["R1"]},{"id":"R1","board":"report","x":380,"y":480,"card":"form","title":"File your findings","body":"Dr. Alvarez will put your findings in front of the integrity board.","prompt":"Choose the findings you'll sign, and add a summary if you like.","hint":"Report what the evidence shows, and only that.","q":{"type":"report"},"unlocks":[]},{"id":"C1","board":"report","x":700,"y":20,"card":"claim","kind":"claim","title":"Priya's report was on Jordan's drive before his own report existed."},{"id":"C2","board":"report","x":700,"y":140,"card":"claim","kind":"claim","title":"Jordan's report repeats Priya's wording."},{"id":"C3","board":"report","x":700,"y":260,"card":"claim","kind":"claim","title":"Copies of Priya's report on the drive were deleted or disguised."},{"id":"C4","board":"report","x":700,"y":380,"card":"claim","kind":"claim","title":"Jordan's statement: \"I never had Priya's report.\""},{"id":"C5","board":"report","x":700,"y":500,"card":"claim","kind":"claim","title":"Jordan broke into Priya's account to take her report."}],"evidence":[{"id":"E_DEL","from":"Directory","x":40,"y":190,"title":"Deleted entry ?SHAH_L3.TXT","detail":"Created on this drive Oct 12, 21:14:36. 859 bytes from cluster 3. Name byte 0xE5.","lead":"A1","glyph":"0xE5"},{"id":"E_REC","from":"Recover","x":300,"y":310,"title":"Recovered: Priya Shah's Lab 3","detail":"859 bytes read back from clusters 3–4. Name line: Priya Shah.","lead":"A3","glyph":"859 B"},{"id":"E_SIG","from":"Signatures","x":760,"y":40,"title":"NOTES.TXT is a PNG","detail":"Header 89 50 4E 47. A screenshot of Priya's report, saved Oct 12 21:15 under a .txt name.","lead":"A4","glyph":"PNG"},{"id":"E_CMP","from":"Compare","x":790,"y":420,"title":"4 sentences match word for word","detail":"Results and Discussion in Jordan's report repeat Priya's sentences exactly.","lead":"A5","glyph":"4 ="},{"id":"E_JLEE","from":"Directory","x":540,"y":190,"title":"JLEE_L3.TXT created 22:03","detail":"Jordan's report was created on this drive Oct 12, 22:03:10, after Priya's file arrived.","lead":"A6","glyph":"22:03"},{"id":"E_TPL","from":"Directory","x":40,"y":470,"title":"TEMPLATE.TXT","detail":"The course template, downloaded Sep 8. Every student has it.","lead":"A1","glyph":"TXT"},{"id":"E_HASH","from":"Hash","x":560,"y":340,"title":"Image verified","detail":"Working image hash checked against the seizure reference.","board":"preserve","lead":"P2","glyph":"SHA-256"}],"answerGraph":{"supports":{"E_DEL>C1":"Priya's file was created on the drive at 21:14, 49 minutes before Jordan's report.","E_JLEE>C1":"Jordan's report was created at 22:03, after Priya's file arrived.","E_REC>C1":"The recovered content shows the file on the drive really was Priya's report.","E_SIG>C1":"A screenshot of her report was saved at 21:15, also before 22:03.","E_CMP>C2":"Four sentences match word for word.","E_REC>C2":"Her recovered text is the source of the shared wording.","E_DEL>C3":"Her report was deleted from the drive.","E_SIG>C3":"A picture of her report was saved under a .txt name."},"contradicts":{"E_DEL>C4":"Her report was on his drive.","E_REC>C4":"The recovered file is her report, on his drive.","E_SIG>C4":"A screenshot of her report is on his drive.","E_CMP>C4":"Her exact sentences are in his report."},"wrong":{"E_TPL":"Every student got the template. It can't show copying, and it can't clear anyone either.","E_HASH":"The hash proves your image is faithful. It backs your method, not a finding.","C5":"Nothing on a USB drive shows how a file was obtained. Leave this claim unstrung.","default":"That string doesn't hold. Check what this evidence actually shows."}},"report":{"findings":[{"id":"F1","claim":"C1","text":"Priya Shah's Lab 3 report was on Jordan Lee's drive at 21:14 on Oct 12, before his report was created at 22:03.","valid":true},{"id":"F2","claim":"C2","text":"Four sentences in Jordan's report match Priya's word for word.","valid":true},{"id":"F3","claim":"C3","text":"Priya's report was deleted from the drive, and a screenshot of it was saved as NOTES.TXT.","valid":true},{"id":"F4","claim":"C4","text":"The drive's contents contradict Jordan's statement that he never had Priya's report.","valid":true},{"id":"F5","claim":"C5","text":"Jordan broke into Priya's account to take her report.","valid":false}]},"facts":[{"type":"entry","name":"PSHAH_L3.TXT","deleted":true,"why":"E_DEL says a deleted entry ?SHAH_L3.TXT exists"},{"type":"created","name":"PSHAH_L3.TXT","at":"2026-10-12 21:14:36","why":"E_DEL and A6 cite 21:14:36"},{"type":"created","name":"JLEE_L3.TXT","at":"2026-10-12 22:03:10","why":"E_JLEE and A6 cite 22:03:10"},{"type":"signature","name":"NOTES.TXT","expect":"PNG","why":"E_SIG says NOTES.TXT is a PNG"},{"type":"text","name":"PSHAH_L3.TXT","contains":"Name: Priya Shah","why":"A3 expects the recovered file to name Priya Shah"},{"type":"shared","a":"PSHAH_L3.TXT","b":"JLEE_L3.TXT","count":4,"why":"E_CMP says 4 sentences match"}]}</script>
+<script type="application/json" id="evidence-data">{"bytes":1474560,"sectorSize":512,"runs":[[0,"6zyQTVNET1M1LjAAAgEBAALgAEAL8AkAEgACAAAAAAAAAAAAAAApEw4cWkpMRUVfVVNCICAgRkFUMTIgICBOb3QgYSBib290YWJsZSBkaXNrLiBJUEFSIHRyYWluaW5nIHZvbHVtZSAtIFRoZSBDb3BpZWQgTGFiLg0KAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVarw////DwAAYAAHgAAJoAALwAAN4AAPAAER8P8T8P8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="],[10,"8P///w8AAGAAB4AACaAAC8AADeAADwABEfD/E/D/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],[19,"SkxFRV9VU0IgICAIAAAAAAAAAAAAAJRJH10AAAAAAABURU1QTEFURVRYVCAAZEdQKF1MXQAAR1AoXQIAKgEAAOVTSEFIX0wzVFhUIAA+0qlMXU1dAAALlUtdAwBbAwAATk9URVMgICBUWFQgAA4EqkxdTF0AAPmpTF0FABAZAABKTEVFX0wzIFRYVCAAtGWwTF1NXQAA8A1NXRIArgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],[33,"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"]]}</script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CASE = JSON.parse($('#case-data').textContent);
+const EVD = JSON.parse($('#evidence-data').textContent);
+const NODE = Object.fromEntries(CASE.nodes.map(n => [n.id, n]));
+const EVI = Object.fromEntries(CASE.evidence.map(e => [e.id, e]));
+const BOARD = Object.fromEntries(CASE.boards.map(b => [b.id, b]));
+const PTS = { best: 10, acceptable: 5, harmful: 0 };
+const RLABEL = { best: 'Best', acceptable: 'Acceptable', harmful: 'Harmful' };
+const APP = { code: 'IPAR', name: 'IPAR', version: '0.2', date: '2026-11-14', home: 'https://david-i-schwartz.github.io/web-mobile-apps/ipar/',
+  changes: [
+    ['0.2', '14 November 2026', ['On the Web & Mobile Apps site, so it opens on phones and tablets and can go on the Home Screen.',
+      'Your place in the case is kept in this browser, so you can stop and pick up where you left off.',
+      'Save your results as a file, as well as copying them.', 'About This Version, Credits and Learn the Ideas.', 'Larger buttons on touch screens.']],
+    ['0.1', '6 November 2026', ['First demo: one case, The Copied Lab, on all four boards.']]] };
+const LEARN = [
+  ['Chain of custody', 'https://en.wikipedia.org/wiki/Chain_of_custody', 'Why every handoff of evidence is written down.'],
+  ['Write blockers', 'https://en.wikipedia.org/wiki/Forensic_disk_controller', 'Hardware that lets a computer read a drive but never write to it.'],
+  ['Disk images', 'https://en.wikipedia.org/wiki/Disk_image', 'A sector-for-sector copy of a whole drive.'],
+  ['SHA-2 hashes', 'https://en.wikipedia.org/wiki/SHA-2', 'The family SHA-256 belongs to, and why one changed bit changes the whole value.'],
+  ['How FAT stores and deletes files', 'https://en.wikipedia.org/wiki/Design_of_the_FAT_file_system', 'Directory entries, clusters, and the 0xE5 deleted marker.'],
+  ['File signatures', 'https://en.wikipedia.org/wiki/List_of_file_signatures', 'The first bytes that say what a file really is.'],
+  ['NIST SP 800-86', 'https://www.nist.gov/publications/guide-integrating-forensic-techniques-incident-response', 'NIST\'s guide to the forensic process: collect, examine, analyze, report.'],
+  ['NIST CFReDS', 'https://www.nist.gov/itl/csd/secure-systems-and-applications/computer-forensics-tool-testing-program-cftt/cfreds', 'Free practice images and cases for real forensic tools.'],
+  ['The Sleuth Kit and Autopsy', 'https://www.sleuthkit.org/', 'Free, open-source tools that do what the Bench does, on full-size drives.'],
+  ['The original IPAR (2017)', 'https://atecentral.net/r34094', 'The Windows game, its editor and seven cases, on ATE Central.'],
+  ['Gamifying Course Modules for Entry Level Students', 'https://doi.org/10.1145/3017680.3017709', 'Pan, Mishra and Schwartz, SIGCSE 2017: the first IPAR\'s design and results.']];
+
+/* ---------- saving files (house rule 5) ---------- */
+async function saveFile(name, blob, msg) {
+  let dl = null;
+  try { if (window.claude && typeof window.claude.use === 'function') dl = await window.claude.use('downloads'); } catch (e) {}
+  if (dl) {
+    try { await dl.save({ filename: name, data: blob }); msg.textContent = 'Saved ' + name + '.'; return true; }
+    catch (e) { msg.textContent = e && e.code === 'declined' ? 'Save cancelled.' : 'Saving isn\u2019t available here. Open the page in your browser instead.'; return false; }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); msg.textContent = 'Downloaded ' + name + '.'; return true;
+}
+const today = () => new Date().toISOString().slice(0, 10);
+
+/* ---------- storage (house rule 4): best effort, keys start with ipar: ---------- */
+const KEY = 'ipar:progress:' + CASE.id, MODE_KEY = 'ipar:mode';
+let storageOK = (() => { try { localStorage.setItem('ipar:test', '1'); const ok = localStorage.getItem('ipar:test') === '1'; localStorage.removeItem('ipar:test'); return ok; } catch (e) { return false; } })();
+let warnedStorage = false;
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function storeSet(k, v) { if (!storageOK) return false; try { localStorage.setItem(k, v); return true; } catch (e) { storageOK = false; return false; } }
+function storeDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+/* ---------------- bytes, hashing ---------------- */
+function b64ToBytes(b64) { const s = atob(b64); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+function buildOriginal() { const img = new Uint8Array(EVD.bytes); for (const [sec, b64] of EVD.runs) img.set(b64ToBytes(b64), sec * EVD.sectorSize); return img; }
+const toHex = (u8) => Array.from(u8, x => x.toString(16).padStart(2, '0')).join('');
+
+function md5(data) {
+  const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+  const K = new Int32Array(64); for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 4294967296) | 0;
+  const len = data.length, total = (((len + 8) >>> 6) + 1) * 64;
+  const buf = new Uint8Array(total); buf.set(data); buf[len] = 0x80;
+  const dv = new DataView(buf.buffer); const bits = len * 8;
+  dv.setUint32(total - 8, bits >>> 0, true); dv.setUint32(total - 4, Math.floor(bits / 4294967296), true);
+  let a0 = 0x67452301 | 0, b0 = 0xefcdab89 | 0, c0 = 0x98badcfe | 0, d0 = 0x10325476 | 0;
+  const M = new Int32Array(16);
+  for (let off = 0; off < total; off += 64) {
+    for (let j = 0; j < 16; j++) M[j] = dv.getInt32(off + j * 4, true);
+    let A = a0, B = b0, C = c0, D = d0;
+    for (let i = 0; i < 64; i++) {
+      let F, g;
+      if (i < 16) { F = (B & C) | (~B & D); g = i; }
+      else if (i < 32) { F = (D & B) | (~D & C); g = (5 * i + 1) & 15; }
+      else if (i < 48) { F = B ^ C ^ D; g = (3 * i + 5) & 15; }
+      else { F = C ^ (B | ~D); g = (7 * i) & 15; }
+      F = (F + A + K[i] + M[g]) | 0;
+      A = D; D = C; C = B;
+      B = (B + ((F << S[i]) | (F >>> (32 - S[i])))) | 0;
+    }
+    a0 = (a0 + A) | 0; b0 = (b0 + B) | 0; c0 = (c0 + C) | 0; d0 = (d0 + D) | 0;
+  }
+  const out = new DataView(new ArrayBuffer(16));
+  out.setInt32(0, a0, true); out.setInt32(4, b0, true); out.setInt32(8, c0, true); out.setInt32(12, d0, true);
+  return toHex(new Uint8Array(out.buffer));
+}
+const SHA_K = new Uint32Array([
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+function sha256(data) {
+  const len = data.length, total = Math.ceil((len + 9) / 64) * 64;
+  const buf = new Uint8Array(total); buf.set(data); buf[len] = 0x80;
+  const dv = new DataView(buf.buffer); const bits = len * 8;
+  dv.setUint32(total - 8, Math.floor(bits / 4294967296)); dv.setUint32(total - 4, bits >>> 0);
+  const H = new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  const W = new Uint32Array(64);
+  for (let off = 0; off < total; off += 64) {
+    for (let i = 0; i < 16; i++) W[i] = dv.getUint32(off + i * 4);
+    for (let i = 16; i < 64; i++) {
+      const x = W[i - 15], y = W[i - 2];
+      const s0 = ((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3);
+      const s1 = ((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10);
+      W[i] = (W[i - 16] + s0 + W[i - 7] + s1) >>> 0;
+    }
+    let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+    for (let i = 0; i < 64; i++) {
+      const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+      const ch = (e & f) ^ (~e & g);
+      const t1 = (h + S1 + ch + SHA_K[i] + W[i]) >>> 0;
+      const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+      const t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+      h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;
+  }
+  return Array.from(H, x => x.toString(16).padStart(8, '0')).join('');
+}
+
+/* ---------------- FAT12 reader ---------------- */
+const fdate = d => d ? `${1980 + (d >> 9)}-${String((d >> 5) & 15).padStart(2, '0')}-${String(d & 31).padStart(2, '0')}` : '';
+const ftime = t => `${String(t >> 11).padStart(2, '0')}:${String((t >> 5) & 63).padStart(2, '0')}:${String((t & 31) * 2).padStart(2, '0')}`;
+const ascii = u8 => Array.from(u8, b => (b >= 32 && b < 127) ? String.fromCharCode(b) : '.').join('');
+function parseVolume(img) {
+  const dv = new DataView(img.buffer, img.byteOffset, img.byteLength);
+  const v = { bps: dv.getUint16(11, true), spc: img[13], rsvd: dv.getUint16(14, true), nf: img[16], rootEnt: dv.getUint16(17, true),
+    total: dv.getUint16(19, true), fatsz: dv.getUint16(22, true), label: ascii(img.subarray(43, 54)).trim(), fs: ascii(img.subarray(54, 62)).trim() };
+  v.rootSec = v.rsvd + v.nf * v.fatsz; v.rootSecs = Math.ceil(v.rootEnt * 32 / v.bps); v.dataSec = v.rootSec + v.rootSecs;
+  v.entries = [];
+  for (let i = 0; i < v.rootEnt; i++) {
+    const o = v.rootSec * v.bps + i * 32, b0 = img[o];
+    if (b0 === 0) break;
+    const attr = img[o + 11]; if (attr === 0x0F) continue;
+    const base = ascii(img.subarray(o + 1, o + 8)), ext = ascii(img.subarray(o + 8, o + 11)).trim();
+    const deleted = b0 === 0xE5, isLabel = !!(attr & 0x08);
+    const first = deleted ? '?' : String.fromCharCode(b0);
+    const stem = (first + base).trimEnd();
+    const name = isLabel ? (first + base + ext).trimEnd() : stem + (ext ? '.' + ext : '');
+    const cDate = dv.getUint16(o + 16, true), cTime = dv.getUint16(o + 14, true), aDate = dv.getUint16(o + 18, true);
+    const wTime = dv.getUint16(o + 22, true), wDate = dv.getUint16(o + 24, true);
+    v.entries.push({ i, o, name, ext, attr, deleted, isLabel, cluster: dv.getUint16(o + 26, true), size: dv.getUint32(o + 28, true),
+      created: cDate ? `${fdate(cDate)} ${ftime(cTime)}` : '', modified: wDate ? `${fdate(wDate)} ${ftime(wTime)}` : '', accessed: fdate(aDate) });
+  }
+  return v;
+}
+function fatEntry(img, v, n) { const off = v.rsvd * v.bps + Math.floor(n * 3 / 2); const x = img[off] | (img[off + 1] << 8); return (n & 1) ? x >> 4 : x & 0xFFF; }
+function clusterOffset(v, c) { return (v.dataSec + (c - 2) * v.spc) * v.bps; }
+function readFile(img, v, e) {
+  const out = new Uint8Array(e.size); const cb = v.bps * v.spc;
+  if (e.deleted) { const off = clusterOffset(v, e.cluster); out.set(img.subarray(off, off + e.size)); return out; }
+  let c = e.cluster, pos = 0, guard = 0;
+  while (pos < e.size && c >= 2 && c < 0xFF8 && guard++ < 4096) { const off = clusterOffset(v, c), n = Math.min(cb, e.size - pos); out.set(img.subarray(off, off + n), pos); pos += n; c = fatEntry(img, v, c); }
+  return out;
+}
+const SIGS = [
+  { hex: '89504e470d0a1a0a', type: 'PNG image' }, { hex: 'ffd8ff', type: 'JPEG image' }, { hex: '25504446', type: 'PDF document' },
+  { hex: '504b0304', type: 'ZIP / Office file' }, { hex: '47494638', type: 'GIF image' }];
+function sniff(bytes) {
+  const h = toHex(bytes.subarray(0, 8));
+  for (const s of SIGS) if (h.startsWith(s.hex)) return { type: s.type, header: h, short: s.type.split(' ')[0] };
+  const printable = Array.from(bytes.subarray(0, 64)).every(b => b === 9 || b === 10 || b === 13 || (b >= 32 && b < 127) || b >= 0xC2);
+  return { type: printable ? 'Plain text' : 'Unknown binary', header: h, short: printable ? 'TXT' : 'BIN' };
+}
+const EXT_TYPE = { TXT: 'Plain text', PNG: 'PNG image', JPG: 'JPEG image', PDF: 'PDF document', DOC: 'ZIP / Office file', GIF: 'GIF image' };
+const decodeText = u8 => new TextDecoder('utf-8').decode(u8).replace(/\r\n/g, '\n');
+function sentencesAfterObjective(text) {
+  const i = text.indexOf('1. Objective'); const body = i >= 0 ? text.slice(i) : text;
+  return body.replace(/\n\d\. [A-Za-z]+\n/g, '\n').split(/(?<=[.!?])\s+/).map(s => s.replace(/\s+/g, ' ').trim()).filter(s => s.split(' ').length >= 5);
+}
+function sharedSentences(a, b) { const sb = new Set(sentencesAfterObjective(b).map(s => s.toLowerCase())); return sentencesAfterObjective(a).filter(s => sb.has(s.toLowerCase())); }
+
+/* ---------------- state ---------------- */
+const ORIGINAL = buildOriginal();
+let S = null;
+let MODE = storeGet('ipar:mode') === 'exam' ? 'exam' : 'practice';
+function newState(mode) {
+  return { mode, started: new Date().toISOString(), board: 'image', unlocked: new Set(['image']), revealed: new Set(), fresh: new Set(), solved: new Set(),
+    sel: null, ans: {}, hints: new Set(), device: ORIGINAL.slice(), working: null, acquired: false, deviceAltered: false,
+    hash: null, hashing: false, integrity: 'intact', usedReference: false, recovered: false, recoveredText: '',
+    pins: new Set(), pinOrder: [], strings: [], wrongStrings: 0, pickE: null, pickC: null,
+    inbox: [], unread: 0, report: null, ended: false, tab: 'lead', tool: 'hash', toolView: null, listView: false, boardDone: {} };
+}
+const ref = CASE.device.referenceHashes;
+const hashMatch = () => !!S.hash && S.hash.sha256 === ref.sha256 && S.hash.md5 === ref.md5;
+function resolveCond(v) { if (v && typeof v === 'object' && !Array.isArray(v) && ('match' in v || 'mismatch' in v)) return v[S.hashCond || (hashMatch() ? 'match' : 'mismatch')]; return v; }
+
+function mail(from, subject, body) { S.inbox.unshift({ from, subject, body, unread: true, at: new Date() }); S.unread++; }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
+
+function reveal(id) { if (!NODE[id] || S.revealed.has(id)) return; S.revealed.add(id); S.fresh.add(id); }
+function startBoard(b) { for (const n of CASE.nodes) if (n.board === b && (n.start || n.kind === 'claim')) reveal(n.id); }
+
+function alterDevice() { alterDeviceOn(S, 0); }
+function alterDeviceOn(st, date) {
+  if (st.deviceAltered) return; st.deviceAltered = true;
+  const now = new Date();
+  const d = date || (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate());
+  st.alterDate = d;
+  const v = parseVolume(st.device);
+  for (const e of v.entries) if (!e.deleted && !e.isLabel) { st.device[e.o + 18] = d & 255; st.device[e.o + 19] = d >> 8; }
+}
+function applyEffect(eff) {
+  eff = resolveCond(eff); if (!eff) return;
+  if (eff === 'alterDevice') alterDevice();
+  if (eff === 'acquire') { S.working = S.device.slice(); S.acquired = true; mail('Imaging log', `${CASE.device.imageName} written`, `Bit-stream image of ${CASE.device.item}: ${S.working.length.toLocaleString()} bytes, 2,880 sectors. Hash it on the Preserve board.`); }
+  if (eff === 'integrityBroken') S.integrity = 'broken';
+  if (eff === 'useReference') { S.ownHash = S.hash; S.working = ORIGINAL.slice(); S.integrity = 'documented'; S.usedReference = true; S.hash = { md5: md5(S.working), sha256: sha256(S.working), ref: true };
+    mail('Campus Security', 'Reference image released', `We sent our seizure image of ${CASE.device.item}. Its hashes match the custody form. Your note about the unprotected connection is in the file.`); }
+  if (eff === 'pinRecovered') { if (!S.recovered) recoverPriya(); pin('E_REC', true); }
+  if (eff === 'pinJordan') pin('E_JLEE', true);
+}
+
+/* ---------------- answering ---------------- */
+function rec(id) { return S.ans[id] || (S.ans[id] = { attempts: 0, first: null, last: null, hint: false }); }
+function answerMC(id, idx) {
+  const n = NODE[id];
+  if (n.q.dynamic === 'hashMatch' && !S.hashCond) S.hashCond = hashMatch() ? 'match' : 'mismatch';
+  const opt = n.q.options[idx], r = resolveCond(opt.r), retry = !!resolveCond(opt.retry), fb = resolveCond(opt.fb);
+  const a = rec(id); a.attempts++;
+  const entry = { choice: idx, rating: r, fb, retry };
+  if (!a.first) a.first = entry; a.last = entry;
+  applyEffect(opt.effect);
+  if (r === 'harmful' && retry) { render(); return; }
+  const ul = resolveCond(opt.unlocks);
+  solve(id, ul);
+  if (id === 'P2' && r === 'best') pin('E_HASH', true);
+  if (id === 'P2' && S.integrity === 'broken') pin('E_HASH', true);
+  if (id === 'P2R' && S.usedReference) pin('E_HASH', true);
+  if (id === 'P2R' && S.integrity === 'broken') pin('E_HASH', true);
+  render();
+}
+function answerValue(id, text) {
+  const n = NODE[id], a = rec(id), norm = text.toLowerCase().replace(/[^a-z. ]/g, '').replace(/\s+/g, ' ').trim();
+  if (!norm) return;
+  a.attempts++;
+  const ok = n.q.accept.includes(norm);
+  const entry = { value: text, rating: ok ? (a.attempts === 1 ? 'best' : 'acceptable') : 'harmful', fb: ok ? n.q.fbRight : n.q.fbWrong, retry: !ok };
+  if (!a.first) a.first = { ...entry, rating: ok ? 'best' : 'harmful' };
+  if (ok && a.attempts > 1) a.first = { ...a.first, rating: 'acceptable' };
+  a.last = entry;
+  if (ok) { if (n.effectOnSolve) applyEffect(n.effectOnSolve); solve(id); }
+  render();
+}
+function solve(id, unlocks) {
+  if (S.solved.has(id)) return; S.solved.add(id);
+  const n = NODE[id];
+  for (const u of (unlocks ?? n.unlocks ?? [])) reveal(u);
+  checkBoard(n.board);
+}
+function checkBoard(b) {
+  const B = BOARD[b]; if (!B || S.boardDone[b]) return;
+  if (!B.requires.every(r => S.solved.has(r))) return;
+  S.boardDone[b] = true;
+  if (B.next) {
+    S.unlocked.add(B.next); startBoard(B.next);
+    const nm = BOARD[B.next].name;
+    toast(`The "${nm}" category is now available.`);
+    const notes = { preserve: 'Image in hand. Prove it matches the drive before anyone relies on it.',
+      analyze: 'Verified copy ready. Find out what the drive can tell us, and pin what matters.',
+      report: 'Good work on the drive. Now show me which claims your evidence supports, and which it doesn\'t.' };
+    mail('Dr. M. Alvarez', `${nm} board open`, notes[B.next] || '');
+    if (B.next === 'analyze') mail('Interview notes', 'Jordan Lee, Oct 15', NODE.M1.body);
+  }
+}
+function checkAuto() {
+  for (const id of S.revealed) {
+    if (S.solved.has(id)) continue; const q = NODE[id].q; if (!q) continue;
+    if (q.type === 'tool' && q.needs === 'hashDone' && S.hash) solve(id);
+    if (q.type === 'pin' && q.needs.every(e => S.pins.has(e))) solve(id);
+    if (q.type === 'strings' && stringsMet()) solve(id);
+  }
+}
+function stringsMet() {
+  const need = NODE.R0.q.needs;
+  if (S.mode === 'exam') return Object.keys(need).every(c => S.strings.some(s => s.c === c));
+  return Object.entries(need).every(([c, rel]) => S.strings.some(s => s.c === c && s.rel === rel && s.ok));
+}
+
+/* ---------------- evidence & strings ---------------- */
+function pin(eid, auto) {
+  if (S.pins.has(eid)) { if (!auto) toast('Already on the board.'); return; }
+  if (!auto && !S.unlocked.has('analyze')) { toast('Pins open on the Analyze board.'); return; }
+  S.pins.add(eid); S.pinOrder.push(eid); S.fresh.add(eid);
+  if (!auto) toast(`Pinned: ${EVI[eid].title}`);
+  checkAuto();
+}
+function evidenceDetail(eid) {
+  const e = EVI[eid];
+  if (eid === 'E_HASH') {
+    if (S.integrity === 'broken') return 'Hash recorded, but your image does not match the seizure reference and the mismatch was not disclosed.';
+    if (S.usedReference) return 'Your image did not match. The error is documented, and the analysis uses Campus Security\'s reference image, which matches.';
+    return `SHA-256 and MD5 of ${CASE.device.imageName} match the seizure reference.`;
+  }
+  return e.detail;
+}
+function judgeString(e, c, rel) {
+  const key = `${e}>${c}`, G = CASE.answerGraph, other = rel === 'supports' ? 'contradicts' : 'supports';
+  const ok = !!G[rel][key];
+  const fb = ok ? G[rel][key] : (G.wrong[e] || G.wrong[c] || (G[other][key] ? `Right evidence, wrong direction: it ${other} this claim.` : G.wrong.default));
+  return { e, c, rel, ok, fb, id: Math.random().toString(36).slice(2) };
+}
+function addString(e, c, rel) {
+  S.strings = S.strings.filter(s => !(s.e === e && s.c === c));
+  const s = judgeString(e, c, rel), ok = s.ok;
+  S.strings.push(s);
+  if (!ok) S.wrongStrings++;
+  S.lastString = s; S.pickE = null; S.pickC = null;
+  if (!ok && S.mode === 'practice') setTimeout(() => { S.strings = S.strings.filter(x => x.id !== s.id); render(); }, 2600);
+  checkAuto(); render();
+}
+
+/* ---------------- tools ---------------- */
+function recoverPriya() {
+  const img = S.working || ORIGINAL; const v = parseVolume(img);
+  const e = v.entries.find(x => x.deleted); if (!e) return;
+  S.recovered = true; S.recoveredText = decodeText(readFile(img, v, e));
+}
+function computeHash() {
+  if (!S.working) { toast('Acquire an image on the Image board first.'); return; }
+  S.hashing = true; render();
+  setTimeout(() => {
+    S.hash = { md5: md5(S.working), sha256: sha256(S.working) }; S.hashing = false;
+    if (!hashMatch()) mail('Hash tool', 'Hash differs from reference', 'Your working image does not match the seizure reference on the custody form.');
+    checkAuto(); render();
+  }, 700);
+}
+
+/* ---------------- rendering: header, tabs ---------------- */
+function renderHeader() {
+  $('#phases').innerHTML = CASE.boards.map((b, i) => {
+    const open = S.unlocked.has(b.id), done = !!S.boardDone[b.id];
+    return `<button class="phase ${done ? 'done' : ''}" data-act="board" data-id="${b.id}" ${open ? '' : 'disabled'} aria-current="${S.board === b.id}"><span class="n">${i + 1}</span>${esc(b.name)}${done ? ' ✓' : ''}</button>`;
+  }).join('');
+  const ig = $('#integrity');
+  const map = { intact: ['good', 'Chain intact'], documented: ['warn', 'Error documented'], broken: ['bad', 'Chain broken'] };
+  let st = S.integrity; if (st === 'intact' && S.deviceAltered) st = 'intact';
+  ig.className = 'chip ' + map[st][0]; ig.innerHTML = `<i></i>${map[st][1]}`;
+  const sc = scoreNow();
+  $('#scoreChip').textContent = S.mode === 'exam' ? 'Exam mode' : (sc.count ? `Score ${Math.round(sc.pct * 100)}%` : 'Score —');
+  $('#boardTitle').innerHTML = `${esc(BOARD[S.board].name)} board<small>${S.board === 'report' ? 'tap evidence, then a claim' : 'tap a card to open it'}</small>`;
+}
+function renderTabs() {
+  const tabs = [['lead', 'Lead'], ['bench', 'Bench'], ['inbox', 'Inbox'], ['evidence', 'Evidence']];
+  $('#tabs').innerHTML = tabs.map(([k, l]) => `<button class="tab" role="tab" data-act="tab" data-id="${k}" aria-selected="${S.tab === k}">${l}${k === 'inbox' && S.unread ? '<span class="dot"></span>' : ''}${k === 'evidence' && S.pins.size ? ` <span class="mono">${S.pins.size}</span>` : ''}</button>`).join('');
+}
+
+/* ---------------- rendering: panel ---------------- */
+function renderPanel() {
+  const P = $('#panel');
+  if (S.tab === 'bench') P.innerHTML = benchHTML();
+  else if (S.tab === 'inbox') { P.innerHTML = inboxHTML(); S.inbox.forEach(m => m.unread = false); S.unread = 0; }
+  else if (S.tab === 'evidence') P.innerHTML = evidenceHTML();
+  else P.innerHTML = leadHTML();
+}
+function optionsHTML(id) {
+  const n = NODE[id], a = S.ans[id], solved = S.solved.has(id), exam = S.mode === 'exam';
+  const last = a && a.last, letters = 'ABCD';
+  let h = `<div class="opts">` + n.q.options.map((o, i) => {
+    let cls = 'opt', chosen = last && last.choice === i;
+    if (chosen) cls += ' chosen' + (!exam ? ' r-' + last.rating : '');
+    if (solved && !chosen) cls += ' dim';
+    return `<button class="${cls}" data-act="mc" data-id="${id}" data-i="${i}" ${solved ? 'disabled' : ''}><span class="l">${letters[i]}</span><span>${esc(o.t)}</span></button>`;
+  }).join('') + `</div>`;
+  if (last) {
+    if (exam) h += `<div class="fb neutral">${last.retry ? '<b>Not accepted.</b> Choose again.' : '<b>Answer recorded.</b> Feedback comes at the debrief.'}</div>`;
+    else {
+      let best = '';
+      if (last.rating !== 'best' && !last.retry) { const bi = n.q.options.findIndex(o => resolveCond(o.r) === 'best'); if (bi >= 0) best = `<p><b>Best:</b> ${esc(n.q.options[bi].t)}</p>`; }
+      h += `<div class="fb ${last.rating}"><span class="pill ${last.rating}">${RLABEL[last.rating]}</span><p>${esc(last.fb)}</p>${best}</div>`;
+    }
+  }
+  return h;
+}
+function leadHTML() {
+  const id = S.sel;
+  if (!id) return `<p class="kicker">Lead</p><h3 class="ptitle">Pick a card on the board</h3><p class="pbody">Each note is a lead. Answer it to reveal what it connects to.</p>`;
+  if (EVI[id]) return evidenceCardHTML(id);
+  const n = NODE[id];
+  if (n.kind === 'claim') return claimHTML(id);
+  const B = BOARD[n.board];
+  let h = `<p class="kicker">${esc(B.name)} · ${esc(n.id)} · ${n.card === 'message' ? 'statement' : 'lead'}</p><h3 class="ptitle">${esc(n.title)}</h3>`;
+  if (n.body) h += `<p class="pbody">${esc(n.body)}</p>`;
+  if (n.showHashes) h += hashCompareHTML();
+  if (n.prompt) h += `<p class="prompt">${esc(n.prompt)}</p>`;
+  const q = n.q || {};
+  if (q.type === 'mc') h += optionsHTML(id);
+  if (q.type === 'value') {
+    const a = S.ans[id], solved = S.solved.has(id);
+    h += `<form class="row" data-form="value" data-id="${id}"><input type="text" id="val-${id}" placeholder="Type a name" ${solved ? 'disabled' : ''} autocomplete="off"><button class="btn primary" ${solved ? 'disabled' : ''}>Submit</button></form>`;
+    if (a && a.last) h += S.mode === 'exam' ? `<div class="fb neutral">${a.last.retry ? 'Not accepted. Try again.' : 'Answer recorded.'}</div>` : `<div class="fb ${a.last.rating}"><span class="pill ${a.last.rating}">${a.last.retry ? 'Not yet' : RLABEL[a.last.rating]}</span><p>${esc(a.last.fb)}</p></div>`;
+    h += `<div class="row" style="margin-top:10px"><button class="btn" data-act="gotool" data-id="dir">Open Directory</button></div>`;
+  }
+  if (q.type === 'tool') {
+    h += S.solved.has(id) ? `<div class="fb best"><span class="pill best">Done</span><p>Hashes computed. Compare them on the next card.</p></div>` : `<div class="row"><button class="btn primary" data-act="gotool" data-id="hash">Open Bench → Hash</button></div>`;
+  }
+  if (q.type === 'pin') {
+    const tools = { E_DEL: 'dir', E_SIG: 'sig', E_CMP: 'cmp' };
+    h += `<ul class="needs">${q.needs.map(e => `<li class="${S.pins.has(e) ? 'ok' : ''}"><span class="box">${S.pins.has(e) ? '✓' : ''}</span>${S.pins.has(e) ? esc(EVI[e].title) : 'Find it on the Bench and pin it'}</li>`).join('')}</ul>`;
+    if (!S.solved.has(id)) h += `<div class="row"><button class="btn primary" data-act="gotool" data-id="${tools[q.needs[0]]}">Open Bench → ${({ dir: 'Directory', sig: 'Signatures', cmp: 'Compare' })[tools[q.needs[0]]]}</button></div>`;
+  }
+  if (q.type === 'message') h += `<div class="fb neutral">Filed with the case. You'll test this statement on the Report board.</div>`;
+  if (q.type === 'strings') h += stringsHTML();
+  if (q.type === 'report') h += reportFormHTML();
+  if (n.hint && S.mode === 'practice' && !S.solved.has(id) && q.type !== 'message') {
+    h += S.hints.has(id) ? `<p class="hint"><b>Hint.</b> ${esc(n.hint)}</p>` : `<p class="hint"><button data-act="hint" data-id="${id}">Show a hint</button></p>`;
+  }
+  const B2 = BOARD[n.board];
+  if (S.boardDone[n.board] && B2.next && S.board === n.board) h += `<div class="callout"><span>The ${esc(BOARD[B2.next].name)} board is open.</span><button class="btn primary" data-act="board" data-id="${B2.next}">Go to ${esc(BOARD[B2.next].name)} →</button></div>`;
+  return h;
+}
+function groupHash(h) { return h.match(/.{1,8}/g).join(' '); }
+function hashCompareHTML() {
+  const mine = S.ownHash || S.hash;
+  return `<div class="hashgrid"><div><span>Reference SHA-256</span><code>${groupHash(ref.sha256)}</code></div><div><span>Your SHA-256</span><code>${mine ? groupHash(mine.sha256) : 'Run the Hash tool first'}</code></div><div><span>Reference MD5</span><code>${groupHash(ref.md5)}</code></div><div><span>Your MD5</span><code>${mine ? groupHash(mine.md5) : '—'}</code></div></div>`;
+}
+function evidenceCardHTML(eid) {
+  const e = EVI[eid];
+  let h = `<p class="kicker">Evidence · from ${esc(e.from)}</p><h3 class="ptitle">${esc(e.title)}</h3><p class="pbody">${esc(evidenceDetail(eid))}</p>`;
+  if (S.integrity === 'broken' && eid !== 'E_HASH') h += `<div class="fb harmful"><b>Chain broken.</b> This came from an image that doesn't match the seized drive, and the mismatch wasn't disclosed.</div>`;
+  if (S.unlocked.has('report')) {
+    if (S.board !== 'report') h += `<div class="row"><button class="btn" data-act="board" data-id="report">String it on the Report board</button></div>`;
+    else h += `<div class="fb neutral">${S.pickE === eid ? '<b>Selected.</b> Now tap a claim.' : 'Tap this card on the board, then a claim, to string them.'}</div>`;
+  }
+  const ss = S.strings.filter(s => s.e === eid);
+  if (ss.length) h += `<p class="prompt">Strings</p>` + ss.map(s => stringLine(s)).join('');
+  return h;
+}
+function stringLine(s) {
+  const show = S.mode === 'practice';
+  return `<div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding:6px 0"><span>${esc(EVI[s.e].title)} <b>${s.rel}</b> ${esc(s.c)}${show ? ` <span class="pill ${s.ok ? 'best' : 'harmful'}">${s.ok ? 'holds' : 'fails'}</span>` : ''}</span><button class="sm" data-act="unstring" data-id="${s.id}" aria-label="Remove string">Remove</button></div>`;
+}
+function claimHTML(cid) {
+  const n = NODE[cid];
+  let h = `<p class="kicker">Report · claim ${esc(cid)}</p><h3 class="ptitle">${esc(n.title)}</h3>`;
+  if (S.pickE && S.board === 'report') {
+    h += `<p class="prompt">String <b>${esc(EVI[S.pickE].title)}</b> to this claim as:</p><div class="row"><button class="btn primary" data-act="string" data-rel="supports" data-id="${cid}">Supports</button><button class="btn" style="border-color:var(--contra);color:var(--contra)" data-act="string" data-rel="contradicts" data-id="${cid}">Contradicts</button><button class="btn" data-act="cancelpick">Cancel</button></div>`;
+  } else h += `<p class="pbody">Tap an evidence card on the board first, then this claim, to string them.</p>`;
+  const ss = S.strings.filter(s => s.c === cid);
+  h += `<p class="prompt">Strings on This Claim</p>` + (ss.length ? ss.map(stringLine).join('') : `<p class="pbody">None yet.</p>`);
+  if (S.lastString && S.lastString.c === cid && S.mode === 'practice') h += `<div class="fb ${S.lastString.ok ? 'best' : 'harmful'}"><span class="pill ${S.lastString.ok ? 'best' : 'harmful'}">${S.lastString.ok ? 'Holds' : 'Doesn\'t hold'}</span><p>${esc(S.lastString.fb)}</p></div>`;
+  return h;
+}
+function stringsHTML() {
+  const need = NODE.R0.q.needs, exam = S.mode === 'exam';
+  let h = `<ul class="needs">${Object.entries(need).map(([c, rel]) => {
+    const ok = exam ? S.strings.some(s => s.c === c) : S.strings.some(s => s.c === c && s.rel === rel && s.ok);
+    return `<li class="${ok ? 'ok' : ''}"><span class="box">${ok ? '✓' : ''}</span><span><b>${c}</b> ${esc(NODE[c].title)}</span></li>`; }).join('')}</ul>`;
+  if (S.pickE) h += `<div class="fb neutral"><b>${esc(EVI[S.pickE].title)}</b> selected. Tap a claim. <button class="sm" data-act="cancelpick">Cancel</button></div>`;
+  if (S.lastString && S.mode === 'practice') h += `<div class="fb ${S.lastString.ok ? 'best' : 'harmful'}"><span class="pill ${S.lastString.ok ? 'best' : 'harmful'}">${S.lastString.ok ? 'Holds' : 'Doesn\'t hold'}</span><p>${esc(S.lastString.fb)}</p></div>`;
+  if (!S.pins.size) h += `<p class="pbody">No evidence pinned yet.</p>`;
+  else h += `<form class="stack" data-form="string" style="margin-top:14px"><label class="kicker" for="strE">Or string them here</label>
+  <select id="strE" aria-label="Evidence">${S.pinOrder.map(e => `<option value="${e}" ${S.pickE === e ? 'selected' : ''}>${esc(EVI[e].title)}</option>`).join('')}</select>
+  <select id="strC" aria-label="Claim">${CASE.nodes.filter(n => n.kind === 'claim').map(n => `<option value="${n.id}">${n.id} · ${esc(n.title)}</option>`).join('')}</select>
+  <div class="row"><button class="btn primary" value="supports">Supports</button><button class="btn" value="contradicts" style="border-color:var(--contra);color:var(--contra)">Contradicts</button></div></form>`;
+  return h;
+}
+function reportFormHTML() {
+  if (S.report) return `<div class="fb neutral">Filed. See the debrief.</div><div class="row" style="margin-top:10px"><button class="btn primary" data-act="debrief">Open debrief</button></div>`;
+  return `<form class="stack" data-form="report">${CASE.report.findings.map(f => `<label class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:10px"><input type="checkbox" name="f" value="${f.id}" style="margin-top:4px"><span><b>${f.claim}</b> ${esc(f.text)}</span></label>`).join('')}
+  <label for="summary" class="kicker">Summary (optional)</label><textarea id="summary" placeholder="One or two sentences for Dr. Alvarez."></textarea>
+  <p class="pbody mono">Method: bit-stream image ${esc(CASE.device.imageName)}; ${S.usedReference ? 'own image mismatched (documented); reference image used' : S.integrity === 'broken' ? 'hash mismatch not disclosed' : 'SHA-256 verified against seizure reference'}.</p>
+  <button class="btn primary">Sign and file</button></form>`;
+}
+
+/* bench */
+function benchHTML() {
+  const list = [['hash', 'Hash'], ['hex', 'Hex'], ['dir', 'Directory'], ['sig', 'Signatures'], ['time', 'Timeline'], ['cmp', 'Compare']];
+  let h = `<p class="kicker">Evidence bench · ${S.working ? esc(CASE.device.imageName) + (S.usedReference ? ' (reference)' : '') : 'no image yet'}</p>`;
+  h += `<div class="tools">${list.map(([k, l]) => `<button class="tool" data-act="tool" data-id="${k}" aria-pressed="${S.tool === k}" ${S.working ? '' : 'disabled'}>${l}</button>`).join('')}</div>`;
+  if (!S.working) return h + `<p class="pbody">The bench works on your image. Acquire one on the Image board first.</p>`;
+  const img = S.working, v = parseVolume(img);
+  if (S.tool === 'hash') return h + hashToolHTML();
+  if (S.tool === 'hex') return h + hexToolHTML(img, v);
+  if (S.tool === 'dir') return h + dirToolHTML(img, v);
+  if (S.tool === 'sig') return h + sigToolHTML(img, v);
+  if (S.tool === 'time') return h + timeToolHTML(v);
+  if (S.tool === 'cmp') return h + cmpToolHTML(img, v);
+  return h;
+}
+function hashToolHTML() {
+  let h = `<p class="tooldesc">Reads all 2,880 sectors of the image and computes MD5 and SHA-256. One changed bit changes the whole value.</p>`;
+  h += `<button class="btn primary" data-act="hash" ${S.hashing ? 'disabled' : ''}>${S.hash ? 'Recompute' : 'Compute hashes'}</button>`;
+  if (S.hashing) h += `<div class="progress"><i style="width:100%"></i></div><p class="pbody mono">Reading 1,474,560 bytes…</p>`;
+  if (S.hash) h += `<div class="hashgrid"><div><span>MD5</span><code>${groupHash(S.hash.md5)}</code></div><div><span>SHA-256</span><code>${groupHash(S.hash.sha256)}</code></div></div><p class="pbody">Compare against the custody form on the Preserve board.</p>`;
+  return h;
+}
+function hexToolHTML(img, v) {
+  const view = S.toolView || { kind: 'root' };
+  let sector = v.rootSec, title = 'Root directory (sector 19)';
+  if (view.kind === 'boot') { sector = 0; title = 'Boot sector (sector 0)'; }
+  if (view.kind === 'fat') { sector = v.rsvd; title = 'File allocation table #1 (sector 1)'; }
+  if (view.kind === 'cluster') { sector = v.dataSec + (view.c - 2) * v.spc; title = `Cluster ${view.c} (sector ${sector})${view.label ? ' · ' + view.label : ''}`; }
+  const per = ($('#panel').clientWidth || 400) > 600 ? 16 : 8, base = sector * v.bps;
+  const rows = []; const lim = view.kind === 'root' ? 6 * 32 : 512;
+  for (let off = 0; off < lim; off += per) {
+    const bytes = img.subarray(base + off, base + off + per);
+    const hx = Array.from(bytes, (b, j) => {
+      const s = b.toString(16).padStart(2, '0');
+      const abs = off + j;
+      if (view.kind === 'root' && abs % 32 === 0 && b === 0xE5) return `<span class="e5">${s}</span>`;
+      if (view.kind === 'cluster' && view.sig && abs < 8) return `<span class="sig">${s}</span>`;
+      return b === 0 ? `<span class="z">${s}</span>` : s;
+    }).join(' ');
+    rows.push(`<span class="off">${(base + off).toString(16).padStart(6, '0')}</span>  ${hx}  ${esc(ascii(bytes))}`);
+  }
+  const sel = k => `aria-pressed="${view.kind === k}"`;
+  return `<p class="tooldesc">Raw bytes from the image. Deleted directory entries start with <span class="mono">e5</span>.</p>
+  <div class="tools"><button class="tool" data-act="hexview" data-id="boot" ${sel('boot')}>Boot</button><button class="tool" data-act="hexview" data-id="fat" ${sel('fat')}>FAT</button><button class="tool" data-act="hexview" data-id="root" ${sel('root')}>Root dir</button></div>
+  <p class="kicker">${esc(title)}</p><div class="hex">${rows.join('\n')}</div>`;
+}
+function entryActs(e) {
+  const acts = [`<button class="sm" data-act="hexclus" data-id="${e.cluster}" data-label="${esc(e.name)}">Hex</button>`];
+  if (e.deleted) acts.push(`<button class="sm" data-act="recover">Recover</button>`, `<button class="sm pin" data-act="pin" data-id="E_DEL">Pin</button>`);
+  else { acts.push(`<button class="sm" data-act="view" data-id="${e.i}">View</button>`);
+    if (e.name === 'JLEE_L3.TXT') acts.push(`<button class="sm pin" data-act="pin" data-id="E_JLEE">Pin</button>`);
+    if (e.name === 'TEMPLATE.TXT') acts.push(`<button class="sm pin" data-act="pin" data-id="E_TPL">Pin</button>`); }
+  return acts.join('');
+}
+function dirToolHTML(img, v) {
+  const files = v.entries;
+  let h = `<p class="tooldesc">Root directory of volume <span class="mono">${esc(v.label)}</span> (${esc(v.fs)}). Deleted entries are listed in red.</p>`;
+  h += `<div class="entries stack">`;
+  for (const e of files) {
+    if (e.isLabel) continue;
+    h += `<div class="entry ${e.deleted ? 'del' : ''}"><span class="name">${esc(e.name)}${e.deleted ? ' <span class="pill harmful">deleted</span>' : ''}</span><span class="meta">${e.size.toLocaleString()} bytes · cluster ${e.cluster}<br>Created ${e.created}<br>Modified ${e.modified}<br>Accessed ${e.accessed}</span><div class="acts">${entryActs(e)}</div></div>`;
+  }
+  h += `</div>`;
+  if (S.toolView && S.toolView.kind === 'file') {
+    const e = v.entries.find(x => x.i === S.toolView.i);
+    const bytes = readFile(img, v, e), s = sniff(bytes);
+    h += `<p class="prompt">${esc(e.name)}</p>`;
+    h += s.short === 'TXT' ? `<div class="filetext">${esc(decodeText(bytes))}</div>` : `<div class="filetext">${esc(ascii(bytes.subarray(0, 240)))}…</div><p class="pbody">This doesn't read as text. Try the Signatures tool.</p>`;
+  }
+  if (S.recovered) h += `<p class="prompt">Recovered from clusters 3–4 (first letter of the name lost)</p><div class="filetext">${esc(S.recoveredText)}</div><div class="row" style="margin-top:8px"><button class="sm pin" data-act="pin" data-id="E_REC">Pin recovered file</button></div>`;
+  return h;
+}
+function sigToolHTML(img, v) {
+  let h = `<p class="tooldesc">Compares each file's first bytes (its signature) with what its extension promises.</p>`;
+  const rows = v.entries.filter(e => !e.isLabel && !e.deleted).map(e => {
+    const b = readFile(img, v, e), s = sniff(b), expect = EXT_TYPE[e.ext] || 'Unknown', ok = s.type === expect;
+    return { e, s, expect, ok, b };
+  });
+  h += `<div class="stack">${rows.map(r => `<div class="entry ${r.ok ? '' : 'del'}"><span class="name">${esc(r.e.name)} ${r.ok ? '<span class="pill best">match</span>' : '<span class="pill harmful">mismatch</span>'}</span><span class="meta">Header ${r.s.header.match(/../g).join(' ')}<br>Extension says: ${esc(r.expect)} · Contents: ${esc(r.s.type)}</span>${r.ok ? '' : `<div class="acts"><button class="sm" data-act="openpng" data-id="${r.e.i}">Open as ${esc(r.s.short)}</button><button class="sm pin" data-act="pin" data-id="E_SIG">Pin</button></div>`}</div>`).join('')}</div>`;
+  if (S.toolView && S.toolView.kind === 'png') h += `<p class="prompt">NOTES.TXT opened as a PNG</p><img class="imgprev" alt="Screenshot of Priya Shah's Lab 3 report, page 2" src="${S.toolView.url}">`;
+  return h;
+}
+function timeToolHTML(v) {
+  const ev = [];
+  for (const e of v.entries) {
+    if (e.isLabel) continue;
+    if (e.created) ev.push({ t: e.created, k: 'Created', e });
+    if (e.modified) ev.push({ t: e.modified, k: 'Modified', e });
+    if (e.accessed) ev.push({ t: e.accessed + ' 23:59:59', k: 'Accessed', e, dateOnly: true });
+  }
+  ev.sort((a, b) => a.t < b.t ? -1 : a.t > b.t ? 1 : 0);
+  let h = `<p class="tooldesc">Every timestamp on the volume, oldest first. FAT stores access as a date only.</p><div class="scroll"><table class="tbl"><thead><tr><th>When</th><th>Event</th><th>File</th></tr></thead><tbody>`;
+  for (const x of ev) h += `<tr class="${x.e.deleted ? 'del' : ''}"><td class="mono">${x.dateOnly ? x.t.slice(0, 10) + ' (date)' : x.t}</td><td>${x.k}</td><td class="name">${esc(x.e.name)}${x.k === 'Created' && x.e.name === 'JLEE_L3.TXT' ? ` <button class="sm pin" data-act="pin" data-id="E_JLEE">Pin</button>` : ''}</td></tr>`;
+  return h + `</tbody></table></div>`;
+}
+function cmpToolHTML(img, v) {
+  const j = v.entries.find(e => e.name === 'JLEE_L3.TXT');
+  if (!S.recovered) return `<p class="tooldesc">Compare puts Jordan's report beside another text and marks identical sentences.</p><div class="fb neutral">You need the deleted file first. Recover it in the Directory tool.</div><div class="row" style="margin-top:10px"><button class="btn" data-act="tool" data-id="dir">Open Directory</button></div>`;
+  const jt = decodeText(readFile(img, v, j)), pt = S.recoveredText;
+  const shared = sharedSentences(jt, pt), mark = t => { let o = esc(t); for (const s of shared) o = o.split(esc(s)).join(`<mark>${esc(s)}</mark>`); return o; };
+  return `<p class="tooldesc">JLEE_L3.TXT beside the recovered file. Identical sentences are marked.</p><p class="kicker">${shared.length} sentences match word for word</p><div class="cmpcols cmp"><div><p class="prompt">JLEE_L3.TXT</p><div class="filetext">${mark(jt)}</div></div><div><p class="prompt">Recovered ?SHAH_L3.TXT</p><div class="filetext">${mark(pt)}</div></div></div><div class="row" style="margin-top:10px"><button class="sm pin" data-act="pin" data-id="E_CMP">Pin the match</button></div>`;
+}
+function inboxHTML() {
+  if (!S.inbox.length) return '<p class="pbody">No messages.</p>';
+  return `<p class="kicker">Inbox</p>` + S.inbox.map(m => `<div class="msg ${m.unread ? 'unread' : ''}"><span class="kicker">${esc(m.from)}</span><h4>${esc(m.subject)}</h4>${(Array.isArray(m.body) ? m.body : [m.body]).map(p => `<p>${esc(p)}</p>`).join('')}</div>`).join('');
+}
+function evidenceHTML() {
+  if (!S.pins.size) return `<p class="kicker">Evidence</p><p class="pbody">Nothing pinned yet. Findings you pin from the Bench appear here and on the board.</p>`;
+  return `<p class="kicker">Evidence · ${S.pins.size} pinned</p>` + S.pinOrder.map(id => `<div class="evi"><small>From ${esc(EVI[id].from)}</small><b>${esc(EVI[id].title)}</b><span class="pbody" style="margin:0">${esc(evidenceDetail(id))}</span><div class="row"><button class="sm" data-act="select" data-id="${id}">Show on board</button></div></div>`).join('');
+}
+
+/* ---------------- rendering: board ---------------- */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const view = { k: 1, tx: 0, ty: 0 };
+let layoutCache = null;
+function wrap(text, max) { const words = String(text).split(' '); const lines = []; let cur = ''; for (const w of words) { if ((cur + ' ' + w).trim().length > max && cur) { lines.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); } if (cur) lines.push(cur); return lines; }
+function hashStr(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return h; }
+const SIZE = { note: [184, 104], index: [184, 104], form: [196, 108], message: [210, 112], claim: [268, 98], evidence: [164, 112] };
+const SIZE_P = { note: [214, 112], index: [214, 112], form: [214, 118], message: [214, 124], claim: [214, 130], evidence: [200, 112] };
+function boardItems() {
+  const b = S.board, items = [];
+  for (const n of CASE.nodes) if (n.board === b && S.revealed.has(n.id)) items.push({ id: n.id, type: n.kind === 'claim' ? 'claim' : n.card, x: n.x, y: n.y, node: n });
+  for (const eid of S.pinOrder) {
+    const e = EVI[eid], eb = e.board || 'analyze';
+    if (b === 'report') items.push({ id: eid, type: 'evidence', ev: e });
+    else if (eb === b) items.push({ id: eid, type: 'evidence', x: e.x, y: e.y, ev: e });
+  }
+  return items;
+}
+function layout(items, portrait) {
+  const W = portrait ? 480 : 1000, X0 = 16, X1 = 250;
+  if (b_is('report')) {
+    const ev = items.filter(i => i.type === 'evidence'), rest = items.filter(i => i.type !== 'evidence');
+    if (!portrait) ev.forEach((it, k) => { it.x = 24 + (k % 2) * 178; it.y = 26 + Math.floor(k / 2) * 150; });
+    else {
+      const leads = rest.filter(i => i.type !== 'claim'), claims = rest.filter(i => i.type === 'claim');
+      leads.forEach((it, k) => { it.x = k % 2 ? X1 : X0; it.y = 20 + Math.floor(k / 2) * 140; });
+      const top = 20 + Math.ceil(leads.length / 2) * 140 + 10;
+      ev.forEach((it, k) => { it.x = X0; it.y = top + k * 140; });
+      claims.forEach((it, k) => { it.x = X1; it.y = top + k * 150; });
+    }
+  } else if (portrait) {
+    items.forEach((it, k) => { it.x = (k % 2) ? X1 : X0; it.y = 24 + Math.floor(k / 2) * 160 + ((k % 2) ? 64 : 0); });
+  }
+  let H = portrait ? 0 : 640;
+  for (const it of items) { const [w, h] = (portrait ? SIZE_P : SIZE)[it.type]; it.w = w; it.h = h; it.cx = it.x + w / 2; it.cy = it.y + h / 2; if (portrait) H = Math.max(H, it.y + h + 30); }
+  return { W, H: Math.max(H, portrait ? 560 : 640), items, portrait };
+}
+function b_is(b) { return S.board === b; }
+function cardSVG(it) {
+  const { id, type, w, h } = it, rot = ((hashStr(id) % 5) - 2) * 0.9;
+  const solved = S.solved.has(id), sel = S.sel === id, pick = S.pickE === id || S.pickC === id;
+  const papers = { note: '#f2df7d', index: '#fdfcf6', form: '#e2efe0', message: '#dfeaf5', claim: '#ead39f', evidence: '#ffffff' };
+  let g = `<g class="card${sel ? ' sel' : ''}${pick ? ' pick' : ''}${S.fresh.has(id) ? ' fresh' : ''}" data-card="${id}" tabindex="0" role="button" aria-label="${esc((it.node ? it.node.title : it.ev.title))}" transform="translate(${it.x} ${it.y}) rotate(${rot} ${w / 2} ${h / 2})">`;
+  g += `<rect x="3" y="5" width="${w}" height="${h}" rx="3" fill="rgba(40,22,8,.28)"/>`;
+  g += `<rect class="paper" width="${w}" height="${h}" rx="3" fill="${papers[type]}" stroke="rgba(60,40,20,.25)" stroke-width="1"/>`;
+  const ink = '#231f1a', ink2 = '#6a5f50';
+  if (type === 'index') { for (let y = 34; y < h - 6; y += 16) g += `<line x1="8" x2="${w - 8}" y1="${y}" y2="${y}" stroke="#b9cfe6" stroke-width="1"/>`; g += `<line x1="22" x2="22" y1="4" y2="${h - 4}" stroke="#e5a3a3" stroke-width="1"/>`; }
+  if (type === 'form') g += `<rect width="${w}" height="20" fill="#bcd6b8"/><text x="10" y="14" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" font-weight="700" fill="#2e4a2b" letter-spacing="1.2">FORM · ${esc(id)}</text>`;
+  if (type === 'message') g += `<text x="12" y="18" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" font-weight="700" fill="#35506d" letter-spacing="1.2">STATEMENT</text>`;
+  if (type === 'claim') g += `<text x="12" y="20" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11" font-weight="700" fill="#6b4f1d" letter-spacing="1.2">CLAIM ${esc(id)}</text>`;
+  if (type === 'evidence') {
+    g += `<rect x="8" y="8" width="${w - 16}" height="52" fill="#26323a"/><text x="${w / 2}" y="41" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="17" font-weight="700" fill="#e8f2f1">${esc(it.ev.glyph)}</text>`;
+    wrap(it.ev.title, Math.floor((w - 20) / 6.9)).slice(0, 3).forEach((ln, i) => g += `<text x="10" y="${77 + i * 14}" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11.5" font-weight="600" fill="${ink}">${esc(ln)}</text>`);
+    if (S.integrity === 'broken' && id !== 'E_HASH') g += `<g transform="rotate(-14 ${w / 2} ${h / 2})"><rect x="${w / 2 - 66}" y="${h / 2 - 15}" width="132" height="30" fill="none" stroke="#c0271d" stroke-width="2.5" rx="3"/><text x="${w / 2}" y="${h / 2 + 6}" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="14" font-weight="800" fill="#c0271d" letter-spacing="1.5">CHAIN BROKEN</text></g>`;
+  } else {
+    const fs = type === 'claim' ? 15 : 16, title = it.node.title, max = Math.floor((w - 24) / (fs * 0.53));
+    const top = type === 'form' ? 42 : type === 'message' || type === 'claim' ? 42 : 28;
+    wrap(title, max).slice(0, type === 'claim' ? 4 : 3).forEach((ln, i) => g += `<text x="12" y="${top + i * (fs + 3)}" font-family="'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif" font-size="${fs}" font-weight="700" fill="${ink}">${esc(ln)}</text>`);
+    if (type !== 'claim' && type !== 'message') g += `<text x="12" y="${h - 10}" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="${ink2}" letter-spacing="1">${esc(id)} · ${solved ? 'DONE' : 'OPEN'}</text>`;
+    if (type === 'claim') { const n = S.strings.filter(s => s.c === id).length; if (n) g += `<text x="${w - 12}" y="${h - 10}" text-anchor="end" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="${ink2}">${n} string${n > 1 ? 's' : ''}</text>`; }
+    if (solved && type !== 'claim' && type !== 'message') g += `<g transform="translate(${w - 26} ${h - 26}) rotate(-12)"><circle r="14" fill="none" stroke="#2d7a39" stroke-width="2.5"/><path d="M-6 0 L-1 5 L7 -5" fill="none" stroke="#2d7a39" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+  }
+  g += `<circle cx="${w / 2}" cy="2" r="7" fill="${type === 'evidence' ? '#c0271d' : type === 'claim' ? '#3b6ea8' : '#0d6b6f'}" stroke="rgba(0,0,0,.35)" stroke-width="1"/><circle cx="${w / 2 - 2}" cy="0" r="2.2" fill="rgba(255,255,255,.7)"/>`;
+  return g + `</g>`;
+}
+function renderBoard() {
+  const svg = $('#board'), list = $('#boardList'), box = svg.getBoundingClientRect();
+  const portrait = box.width > 0 ? box.width < 640 : window.innerWidth < 700;
+  const L = layout(boardItems(), portrait); layoutCache = L;
+  const byId = Object.fromEntries(L.items.map(i => [i.id, i]));
+  svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
+  /* on a phone the board is taller than its window: bring a new card, or the one asked for, into view */
+  if (L.portrait && box.height > 0) {
+    const u = Math.min(L.W / box.width, L.H / box.height), top = -view.ty / view.k, visH = box.height * u / view.k;
+    const want = S.panTo ? byId[S.panTo] : L.items.filter(i => S.fresh.has(i.id)).sort((a, b) => a.y - b.y)[0];
+    if (want && (want.y < top || want.y + want.h > top + visH)) { view.ty = -Math.max(0, want.y - 24) * view.k; view.tx = 0; }
+    S.panTo = null;
+  }
+  svg.setAttribute('preserveAspectRatio', L.portrait ? 'xMidYMin slice' : 'xMidYMin meet');
+  let threads = '', strings = '';
+  for (const it of L.items) {
+    if (it.node && it.node.unlocks) for (const u of it.node.unlocks) if (byId[u]) threads += `<line x1="${it.cx}" y1="${it.y + 2}" x2="${byId[u].cx}" y2="${byId[u].y + 2}"/>`;
+    if (it.node && it.node.q && it.node.q.options) for (const o of it.node.q.options) { const ul = (o.unlocks && o.unlocks.mismatch) || []; for (const u of ul) if (byId[u]) threads += `<line x1="${it.cx}" y1="${it.y + 2}" x2="${byId[u].cx}" y2="${byId[u].y + 2}"/>`; }
+    if (it.ev && S.board !== 'report' && byId[it.ev.lead]) threads += `<line x1="${byId[it.ev.lead].cx}" y1="${byId[it.ev.lead].y + 2}" x2="${it.cx}" y2="${it.y + 2}" stroke-dasharray="5 4"/>`;
+  }
+  if (S.board === 'report') for (const s of S.strings) {
+    const a = byId[s.e], c = byId[s.c]; if (!a || !c) continue;
+    const exam = S.mode === 'exam', col = !exam && !s.ok ? '#c0271d' : s.rel === 'supports' ? 'var(--string)' : 'var(--contra)';
+    strings += `<line x1="${a.cx}" y1="${a.y + 2}" x2="${c.cx}" y2="${c.y + 2}" stroke="${col}" stroke-width="3" ${s.rel === 'contradicts' ? 'stroke-dasharray="10 6"' : ''} ${!exam && !s.ok ? 'opacity=".55"' : ''}/>`;
+  }
+  const pat = `<defs><pattern id="cork" width="46" height="46" patternUnits="userSpaceOnUse"><rect width="46" height="46" fill="var(--cork)"/><circle cx="7" cy="9" r="1.6" fill="var(--cork-dot)"/><circle cx="29" cy="5" r="1.1" fill="var(--cork-2)"/><circle cx="38" cy="27" r="1.8" fill="var(--cork-dot)"/><circle cx="15" cy="33" r="1.2" fill="var(--cork-2)"/><circle cx="24" cy="21" r=".9" fill="var(--cork-dot)"/><circle cx="42" cy="42" r="1.1" fill="var(--cork-2)"/></pattern></defs>`;
+  svg.innerHTML = `${pat}<rect width="100%" height="100%" fill="url(#cork)"/><g id="vp" transform="translate(${view.tx} ${view.ty}) scale(${view.k})"><rect x="-2000" y="-2000" width="${L.W + 4000}" height="${L.H + 4000}" fill="url(#cork)"/><g fill="none" stroke="var(--thread)" stroke-width="1.6" opacity=".7">${threads}</g><g class="strings" fill="none" stroke-linecap="round">${strings}</g>${L.items.map(cardSVG).join('')}</g>`;
+  if (S.listView) {
+    list.hidden = false; svg.style.display = 'none';
+    list.innerHTML = L.items.map(it => `<button data-act="select" data-id="${it.id}"><span class="k">${it.type === 'evidence' ? 'Evidence' : it.type === 'claim' ? 'Claim ' + it.id : (S.solved.has(it.id) ? 'Done · ' : 'Open · ') + it.id}</span><span>${esc(it.node ? it.node.title : it.ev.title)}</span></button>`).join('') || '<p>No cards yet.</p>';
+  } else { list.hidden = true; svg.style.display = ''; }
+  setTimeout(() => { S && S.fresh.clear(); }, 2600);
+}
+
+function render() {
+  if (!S) return;
+  renderHeader(); renderTabs(); renderPanel(); renderBoard();
+  saveProgress();
+}
+
+/* ---------------- board interaction ---------------- */
+function tapCard(id) {
+  if (S.board === 'report' && S.unlocked.has('report')) {
+    if (EVI[id]) { S.pickE = S.pickE === id ? null : id; S.pickC = null; S.sel = id; S.tab = 'lead'; render(); return; }
+    if (NODE[id] && NODE[id].kind === 'claim') { S.sel = id; S.pickC = S.pickE ? id : null; S.tab = 'lead'; S.lastString = null; render(); return; }
+  }
+  S.sel = id; S.tab = 'lead';
+  const n = NODE[id];
+  if (n && n.q && n.q.type === 'message' && !S.solved.has(id)) solve(id);
+  render();
+}
+(function boardPointer() {
+  const svg = $('#board'); const pts = new Map(); let drag = null, moved = false, pinch = null;
+  const unit = () => { const r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal; if (!vb || !vb.width) return 1; const a = vb.width / r.width, b = vb.height / r.height; return layoutCache && layoutCache.portrait ? Math.min(a, b) : Math.max(a, b); };
+  svg.addEventListener('pointerdown', e => {
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 1) { drag = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty }; moved = false; }
+    if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), k: view.k }; moved = true; }
+  });
+  window.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()]; view.k = Math.min(3, Math.max(0.5, pinch.k * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d)); applyView(); return; }
+    if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 6) moved = true; if (moved) { const u = unit(); view.tx = drag.tx + dx * u; view.ty = drag.ty + dy * u; applyView(); } }
+  });
+  const end = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; };
+  window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+  svg.addEventListener('click', e => { if (moved) { moved = false; return; } const c = e.target.closest('[data-card]'); if (c) tapCard(c.dataset.card); });
+  svg.addEventListener('keydown', e => { const c = e.target.closest('[data-card]'); if (c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tapCard(c.dataset.card); } });
+  svg.addEventListener('wheel', e => { e.preventDefault(); const k0 = view.k; view.k = Math.min(3, Math.max(0.5, view.k * Math.exp(-e.deltaY * 0.0015)));
+    const r = svg.getBoundingClientRect(), u = unit(), px = (e.clientX - r.left) * u, py = (e.clientY - r.top) * u;
+    view.tx = px - (px - view.tx) * view.k / k0; view.ty = py - (py - view.ty) * view.k / k0; applyView(); }, { passive: false });
+})();
+function applyView() { const vp = $('#vp'); if (vp) vp.setAttribute('transform', `translate(${view.tx} ${view.ty}) scale(${view.k})`); }
+function zoom(f) { const L = layoutCache; const cx = L ? L.W / 2 : 500, cy = L ? L.H / 3 : 300; const k0 = view.k; view.k = Math.min(3, Math.max(0.5, view.k * f)); view.tx = cx - (cx - view.tx) * view.k / k0; view.ty = cy - (cy - view.ty) * view.k / k0; applyView(); }
+function fit() { view.k = 1; view.tx = 0; view.ty = 0; applyView(); }
+
+/* ---------------- scoring & debrief ---------------- */
+function decisions() {
+  const out = [];
+  for (const n of CASE.nodes) {
+    if (!n.q || !['mc', 'value'].includes(n.q.type)) continue;
+    const a = S.ans[n.id]; if (!a || !a.first || !S.solved.has(n.id) && !a.first) continue;
+    if (!S.solved.has(n.id) && a.first.retry) continue;
+    const bi = n.q.options ? n.q.options.findIndex(o => resolveCond(o.r) === 'best') : -1;
+    out.push({ id: n.id, board: n.board, title: n.title, rating: a.first.rating, attempts: a.attempts, hint: S.hints.has(n.id),
+      answer: n.q.options ? n.q.options[a.first.choice].t : a.first.value, best: bi >= 0 ? n.q.options[bi].t : n.q.accept[0] });
+  }
+  if (S.solved.has('R0')) { const wrong = S.mode === 'exam' ? S.strings.filter(s => !s.ok).length : S.wrongStrings; out.push({ id: 'R0', board: 'report', title: 'String the board', rating: wrong <= 1 ? 'best' : wrong <= 4 ? 'acceptable' : 'harmful', answer: `${S.strings.filter(s => s.ok).length} strings hold, ${wrong} failed`, best: 'Every finding backed; no strings that fail' }); }
+  if (S.report) out.push({ id: 'R1', board: 'report', title: 'File your findings', rating: S.report.rating, answer: S.report.chosen.join(', ') || 'none', best: 'F1–F4, not F5' });
+  return out;
+}
+function scoreNow() { const d = decisions(); const pts = d.reduce((s, x) => s + PTS[x.rating], 0); return { count: d.length, pct: d.length ? pts / (d.length * 10) : 0, d }; }
+function judgeReport(chosen, summary, at) {
+  const F = CASE.report.findings, valid = F.filter(f => f.valid).map(f => f.id);
+  chosen = chosen.filter(c => F.some(f => f.id === c));
+  const invalid = chosen.filter(c => !F.find(f => f.id === c).valid);
+  const missing = valid.filter(v => !chosen.includes(v));
+  const unsupported = chosen.filter(c => { const f = F.find(x => x.id === c); return f.valid && !S.strings.some(s => s.c === f.claim && s.ok); });
+  const rating = invalid.length ? 'harmful' : (!missing.length && !unsupported.length) ? 'best' : 'acceptable';
+  return { chosen, summary: String(summary || '').slice(0, 4000), rating, invalid, missing, unsupported, at: at || new Date().toISOString() };
+}
+function fileReport(chosen, summary) {
+  S.report = judgeReport(chosen, summary);
+  solve('R1'); S.ended = true; S.ended_at = new Date().toISOString(); showDebrief();
+}
+
+/* ---------- keeping your place: save after every change, reopen on start ---------- */
+function snapshot() {
+  return { v: 1, app: APP.version, case: CASE.id, caseVersion: CASE.version, mode: S.mode, started: S.started, board: S.board,
+    unlocked: [...S.unlocked], revealed: [...S.revealed], solved: [...S.solved], sel: S.sel, ans: S.ans, hints: [...S.hints],
+    acquired: S.acquired, deviceAltered: S.deviceAltered, alterDate: S.alterDate || 0, hash: S.hash, ownHash: S.ownHash || null, hashCond: S.hashCond || null,
+    integrity: S.integrity, usedReference: S.usedReference, recovered: S.recovered, pins: S.pinOrder,
+    strings: S.strings.filter(x => x.ok || S.mode === 'exam').map(x => ({ e: x.e, c: x.c, rel: x.rel })), wrongStrings: S.wrongStrings,
+    inbox: S.inbox.map(m => ({ from: m.from, subject: m.subject, body: m.body })), report: S.report ? { chosen: S.report.chosen, summary: S.report.summary, at: S.report.at } : null,
+    ended: S.ended, endedAt: S.ended_at || null, boardDone: S.boardDone };
+}
+function saveProgress() {
+  if (!S) return;
+  if (!storeSet(KEY, JSON.stringify(snapshot())) && !warnedStorage) { warnedStorage = true; toast('This browser isn\'t keeping your progress. Finish the case in one sitting.'); }
+}
+function savedProgress() { try { const d = JSON.parse(storeGet(KEY) || 'null'); return d && d.v === 1 && d.case === CASE.id ? d : null; } catch (e) { return null; } }
+function tidyEntry(n, e) {
+  if (!e || typeof e !== 'object') return null;
+  const out = { rating: ['best', 'acceptable', 'harmful'].includes(e.rating) ? e.rating : 'harmful', fb: String(e.fb || ''), retry: !!e.retry };
+  if (n.q.options) { if (!Number.isInteger(e.choice) || e.choice < 0 || e.choice >= n.q.options.length) return null; out.choice = e.choice; }
+  else out.value = String(e.value || '').slice(0, 200);
+  return out;
+}
+function restore(d) {
+  const st = newState(d.mode === 'exam' ? 'exam' : 'practice');
+  const arr = (a, ok) => Array.isArray(a) ? a.filter(ok) : [], isNode = id => typeof id === 'string' && !!NODE[id];
+  if (typeof d.started === 'string') st.started = d.started;
+  st.unlocked = new Set(['image', ...arr(d.unlocked, b => !!BOARD[b])]);
+  st.board = BOARD[d.board] && st.unlocked.has(d.board) ? d.board : 'image';
+  st.revealed = new Set(arr(d.revealed, isNode)); st.solved = new Set(arr(d.solved, id => isNode(id) && st.revealed.has(id)));
+  if (!st.revealed.size) for (const n of CASE.nodes) if (n.board === 'image' && n.start) st.revealed.add(n.id);
+  st.sel = isNode(d.sel) || EVI[d.sel] ? d.sel : null;
+  if (d.ans && typeof d.ans === 'object') for (const [k, a] of Object.entries(d.ans)) {
+    const n = NODE[k]; if (!n || !n.q || !a || typeof a !== 'object') continue;
+    const first = tidyEntry(n, a.first), last = tidyEntry(n, a.last); if (!first) continue;
+    st.ans[k] = { attempts: Math.max(1, Math.min(99, +a.attempts || 1)), first, last: last || first, hint: !!a.hint };
+  }
+  st.hints = new Set(arr(d.hints, isNode));
+  if (d.deviceAltered) alterDeviceOn(st, (+d.alterDate || 0) & 0xFFFF);
+  st.acquired = !!d.acquired; st.usedReference = !!d.usedReference;
+  if (st.acquired) st.working = st.usedReference ? ORIGINAL.slice() : st.device.slice();
+  const hx = h => h && /^[0-9a-f]{32}$/.test(h.md5) && /^[0-9a-f]{64}$/.test(h.sha256) ? { md5: h.md5, sha256: h.sha256 } : null;
+  st.hash = st.acquired ? hx(d.hash) : null; st.ownHash = hx(d.ownHash);
+  st.hashCond = d.hashCond === 'match' || d.hashCond === 'mismatch' ? d.hashCond : null;
+  st.integrity = ['intact', 'documented', 'broken'].includes(d.integrity) ? d.integrity : 'intact';
+  st.pinOrder = arr(d.pins, e => !!EVI[e]).filter((e, i, a) => a.indexOf(e) === i); st.pins = new Set(st.pinOrder);
+  st.inbox = arr(d.inbox, m => m && typeof m.subject === 'string').slice(0, 50).map(m => ({ from: String(m.from || ''), subject: m.subject, body: Array.isArray(m.body) ? m.body.map(String) : String(m.body || ''), unread: false }));
+  st.wrongStrings = Math.max(0, +d.wrongStrings || 0);
+  for (const b of CASE.boards) if (d.boardDone && d.boardDone[b.id]) st.boardDone[b.id] = true;
+  return { st, strings: arr(d.strings, x => x && EVI[x.e] && NODE[x.c] && NODE[x.c].kind === 'claim' && (x.rel === 'supports' || x.rel === 'contradicts')),
+    recovered: !!d.recovered, report: d.report && Array.isArray(d.report.chosen) ? d.report : null, ended: !!d.ended, endedAt: typeof d.endedAt === 'string' ? d.endedAt : null };
+}
+function resumeCase() {
+  const d = savedProgress(); if (!d) { openCase(); return; }
+  const r = restore(d); S = r.st; fit();
+  if (r.recovered) recoverPriya();
+  for (const x of r.strings) if (!S.strings.some(y => y.e === x.e && y.c === x.c)) S.strings.push(judgeString(x.e, x.c, x.rel));
+  if (r.report && S.solved.has('R0')) { S.report = judgeReport(r.report.chosen.map(String), r.report.summary, r.report.at); S.ended = r.ended; S.ended_at = r.endedAt; }
+  if (S.ended && !S.solved.has('R1')) S.solved.add('R1');
+  $('#ovStart').hidden = true; $('#ovBrief').hidden = true; render();
+  if (S.ended) showDebrief(); else toast('Picked up where you left off.');
+}
+function outcome() {
+  const r = S.report;
+  if (S.integrity === 'broken') return ['Case dismissed', 'The board could not rely on evidence from an image that does not match the seized drive, and the mismatch was not disclosed. The findings may be right; the method can\'t carry them.'];
+  if (r && r.invalid.length) return ['Report sent back', 'Your findings went past the evidence. Nothing on a USB drive shows how Jordan obtained Priya\'s report.'];
+  if (r && r.missing.length) return ['Findings accepted, with gaps', `Dr. Alvarez accepted what you signed but asked why ${r.missing.join(', ')} ${r.missing.length > 1 ? 'were' : 'was'} left out.`];
+  if (S.integrity === 'documented') return ['Findings accepted, with a note', 'The board relied on Campus Security\'s reference image. Your disclosed acquisition error is part of the record.'];
+  return ['Findings accepted', 'Every finding is backed by evidence from a verified image, and nothing goes past it.'];
+}
+function stars(sc) {
+  if (S.integrity === 'broken') return 0;
+  const proc = sc.d.filter(x => x.board === 'image' || x.board === 'preserve');
+  let s = 1;
+  if (sc.pct >= 0.7) s = 2;
+  if (sc.pct >= 0.85 && S.integrity === 'intact' && !proc.some(x => x.rating === 'harmful')) s = 3;
+  if (S.report && S.report.invalid.length) s = Math.min(s, 1);
+  return s;
+}
+function results() {
+  const sc = scoreNow();
+  return { case: CASE.id, version: CASE.version, mode: S.mode, started: S.started, ended: S.ended_at || null, integrity: S.integrity, deviceAltered: S.deviceAltered,
+    score: Math.round(sc.pct * 100), stars: S.ended ? stars(sc) : null, outcome: S.ended ? outcome()[0] : null,
+    decisions: sc.d.map(x => ({ node: x.id, title: x.title, rating: x.rating, attempts: x.attempts, hint: x.hint, answer: x.answer })),
+    pins: S.pinOrder, strings: S.strings.map(s => ({ evidence: s.e, claim: s.c, relation: s.rel, holds: s.ok })), wrongStringsDuringPlay: S.wrongStrings,
+    report: S.report ? { findings: S.report.chosen, summary: S.report.summary, rating: S.report.rating } : null, hints: [...S.hints] };
+}
+function showDebrief() {
+  const sc = scoreNow(), st = stars(sc), [t, txt] = outcome();
+  const cat = (label, f) => { const d = sc.d.filter(f); const p = d.length ? d.reduce((s, x) => s + PTS[x.rating], 0) / (d.length * 10) : 0; return `<div class="bar"><span>${label}</span><span class="t"><i style="width:${Math.round(p * 100)}%"></i></span><span class="v">${d.length ? Math.round(p * 100) + '%' : '—'}</span></div>`; };
+  $('#debriefSheet').innerHTML = `<p class="kicker">Debrief · ${esc(CASE.title)} · ${S.mode === 'exam' ? 'Exam' : 'Practice'}</p><h2>${esc(t)}</h2><p class="lede">${esc(txt)}</p>
+  <div class="row" style="margin-top:14px;gap:18px"><span class="stars" aria-label="${st} of 3 stars">${'★'.repeat(st)}<span class="off">${'★'.repeat(3 - st)}</span></span><span class="chip">Score ${Math.round(sc.pct * 100)}%</span><span class="chip ${({ intact: 'good', documented: 'warn', broken: 'bad' })[S.integrity]}"><i></i>${({ intact: 'Chain intact', documented: 'Error documented', broken: 'Chain broken' })[S.integrity]}</span></div>
+  <h3>By Category</h3><div class="bars">${cat('Procedure', x => x.board === 'image' || x.board === 'preserve')}${cat('Analysis', x => x.board === 'analyze')}${cat('Reasoning', x => x.id === 'R0')}${cat('Reporting', x => x.id === 'R1')}</div>
+  <h3>Your Path</h3><div class="scroll"><table class="tbl path"><thead><tr><th>Lead</th><th>Your first answer</th><th>Rating</th></tr></thead><tbody>${sc.d.map(x => `<tr><td><b>${esc(x.id)}</b> ${esc(x.title)}</td><td>${esc(x.answer)}${x.rating !== 'best' ? `<br><span style="color:var(--ink-3)">Best: ${esc(x.best)}</span>` : ''}${x.attempts > 1 ? `<br><span class="mono">${x.attempts} attempts</span>` : ''}</td><td><span class="pill ${x.rating}">${RLABEL[x.rating]}</span></td></tr>`).join('')}</tbody></table></div>
+  <h3>Reflect</h3><ol class="pbody"><li>Which single step in Image or Preserve would have hurt this case most if you'd skipped it?</li><li>What would you need, beyond this drive, to show how Jordan got Priya's report?</li><li>Which string did you nearly make that the evidence couldn't support?</li></ol>
+  <div class="row" style="margin-top:18px"><button class="btn primary" data-act="saveresults">Save results file</button><button class="btn" data-act="copyresults">Copy results</button><button class="btn" data-act="replay">Play again</button><button class="btn" data-act="cases">Back to cases</button><button class="btn" data-act="closeov">Look at the board</button></div><p class="pbody" id="debriefMsg" role="status" style="margin-top:8px"></p><textarea id="resultsOut" class="mono" hidden></textarea>`;
+  $('#ovDebrief').hidden = false;
+}
+
+/* ---------------- start, brief, instructor ---------------- */
+const SLATE = [
+  ['Day One', '100', 'Tutorial: intake, write blocking, hashing'], ['Doctored Numbers', '200', 'Carving, signatures, MAC timeline'],
+  ['The Insider', '200', 'Recycle Bin, LNK files, USB history'], ['Rhino Traffic', '200', 'Packets, DNS, extracted images'],
+  ['Box 3', '200', 'Linux logs, shell history, persistence'], ['Lost Phone', '300', 'Messages, EXIF and GPS, cloud sync']];
+function renderStart() {
+  $('#startSheet').innerHTML = `<h1>IPAR</h1><p class="lede">A digital forensics case board. You're the examiner: image the evidence, preserve it, analyze it, and report only what it shows.</p>
+  <div class="ipar"><span><b>I</b>mage</span><span><b>P</b>reserve</span><span><b>A</b>nalyze</span><span><b>R</b>eport</span></div>
+  <h3>Cases</h3><div class="cases"><div class="case live"><span class="meta">Level 100 · about ${CASE.minutes} min · FAT12 drive</span><h4>${esc(CASE.title)}</h4><p>Two lab reports share whole sentences. A USB drive may say who had what, and when.</p>${caseButtons()}</div>
+  ${SLATE.map(([t, l, d]) => `<div class="case soon"><span class="meta">Level ${l} · planned</span><h4>${esc(t)}</h4><p>${esc(d)}</p></div>`).join('')}</div>
+  ${storageOK ? '' : `<div class="fb harmful" style="margin-top:12px"><b>This browser isn't keeping your progress.</b> A case takes about ${CASE.minutes} minutes, so finish it in one sitting, or open the app in Safari or Chrome outside private browsing.</div>`}
+  <h3>Mode</h3><div class="modes" role="group" aria-label="Mode"><button data-act="mode" data-id="practice" aria-pressed="${MODE === 'practice'}">Practice</button><button data-act="mode" data-id="exam" aria-pressed="${MODE === 'exam'}">Exam</button></div>
+  <p class="pbody" style="margin-top:8px">${MODE === 'practice' ? 'Hints and feedback after each answer.' : 'No hints. Feedback waits for the debrief.'}</p>
+  <h3>How It Plays</h3><ul class="howto"><li><b>Leads</b>Notes on the board. Answer one to reveal the leads it connects to.</li><li><b>Bench</b>Real tools on real bytes: hashing, hex, directory, signatures, timeline, compare.</li><li><b>Pins and strings</b>Pin what you find, then string evidence to the claims it supports or contradicts.</li><li><b>Integrity</b>A procedure mistake early carries through to the end. Some can be fixed; one can't.</li></ul>
+  <div class="row" style="margin-top:18px"><button class="btn" data-act="about">About, Credits and Learn the Ideas</button></div>
+  <p class="fine">IPAR ${APP.version}, ${APP.changes[0][1]}. A demo for the IPAR rebuild. The first IPAR (2014–2017) was built at RIT by Computing Security and Interactive Games &amp; Media with NSF support (DUE-1400567). ${esc(CASE.fiction)}</p>`;
+}
+let confirmRestart = false;
+function caseButtons() {
+  const d = savedProgress();
+  if (!d) return `<div class="row" style="margin-top:6px"><button class="btn primary" data-act="open">Open case file</button></div>`;
+  const where = d.ended ? 'Finished' : `${BOARD[d.board] ? BOARD[d.board].name : 'Image'} board, ${(d.solved || []).length} leads done`;
+  return `<p class="mono" style="font-size:12px;margin:4px 0 0">Saved: ${esc(where)} · ${d.mode === 'exam' ? 'Exam' : 'Practice'}</p><div class="row" style="margin-top:6px"><button class="btn primary" data-act="resume">${d.ended ? 'Show my debrief' : 'Pick up where I left off'}</button>${confirmRestart
+    ? `<button class="btn" data-act="restartyes" style="border-color:var(--bad);color:var(--bad)">Erase my progress and start over</button>` : `<button class="btn" data-act="restart">Start over</button>`}</div>`;
+}
+function renderAbout() {
+  const theme = document.documentElement.getAttribute('data-theme') || 'system';
+  $('#aboutSheet').innerHTML = `<div class="row" style="justify-content:space-between"><div><p class="kicker">IPAR · version ${APP.version} · ${APP.changes[0][1]}</p><h2>About IPAR</h2></div><button class="btn" data-act="closeov">Close</button></div>
+  <p class="lede">A digital forensics case board for beginners. You image a drive, prove your copy is faithful, find what it hides, and report only what it shows. It runs in your browser and nothing is uploaded.</p>
+  <h3>About This Version</h3><ul class="versions">${APP.changes.map(([v, d, items]) => `<li><b>${esc(v)} · ${esc(d)}</b><ul>${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></li>`).join('')}</ul>
+  <h3>Credits</h3><ul class="links" style="list-style:disc">
+    <li>The first IPAR (2014–2017) was designed at RIT by Yin Pan, Sumita Mishra and David Schwartz (Computing Security, and Interactive Games &amp; Media), with Onondaga and Corning Community Colleges and RIT student co-ops, with support from the National Science Foundation (award DUE-1400567).</li>
+    <li>This version: designed by David Schwartz, built with Claude (Anthropic), November 2026.</li>
+    <li>The case, its people and its drive are fictional and were made for this app. The screenshot inside the drive was drawn with the free DejaVu fonts.</li>
+    <li>The hashing (MD5, SHA-256), the FAT reader and every other part of the code were written for this app.</li></ul>
+  <h3>Learn the Ideas</h3><ul class="links">${LEARN.map(([t, u, d]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>: ${esc(d)}</li>`).join('')}</ul>
+  <h3>On Your Phone</h3><p class="pbody">Open <span class="mono">${esc(APP.home)}</span> in Safari on an iPhone or iPad, or in Chrome on Android. iPhone and iPad: tap Share, then Add to Home Screen. Android: tap Install, or the ⋮ menu and Add to Home screen. On iPhone the Home Screen app keeps its own copy of your progress, separate from Safari.</p>
+  <h3>Your Progress</h3><p class="pbody">${storageOK ? 'Kept in this browser only, under names that start with ipar:. Nothing leaves your device.' : 'This browser isn\'t keeping your progress, so it ends when you close the page.'}</p>
+  <div class="row"><button class="btn" data-act="theme">Look: ${theme === 'system' ? 'follows your device' : theme} (change)</button>${savedProgress() ? `<button class="btn" data-act="erase" style="border-color:var(--bad);color:var(--bad)">Erase my saved progress</button>` : ''}</div><p class="pbody" id="aboutMsg" role="status"></p>`;
+  $('#ovAbout').hidden = false;
+}
+function openCase() {
+  storeDel(KEY); confirmRestart = false;
+  S = newState(MODE); fit(); startBoard('image'); S.sel = 'I1';
+  mail(CASE.brief.from, CASE.brief.subject, CASE.brief.body); S.inbox[0].unread = false; S.unread = 0;
+  $('#ovStart').hidden = true; $('#ovDebrief').hidden = true;
+  $('#briefSheet').innerHTML = `<p class="kicker">Inbox · ${esc(CASE.brief.from)}</p><h2>${esc(CASE.brief.subject)}</h2>${CASE.brief.body.map(p => `<p>${esc(p)}</p>`).join('')}
+  <div class="form"><b>Custody form · ${esc(CASE.device.item)}</b><span>Item: ${esc(CASE.device.label)}</span><span>Bag: ${esc(CASE.device.bag)} · From: ${esc(CASE.device.from)}</span><span>Reference MD5: ${groupHash(ref.md5)}</span><span>Reference SHA-256: ${groupHash(ref.sha256)}</span></div>
+  <p class="fine">${esc(CASE.device.note)} ${esc(CASE.fiction)}</p><div class="row" style="margin-top:14px"><button class="btn primary" data-act="takecase">Take the case</button></div>`;
+  $('#ovBrief').hidden = false; render();
+}
+function validate() {
+  const checks = [], add = (ok, t, d) => checks.push({ ok, t, d });
+  const ids = new Set(CASE.nodes.map(n => n.id));
+  const badUnlock = []; for (const n of CASE.nodes) { for (const u of (n.unlocks || [])) if (!ids.has(u)) badUnlock.push(`${n.id}→${u}`); for (const o of (n.q && n.q.options) || []) for (const u of [].concat(...Object.values(typeof o.unlocks === 'object' && o.unlocks && !Array.isArray(o.unlocks) ? o.unlocks : { x: o.unlocks || [] }))) if (!ids.has(u)) badUnlock.push(`${n.id}→${u}`); }
+  add(!badUnlock.length, 'Every unlock points at a real node', badUnlock.join(', ') || `${CASE.nodes.length} nodes`);
+  for (const b of CASE.boards) {
+    const starts = CASE.nodes.filter(n => n.board === b.id && n.start);
+    const seen = new Set(starts.map(s => s.id)), q = [...seen];
+    while (q.length) { const n = NODE[q.shift()]; const nexts = [...(n.unlocks || [])]; for (const o of (n.q && n.q.options) || []) if (o.unlocks) nexts.push(...[].concat(...Object.values(Array.isArray(o.unlocks) ? { x: o.unlocks } : o.unlocks))); for (const u of nexts) if (!seen.has(u)) { seen.add(u); q.push(u); } }
+    const unreached = b.requires.filter(r => !seen.has(r));
+    add(starts.length === 1 && !unreached.length, `${b.name} board: one start, every required lead reachable`, unreached.length ? 'Unreachable: ' + unreached.join(', ') : `${b.requires.length} required leads`);
+  }
+  const badBest = []; for (const n of CASE.nodes) if (n.q && n.q.type === 'mc') for (const cond of (n.q.dynamic ? ['match', 'mismatch'] : [null])) { const c = n.q.options.filter(o => (cond ? (typeof o.r === 'object' ? o.r[cond] : o.r) : o.r) === 'best').length; if (c !== 1) badBest.push(n.id + (cond ? `/${cond}` : '')); }
+  add(!badBest.length, 'Exactly one best answer per question', badBest.join(', ') || 'all multiple-choice leads');
+  const evRefs = []; for (const n of CASE.nodes) if (n.q && n.q.type === 'pin') for (const e of n.q.needs) if (!EVI[e]) evRefs.push(e);
+  for (const k of [...Object.keys(CASE.answerGraph.supports), ...Object.keys(CASE.answerGraph.contradicts)]) { const [e, c] = k.split('>'); if (!EVI[e] || !ids.has(c)) evRefs.push(k); }
+  add(!evRefs.length, 'Pins and the answer graph use real evidence and claims', evRefs.join(', ') || `${Object.keys(CASE.answerGraph.supports).length + Object.keys(CASE.answerGraph.contradicts).length} valid strings`);
+  const need = NODE.R0.q.needs, unmet = Object.entries(need).filter(([c, rel]) => !Object.keys(CASE.answerGraph[rel]).some(k => k.endsWith('>' + c)));
+  add(!unmet.length, 'Every required string has at least one valid answer', unmet.map(x => x[0]).join(', ') || 'C1–C4');
+  const m = md5(ORIGINAL), s = sha256(ORIGINAL);
+  add(m === ref.md5 && s === ref.sha256, 'Reference hashes recomputed from the embedded image', `MD5 ${m.slice(0, 8)}… SHA-256 ${s.slice(0, 8)}…`);
+  const v = parseVolume(ORIGINAL), find = nm => v.entries.find(e => !e.isLabel && (e.deleted ? 'P' + e.name.slice(1) : e.name) === nm);
+  for (const f of CASE.facts) {
+    const e = find(f.name || f.a); let ok = false;
+    if (f.type === 'entry') ok = !!e && e.deleted === f.deleted;
+    if (f.type === 'created') ok = !!e && e.created === f.at;
+    if (f.type === 'signature') ok = !!e && sniff(readFile(ORIGINAL, v, e)).short === f.expect;
+    if (f.type === 'text') ok = !!e && decodeText(readFile(ORIGINAL, v, e)).includes(f.contains);
+    if (f.type === 'shared') { const b = find(f.b); ok = !!e && !!b && sharedSentences(decodeText(readFile(ORIGINAL, v, b)), decodeText(readFile(ORIGINAL, v, e))).length === f.count; }
+    add(ok, `Image fact: ${f.why}`, `${f.type} · ${f.name || f.a}`);
+  }
+  return checks;
+}
+function twee() {
+  const out = [`:: StoryTitle\n${CASE.title}\n`, `:: StoryData\n${JSON.stringify({ ifid: 'C0F1E5A2-5D2B-4E3A-9C1E-1A2B3C4D5E6F', format: 'IPAR', 'format-version': '0.1.0', start: 'I1', 'tag-colors': { image: 'teal', preserve: 'green', analyze: 'orange', report: 'red' }, zoom: 1 }, null, 2)}\n`];
+  const ox = { image: 0, preserve: 1100, analyze: 2200, report: 3300 };
+  for (const n of CASE.nodes) {
+    const tags = [n.board, n.kind === 'claim' ? 'claim' : n.q ? n.q.type : 'card'].join(' ');
+    const meta = { position: `${ox[n.board] + n.x},${n.y}`, size: '100,100' };
+    let body = [n.title, n.body, n.prompt].filter(Boolean).join('\n\n');
+    if (n.q && n.q.type !== 'message') { const q = { ...n.q }; body += '\n\n```ipar\n' + JSON.stringify(q, null, 1) + '\n```'; }
+    if (n.unlocks && n.unlocks.length) body += '\n\n' + n.unlocks.map(u => `[[${u}]]`).join(' ');
+    out.push(`:: ${n.id} [${tags}] ${JSON.stringify(meta)}\n${body}\n`);
+  }
+  return out.join('\n');
+}
+function renderInstructor(tab = 'validator') {
+  const tabs = [['validator', 'Validator'], ['json', 'Case JSON'], ['twee', 'Twine (Twee 3)'], ['results', 'Results']];
+  let body = '';
+  if (tab === 'validator') { const c = validate(), pass = c.filter(x => x.ok).length; body = `<p class="pbody">The same checks will gate every case in the rebuild. These run live against this case's JSON and its embedded disk image.</p><p class="kicker">${pass} of ${c.length} checks pass</p><ul class="checks">${c.map(x => `<li class="${x.ok ? 'ok' : 'no'}"><span class="m">${x.ok ? '✓' : '✗'}</span><span>${esc(x.t)}<small>${esc(x.d)}</small></span></li>`).join('')}</ul>`; }
+  if (tab === 'json') body = `<p class="pbody">This case is one JSON file. The engine reads it; nothing about the case lives in code. It includes the answers: a class build would keep this view for instructors.</p><div class="row" style="margin-bottom:8px"><button class="btn" data-act="copy" data-src="instrCode">Copy</button><button class="btn" data-act="savecode" data-name="${esc(CASE.id)}.ipar.json" data-type="application/json">Save as file</button></div><p class="pbody" id="instrMsg" role="status"></p><div class="code" id="instrCode">${esc(JSON.stringify(CASE, null, 2))}</div>`;
+  if (tab === 'twee') body = `<p class="pbody">The same case as Twee 3: each lead is a passage, its board position becomes its place on Twine's story map, tags carry the phase and question type, and links are unlocks. Paste into Twine to see the board as a story map.</p><div class="row" style="margin-bottom:8px"><button class="btn" data-act="copy" data-src="instrCode">Copy</button><button class="btn" data-act="savecode" data-name="${esc(CASE.id)}.twee" data-type="text/plain">Save as file</button></div><p class="pbody" id="instrMsg" role="status"></p><div class="code" id="instrCode">${esc(twee())}</div>`;
+  if (tab === 'results') body = S ? `<p class="pbody">What a student hands in: one JSON file with their path, attempts, hints, strings and report. A Reader page would grade it.</p><div class="row" style="margin-bottom:8px"><button class="btn" data-act="copy" data-src="instrCode">Copy</button><button class="btn" data-act="savecode" data-name="ipar-results-${esc(CASE.id)}-${today()}.json" data-type="application/json">Save as file</button></div><p class="pbody" id="instrMsg" role="status"></p><div class="code" id="instrCode">${esc(JSON.stringify(results(), null, 2))}</div>` : '<p class="pbody">Open the case to see results.</p>';
+  $('#instrSheet').innerHTML = `<div class="row" style="justify-content:space-between"><div><p class="kicker">Instructor view</p><h2>${esc(CASE.title)} · Case Data</h2></div><button class="btn" data-act="closeov">Close</button></div><div class="itabs">${tabs.map(([k, l]) => `<button class="tool" data-act="itab" data-id="${k}" aria-pressed="${tab === k}">${l}</button>`).join('')}</div>${body}`;
+  $('#ovInstructor').hidden = false;
+}
+async function copyText(text, el) {
+  try { await navigator.clipboard.writeText(text); toast('Copied.'); }
+  catch { if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } toast('Selected. Press Ctrl+C or ⌘C to copy.'); }
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const act = t.dataset.act, id = t.dataset.id;
+  switch (act) {
+    case 'open': openCase(); break;
+    case 'takecase': $('#ovBrief').hidden = true; render(); break;
+    case 'mode': MODE = id; storeSet(MODE_KEY, id); renderStart(); break;
+    case 'resume': resumeCase(); break;
+    case 'restart': confirmRestart = true; renderStart(); break;
+    case 'restartyes': openCase(); break;
+    case 'about': renderAbout(); break;
+    case 'erase': storeDel(KEY); confirmRestart = false; renderStart(); renderAbout(); $('#aboutMsg').textContent = 'Saved progress erased.'; break;
+    case 'saveresults': saveFile(`ipar-results-${CASE.id}-${today()}.json`, new Blob([JSON.stringify(results(), null, 2)], { type: 'application/json' }), $('#debriefMsg')); break;
+    case 'savecode': saveFile(t.dataset.name, new Blob([$('#instrCode').textContent], { type: t.dataset.type }), $('#instrMsg')); break;
+    case 'cases': $('#ovDebrief').hidden = true; $('#ovAbout').hidden = true; confirmRestart = false; renderStart(); $('#ovStart').hidden = false; break;
+    case 'replay': MODE = S.mode; openCase(); break;
+    case 'closeov': t.closest('.overlay').hidden = true; break;
+    case 'board': S.board = id; S.pickE = null; S.pickC = null; fit(); { const first = CASE.nodes.find(n => n.board === id && n.start); if (first) S.sel = first.id; } S.tab = 'lead'; render(); break;
+    case 'tab': S.tab = id; render(); break;
+    case 'mc': answerMC(id, +t.dataset.i); break;
+    case 'hint': S.hints.add(id); render(); break;
+    case 'gotool': S.tab = 'bench'; S.tool = id; S.toolView = null; render(); break;
+    case 'tool': S.tab = 'bench'; S.tool = id; S.toolView = null; render(); break;
+    case 'hash': computeHash(); break;
+    case 'hexview': S.toolView = { kind: id }; render(); break;
+    case 'hexclus': S.tool = 'hex'; S.toolView = { kind: 'cluster', c: +id, label: t.dataset.label, sig: true }; render(); break;
+    case 'view': S.toolView = { kind: 'file', i: +id }; render(); break;
+    case 'recover': recoverPriya(); render(); break;
+    case 'openpng': { const v = parseVolume(S.working), en = v.entries.find(x => x.i === +id); const url = URL.createObjectURL(new Blob([readFile(S.working, v, en)], { type: 'image/png' })); S.toolView = { kind: 'png', url }; render(); break; }
+    case 'pin': if (id === 'E_REC' && !S.recovered) recoverPriya(); pin(id); render(); break;
+    case 'select': {
+      const want = EVI[id] ? (S.unlocked.has('report') ? 'report' : (EVI[id].board || 'analyze')) : NODE[id].board;
+      if (S.board !== want && !(S.board === 'report' && EVI[id])) { S.board = want; fit(); }
+      S.panTo = id; tapCard(id); break; }
+    case 'string': addString(S.pickE, id, t.dataset.rel); break;
+    case 'cancelpick': S.pickE = null; S.pickC = null; render(); break;
+    case 'unstring': S.strings = S.strings.filter(s => s.id !== id); render(); break;
+    case 'debrief': showDebrief(); break;
+    case 'zoomIn': zoom(1.25); break;
+    case 'zoomOut': zoom(0.8); break;
+    case 'fit': fit(); break;
+    case 'listview': S.listView = !S.listView; $('#listBtn').setAttribute('aria-pressed', S.listView); render(); break;
+    case 'instructor': renderInstructor('validator'); break;
+    case 'itab': renderInstructor(id); break;
+    case 'copy': copyText($('#' + t.dataset.src).textContent, $('#' + t.dataset.src)); break;
+    case 'copyresults': { const txt = JSON.stringify(results(), null, 2); const ta = $('#resultsOut'); ta.value = txt; ta.hidden = false; copyText(txt, null); ta.select(); break; }
+    case 'theme': { const root = document.documentElement, cur = root.getAttribute('data-theme'); const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; root.setAttribute('data-theme', dark ? 'light' : 'dark'); if (S) render(); if (!$('#ovAbout').hidden) renderAbout(); break; }
+  }
+});
+document.addEventListener('submit', e => {
+  const f = e.target; e.preventDefault();
+  if (f.dataset.form === 'value') answerValue(f.dataset.id, f.querySelector('input').value);
+  if (f.dataset.form === 'string') { const rel = e.submitter && e.submitter.value === 'contradicts' ? 'contradicts' : 'supports'; addString($('#strE').value, $('#strC').value, rel); }
+  if (f.dataset.form === 'report') { const chosen = [...f.querySelectorAll('input[name=f]:checked')].map(x => x.value); fileReport(chosen, $('#summary').value.trim()); render(); }
+});
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => S && renderBoard(), 150); });
+
+window.IPAR = { get state() { return S; }, CASE, APP, md5, sha256, parseVolume, ORIGINAL, validate, twee, results, snapshot };
+renderStart();
+})();
+</script>
+
+</body>
+</html>

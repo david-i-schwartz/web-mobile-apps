@@ -52,6 +52,60 @@
       "name": "Torah Tutor",
       "tagline": "Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part.",
       "accent": "#2B4C9B"
+    },
+    {
+      "file": "src/seventh.html",
+      "folder": "seventh",
+      "code": "SEV",
+      "name": "Seventh",
+      "tagline": "A short platformer about rest: gather manna for six days, and on the seventh, stop.",
+      "accent": "#2C5AA0"
+    },
+    {
+      "file": "src/one-way.html",
+      "folder": "one-way",
+      "code": "ONE",
+      "name": "One Way",
+      "tagline": "A tiny game: a stick figure, a path, a blank gravestone and one direction.",
+      "accent": "#4C6848"
+    },
+    {
+      "file": "src/hex-cubes.html",
+      "folder": "hex-cubes",
+      "code": "HEX",
+      "name": "Hex Bead Cubes",
+      "tagline": "Tumbling-block cube patterns for a hexagonal pegboard, marked off bead by bead as you build.",
+      "accent": "#0E7C7B"
+    },
+    {
+      "file": "src/iso-designer.html",
+      "folder": "iso-designer",
+      "code": "ISO",
+      "name": "Iso Bead Designer",
+      "tagline": "Stack cubes and read off a bead chart for a 48 × 38 isometric pegboard.",
+      "accent": "#A8149A"
+    },
+    {
+      "file": "src/year-planner.html",
+      "folder": "year-planner",
+      "code": "YRP",
+      "name": "RIT Department Year Planner",
+      "tagline": "One academic year of recurring tasks, dates and owners for an RIT department, written for roles instead of people.",
+      "accent": "#1F4E8C"
+    },
+    {
+      "file": "src/ipar.html",
+      "folder": "ipar",
+      "code": "IPAR",
+      "name": "Image, Preserve, Analyze, Report",
+      "tagline": "A playable digital-forensics case: image, preserve, analyze and report on a real disk image."
+    },
+    {
+      "file": "src/mechanics-lab.html",
+      "folder": "mechanics-lab",
+      "code": "MOL",
+      "name": "Mechanics Overlay Lab",
+      "tagline": "Statics and dynamics on a deterministic physics core, with an optional AI tutor you set up yourself."
     }
   ],
   "readme": [

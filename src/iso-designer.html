@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iso bead designer</title>
+<style>
+:root {
+  --paper: #F2EFF8; --ink: #2B2140; --muted: #6A6080; --panel: #FAF8FD;
+  --board: #E3DCEF; --floor: #D6CCE6; --floor-line: #C3B6D8; --line: #D2C8E2;
+  --accent: #A8149A; --accent-ink: #FFFFFF; --q: #0B7782; --r: #B65400; --edge: rgba(255,255,255,.55);
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #17121E; --ink: #EEE8F6; --muted: #A89EBB; --panel: #1F1829;
+    --board: #251D30; --floor: #30263D; --floor-line: #3F3350; --line: #3A3048;
+    --accent: #E25CE9; --accent-ink: #1A0F1C; --q: #3CC9D2; --r: #F2A250; --edge: rgba(255,255,255,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #17121E; --ink: #EEE8F6; --muted: #A89EBB; --panel: #1F1829;
+  --board: #251D30; --floor: #30263D; --floor-line: #3F3350; --line: #3A3048;
+  --accent: #E25CE9; --accent-ink: #1A0F1C; --q: #3CC9D2; --r: #F2A250; --edge: rgba(255,255,255,.35);
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; min-height: 100%; background: var(--paper); color: var(--ink);
+  font: 400 16px/1.5 Lexend, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }
+header h1 { font-weight: 700; font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 6px; }
+header p { margin: 0 0 16px; color: var(--muted); max-width: 62ch; font-weight: 300; }
+.layout { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+.layout > div { min-width: 0; }
+@media (min-width: 900px) { .layout { grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); align-items: start; } }
+.tools { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin-bottom: 12px; }
+.seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 999px; padding: 3px; background: var(--panel); }
+.seg button {
+  font: inherit; font-size: .92rem; border: 0; background: transparent; color: var(--ink);
+  padding: 7px 13px; border-radius: 999px; cursor: pointer; min-height: 38px;
+}
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 500; }
+.swatches { display: inline-flex; gap: 6px; }
+.swatches button { border: 2px solid transparent; background: none; padding: 2px; border-radius: 10px; cursor: pointer; line-height: 0; }
+.swatches button[aria-pressed="true"] { border-color: var(--ink); }
+.swatches svg { width: 30px; height: 30px; display: block; }
+.small { font-size: .85rem; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.plain {
+  font: inherit; font-size: .92rem; color: var(--ink); background: var(--panel);
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 12px; min-height: 38px; cursor: pointer;
+}
+select.plain { padding-right: 8px; }
+.stage { background: var(--board); border-radius: 18px; overflow: hidden; position: relative; }
+.stage canvas { display: block; width: 100%; touch-action: manipulation; cursor: crosshair; }
+.chartbox { overflow-x: auto; background: var(--board); border-radius: 18px; }
+.chartbox canvas { display: block; touch-action: manipulation; cursor: pointer; }
+.toast { min-height: 1.5em; margin: 8px 2px 0; font-size: .9rem; color: var(--muted); }
+.panel h2 { font-size: 1.05rem; font-weight: 500; margin: 0 0 8px; }
+.panel section { border-top: 1.5px solid var(--line); padding: 14px 0; }
+.panel section:first-child { border-top: 0; padding-top: 0; }
+.legend { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 12px; }
+.legend li { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
+.legend i { width: 16px; height: 16px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.25); }
+.legend b { font-weight: 500; margin-left: auto; font-variant-numeric: tabular-nums; }
+.readout { font-variant-numeric: tabular-nums; }
+.readout p { margin: 0 0 8px; }
+.readout .big { font-size: 1.15rem; font-weight: 500; }
+.q { color: var(--q); font-weight: 500; } .r { color: var(--r); font-weight: 500; }
+details summary { cursor: pointer; font-weight: 500; }
+details p { margin: 10px 0 0; max-width: 60ch; }
+:focus-visible { outline: 3px solid var(--q); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Iso bead designer</h1>
+  <p>Stack cubes, read off a bead chart for the 48 × 38 iso pegboard, and tap any bead to see where its coordinates come from.</p>
+</header>
+
+<div class="layout">
+<div>
+  <div class="tools">
+    <div class="seg" role="group" aria-label="What a tap does">
+      <button data-mode="add" aria-pressed="true">Add</button>
+      <button data-mode="remove" aria-pressed="false">Remove</button>
+      <button data-mode="paint" aria-pressed="false">Paint</button>
+      <button data-mode="inspect" aria-pressed="false">Inspect</button>
+    </div>
+    <div class="swatches" id="swatches" role="group" aria-label="Bead colours"></div>
+  </div>
+  <div class="tools">
+    <div class="seg" role="group" aria-label="View">
+      <button data-view="beads" aria-pressed="true">Beads</button>
+      <button data-view="faces" aria-pressed="false">Faces</button>
+      <button data-view="chart" aria-pressed="false">Chart</button>
+    </div>
+    <div class="seg" role="group" aria-label="Beads per cube edge">
+      <button data-k="1" aria-pressed="false">1</button>
+      <button data-k="2" aria-pressed="true">2</button>
+      <button data-k="3" aria-pressed="false">3</button>
+    </div>
+    <span class="small">beads per cube edge</span>
+  </div>
+
+  <div class="stage" id="stage"><canvas id="cv" aria-label="Isometric build area. Tap to edit."></canvas></div>
+  <div class="chartbox" id="chartbox" hidden><canvas id="chart" aria-label="Bead chart on the 48 by 38 iso pegboard"></canvas></div>
+  <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+  <div class="row">
+    <button class="plain" id="undo">Undo</button>
+    <button class="plain" id="clear">Clear</button>
+    <label class="small" for="preset">Start from</label>
+    <select class="plain" id="preset">
+      <option value="">Choose…</option>
+      <option value="tower">Hollow tower</option>
+      <option value="arch">Arch</option>
+      <option value="stairs">Staircase</option>
+      <option value="cube">One cube</option>
+    </select>
+  </div>
+</div>
+
+<div class="panel">
+  <section>
+    <h2>Bead count</h2>
+    <div id="stats" class="small"></div>
+    <ul class="legend" id="legend"></ul>
+  </section>
+  <section class="readout" id="readout">
+    <h2>Tapped bead</h2>
+    <p class="small">Tap any bead to see its coordinates. The small teal dot marks the origin, the back corner of the floor at cube (0, 0, 0).</p>
+  </section>
+  <section>
+    <details>
+      <summary>How the coordinates work</summary>
+      <p>A peg is two whole numbers. On a square board, column and row times 5 mm give its position. On this board one column right moves 4.33 mm across and 2.5 mm down, so every second column sits half a peg lower and all three cube edges become straight lines of pegs.</p>
+      <p>Charts count from 1 because that’s how you count pegs. The maths uses axial coordinates: <span class="q">q</span> steps along the slanted axis, <span class="r">r</span> steps straight down. Sliding a design is just adding to <span class="q">q</span> or <span class="r">r</span>. The third cube coordinate s = −q − r keeps all three summing to 0.</p>
+      <p>A cube at (X, Y, Z) lands at (X − Y, Y − Z). Add 1 to all three and you land in the same place, so an isometric view loses depth. Cubes are drawn far to near in order of X + Y + Z, so nearer faces cover farther ones.</p>
+      <p>Each face becomes k × k beads: a bead takes the colour of the triangle just down-right of its peg, so every face gets exactly the same count.</p>
+    </details>
+  </section>
+</div>
+</div>
+</div>
+<script>
+// ---- isometric voxel -> triangle -> bead core (shared by page + tests) ----
+const W3 = Math.sqrt(3) / 2;
+const FACES = ['top', 'left', 'right'];
+const NORMAL = { top: [0, 0, 1], left: [0, 1, 0], right: [1, 0, 0] };
+const tk = (i, j, t) => i + ',' + j + ',' + t;
+const fdiv = (a, b) => Math.floor(a / b);
+
+// Triangles (cube units) covered by each visible face of the voxel whose
+// centre projects to axial (q, r) = (X - Y, Y - Z).
+function faceTris(q, r) {
+  return {
+    top:   [[q - 1, r - 1, 1], [q, r - 1, 0]],
+    left:  [[q - 1, r, 0], [q - 1, r, 1]],
+    right: [[q, r - 1, 1], [q, r, 0]],
+  };
+}
+function parseKey(k) { const p = k.split(',').map(Number); return { X: p[0], Y: p[1], Z: p[2] }; }
+
+// Painter's algorithm: draw voxels far-to-near (ascending X+Y+Z); nearer faces overwrite.
+function buildMap(voxels, N) {
+  const map = new Map();
+  for (let X = 0; X < N; X++) for (let Y = 0; Y < N; Y++) {
+    const q = X - Y, r = Y + 1;                      // virtual floor tile at Z = -1
+    for (const t of faceTris(q, r).top) map.set(tk(...t), { kind: 'floor', X, Y });
+  }
+  const list = [];
+  for (const [k, m] of voxels) { const v = parseKey(k); v.m = m; list.push(v); }
+  list.sort((a, b) => (a.X + a.Y + a.Z) - (b.X + b.Y + b.Z));
+  for (const v of list) {
+    const ft = faceTris(v.X - v.Y, v.Y - v.Z);
+    for (const f of FACES) for (const t of ft[f])
+      map.set(tk(...t), { kind: 'vox', X: v.X, Y: v.Y, Z: v.Z, face: f, m: v.m });
+  }
+  return map;
+}
+function triAt(a, b) {
+  const i = Math.floor(a), j = Math.floor(b);
+  return [i, j, (a - i) + (b - j) >= 1 ? 1 : 0];
+}
+function triVerts(i, j, t) {
+  return t === 0 ? [[i, j], [i + 1, j], [i, j + 1]] : [[i + 1, j], [i + 1, j + 1], [i, j + 1]];
+}
+function mapBounds(map) {
+  let a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity;
+  for (const k of map.keys()) {
+    const [i, j] = k.split(',').map(Number);
+    a0 = Math.min(a0, i); a1 = Math.max(a1, i + 1); b0 = Math.min(b0, j); b1 = Math.max(b1, j + 1);
+  }
+  return { a0, a1, b0, b1 };
+}
+// Beads at k per cube edge. Bead (m, n) is axial in bead units; it takes the colour of
+// the triangle under the point a third of a step down-right of it, so each face gets k*k beads.
+function sampleBead(map, k, m, n) {
+  return map.get(tk(...triAt((m + 1 / 3) / k, (n + 1 / 3) / k)));
+}
+function computeBeads(map, k) {
+  const B = mapBounds(map), out = [];
+  for (let m = Math.floor(B.a0 * k) - 1; m <= Math.ceil(B.a1 * k) + 1; m++)
+    for (let n = Math.floor(B.b0 * k) - 1; n <= Math.ceil(B.b1 * k) + 1; n++) {
+      const o = sampleBead(map, k, m, n);
+      if (o) out.push({ m, n, o });
+    }
+  return out;
+}
+// Fixed placement on the 48 x 38 iso pegboard (0-based col,row).
+const BOARD = { cols: 48, rows: 38, pitch: 5 };
+function toBoard(m, n, k) {
+  const col = m + 24;
+  const row = fdiv(col, 2) + n + (7 - 2 * k);
+  return { col, row, on: col >= 0 && col < BOARD.cols && row >= 0 && row < BOARD.rows };
+}
+function boardMM(col, row) {
+  return { x: (col + 0.5) * BOARD.pitch * W3, y: (row + 0.5 + (((col % 2) + 2) % 2) / 2) * BOARD.pitch };
+}
+if (typeof module !== 'undefined') module.exports = { W3, faceTris, buildMap, triAt, triVerts, mapBounds, computeBeads, sampleBead, toBoard, boardMM, NORMAL, tk, fdiv };
+
+(() => {
+const N = 8, ZMAX = 10;
+const MATS = [
+  { name: 'Magenta',   top: '#E9A2F2', left: '#8B1B90', right: '#E032E8' },
+  { name: 'Sky',       top: '#A9D4FF', left: '#1E4E9C', right: '#3E86E6' },
+  { name: 'Leaf',      top: '#BDEBA6', left: '#2D7238', right: '#58B85A' },
+  { name: 'Tangerine', top: '#FFD38E', left: '#A9481B', right: '#EE862B' },
+  { name: 'Pebble',    top: '#ECEBEF', left: '#5A5862', right: '#A4A2AD' },
+];
+const FACE_WORD = { top: 'tops', left: 'left sides', right: 'right sides' };
+const FACE_ONE = { top: 'top', left: 'left', right: 'right' };
+const S = { vox: new Map(), mode: 'add', mat: 0, k: 2, view: 'beads', sel: null };
+const undo = [];
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d'), chart = $('chart'), cctx = chart.getContext('2d');
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const neg = x => (x < 0 ? '−' + Math.abs(x) : String(x));
+const tup = a => '(' + a.map(neg).join(', ') + ')';
+let map = null, view = null;
+
+const PRESETS = {
+  cube: () => [[3, 3, 0, 0]],
+  tower: () => {
+    const v = [];
+    for (let x = 1; x <= 5; x++) for (let y = 1; y <= 5; y++) v.push([x, y, 0, 0]);
+    for (let z = 1; z <= 4; z++) for (let x = 2; x <= 4; x++) for (let y = 2; y <= 4; y++)
+      if (!(x === 3 && y === 3)) v.push([x, y, z, 0]);
+    return v;
+  },
+  arch: () => {
+    const v = [];
+    for (let z = 0; z <= 2; z++) { v.push([2, 4, z, 1]); v.push([5, 4, z, 1]); }
+    for (let x = 2; x <= 5; x++) v.push([x, 4, 3, 1]);
+    return v;
+  },
+  stairs: () => {
+    const v = [];
+    for (let i = 0; i <= 4; i++) for (let z = 0; z <= i; z++) for (const y of [3, 4]) v.push([1 + i, y, z, 3]);
+    return v;
+  },
+};
+function setVox(list) { S.vox = new Map(list.map(([x, y, z, m]) => [x + ',' + y + ',' + z, m])); }
+
+// ---------- persistence ----------
+function save() {
+  try { localStorage.setItem('isoBeadDesigner.v1', JSON.stringify({ vox: [...S.vox], mat: S.mat, k: S.k })); } catch (e) {}
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('isoBeadDesigner.v1') || 'null');
+    if (d && Array.isArray(d.vox)) { S.vox = new Map(d.vox); S.mat = d.mat | 0; S.k = [1, 2, 3].includes(d.k) ? d.k : 2; return true; }
+  } catch (e) {}
+  return false;
+}
+
+// ---------- geometry helpers (cube units -> screen) ----------
+const toXY = (a, b) => [view.ox + a * W3 * view.s, view.oy + (a / 2 + b) * view.s];
+const fromXY = (x, y) => { const a = (x - view.ox) / (W3 * view.s); return [a, (y - view.oy) / view.s - a / 2]; };
+
+function fitView(w, h) {
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  const add = (a, b) => { const X = a * W3, Y = a / 2 + b; x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, Y); y1 = Math.max(y1, Y); };
+  for (const [key, o] of map) {
+    const [i, j, t] = key.split(',').map(Number);
+    for (const [a, b] of triVerts(i, j, t)) { add(a, b); if (o.kind === 'floor') add(a, b - 6); }
+  }
+  const pad = 0.8, bw = x1 - x0 + 2 * pad, bh = y1 - y0 + 2 * pad;
+  const s = Math.min(w / bw, h / bh);
+  view = { s, ox: (w - (x1 - x0) * s) / 2 - x0 * s, oy: (h - (y1 - y0) * s) / 2 - y0 * s, aspect: bh / bw };
+}
+
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * f));
+  return 'rgb(' + c.join(',') + ')';
+}
+const beadColour = o => MATS[o.m % MATS.length][o.face];
+const owner = o => !o ? '' : o.kind === 'floor' ? 'f' + o.X + ',' + o.Y : o.X + ',' + o.Y + ',' + o.Z + o.face;
+
+// ---------- rendering ----------
+function sizeCanvas(c, w, h) {
+  const dpr = window.devicePixelRatio || 1;
+  c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+  c.style.height = h + 'px';
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); return g;
+}
+
+function render() {
+  map = buildMap(S.vox, N);
+  const showChart = S.view === 'chart';
+  $('stage').hidden = showChart; $('chartbox').hidden = !showChart;
+  if (showChart) drawChart(); else drawStage();
+  updateStats(); updateReadout(); save();
+}
+
+function drawStage() {
+  const w = $('stage').clientWidth || 360;
+  fitView(w, 1000);
+  const h = Math.min(Math.max(280, w * view.aspect), window.innerHeight * 0.78);
+  fitView(w, h);
+  const g = sizeCanvas(cv, w, h);
+  g.clearRect(0, 0, w, h);
+  if (S.view === 'faces') drawFaces(g); else drawBeads(g);
+  drawOrigin(g); drawSelection(g);
+}
+
+function triPath(g, i, j, t) {
+  const v = triVerts(i, j, t).map(([a, b]) => toXY(a, b));
+  g.beginPath(); g.moveTo(...v[0]); g.lineTo(...v[1]); g.lineTo(...v[2]); g.closePath();
+}
+
+function drawFaces(g) {
+  const floorFill = css('--floor'), floorLine = css('--floor-line');
+  for (const [key, o] of map) {
+    const [i, j, t] = key.split(',').map(Number);
+    const col = o.kind === 'floor' ? floorFill : beadColour(o);
+    triPath(g, i, j, t); g.fillStyle = col; g.fill(); g.strokeStyle = col; g.lineWidth = 0.6; g.stroke();
+  }
+  // outlines wherever two neighbouring triangles belong to different faces
+  const nb = (i, j, t) => t === 0
+    ? [[[i, j], [i + 1, j], [i, j - 1, 1]], [[i, j], [i, j + 1], [i - 1, j, 1]], [[i + 1, j], [i, j + 1], [i, j, 1]]]
+    : [[[i + 1, j], [i + 1, j + 1], [i + 1, j, 0]], [[i, j + 1], [i + 1, j + 1], [i, j + 1, 0]]];
+  for (const [key, o] of map) {
+    const [i, j, t] = key.split(',').map(Number);
+    for (const [p, q2, n] of nb(i, j, t)) {
+      const other = map.get(tk(...n));
+      if (owner(other) === owner(o)) continue;
+      const isFloor = o.kind === 'floor' && (!other || other.kind === 'floor');
+      g.strokeStyle = isFloor ? floorLine : css('--edge'); g.lineWidth = isFloor ? 1 : 1.2;
+      g.beginPath(); g.moveTo(...toXY(...p)); g.lineTo(...toXY(...q2)); g.stroke();
+    }
+  }
+}
+
+function drawBeads(g) {
+  const k = S.k, rad = 0.46 * view.s / k, floorLine = css('--floor-line');
+  const B = mapBounds(map);
+  for (let m = Math.floor(B.a0 * k) - 1; m <= Math.ceil(B.a1 * k) + 1; m++)
+    for (let n = Math.floor(B.b0 * k) - 1; n <= Math.ceil(B.b1 * k) + 1; n++) {
+      const o = sampleBead(map, k, m, n);
+      if (!o) continue;
+      const [x, y] = toXY(m / k, n / k);
+      g.beginPath(); g.arc(x, y, o.kind === 'vox' ? rad : rad * 0.55, 0, Math.PI * 2);
+      if (o.kind === 'vox') {
+        const c = beadColour(o);
+        g.fillStyle = c; g.fill(); g.strokeStyle = shade(c, 0.62); g.lineWidth = Math.max(1, rad * 0.14); g.stroke();
+        if (rad > 6) { g.beginPath(); g.arc(x, y, rad * 0.3, 0, Math.PI * 2); g.fillStyle = shade(c, 0.78); g.fill(); }
+      } else { g.strokeStyle = floorLine; g.lineWidth = 1.2; g.stroke(); }
+    }
+}
+
+function drawOrigin(g) {
+  const [x, y] = toXY(0, 0);
+  g.fillStyle = css('--q'); g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI * 2); g.fill();
+}
+
+function drawSelection(g) {
+  if (!S.sel) return;
+  const k = S.k, { m, n } = S.sel;
+  const p0 = toXY(0, 0), p1b = toXY(m / k, 0), p2 = toXY(m / k, n / k);
+  g.lineWidth = 3; g.lineCap = 'round';
+  g.strokeStyle = css('--q'); g.beginPath(); g.moveTo(...p0); g.lineTo(...p1b); g.stroke();
+  g.strokeStyle = css('--r'); g.beginPath(); g.moveTo(...p1b); g.lineTo(...p2); g.stroke();
+  g.strokeStyle = css('--ink'); g.lineWidth = 2.5;
+  g.beginPath(); g.arc(p2[0], p2[1], 0.62 * view.s / k + 3, 0, Math.PI * 2); g.stroke();
+}
+
+// ---------- chart (whole 48 x 38 board) ----------
+const CH = { cell: 15, left: 34, top: 30 };
+function drawChart() {
+  const k = S.k, cw = CH.cell * W3;
+  const W = CH.left + BOARD.cols * cw + 16, H = CH.top + (BOARD.rows + 0.5) * CH.cell + 16;
+  const g = sizeCanvas(chart, W, H); chart.style.width = W + 'px';
+  g.clearRect(0, 0, W, H);
+  const P = (c, r) => [CH.left + (c + 0.5) * cw, CH.top + (r + 0.5 + (c % 2) / 2) * CH.cell];
+  g.strokeStyle = css('--line'); g.lineWidth = 1;
+  for (let c = 5; c < BOARD.cols; c += 5) { const x = CH.left + c * cw; g.beginPath(); g.moveTo(x, CH.top); g.lineTo(x, H - 16); g.stroke(); }
+  for (let r = 5; r < BOARD.rows; r += 5) {
+    g.beginPath();
+    for (let c = 0; c < BOARD.cols; c++) { const y = CH.top + (r + (c % 2) / 2) * CH.cell; g.lineTo(CH.left + c * cw, y); g.lineTo(CH.left + (c + 1) * cw, y); }
+    g.stroke();
+  }
+  const placed = new Map();
+  for (const b of computeBeads(map, k)) if (b.o.kind === 'vox') {
+    const p = toBoard(b.m, b.n, k); if (p.on) placed.set(p.col + ',' + p.row, b.o);
+  }
+  for (let c = 0; c < BOARD.cols; c++) for (let r = 0; r < BOARD.rows; r++) {
+    const [x, y] = P(c, r), o = placed.get(c + ',' + r);
+    g.beginPath();
+    if (o) { const col = beadColour(o); g.arc(x, y, CH.cell * 0.46, 0, 7); g.fillStyle = col; g.fill(); g.strokeStyle = shade(col, 0.62); g.lineWidth = 1; g.stroke(); }
+    else { g.arc(x, y, 1.6, 0, 7); g.fillStyle = css('--floor-line'); g.fill(); }
+  }
+  g.fillStyle = css('--muted'); g.font = '400 10px Lexend, system-ui, sans-serif';
+  const ticks = n => [0, ...Array.from({ length: Math.floor(n / 5) }, (_, i) => 5 * (i + 1) - 1).filter(v => v < n - 1), n - 1];
+  g.textAlign = 'center'; for (const c of ticks(BOARD.cols)) g.fillText(String(c + 1), CH.left + (c + 0.5) * cw, CH.top - 10);
+  g.textAlign = 'right'; for (const r of ticks(BOARD.rows)) g.fillText(String(r + 1), CH.left - 8, CH.top + (r + 0.5) * CH.cell + 3.5);
+  if (S.sel) {
+    const p = toBoard(S.sel.m, S.sel.n, k);
+    if (p.on) { const [x, y] = P(p.col, p.row); g.strokeStyle = css('--ink'); g.lineWidth = 2.5; g.beginPath(); g.arc(x, y, CH.cell * 0.62 + 2, 0, 7); g.stroke(); }
+  }
+}
+
+// ---------- stats + legend ----------
+function updateStats() {
+  const k = S.k, beads = computeBeads(map, k).filter(b => b.o.kind === 'vox');
+  const groups = new Map();
+  let off = 0, c0 = Infinity, c1 = -Infinity, r0 = Infinity, r1 = -Infinity;
+  for (const b of beads) {
+    const key = (b.o.m % MATS.length) + '|' + b.o.face;
+    groups.set(key, (groups.get(key) || 0) + 1);
+    const p = toBoard(b.m, b.n, k);
+    if (!p.on) off++;
+    c0 = Math.min(c0, p.col); c1 = Math.max(c1, p.col); r0 = Math.min(r0, p.row); r1 = Math.max(r1, p.row);
+  }
+  const st = $('stats');
+  if (!beads.length) { st.textContent = 'Tap the floor to place your first cube.'; $('legend').innerHTML = ''; return; }
+  const fit = off ? `${off} beads fall off the 48 × 38 board. Try fewer beads per cube edge or a smaller build.` : 'Everything fits on the 48 × 38 board.';
+  st.textContent = `${beads.length} beads across ${c1 - c0 + 1} columns and ${r1 - r0 + 1} rows. ${fit}`;
+  const items = [...groups].sort((a, b) => a[0].localeCompare(b[0]));
+  $('legend').innerHTML = items.map(([key, n]) => {
+    const [m, f] = key.split('|');
+    return `<li><i style="background:${MATS[m][f]}"></i>${MATS[m].name} ${FACE_WORD[f]}<b>${n}</b></li>`;
+  }).join('');
+}
+
+// ---------- readout ----------
+function updateReadout() {
+  const el = $('readout');
+  if (!S.sel) return;
+  const k = S.k, { m, n } = S.sel;
+  const o = sampleBead(map, k, m, n);
+  const p = toBoard(m, n, k);
+  let html = '<h2>Tapped bead</h2>';
+  if (p.on) {
+    const mm = boardMM(p.col, p.row);
+    html += `<p class="big">Chart column ${p.col + 1}, row ${p.row + 1}</p>`;
+    html += `<p>On the board: ${mm.x.toFixed(1)} mm across, ${mm.y.toFixed(1)} mm down from the top-left corner.</p>`;
+  } else {
+    html += `<p class="big">Off the 48 × 38 board</p>`;
+  }
+  html += `<p>Axial (<span class="q">q</span>, <span class="r">r</span>) = (<span class="q">${neg(m)}</span>, <span class="r">${neg(n)}</span>) bead steps from the origin, drawn as the coloured path. Cube coordinates (q, r, s) = ${tup([m, n, -m - n])}.</p>`;
+  if (o && o.kind === 'vox') {
+    const q = o.X - o.Y, r = o.Y - o.Z;
+    html += `<p>Colour: ${MATS[o.m % MATS.length].name} ${FACE_ONE[o.face]} face of cube ${tup([o.X, o.Y, o.Z])}. That cube’s centre lands at (X − Y, Y − Z) = ${tup([q, r])} cube steps, which is ${tup([q * k, r * k])} at ${k} bead${k > 1 ? 's' : ''} per edge.</p>`;
+  } else if (o) {
+    html += `<p>Empty peg over floor tile ${tup([o.X, o.Y])}. In Add mode, tapping here places cube ${tup([o.X, o.Y, 0])}.</p>`;
+  } else {
+    html += `<p>Empty peg outside the build area.</p>`;
+  }
+  el.innerHTML = html;
+}
+
+// ---------- input ----------
+function nearestBead(a, b) {
+  const k = S.k, A = a * k, Bv = b * k; let best = null;
+  for (const m of [Math.floor(A), Math.ceil(A)]) for (const dn of [-1, 0, 1, 2]) {
+    const n = Math.floor(Bv) + dn;
+    const dx = (m - A) * W3, dy = (m - A) / 2 + (n - Bv), d = dx * dx + dy * dy;
+    if (!best || d < best.d) best = { m, n, d };
+  }
+  return { m: best.m, n: best.n };
+}
+function toast(msg) { $('toast').textContent = msg; }
+
+function edit(o) {
+  if (S.mode === 'inspect') return;
+  const snapshot = JSON.stringify([...S.vox]);
+  if (S.mode === 'add') {
+    let X, Y, Z;
+    if (!o) return toast('Tap the floor grid or a cube face to add a cube.');
+    if (o.kind === 'floor') { X = o.X; Y = o.Y; Z = 0; }
+    else { const d = NORMAL[o.face]; X = o.X + d[0]; Y = o.Y + d[1]; Z = o.Z + d[2]; }
+    if (X >= N || Y >= N) return toast('That spot is past the edge of the 8 × 8 build area.');
+    if (Z >= ZMAX) return toast('Stacks top out at 10 cubes.');
+    S.vox.set(X + ',' + Y + ',' + Z, S.mat); toast(`Added cube ${tup([X, Y, Z])}.`);
+  } else if (!o || o.kind !== 'vox') {
+    return toast(S.mode === 'remove' ? 'Tap a cube to remove it.' : 'Tap a cube to paint it.');
+  } else if (S.mode === 'remove') {
+    S.vox.delete(o.X + ',' + o.Y + ',' + o.Z); toast(`Removed cube ${tup([o.X, o.Y, o.Z])}.`);
+  } else {
+    S.vox.set(o.X + ',' + o.Y + ',' + o.Z, S.mat); toast(`Painted cube ${tup([o.X, o.Y, o.Z])} ${MATS[S.mat].name}.`);
+  }
+  undo.push(snapshot); if (undo.length > 60) undo.shift();
+}
+
+let down = null;
+cv.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; });
+cv.addEventListener('pointerup', e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 10) { down = null; return; }
+  down = null;
+  const r = cv.getBoundingClientRect();
+  const [a, b] = fromXY(e.clientX - r.left, e.clientY - r.top);
+  const sel = nearestBead(a, b);
+  const target = S.view === 'faces' ? map.get(tk(...triAt(a, b))) : sampleBead(map, S.k, sel.m, sel.n);
+  S.sel = sel;
+  edit(target);
+  render();
+});
+chart.addEventListener('click', e => {
+  const r = chart.getBoundingClientRect(), cw = CH.cell * W3;
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const col = Math.round((x - CH.left) / cw - 0.5);
+  if (col < 0 || col >= BOARD.cols) return;
+  const row = Math.round((y - CH.top) / CH.cell - 0.5 - (col % 2) / 2);
+  if (row < 0 || row >= BOARD.rows) return;
+  S.sel = { m: col - 24, n: row - fdiv(col, 2) - (7 - 2 * S.k) };
+  render();
+});
+
+function press(group, attr, val) {
+  document.querySelectorAll(`[data-${attr}]`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset[attr] === String(val))));
+}
+document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; press(0, 'mode', S.mode); toast(''); }));
+function centreChart() {
+  const cols = computeBeads(map, S.k).filter(b => b.o.kind === 'vox').map(b => toBoard(b.m, b.n, S.k).col);
+  const mid = cols.length ? (Math.min(...cols) + Math.max(...cols)) / 2 : 23.5;
+  const box = $('chartbox'); box.scrollLeft = CH.left + (mid + 0.5) * CH.cell * W3 - box.clientWidth / 2;
+}
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+  S.view = b.dataset.view; press(0, 'view', S.view); render(); if (S.view === 'chart') centreChart();
+}));
+document.querySelectorAll('[data-k]').forEach(b => b.addEventListener('click', () => {
+  const old = S.k; S.k = +b.dataset.k; press(0, 'k', S.k);
+  if (S.sel) S.sel = { m: Math.round(S.sel.m * S.k / old), n: Math.round(S.sel.n * S.k / old) };
+  render();
+}));
+$('undo').addEventListener('click', () => {
+  if (!undo.length) return toast('Nothing to undo.');
+  S.vox = new Map(JSON.parse(undo.pop())); toast('Undid the last change.'); render();
+});
+$('clear').addEventListener('click', () => {
+  undo.push(JSON.stringify([...S.vox])); S.vox = new Map(); toast('Cleared. Undo brings it back.'); render();
+});
+$('preset').addEventListener('change', e => {
+  const f = PRESETS[e.target.value]; if (!f) return;
+  undo.push(JSON.stringify([...S.vox])); setVox(f()); e.target.value = ''; toast('Loaded. Undo goes back to your build.'); render();
+});
+
+function hexSVG(mt) {
+  const c = 12, R = 11, w = R * W3;
+  const P = (x, y) => (c + x).toFixed(2) + ',' + (c + y).toFixed(2);
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">
+    <polygon points="${P(0, 0)} ${P(-w, -R / 2)} ${P(0, -R)} ${P(w, -R / 2)}" fill="${mt.top}"/>
+    <polygon points="${P(0, 0)} ${P(-w, -R / 2)} ${P(-w, R / 2)} ${P(0, R)}" fill="${mt.left}"/>
+    <polygon points="${P(0, 0)} ${P(w, -R / 2)} ${P(w, R / 2)} ${P(0, R)}" fill="${mt.right}"/></svg>`;
+}
+$('swatches').innerHTML = MATS.map((mt, i) => `<button data-mat="${i}" aria-pressed="${i === S.mat}" aria-label="${mt.name}" title="${mt.name}">${hexSVG(mt)}</button>`).join('');
+document.querySelectorAll('[data-mat]').forEach(b => b.addEventListener('click', () => { S.mat = +b.dataset.mat; press(0, 'mat', S.mat); save(); }));
+
+if (!load()) setVox(PRESETS.tower());
+press(0, 'mat', S.mat); press(0, 'k', S.k);
+window.addEventListener('resize', () => render());
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => render()); } catch (e) {}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
+render();
+})();
+
+</script>
+</body>
+</html>

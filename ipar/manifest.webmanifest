@@ -1,0 +1,28 @@
+{
+  "name": "IPAR: Image, Preserve, Analyze, Report",
+  "short_name": "IPAR",
+  "description": "A playable digital-forensics case: image, preserve, analyze and report on a real disk image.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F5F8",
+  "theme_color": "#0E7C7B",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

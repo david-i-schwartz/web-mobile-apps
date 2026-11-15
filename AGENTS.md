@@ -16,7 +16,7 @@ It gives single-file HTML apps a web address, so they open on any phone, tablet 
 
 ## Add an app
 
-1. **Get the app as one HTML file** that follows `HOUSE-RULES.md`: one file, no outside code, fonts or pictures, no network calls, and it works in a browser by itself. Open it in a browser and check that the console shows no errors.
+1. **Get the app as one HTML file** that follows `HOUSE-RULES.md`: one file, no outside code, fonts or pictures, no network calls (apart from an optional AI helper the person sets up, as rule 1 allows), and it works in a browser by itself. Open it in a browser and check that the console shows no errors.
 2. **Choose a folder name**: lowercase letters, digits and hyphens, for example `milspeak`. This becomes the web address `.../web-mobile-apps/milspeak/`.
 3. **Save the file** as `src/<folder>.html`.
 4. **Add it to `site.json`**, inside `"apps"`:
@@ -52,6 +52,10 @@ When HTML App Generator gets a new version, do these steps in one commit:
 The built folders must always be exactly what `node tools/cli.js site site.json .` makes from `src/`, `site.json` and `tools/`. So:
 - **Never commit built folders without their sources.** If you publish an app, its file goes in `src/` in the same commit.
 - **After building, run `git status`.** It should list only the files you meant to change. If other apps' folders changed too, `src/` or `tools/` were out of date. Stop and find out why before you push.
+
+## Settings files next to an app
+
+Most app folders hold only what the build makes. The exception is `mechanics-lab/ai-config.json`, the settings file for Mechanics Overlay Lab's optional AI tutor (house rule 1). It's kept by hand: the build doesn't touch it. Keep `baseUrl` empty, and never put an API key in it.
 
 ## Remove an app
 

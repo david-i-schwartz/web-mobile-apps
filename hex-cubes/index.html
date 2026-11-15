@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hex bead cubes</title>
+<style>
+:root{
+  --bg:#EEF1F5;--panel:#FFFFFF;--ink:#1D2230;--muted:#5B6375;--line:#D5DAE3;--accent:#0E7C7B;--accent-ink:#FFFFFF;--chip:#E3E8EF;
+  --board:#DCE1E8;--peg:#B4BBC6;--vp:#F5F7FA;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5}
+header{max-width:1180px;margin:0 auto;padding:18px 16px 2px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.1;margin:0 0 4px;letter-spacing:-0.01em;font-weight:800}
+header p{margin:0;color:var(--muted);max-width:62ch}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.wrap{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}.stage{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px}
+.controls{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+h2{font-size:19px;margin:0 0 8px;line-height:1.25;font-weight:750}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+h3{font-size:16px;margin:14px 0 4px;font-weight:700}
+.sub{font-size:14px;color:var(--muted);margin:2px 0 0}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:flex;background:var(--chip);border-radius:999px;padding:3px;gap:3px;margin:6px 0}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:7px 12px;border-radius:999px;cursor:pointer;min-height:44px;line-height:1.2}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.toolbar .seg{margin:0}
+.tapwrap{display:flex;align-items:center}
+.zoom{display:flex;gap:6px}
+.btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
+.ib{width:44px;padding:0;font-size:20px;line-height:1}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#vp{position:relative;overflow:auto;max-height:70vh;border-radius:12px;background:var(--vp);outline:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#vp:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+#board{display:block;margin:0 auto;touch-action:manipulation}
+#board .bead{pointer-events:all;cursor:pointer;transition:opacity .15s}
+#board.darkb .bd{fill:#15171C!important;stroke:#15171C!important}#board.darkb .peg{fill:#2A2D34}
+#board .peg{fill:var(--peg);stroke:transparent;stroke-width:.6;pointer-events:all;cursor:pointer}
+#board .bd{fill:var(--board)}
+#board .cl{stroke:var(--muted);stroke-width:.07;opacity:.75}
+#board .ring{fill:none;stroke:var(--accent);stroke-width:.14;pointer-events:none}
+#board .lbl{fill:var(--ink);stroke:var(--board);stroke-width:.28;paint-order:stroke;font-weight:700;font-size:.9px;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#board .bead{transition:none}}
+#empty{padding:48px 20px;text-align:center;color:var(--muted)}
+#empty p{margin:0 auto 14px;max-width:34ch}
+#hud{display:flex;gap:10px;align-items:flex-start;margin:12px 2px 0;min-height:44px}
+#hudDot{width:26px;height:26px;border-radius:50%;flex:none;margin-top:2px;border:1px solid var(--line)}
+#hudDot.empty{background:transparent!important;border-style:dashed}
+#hudName{font-weight:700;font-size:17px;line-height:1.3}
+#hudWhere{font-size:14px;color:var(--muted)}
+#chunkBox{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.chead{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.chead span{color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:10px;background:var(--chip);border-radius:99px;overflow:hidden;margin:4px 0 6px}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#pct{font-size:15px;color:var(--ink);margin:0 0 10px;font-variant-numeric:tabular-nums}
+#legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}
+.crow{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;font-size:15px;cursor:pointer;min-height:44px;text-align:left}
+.crow[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.crow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .ct{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+.crow.done .ct{color:var(--accent)}
+.dot{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);flex:none}
+.checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:15px}
+.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;align-items:center;gap:10px;margin:6px 0}
+.row label{color:var(--muted);font-size:15px}
+.row output{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;min-height:28px;accent-color:var(--accent)}
+.tickwrap{position:relative;padding-bottom:24px}
+.tickwrap input.snap{position:relative;z-index:1}
+input.snap{-webkit-appearance:none;appearance:none;height:28px;background:transparent;margin:0;display:block}
+input.snap::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--line)}
+input.snap::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);margin-top:-8px;box-sizing:border-box}
+input.snap::-moz-range-track{height:6px;border-radius:3px;background:var(--line)}
+input.snap::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);box-sizing:border-box}
+.tick{position:absolute;top:3px;left:calc(11px + (100% - 22px) * var(--p));transform:translateX(-50%);width:2px;height:22px;background:var(--muted);border-radius:1px}
+.tlab{position:absolute;z-index:2;bottom:0;left:calc(11px + (100% - 22px) * var(--p));transform:translateX(-50%);border:0;background:none;color:var(--muted);font:700 12px/1 system-ui,-apple-system,sans-serif;padding:5px 6px;cursor:pointer;font-variant-numeric:tabular-nums}
+.tlab[aria-pressed="true"]{color:var(--accent)}
+#cropWrap{display:flex;justify-content:center;margin:8px 0 4px;background:var(--vp);border-radius:12px;padding:8px}
+#cropCv{display:block;touch-action:none;cursor:crosshair;border-radius:4px;max-width:100%}
+.steps{display:flex;flex-wrap:wrap;gap:10px 28px;margin:6px 0}
+.stepper{display:flex;align-items:center;gap:10px}
+.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;vertical-align:middle;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
+.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.q::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+.tip{background:var(--chip);border-radius:10px;padding:8px 12px;margin:4px 0 8px}
+.tip p{margin:0 0 6px}.tip p:last-child{margin:0}
+.otab{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+.otab th{text-align:left;color:var(--muted);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line)}
+.otab td{padding:6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.otab td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.otab .dot{display:inline-block;vertical-align:middle;margin-right:6px}
+.otab .code{color:var(--muted);font-size:12px}
+.stepper span{color:var(--muted);font-size:15px;min-width:3.6em}
+.stepper output{font-weight:700;min-width:1.4em;text-align:center;font-size:18px;font-variant-numeric:tabular-nums}
+.swatches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--muted);text-align:center}
+.sw.off{opacity:.45}
+input[type=color]{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+.prow{display:grid;grid-template-columns:auto 40px minmax(0,1fr);gap:10px;align-items:center;margin:6px 0}
+input[type=text],select{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:40px}
+details summary{cursor:pointer;font-size:19px;font-weight:750}
+details.mini{margin-top:12px}
+details.mini summary{font-size:16px;font-weight:700;min-height:36px;display:list-item;padding:6px 0}
+details.mini summary span{font-weight:400;font-size:14px;color:var(--muted)}
+textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:8px;resize:vertical}
+#imgMsg,#copyMsg{font-size:14px;color:var(--muted)}
+button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible,label.btn:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.warn{margin:8px 0 0;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:14px;max-width:62ch}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="HEX">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<header>
+  <h1>Hex bead cubes</h1>
+  <p>Tumbling-block cubes for a hexagonal pegboard. Isolate a colour, tap beads off as you place them, and build one cube at a time. Progress is saved in this browser.</p>
+  <p id="saveMsg" class="warn" role="status" hidden>This browser can’t save right now (its storage is full or switched off). You can keep working, but changes made from now on won’t be remembered after you close the page.</p>
+</header>
+<main class="wrap">
+  <section class="stage" aria-label="Pattern">
+    <div class="toolbar">
+      <div class="tapwrap">
+      <div class="seg" role="group" aria-label="What a tap does">
+        <button type="button" data-k="tap" data-v="inspect">Inspect</button>
+        <button type="button" data-k="tap" data-v="mark">Mark placed</button>
+      </div>
+      <button type="button" class="q" aria-expanded="false" aria-controls="t-tap" aria-label="Help: Inspect and Mark placed">?</button>
+      </div>
+      <div class="zoom">
+        <button type="button" class="ib" id="zout" aria-label="Zoom out">−</button>
+        <button type="button" class="ib" id="zin" aria-label="Zoom in">+</button>
+        <button type="button" class="btn" id="zfit">Fit</button>
+      </div>
+    </div>
+    <div class="sub tip" id="t-tap" hidden>
+      <p><b>Inspect</b> is for looking. Tap a bead to see its colour, coordinate and cube under the board. Nothing gets ticked off, and you can mark, clear or focus on that bead’s whole cube from there.</p>
+      <p><b>Mark placed</b> is for building. Tap a bead to tick it off as placed, and tap it again to undo.</p>
+      <p>With a keyboard, the arrow keys move the selection and Space ticks the selected bead in either mode.</p>
+    </div>
+    <div id="vp" tabindex="0" aria-label="Pattern board. Arrow keys move the selection; Space marks the selected bead placed.">
+      <svg id="board" role="img" aria-label="Bead pattern"></svg>
+    </div>
+    <div id="hud" aria-live="polite">
+      <span id="hudDot" class="empty"></span>
+      <div><div id="hudName">Tap a bead</div><div id="hudWhere">Its colour, coordinate and chunk show here.</div></div>
+    </div>
+    <div id="chunkBox" hidden>
+      <div class="chead"><b id="cName"></b><span id="cCount"></span></div>
+      <div class="btns">
+        <button type="button" class="btn" id="cMark"></button>
+        <button type="button" class="btn" id="cClear">Clear</button>
+        <button type="button" class="btn" id="cFocus" aria-pressed="false">Focus on this chunk</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls">
+    <div class="group">
+      <h2>Cubes</h2>
+      <div id="hexPanel">
+        <p class="sub" style="margin:4px 0">Cube settings <button type="button" class="q" aria-expanded="false" aria-controls="t-hex" aria-label="Help: hex cubes">?</button></p>
+        <p class="sub tip" id="t-hex" hidden>Board side is the number of pegs along one edge of the hexagon. Each cube is one chunk. Even rows use outlines 1, 3 and 5; odd rows use 2, 4 and 6.</p>
+        <div class="row"><label for="edge">Cube edge</label><input type="range" id="edge" min="2" max="8" step="1"><output id="edgeOut"></output></div>
+        <div class="row"><label for="side">Board side</label><input type="range" id="side" min="5" max="30" step="1"><output id="sideOut"></output></div>
+        <div class="seg" role="group" aria-label="Board orientation">
+          <button type="button" data-k="hex.orient" data-v="point">Point up</button>
+          <button type="button" data-k="hex.orient" data-v="flat">Flat edge up</button>
+        </div>
+        <div class="seg" role="group" aria-label="Face fill">
+          <button type="button" data-k="hex.faces" data-v="shaded">Shaded</button>
+          <button type="button" data-k="hex.faces" data-v="top">Top only</button>
+          <button type="button" data-k="hex.faces" data-v="empty">Empty</button>
+        </div>
+        <div class="seg" role="group" aria-label="Backing">
+          <button type="button" data-k="backing" data-v="clear">Clear board</button>
+          <button type="button" data-k="backing" data-v="dark">Dark backing</button>
+        </div>
+        <p class="sub" id="formula"></p>
+        <h3>Faces</h3>
+        <div class="swatches" id="faceSw"></div>
+        <h3>Outlines</h3>
+        <div class="swatches" id="lineSw"></div>
+      </div>
+
+      <div class="btns"><button type="button" class="btn" id="resetSettings">Reset pattern settings</button></div>
+    </div>
+
+    <div class="group">
+      <h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2>
+      <p class="sub tip" id="t-prog" hidden>Tap a colour to show only that colour; tap it again to show everything. In Mark placed mode, tapping a bead ticks it off. Tap a bead in Inspect mode to see its chunk and mark the whole chunk at once.</p>
+      <div class="bar"><span id="barFill"></span></div>
+      <p id="pct"></p>
+      <details class="mini" id="legendBox">
+        <summary>Colours <span id="legendSum"></span></summary>
+        <div id="legend"></div>
+      </details>
+      <div class="btns" id="isoBtns" hidden>
+        <button type="button" class="btn" id="isoMark"></button>
+        <button type="button" class="btn" id="isoClear"></button>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="fade"> Fade placed beads</label>
+        <label><input type="checkbox" id="labels"> Show chunk labels</label>
+      </div>
+      <div class="btns"><button type="button" class="btn" id="resetProg">Reset progress</button></div>
+    </div>
+
+    <div class="group">
+      <details id="expDetails">
+        <summary>Export</summary>
+        <div class="btns">
+          <select id="expKind" aria-label="What to export">
+            <option value="beads">Bead list (CSV)</option>
+            <option value="counts">Colour counts (CSV)</option>
+          </select>
+        </div>
+        <h3>Images <button type="button" class="q" aria-expanded="false" aria-controls="t-png" aria-label="Help: images">?</button></h3>
+        <p class="sub tip" id="t-png" hidden>The bead preview looks like the board above, including the dark backing if it’s on.</p>
+        <div class="btns"><button type="button" class="btn" id="pngBeads">Save bead preview (PNG)</button></div>
+        <p class="sub" id="pngMsg" aria-live="polite"></p>
+        <h3>Lists</h3>
+        <textarea id="expText" readonly aria-label="Export text"></textarea>
+        <div class="btns"><button type="button" class="btn" id="copy">Copy</button><span id="copyMsg" aria-live="polite"></span></div>
+      </details>
+    </div>
+    <p class="sub">Version 1.1 · 12 Nov 2026. Saved settings are now checked when the page opens, and you are told if this browser can’t save.</p>
+  </section>
+</main>
+
+<script>
+(function(){
+'use strict';
+const NS='http://www.w3.org/2000/svg',S3=Math.sqrt(3)/2;
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f3=n=>+n.toFixed(3);
+const EXPORT_DELAY=250;   /* pause in ms before the export text is rebuilt */
+const HEX6=/^#[0-9A-Fa-f]{6}$/;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const getIn=(o,p)=>p.split('.').reduce((x,k)=>x[k],o);
+const setIn=(o,p,v)=>{const ks=p.split('.'),last=ks.pop();ks.reduce((x,k)=>x[k],o)[last]=v};
+
+/* storage: best effort. If a save fails the user is told, and this session keeps working from its own copy. */
+const mem={},unsaved=new Set();
+const store={
+  get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
+  set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok}
+};
+
+const DEF={tap:'inspect',fade:true,labels:false,iso:null,backing:'clear',ui:{legend:true},
+  hex:{edge:4,side:16,orient:'point',faces:'shaded',
+    face:{top:'#D3D6DB',left:'#151515',right:'#6B7078'},
+    line:['#D62828','#F08A1C','#F4D51F','#2FA84F','#2A4BD7','#7B2FD0']},
+};
+const FACE={top:'Top face',left:'Left face',right:'Right face'};
+
+function merge(d,s){
+  if(s===undefined||s===null)return clone(d);
+  if(Array.isArray(d))return Array.isArray(s)?s:clone(d);
+  if(d&&typeof d==='object'){if(typeof s!=='object')return clone(d);const o={};for(const k in d)o[k]=merge(d[k],s[k]);return o}
+  if(d===null)return s;
+  return typeof s===typeof d?s:d;
+}
+/* Every saved setting is checked when the page opens. A choice that is not on its list, a number outside its range,
+   or a colour that is not # plus six hex digits falls back to a safe value, so damaged storage cannot break the page. */
+const CHOICES={tap:['inspect','mark'],backing:['clear','dark'],'hex.orient':['point','flat'],'hex.faces':['shaded','top','empty']};
+const LIMITS={'hex.edge':[2,8],'hex.side':[5,30]};
+function tidy(o){
+  for(const p in CHOICES)if(!CHOICES[p].includes(getIn(o,p)))setIn(o,p,getIn(DEF,p));
+  for(const p in LIMITS){const v=getIn(o,p),[a,b]=LIMITS[p];setIn(o,p,Number.isFinite(v)?clamp(Math.round(v),a,b):getIn(DEF,p))}
+  for(const f in DEF.hex.face)if(!HEX6.test(o.hex.face[f]))o.hex.face[f]=DEF.hex.face[f];
+  if(o.hex.line.length!==6||!o.hex.line.every(c=>HEX6.test(c)))o.hex.line=clone(DEF.hex.line);
+  if(!(typeof o.iso==='string'&&/^(line[0-5]|top|left|right)$/.test(o.iso)))o.iso=null;
+  return o;
+}
+let st=tidy(merge(DEF,store.get('hc:settings')));
+const saveSettings=()=>store.set('hc:settings',st);
+
+let pattern=null,prog=new Set(),progKey='',sel=-1,focus=null,zoom=1,ring=null;
+
+/* ---------- hex cube pattern (same geometry as the Hex bead cubes viewer) ---------- */
+function buildHex(){
+  const H=st.hex,R=H.edge,B=H.side-1,flat=H.orient==='flat';
+  const P=(q,r)=>flat?[q+r/2,S3*r]:[S3*r,q+r/2];
+  const cell=new Map();
+  const K=Math.ceil(B/R)+2;
+  for(let k=-K;k<=K;k++)for(let col=-K;col<=K;col++){
+    const odd=((k%2)+2)%2,r0=2*R*col+R*odd,q0=1.5*R*k-R*col-0.5*R*odd;
+    if(Math.max(Math.abs(q0),Math.abs(r0),Math.abs(q0+r0))>B+R)continue;
+    const li=(odd?[1,3,5]:[0,2,4])[((col%3)+3)%3],cid=k+':'+col;
+    for(let dq=-R;dq<=R;dq++)for(let dr=-R;dr<=R;dr++){
+      const m=Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr));
+      if(m>R)continue;
+      const q=q0+dq,r=r0+dr;
+      if(Math.max(Math.abs(q),Math.abs(r),Math.abs(q+r))>B)continue;
+      const spoke=(dr===0&&dq>=0)||(dq===-dr&&dr>0)||(dq===0&&dr<0);
+      let c;
+      if(m===R||spoke)c='line'+li;
+      else{
+        const f=(dr>0&&dq+dr>0)?'right':(dq<0&&dq+dr<0)?'top':'left';
+        c=(H.faces==='shaded'||(H.faces==='top'&&f==='top'))?f:null;
+      }
+      cell.set(q+','+r,{c,cube:cid});
+    }
+  }
+  const Bp=B+0.75;
+  const corners=[[Bp,0],[0,Bp],[-Bp,Bp],[-Bp,0],[0,-Bp],[Bp,-Bp]].map(([q,r])=>P(q,r));
+  const xs=corners.map(p=>p[0]),ys=corners.map(p=>p[1]),pad=0.7;
+  const ox=pad-Math.min(...xs),oy=pad-Math.min(...ys);
+  const W=Math.max(...xs)-Math.min(...xs)+2*pad,Hh=Math.max(...ys)-Math.min(...ys)+2*pad;
+  const sites=[];
+  for(let q=-B;q<=B;q++)for(let r=-B;r<=B;r++){
+    if(Math.abs(q+r)>B)continue;
+    const v=cell.get(q+','+r)||{c:null,cube:null},[x,y]=P(q,r);
+    sites.push({k:q+','+r,x:x+ox,y:y+oy,c:v.c,ch:v.cube,q,r});
+  }
+  sites.sort((a,b)=>Math.abs(a.y-b.y)>0.3?a.y-b.y:a.x-b.x);
+  /* chunks = cubes, numbered in reading order */
+  const acc={};
+  sites.forEach(s=>{if(!s.ch)return;const a=acc[s.ch]=acc[s.ch]||{n:0,sx:0,sy:0,x0:1e9,y0:1e9,x1:-1e9,y1:-1e9,beads:0};
+    a.n++;a.x0=Math.min(a.x0,s.x);a.y0=Math.min(a.y0,s.y);a.x1=Math.max(a.x1,s.x);a.y1=Math.max(a.y1,s.y);
+    if(s.c){a.beads++;a.sx+=s.x;a.sy+=s.y}});
+  const ids=Object.keys(acc).filter(id=>acc[id].beads>0)
+    .sort((a,b)=>{const A=acc[a],Bc=acc[b],ay=A.sy/A.beads,by=Bc.sy/Bc.beads;return Math.abs(ay-by)>0.6?ay-by:A.sx/A.beads-Bc.sx/Bc.beads});
+  const chunks={},labels=[];
+  ids.forEach((id,i)=>{const a=acc[id];chunks[id]={label:'Cube '+(i+1),x0:a.x0,y0:a.y0,x1:a.x1,y1:a.y1};
+    labels.push({x:a.sx/a.beads,y:a.sy/a.beads+0.3,t:String(i+1),mid:true})});
+  sites.forEach(s=>{if(s.ch&&!chunks[s.ch])s.ch=null});
+  const colors={};
+  H.line.forEach((hex,i)=>colors['line'+i]={name:'Outline '+(i+1),hex});
+  ['top','left','right'].forEach(f=>colors[f]={name:FACE[f],hex:H.face[f]});
+  const poly=corners.map(([x,y])=>f3(x+ox)+','+f3(y+oy)).join(' ');
+  return {kind:'hex',W,H:Hh,sites,colors,chunks,labels,
+    order:['line0','line1','line2','line3','line4','line5','top','left','right'],
+    decor(el){el('polygon',{points:poly,class:'bd',stroke:'var(--board)','stroke-width':0.8,'stroke-linejoin':'round',style:'stroke:var(--board)'})}};
+}
+
+/* ---------- progress ---------- */
+function hash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(36)}
+const saveProg=()=>store.set(progKey,[...prog]);
+
+/* ---------- render ---------- */
+function render(){
+  const svg=$('board');svg.textContent='';ring=null;
+  if(!pattern)return;
+  svg.setAttribute('viewBox',`0 0 ${f3(pattern.W)} ${f3(pattern.H)}`);
+  const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,typeof a[k]==='number'?f3(a[k]):a[k]);(p||svg).appendChild(e);return e};
+  pattern.decor(el);
+  const g=el('g',{});
+  pattern.sites.forEach((s,i)=>{
+    s.el=s.c?el('circle',{cx:s.x,cy:s.y,r:0.31,fill:'none',stroke:pattern.colors[s.c].hex,'stroke-width':0.32,class:'bead','data-i':i},g)
+            :el('circle',{cx:s.x,cy:s.y,r:0.12,class:'peg','data-i':i},g);
+  });
+  const lg=el('g',{id:'lblG'});
+  pattern.labels.forEach(l=>{const t=el('text',{x:l.x,y:l.y,class:'lbl','text-anchor':l.mid?'middle':'start'},lg);t.textContent=l.t});
+  ring=el('circle',{r:0.56,class:'ring',cx:0,cy:0,style:'display:none'});
+}
+function styles(){
+  if(!pattern)return;
+  for(const s of pattern.sites){
+    if(!s.c){s.el.style.opacity=focus&&s.ch!==focus?0.35:1;continue}
+    let o=1;
+    if((st.iso&&st.iso!==s.c)||(focus&&s.ch!==focus))o=0.1;
+    else if(st.fade&&prog.has(s.k))o=0.25;
+    s.el.style.opacity=o;
+  }
+  const s=pattern.sites[sel];
+  if(ring){if(s){ring.setAttribute('cx',f3(s.x));ring.setAttribute('cy',f3(s.y));ring.style.display=''}else ring.style.display='none'}
+  const lg=$('lblG');if(lg)lg.style.display=st.labels?'':'none';
+}
+function progress(){
+  const cnt={};let tot=0,done=0;
+  if(pattern)for(const s of pattern.sites){if(!s.c)continue;const c=cnt[s.c]=cnt[s.c]||{n:0,d:0};c.n++;tot++;if(prog.has(s.k)){c.d++;done++}}
+  $('barFill').style.width=tot?(100*done/tot)+'%':'0';
+  $('pct').textContent=pattern?`${done} of ${tot} beads placed`+(tot?` (${Math.round(100*done/tot)}%)`:''):'No pattern yet';
+  $('legend').innerHTML=pattern?pattern.order.filter(c=>cnt[c]).map(c=>{const k=pattern.colors[c],n=cnt[c];
+    return `<button type="button" class="crow${n.d===n.n?' done':''}" data-c="${c}" aria-pressed="${st.iso===c}"><span class="dot" style="background:${esc(k.hex)}"></span><span class="nm">${esc(k.name)}</span><span class="ct">${n.d}/${n.n}</span></button>`}).join(''):'';
+  $('isoBtns').hidden=!st.iso;
+  {const nc=Object.keys(cnt).length,one=pattern&&st.iso&&pattern.colors[st.iso];
+   $('legendSum').textContent=pattern?`(${nc}${one?', showing only '+one.name:''})`:''}
+  if(st.iso&&pattern){const nm=pattern.colors[st.iso].name;$('isoMark').textContent=`Mark all ${nm} placed`;$('isoClear').textContent=`Clear ${nm}`}
+}
+/* write text only when it changes, so a screen reader is not told the same thing again */
+const txt=(id,t)=>{const e=$(id);t=String(t);if(e.textContent!==t)e.textContent=t};
+function hud(){
+  const s=pattern&&pattern.sites[sel],dot=$('hudDot');
+  if(!s){dot.className='empty';dot.style.background='';txt('hudName','Tap a bead');txt('hudWhere','Its colour, coordinate and chunk show here.');$('chunkBox').hidden=true;return}
+  const col=s.c?pattern.colors[s.c]:null;
+  dot.className=col?'':'empty';dot.style.background=col?col.hex:'';
+  txt('hudName',col?col.name+(prog.has(s.k)?', placed':', not placed yet'):'Empty peg');
+  const chunk=s.ch&&pattern.chunks[s.ch]?pattern.chunks[s.ch].label:null;
+  let where;
+  where=`q ${s.q}, r ${s.r}, s ${-s.q-s.r}`+(chunk?` in ${chunk.toLowerCase()}`:'');
+  txt('hudWhere',where);
+  const box=$('chunkBox');
+  if(!chunk){box.hidden=true;return}
+  box.hidden=false;
+  let n=0,d=0;
+  for(const t of pattern.sites)if(t.c&&t.ch===s.ch&&(!st.iso||t.c===st.iso)){n++;if(prog.has(t.k))d++}
+  const scope=st.iso?pattern.colors[st.iso].name:'beads';
+  txt('cName',chunk);
+  txt('cCount',`${d} of ${n} ${st.iso?scope:'beads'} placed`);
+  txt('cMark',st.iso?`Mark ${scope} here placed`:'Mark chunk placed');
+  $('cMark').disabled=n===0;
+  $('cFocus').setAttribute('aria-pressed',focus===s.ch);
+  txt('cFocus',focus===s.ch?'Show whole board':'Focus on this chunk');
+}
+let expTimer=0;
+/* the export text is rebuilt a moment after the last change, not on every tap */
+function refresh(){styles();progress();hud();if($('expDetails').open){clearTimeout(expTimer);expTimer=setTimeout(()=>{$('expText').value=exportText()},EXPORT_DELAY)}}
+
+/* ---------- zoom and scrolling ---------- */
+const vp=$('vp');
+const maxH=()=>Math.max(240,window.innerHeight*0.7);
+function fitZoom(){if(!pattern)return 1;const h=vp.clientWidth*pattern.H/pattern.W;return Math.min(1,maxH()/h)}
+const ppu=()=>vp.clientWidth*zoom/pattern.W;
+function size(){if(!pattern)return;const w=vp.clientWidth*zoom,svg=$('board');svg.style.width=w+'px';svg.style.height=(w*pattern.H/pattern.W)+'px'}
+function setZoom(z,cx,cy){
+  if(!pattern)return;
+  const old=ppu();
+  if(cx===undefined){cx=(vp.scrollLeft+vp.clientWidth/2)/old;cy=(vp.scrollTop+vp.clientHeight/2)/old}
+  zoom=Math.max(fitZoom(),Math.min(12,z));size();
+  const p=ppu();vp.scrollLeft=cx*p-vp.clientWidth/2;vp.scrollTop=cy*p-vp.clientHeight/2;
+}
+function zoomToChunk(id){
+  const b=pattern.chunks[id];if(!b)return;
+  const bw=b.x1-b.x0+2,bh=b.y1-b.y0+2;
+  const z=Math.min(pattern.W/bw,maxH()*pattern.W/(vp.clientWidth*bh));
+  setZoom(z,(b.x0+b.x1)/2,(b.y0+b.y1)/2);
+}
+function ensureVisible(s){
+  const p=ppu(),x=s.x*p,y=s.y*p,m=40;
+  if(x<vp.scrollLeft+m)vp.scrollLeft=x-m*2;else if(x>vp.scrollLeft+vp.clientWidth-m)vp.scrollLeft=x-vp.clientWidth+m*2;
+  if(y<vp.scrollTop+m)vp.scrollTop=y-m*2;else if(y>vp.scrollTop+vp.clientHeight-m)vp.scrollTop=y-vp.clientHeight+m*2;
+}
+$('zin').onclick=()=>setZoom(zoom*1.5);
+$('zout').onclick=()=>setZoom(zoom/1.5);
+$('zfit').onclick=()=>{focus=null;setZoom(0,pattern?pattern.W/2:0,pattern?pattern.H/2:0);refresh()};
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(pattern){zoom=Math.max(zoom,fitZoom());size()}if(typeof drawCrop==='function')drawCrop()},120)});
+
+/* ---------- interaction ---------- */
+function toggle(s,force){if(!s||!s.c)return;const on=force===undefined?!prog.has(s.k):force;on?prog.add(s.k):prog.delete(s.k)}
+function select(i,mark){sel=i;if(mark){toggle(pattern.sites[i]);saveProg()}refresh()}
+$('board').addEventListener('click',e=>{
+  const i=e.target.getAttribute&&e.target.getAttribute('data-i');if(i==null)return;
+  select(+i,st.tap==='mark');
+});
+vp.addEventListener('keydown',e=>{
+  if(!pattern)return;
+  const d={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]}[e.key];
+  if(d){
+    e.preventDefault();
+    const sites=pattern.sites;
+    if(sel<0){const i=sites.findIndex(s=>s.c);select(i<0?0:i,false);ensureVisible(sites[sel]);return}
+    const s=sites[sel];let best=-1,bs=Infinity;
+    sites.forEach((t,i)=>{const vx=t.x-s.x,vy=t.y-s.y,al=vx*d[0]+vy*d[1];if(al<0.3)return;
+      const pe=Math.abs(vx*d[1]-vy*d[0]);if(pe>al*1.2)return;const sc=al+2*pe;if(sc<bs){bs=sc;best=i}});
+    if(best>=0){select(best,false);ensureVisible(sites[best])}
+  }else if((e.key===' '||e.key==='Enter')&&sel>=0){e.preventDefault();toggle(pattern.sites[sel]);saveProg();refresh()}
+  else if(e.key==='Escape'&&focus){focus=null;refresh()}
+});
+$('legend').addEventListener('click',e=>{const b=e.target.closest('.crow');if(!b)return;st.iso=st.iso===b.dataset.c?null:b.dataset.c;saveSettings();refresh()});
+function markWhere(pred,val){for(const t of pattern.sites)if(t.c&&pred(t))toggle(t,val);saveProg();refresh()}
+$('isoMark').onclick=()=>markWhere(t=>t.c===st.iso,true);
+$('isoClear').onclick=()=>markWhere(t=>t.c===st.iso,false);
+const inChunk=t=>{const s=pattern.sites[sel];return t.ch===s.ch&&(!st.iso||t.c===st.iso)};
+$('cMark').onclick=()=>markWhere(inChunk,true);
+$('cClear').onclick=()=>markWhere(inChunk,false);
+$('cFocus').onclick=()=>{const s=pattern.sites[sel];if(focus===s.ch){focus=null;setZoom(0,pattern.W/2,pattern.H/2)}else{focus=s.ch;zoomToChunk(s.ch)}refresh()};
+$('fade').onchange=e=>{st.fade=e.target.checked;saveSettings();refresh()};
+$('labels').onchange=e=>{st.labels=e.target.checked;saveSettings();refresh()};
+let armed=0;
+$('resetProg').onclick=()=>{
+  const b=$('resetProg');
+  if(!armed){b.textContent='Tap again to clear all progress';armed=setTimeout(()=>{armed=0;b.textContent='Reset progress'},3000);return}
+  clearTimeout(armed);armed=0;b.textContent='Reset progress';prog.clear();saveProg();refresh();
+};
+
+/* ---------- settings UI ---------- */
+const getP=p=>getIn(st,p),setP=(p,v)=>setIn(st,p,v);
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+  setP(b.dataset.k,b.dataset.v);
+  saveSettings();
+  if(b.dataset.k==='tap'||b.dataset.k==='backing')sync();else rebuild();
+}));
+function swatches(){
+  $('faceSw').innerHTML=['top','left','right'].map(f=>`<label class="sw" id="sw-${f}"><input type="color" data-face="${f}" value="${esc(st.hex.face[f])}" aria-label="${FACE[f]} colour">${FACE[f]}</label>`).join('');
+  $('lineSw').innerHTML=st.hex.line.map((c,i)=>`<label class="sw"><input type="color" data-line="${i}" value="${esc(c)}" aria-label="Outline ${i+1} colour">Outline ${i+1}</label>`).join('');
+}
+function recolour(){ /* colour edits keep geometry and progress */
+  if(!pattern||pattern.kind!=='hex')return;
+  st.hex.line.forEach((hex,i)=>pattern.colors['line'+i].hex=hex);
+  ['top','left','right'].forEach(f=>pattern.colors[f].hex=st.hex.face[f]);
+  pattern.sites.forEach(s=>{if(s.c)s.el.setAttribute('stroke',pattern.colors[s.c].hex)});
+  saveSettings();refresh();
+}
+['faceSw','lineSw'].forEach(id=>$(id).addEventListener('input',e=>{const t=e.target;
+  if(t.dataset.face)st.hex.face[t.dataset.face]=t.value;else if(t.dataset.line)st.hex.line[+t.dataset.line]=t.value;recolour()}));
+$('edge').addEventListener('input',e=>{st.hex.edge=+e.target.value;rebuild()});
+$('side').addEventListener('input',e=>{st.hex.side=+e.target.value;rebuild()});
+document.addEventListener('click',e=>{const b=e.target.closest('.q');if(!b)return;const t=$(b.getAttribute('aria-controls'));if(!t)return;
+  const open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));t.hidden=!open});
+$('resetSettings').onclick=()=>{
+  st.hex=clone(DEF.hex);st.backing=DEF.backing;
+  swatches();saveSettings();rebuild();
+};
+function sync(){
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',String(getP(b.dataset.k))===b.dataset.v));
+  $('board').classList.toggle('darkb',st.backing==='dark');
+  $('edge').value=st.hex.edge;$('edgeOut').textContent=st.hex.edge;
+  $('side').value=st.hex.side;$('sideOut').textContent=st.hex.side;
+  {const R=st.hex.edge;let o=0,f=0;for(let dq=-R;dq<=R;dq++)for(let dr=-R;dr<=R;dr++){const m=Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr));if(m>R)continue;
+    const sp=(dr===0&&dq>=0)||(dq===-dr&&dr>0)||(dq===0&&dr<0);(m===R||sp)?o++:f++}
+   $('formula').textContent=`Each full cube is ${o+f} beads: ${o} for the outline and spokes, ${f} for the faces.`}
+  $('fade').checked=st.fade;$('labels').checked=st.labels;
+  ['left','right'].forEach(f=>{const e=$('sw-'+f);if(e)e.classList.toggle('off',st.hex.faces!=='shaded')});
+  const t=$('sw-top');if(t)t.classList.toggle('off',st.hex.faces==='empty');
+}
+/* ---------- PNG export ---------- */
+function drawPNG(kind){
+  if(!pattern)return null;
+  const isSq=false,dk=st.backing==='dark';
+  if(kind==='pixels'){
+    if(!isSq)return null;
+    let GW=0,GH=0;pattern.sites.forEach(t=>{GW=Math.max(GW,t.gx+1);GH=Math.max(GH,t.gy+1)});
+    const P=Math.max(4,Math.floor(2400/Math.max(GW,GH)));
+    const cv=document.createElement('canvas');cv.width=GW*P;cv.height=GH*P;const g=cv.getContext('2d');
+    pattern.sites.forEach(t=>{if(!t.c)return;g.fillStyle=pattern.colors[t.c].hex;g.fillRect(t.gx*P,t.gy*P,P,P)});
+    return cv;
+  }
+  const U=Math.max(8,Math.floor(2400/Math.max(pattern.W,pattern.H)));
+  const cv=document.createElement('canvas');cv.width=Math.round(pattern.W*U);cv.height=Math.round(pattern.H*U);
+  const g=cv.getContext('2d');g.fillStyle=dk?'#0E1014':'#F4F5F7';g.fillRect(0,0,cv.width,cv.height);
+  g.fillStyle=dk?'#15171C':'#DCE1E8';
+  if(isSq){const seen={};pattern.sites.forEach(t=>{const k=t.bc+','+t.br;if(seen[k])return;seen[k]=1;
+      const x=t.x-t.lx-0.5,y=t.y-t.ly-0.5;g.fillRect(x*U,y*U,29*U,29*U)})}
+  else{g.beginPath();pattern.sites.forEach(t=>{g.moveTo(t.x*U+0.6*U,t.y*U);g.arc(t.x*U,t.y*U,0.6*U,0,Math.PI*2)});g.fill()}
+  pattern.sites.forEach(t=>{
+    g.beginPath();
+    if(t.c){g.strokeStyle=pattern.colors[t.c].hex;g.lineWidth=0.32*U;g.arc(t.x*U,t.y*U,0.31*U,0,Math.PI*2);g.stroke()}
+    else{g.fillStyle=dk?'#2A2D34':'#B4BBC6';g.arc(t.x*U,t.y*U,0.12*U,0,Math.PI*2);g.fill()}
+  });
+  return cv;
+}
+async function savePNG(kind){
+  const msg=$('pngMsg'),cv=drawPNG(kind);
+  if(!cv){msg.textContent='Load a pattern first.';return}
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  if(!blob){msg.textContent='Could not make the image.';return}
+  const name='hex-cubes-preview.png';
+  let dl=null;
+  try{if(window.claude&&typeof window.claude.use==='function')dl=await window.claude.use('downloads')}catch(e){}
+  if(dl){
+    try{await dl.save({filename:name,data:blob});msg.textContent='Saved '+name+'.'}
+    catch(e){msg.textContent=e&&e.code==='declined'?'Save cancelled.':'Saving isn\u2019t available here. Open the page in your browser instead.'}
+    return;
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);msg.textContent='Downloaded '+name+'.';
+}
+$('pngBeads').onclick=()=>savePNG('beads');
+
+function rebuild(){
+  pattern=buildHex();
+  sel=-1;focus=null;
+  if(pattern){
+    progKey='hc:prog:'+hash(pattern.sites.filter(s=>s.c).map(s=>s.k+'='+s.c).join(';'));
+    const saved=store.get(progKey);prog=new Set(Array.isArray(saved)?saved:[]);
+  }else{prog=new Set();progKey=''}
+  if(st.iso&&!(pattern&&pattern.colors[st.iso]))st.iso=null;
+  render();zoom=fitZoom();size();vp.scrollLeft=0;vp.scrollTop=0;
+  saveSettings();sync();refresh();
+}
+
+/* ---------- export ---------- */
+function exportText(){
+  if(!pattern)return'';
+  const q=v=>/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v,yes=s=>prog.has(s.k)?'yes':'no';
+  if($('expKind').value==='counts'){
+    const cnt={};pattern.sites.forEach(s=>{if(!s.c)return;const c=cnt[s.c]=cnt[s.c]||{n:0,d:0};c.n++;if(prog.has(s.k))c.d++});
+    return 'colour,hex,needed,placed\n'+pattern.order.filter(c=>cnt[c]).map(c=>[q(pattern.colors[c].name),pattern.colors[c].hex,cnt[c].n,cnt[c].d].join(',')).join('\n');
+  }
+  const list=pattern.sites.filter(s=>s.c),ch=s=>s.ch&&pattern.chunks[s.ch]?pattern.chunks[s.ch].label:'';
+  return 'q,r,s,colour,cube,placed\n'+list.map(s=>[s.q,s.r,-s.q-s.r,q(pattern.colors[s.c].name),q(ch(s)),yes(s)].join(',')).join('\n');
+}
+$('expDetails').addEventListener('toggle',()=>{if($('expDetails').open)$('expText').value=exportText()});
+$('expKind').addEventListener('change',()=>{$('expText').value=exportText()});
+$('copy').onclick=async()=>{
+  $('expText').value=exportText();
+  try{await navigator.clipboard.writeText($('expText').value);$('copyMsg').textContent='Copied'}
+  catch(e){$('expText').select();$('copyMsg').textContent='Copying isn’t available here. The text is selected, so copy it manually.'}
+};
+
+/* ---------- start ---------- */
+{const d=$('legendBox');d.open=st.ui.legend!==false;
+  d.addEventListener('toggle',()=>{if(st.ui.legend!==d.open){st.ui.legend=d.open;saveSettings()}})}
+swatches();
+rebuild();
+})();
+</script>
+<script id="hh-helper">/* Home Screen helper from HTML App Generator 1.3 */
+(function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
+   Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
+   Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the
+   buttons. On a phone it shows once as a card at the bottom until it's dismissed; the steps also go in `mount` if given.
+   Self-contained, so it can also be added to apps the generator didn't make (FIG, BIG): homeHint({code, name, url, key, mount}). */
+function homeHint(cfg){
+  const d=document,ua=navigator.userAgent||'',code=String(cfg.code||'this app'),name=String(cfg.name||code);
+  const e=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),ios=ipad||/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+  let standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches}catch(x){}
+  let framed=false;try{framed=window.self!==window.top}catch(x){framed=true}
+  const web=/^https?:$/.test(location.protocol);
+  const inApp=/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|Pinterest|; wv\)/.test(ua)||(ios&&!/Safari\//.test(ua));
+  const iosOther=/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const where=standalone?'installed':!web?'file':framed?'framed':ios?(inApp?'ios-app':'ios'):android?(inApp?'android-app':'android'):'computer';
+  const url=cfg.url||(web&&!framed?location.href.split('#')[0]:'');
+  const key=(cfg.key||code.toLowerCase()+':')+'homeHint';
+  /* pictures of the buttons to tap (drawn here, not taken from any system) */
+  const svg=p=>`<span class="hh-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
+  const I={share:svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:svg('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+    plus:svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:svg('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
+    compass:svg('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>')};
+  let prompt=null;
+  function steps(){
+    if(where==='ios')return{lead:'It opens like an app, with its own icon.',list:[
+      `Tap ${I.share} <b>Share</b>${iosOther?' (in the address bar or the '+I.dots+' menu)':ipad?' (top right)':''}.`+(iosOther?'':` No Share button? Tap ${I.dots} first.`),
+      `Tap ${I.plus} <b>Add to Home Screen</b>.`,'Tap <b>Add</b>.'],note:'Best done before you start: the Home Screen app keeps its own copy of your work.'};
+    if(where==='ios-app')return{lead:'This page is open inside another app, which can’t add it to your Home Screen.',list:[
+      `Tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b>. (Or copy the link and paste it into Safari.)`,
+      `In Safari, tap ${I.share} <b>Share</b>, then ${I.plus} <b>Add to Home Screen</b>.`],copy:true};
+    if(where==='android')return{lead:'It opens like an app, with its own icon.',list:prompt?[`Tap <b>Install ${e(code)}</b> below.`]:[
+      `Tap ${I.kebab} (top right).`,'Tap <b>Add to Home screen</b> or <b>Install app</b>.','Tap <b>Install</b> or <b>Add</b>.']};
+    if(where==='android-app')return{lead:'This page is open inside another app, which can’t add it to your Home screen.',list:[
+      `Tap ${I.kebab} and choose <b>Open in Chrome</b> (or your browser).`,`Then tap ${I.kebab} again and <b>Add to Home screen</b>.`],copy:true};
+    if(where==='installed')return{lead:`${e(code)} is on your Home Screen. Open it from there any time.`,list:[]};
+    if(where==='file')return{lead:`You opened ${e(code)} as a file. It works here, but a phone can’t run a file like this.`+
+      (url?` On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a> instead and follow the steps it shows.`:' To use it on a phone, it needs a web address.'),list:[],copy:!!url};
+    return{lead:url?`On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a>, and it shows the two or three taps that put ${e(code)} on the Home Screen. On a computer, bookmark it.`:
+      `To put ${e(code)} on a phone, open its web address there.`,list:[],copy:!!url};
+  }
+  function html(withTitle){
+    const s=steps();
+    return(withTitle?`<div class="hh-t"><span>Put ${e(code)} on your Home Screen</span><button type="button" class="hh-x" aria-label="Close">×</button></div>`:'')+
+      `<p class="hh-lead">${s.lead}</p>`+(s.list.length?`<ol class="hh-steps">${s.list.map(l=>`<li>${l}</li>`).join('')}</ol>`:'')+(s.note?`<p class="hh-note">${s.note}</p>`:'')+
+      `<div class="hh-btns">${prompt?`<button type="button" class="hh-b hh-go" data-hh="install">Install ${e(code)}</button>`:''}${s.copy&&url?'<button type="button" class="hh-b" data-hh="copy">Copy link</button>':''}${withTitle?'<button type="button" class="hh-b" data-hh="later">Not now</button>':''}<span class="hh-msg" aria-live="polite"></span></div>`;
+  }
+  if(!d.getElementById('hh-style')){const st=d.createElement('style');st.id='hh-style';st.textContent=
+`#hh{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9999;max-width:520px;margin:0 auto;background:var(--panel,#fff);color:var(--ink,#1b1f24);border:1px solid var(--edge,#c3c9d2);border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.28);padding:12px 14px 10px;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+#hh .hh-t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.hh-lead{margin:4px 0}.hh-steps{margin:6px 0;padding-left:1.4em}.hh-steps li{margin:5px 0}
+.hh-i{display:inline-flex;vertical-align:-5px;width:24px;height:24px;align-items:center;justify-content:center;border-radius:7px;background:var(--chip,#e9edf2);color:var(--accent,#0E7C7B);margin:0 1px}.hh-i svg{width:18px;height:18px}
+.hh-note,.hh-msg{color:var(--muted,#5b6470);font-size:13px;margin:4px 0}.hh-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.hh-b{min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--edge,#c3c9d2);background:var(--chip,#e9edf2);color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.hh-go{background:var(--accent,#0E7C7B);color:var(--accent-ink,#fff);border-color:transparent}
+#hh .hh-x{min-width:44px;min-height:44px;border:0;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
+@media (prefers-color-scheme:dark){#hh{background:var(--panel,#1d2229);color:var(--ink,#e8ebef);border-color:var(--edge,#3a424d)}.hh-i,.hh-b{background:var(--chip,#2a313a)}}`;
+    d.head.appendChild(st)}
+  const phone=where==='ios'||where==='ios-app'||where==='android'||where==='android-app';
+  let later=0;try{later=+localStorage.getItem(key)||0}catch(x){}
+  let card=null;
+  function wire(box){box.addEventListener('click',async ev=>{
+    const b=ev.target.closest('[data-hh],.hh-x');if(!b)return;const m=box.querySelector('.hh-msg'),act=b.dataset.hh||'later';
+    if(act==='install'&&prompt){prompt.prompt();try{const r=await prompt.userChoice;if(r&&r.outcome==='accepted')hide()}catch(x){}prompt=null;draw()}
+    else if(act==='copy'){try{await navigator.clipboard.writeText(url);if(m)m.textContent='Link copied.'}catch(x){if(m)m.textContent=url}}
+    else if(act==='later'){try{localStorage.setItem(key,String(Date.now()))}catch(x){}hide()}
+  })}
+  function hide(){if(card){card.remove();card=null}}
+  function draw(){
+    if(cfg.mount){cfg.mount.innerHTML=html(false);if(!cfg.mount.dataset.hh){cfg.mount.dataset.hh='1';wire(cfg.mount)}}
+    if(card)card.innerHTML=html(true);
+  }
+  if(phone&&Date.now()-later>30*864e5){card=d.createElement('div');card.id='hh';card.setAttribute('role','dialog');card.setAttribute('aria-label','Put '+code+' on your Home Screen');d.body.appendChild(card);wire(card)}
+  window.addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();prompt=ev;draw()});
+  window.addEventListener('appinstalled',()=>{hide()});
+  draw();
+  return where;
+}
+
+homeHint({code:"HEX",name:"Hex Bead Cubes",url:"https://david-i-schwartz.github.io/web-mobile-apps/hex-cubes/",key:"hex:"});})();
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>

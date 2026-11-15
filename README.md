@@ -12,6 +12,13 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`iso-lab/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-lab/): PIL, Pegboard Iso Lab
 - [`milspeak/`](https://david-i-schwartz.github.io/web-mobile-apps/milspeak/): MIL, The Civilian's Guide to Milspeak
 - [`torah-tutor/`](https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/): TORAH, Torah Tutor
+- [`seventh/`](https://david-i-schwartz.github.io/web-mobile-apps/seventh/): SEV, Seventh
+- [`one-way/`](https://david-i-schwartz.github.io/web-mobile-apps/one-way/): ONE, One Way
+- [`hex-cubes/`](https://david-i-schwartz.github.io/web-mobile-apps/hex-cubes/): HEX, Hex Bead Cubes
+- [`iso-designer/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-designer/): ISO, Iso Bead Designer
+- [`year-planner/`](https://david-i-schwartz.github.io/web-mobile-apps/year-planner/): YRP, RIT Department Year Planner
+- [`ipar/`](https://david-i-schwartz.github.io/web-mobile-apps/ipar/): IPAR, Image, Preserve, Analyze, Report
+- [`mechanics-lab/`](https://david-i-schwartz.github.io/web-mobile-apps/mechanics-lab/): MOL, Mechanics Overlay Lab
 
 ## How it works
 

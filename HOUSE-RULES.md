@@ -4,7 +4,7 @@ These are the rules for FIG, BIG and every app made with HTML App Generator. Any
 
 ## The app
 
-1. **One HTML file.** No server, no build step to run it, no network calls. No outside code, fonts or pictures: everything is inline.
+1. **One HTML file.** No server, no build step to run it, no network calls. No outside code, fonts or pictures: everything is inline. One exception: an **optional AI helper** that the person turns on and points at an AI service they choose (a campus AI gateway, a model on their own computer, or a commercial API). The app works fully without it, contacts nothing until the person sets it up, says plainly what it sends and where, and keeps any key in that browser only. Such an app may also look for a settings file in its own folder (for example Mechanics Overlay Lab's `ai-config.json`), so a school can point every copy at one AI.
 2. **Works without any AI.** The file runs by itself in any modern browser, on a phone or a computer, with no account and no AI. Hosting inside Claude is a convenience, not a requirement.
 3. **No other apps' code or assets.** Don't take code, pictures, fonts or colour lists from other apps or sites unless they are explicitly offered free, and credit them in Credits. Colour data is either made for the app or comes from a source that offers it free.
 4. **Everything stays in the browser.** Nothing is uploaded. Storage (localStorage) is best effort, keys start with the app's short name (`fig:`, `big:`), and the app says plainly when the browser isn't keeping work.

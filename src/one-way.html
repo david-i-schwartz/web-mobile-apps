@@ -1,0 +1,436 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>One Way</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A very small game. There is one direction.">
+<style>
+/* Layout: one full-screen scene. A ground line runs left to right, a blank stone waits near the right edge,
+   and the interface whispers from the corners. The sky slowly shifts from fog toward dusk as you walk. */
+:root {
+  --sky-0: #E3E8EA;      /* morning fog */
+  --sky-1: #CDC7D0;      /* dusk */
+  --ink: #24282D;        /* graphite */
+  --muted: #474D53;
+  --stone: #B8BDBF;      /* granite */
+  --carve: #2B3034;      /* incised letters */
+  --carve-hi: #DDE1E2;   /* light catching the lower edge of a cut */
+  --accent: #4C6848;     /* lichen */
+  --font-carve: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+  --font-ui: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --p: 0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sky-0: #1D2329; --sky-1: #111317; --ink: #D9DBD4; --muted: #A9AEB2;
+    --stone: #3A4148; --carve: #D0D3CD; --carve-hi: #22272C; --accent: #9DB996;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sky-0: #1D2329; --sky-1: #111317; --ink: #D9DBD4; --muted: #A9AEB2;
+  --stone: #3A4148; --carve: #D0D3CD; --carve-hi: #22272C; --accent: #9DB996;
+  color-scheme: dark;
+}
+
+html { box-sizing: border-box; height: 100%; background: var(--sky-0); }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  height: 100%; margin: 0; overflow: hidden;
+  background: var(--sky-0); color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+[hidden] { display: none !important; }
+
+.stage {
+  position: relative; height: 100%; overflow: hidden;
+  background: var(--sky-0);
+  background: color-mix(in oklab, var(--sky-0), var(--sky-1) calc(var(--p) * 100%));
+  touch-action: none;
+}
+.world { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.ground { fill: none; stroke: var(--ink); stroke-width: calc(2px * var(--sw, 1)); stroke-linecap: round; stroke-linejoin: round; }
+.tuft { fill: none; stroke: var(--ink); stroke-width: calc(1.4px * var(--sw, 1)); stroke-linecap: round; }
+.stone { fill: var(--stone); stroke: var(--ink); stroke-width: calc(2.4px * var(--sw, 1)); stroke-linejoin: round; }
+.figure { fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.epitaph text { font-family: var(--font-carve); text-anchor: middle; letter-spacing: 0.06em; }
+.epitaph .cut { fill: var(--carve); }
+.epitaph .hi { fill: var(--carve-hi); }
+.epitaph .rule { stroke: var(--carve); stroke-width: 0.5; }
+
+.ui {
+  position: absolute; inset: 0; pointer-events: none;
+  display: grid; grid-template-rows: auto 1fr auto;
+  padding-block: max(14px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.title {
+  margin: 0; font-family: var(--font-carve); font-weight: 400;
+  font-size: 15px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+}
+.corner { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.hint { margin: 0; font-size: 14px; line-height: 1.4; color: var(--muted); transition: opacity 1.4s ease; }
+.hint.gone { opacity: 0; }
+.away {
+  pointer-events: auto; margin-left: auto;
+  font: inherit; font-size: 14px; color: var(--muted);
+  background: none; border: 0; padding: 10px 2px; cursor: pointer;
+  text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px;
+  transition: text-decoration-color 0.3s, opacity 1s;
+}
+.away:hover { text-decoration-color: currentColor; }
+.away.gone { opacity: 0; pointer-events: none; }
+
+.ending {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+  padding-block: 0 max(28px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  opacity: 0; pointer-events: none; transition: opacity 1.6s ease;
+}
+.ending.center { top: 0; justify-content: center; }
+.ending.show { opacity: 1; pointer-events: auto; }
+.ending p { margin: 0; font-size: 17px; line-height: 1.5; max-width: 34ch; text-wrap: balance; }
+.again {
+  font: inherit; font-size: 15px; color: var(--ink);
+  background: none; cursor: pointer;
+  border: 1px solid color-mix(in oklab, var(--ink), transparent 55%);
+  border-radius: 999px; padding: 10px 22px;
+  transition: border-color 0.3s;
+}
+.again:hover { border-color: var(--ink); }
+.credit { font-size: 12px; line-height: 1.5; color: var(--muted); max-width: 46ch; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hint, .away, .ending { transition: none; }
+}
+</style>
+<!--BODY-->
+<main class="stage" id="stage">
+  <svg class="world" id="world" role="img" aria-labelledby="scene-label" preserveAspectRatio="xMidYMid meet">
+    <title id="scene-label">A stick figure stands at the left end of a path. A blank gravestone stands at the right end.</title>
+    <path class="ground" id="ground"></path>
+    <g id="tufts"></g>
+    <path class="stone" id="stone"></path>
+    <g class="epitaph" id="epitaph" opacity="0"></g>
+    <g class="figure" id="figure">
+      <circle id="head" r="9"></circle>
+      <line id="torso"></line>
+      <line id="armA"></line>
+      <line id="armB"></line>
+      <line id="legA"></line>
+      <line id="legB"></line>
+    </g>
+  </svg>
+
+  <div class="ui">
+    <h1 class="title">One Way</h1>
+    <div></div>
+    <div class="corner">
+      <p class="hint" id="hint">Hold → to walk.</p>
+      <button class="away" id="away" type="button">walk away</button>
+    </div>
+  </div>
+
+  <div class="ending" id="ending" aria-live="polite">
+    <p id="ending-text" hidden></p>
+    <button class="again" id="again" type="button">begin again</button>
+    <div class="credit" id="credit" hidden></div>
+  </div>
+</main>
+
+<script>
+(() => {
+  // ---- Settings -----------------------------------------------------------
+  const CONFIG = {
+    walkSeconds: 30,     // seconds of continuous walking from the start to the stone
+    tapSeconds: 0.25,    // a quick tap still moves the figure this long
+    credit: "",          // credit line for the end screen (left empty for now)
+  };
+
+  // ---- Elements -----------------------------------------------------------
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage"), world = $("world"), ground = $("ground"), tufts = $("tufts");
+  const stone = $("stone"), epitaph = $("epitaph"), figure = $("figure");
+  const head = $("head"), torso = $("torso"), armA = $("armA"), armB = $("armB"), legA = $("legA"), legB = $("legB");
+  const hint = $("hint"), awayBtn = $("away"), ending = $("ending"), endingText = $("ending-text");
+  const againBtn = $("again"), creditEl = $("credit"), sceneLabel = $("scene-label");
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const coarse = matchMedia("(pointer: coarse)");
+
+  if (coarse.matches) hint.textContent = "Press and hold to walk.";
+  if (CONFIG.credit) { creditEl.textContent = CONFIG.credit; creditEl.hidden = false; }
+
+  // ---- World geometry (world units; the scene is 400 units tall) ---------
+  const H = 400, G = 292;                    // world height, ground line y
+  let W = 1000, x0 = 80, x1 = 840, sx = 900; // world width, walk start/end, stone centre
+  let base = { x: 0, y: 0, w: W, h: H };
+
+  function layout() {
+    const r = stage.getBoundingClientRect();
+    const aspect = Math.max(0.3, r.width / Math.max(1, r.height));
+    W = Math.min(1400, Math.max(520, H * aspect));
+    x0 = Math.max(56, W * 0.08);
+    sx = W - Math.max(84, W * 0.1);
+    x1 = sx - 58;
+    base = { x: 0, y: 0, w: W, h: H };
+
+    // A ground line that wobbles very slightly, like a pencil line. It runs past both edges.
+    let d = "", seed = 7;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let x = -2400; x <= W + 2400; x += 22) d += (d ? " L" : "M") + x.toFixed(1) + " " + (G + (rand() - 0.5) * 1.4).toFixed(2);
+    ground.setAttribute("d", d);
+
+    // Stone: straight sides, round top.
+    const hw = 38, side = 70;
+    stone.setAttribute("d", `M${sx - hw} ${G} L${sx - hw} ${G - side} A${hw} ${hw} 0 0 1 ${sx + hw} ${G - side} L${sx + hw} ${G} Z`);
+
+    // A few blades of grass at the foot of the stone.
+    tufts.replaceChildren();
+    for (const [dx, h, lean] of [[-46, 7, -2], [-41, 9, 1], [44, 8, 2], [49, 6, -1]]) {
+      const p = document.createElementNS(SVGNS, "path");
+      p.setAttribute("class", "tuft");
+      p.setAttribute("d", `M${sx + dx} ${G} q${lean} ${-h * 0.6} ${lean * 1.6} ${-h}`);
+      tufts.appendChild(p);
+    }
+    if (state === "epitaph") placeEpitaph();
+    applyCamera();
+  }
+
+  // ---- State --------------------------------------------------------------
+  let state = "living";   // living | arriving | epitaph | away
+  let birth = Date.now(), death = 0;
+  let p = 0;              // progress along the path, 0..1
+  let phase = 0, amp = 0; // walk cycle
+  let tapUntil = 0, endT = 0, cam = 0, moved = false;
+  const holds = new Set();
+
+  // ---- Input --------------------------------------------------------------
+  const WALK_KEYS = new Set(["ArrowRight", "KeyD", "Space"]);
+  const press = (id) => { if (state !== "living") return; holds.add(id); tapUntil = Math.max(tapUntil, performance.now() + CONFIG.tapSeconds * 1000); };
+  const release = (id) => holds.delete(id);
+
+  stage.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button")) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+    press("ptr" + e.pointerId);
+  });
+  for (const t of ["pointerup", "pointercancel", "lostpointercapture"]) stage.addEventListener(t, (e) => release("ptr" + e.pointerId));
+  stage.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  addEventListener("keydown", (e) => {
+    if (!WALK_KEYS.has(e.code)) return;
+    if (e.target.closest && e.target.closest("button")) return; // let Space press a focused button
+    e.preventDefault();
+    if (!e.repeat) press("key" + e.code);
+  });
+  addEventListener("keyup", (e) => release("key" + e.code));
+  addEventListener("blur", () => holds.clear());
+  document.addEventListener("visibilitychange", () => { if (document.hidden) holds.clear(); });
+
+  awayBtn.addEventListener("click", walkAway);
+  againBtn.addEventListener("click", beginAgain);
+
+  // ---- Time and words -----------------------------------------------------
+  const fmtDate = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
+  const fmtTime = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit", timeZoneName: "short" });
+  const fmtNum = new Intl.NumberFormat();
+  const seconds = (a, b) => Math.max(0, Math.round((b - a) / 1000));
+  const plural = (n, word) => `${fmtNum.format(n)} ${word}${n === 1 ? "" : "s"}`;
+
+  function epitaphLines() {
+    const a = new Date(birth), b = new Date(death);
+    const sameDay = a.toDateString() === b.toDateString();
+    const L = [];
+    L.push({ t: fmtDate.format(a), s: 6.2 });
+    L.push({ t: fmtTime.format(a), s: 5.4 });
+    L.push({ t: "–", s: 5.4 });
+    if (!sameDay) L.push({ t: fmtDate.format(b), s: 6.2 });
+    L.push({ t: fmtTime.format(b), s: 5.4 });
+    L.push({ rule: true });
+    L.push({ t: plural(seconds(birth, death), "second"), s: 7, w: 600 });
+    return L;
+  }
+
+  function placeEpitaph() {
+    epitaph.replaceChildren();
+    const lines = epitaphLines();
+    const gap = (l) => (l.rule ? 6 : l.s * 1.55);
+    const total = lines.reduce((sum, l) => sum + gap(l), 0);
+    let y = G - 47 - total / 2;
+    const maxW = 62;
+    for (const l of lines) {
+      if (l.rule) {
+        const r = document.createElementNS(SVGNS, "line");
+        r.setAttribute("class", "rule");
+        r.setAttribute("x1", sx - 12); r.setAttribute("x2", sx + 12);
+        r.setAttribute("y1", y + 3); r.setAttribute("y2", y + 3);
+        epitaph.appendChild(r);
+        y += gap(l);
+        continue;
+      }
+      y += gap(l);
+      const pair = [];
+      for (const cls of ["hi", "cut"]) {
+        const t = document.createElementNS(SVGNS, "text");
+        t.setAttribute("class", cls);
+        t.setAttribute("x", sx + (cls === "hi" ? 0.35 : 0));
+        t.setAttribute("y", y - l.s * 0.35 + (cls === "hi" ? 0.35 : 0));
+        t.setAttribute("font-size", l.s);
+        if (l.w) t.setAttribute("font-weight", l.w);
+        t.textContent = l.t.toUpperCase();
+        epitaph.appendChild(t);
+        pair.push(t);
+      }
+      // Shrink any line that would run off the stone.
+      try {
+        const len = pair[1].getComputedTextLength();
+        if (len > maxW) for (const t of pair) t.setAttribute("font-size", (l.s * maxW / len).toFixed(2));
+      } catch (_) {}
+    }
+    sceneLabel.textContent = "The gravestone reads: " + lines.filter((l) => !l.rule).map((l) => l.t).join(" ");
+  }
+
+  // ---- Endings ------------------------------------------------------------
+  function arrive() {
+    state = "arriving"; death = Date.now(); endT = performance.now(); holds.clear();
+    awayBtn.classList.add("gone"); hint.classList.add("gone");
+    placeEpitaph();
+  }
+
+  function walkAway() {
+    if (state !== "living") return;
+    state = "away"; death = Date.now(); endT = performance.now(); holds.clear();
+    awayBtn.classList.add("gone"); hint.classList.add("gone");
+    endingText.textContent = `You stepped away after ${plural(seconds(birth, death), "second")}.`;
+    endingText.hidden = false;
+    ending.classList.add("center", "show");
+    sceneLabel.textContent = "The figure stopped walking. The gravestone is still blank.";
+    againBtn.focus({ preventScroll: true });
+  }
+
+  function beginAgain() {
+    state = "living"; birth = Date.now(); death = 0; p = 0; phase = 0; amp = 0; cam = 0; tapUntil = 0;
+    holds.clear();
+    epitaph.replaceChildren(); epitaph.setAttribute("opacity", 0);
+    figure.setAttribute("opacity", 1); world.style.opacity = "";
+    ending.classList.remove("show", "center"); endingText.hidden = true;
+    awayBtn.classList.remove("gone");
+    sceneLabel.textContent = "A stick figure stands at the left end of a path. A blank gravestone stands at the right end.";
+    stage.style.setProperty("--p", 0);
+    applyCamera();
+    againBtn.blur();
+  }
+
+  // ---- Camera -------------------------------------------------------------
+  function applyCamera() {
+    const r = stage.getBoundingClientRect();
+    const aspect = Math.max(0.3, r.width / Math.max(1, r.height));
+    let hT = Math.max(150, 112 / aspect);
+    const wT = hT * aspect;
+    const target = { x: sx - wT / 2, y: G - 56 - hT / 2 + hT * 0.1, w: wT, h: hT };
+    const k = cam * cam * (3 - 2 * cam); // smoothstep
+    const v = {
+      x: base.x + (target.x - base.x) * k, y: base.y + (target.y - base.y) * k,
+      w: base.w + (target.w - base.w) * k, h: base.h + (target.h - base.h) * k,
+    };
+    world.setAttribute("viewBox", `${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}`);
+    // Lines thicken only gently as the camera moves in.
+    world.style.setProperty("--sw", (1 / Math.sqrt(base.h / v.h)).toFixed(3));
+  }
+
+  // ---- Figure -------------------------------------------------------------
+  function drawFigure() {
+    const x = x0 + (x1 - x0) * p;
+    const s = Math.sin(phase), rest = 1 - amp;
+    const legSplay = 0.2 * rest, armSplay = 0.3 * rest + 0.08;   // stance when standing still
+    const leg = 0.5 * amp * s, arm = 0.42 * amp * s;
+    const bob = -1.2 * amp * Math.abs(s);
+    const hipY = G - 26 + bob, shY = G - 46 + bob;
+    figure.setAttribute("transform", `translate(${x.toFixed(2)} 0)`);
+    head.setAttribute("cx", 0.6 * amp); head.setAttribute("cy", G - 62 + bob);
+    set(torso, 0, G - 53 + bob, 0, hipY);
+    limb(legA, hipY, 26, legSplay + leg);
+    limb(legB, hipY, 26, -legSplay - leg);
+    limb(armA, shY, 20, armSplay - arm);   // arms swing opposite the legs
+    limb(armB, shY, 20, -armSplay + arm);
+  }
+  function limb(el, y, len, angle) {
+    set(el, 0, y, len * Math.sin(angle), y + len * Math.cos(angle));
+  }
+  function set(el, a, b, c, d) {
+    el.setAttribute("x1", a.toFixed(2)); el.setAttribute("y1", b.toFixed(2));
+    el.setAttribute("x2", c.toFixed(2)); el.setAttribute("y2", d.toFixed(2));
+  }
+
+  // ---- Loop ---------------------------------------------------------------
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+
+    if (state === "living") {
+      const walking = holds.size > 0 || now < tapUntil;
+      if (walking) {
+        p = Math.min(1, p + dt / CONFIG.walkSeconds);
+        phase += dt * 5.4;
+        if (!moved) { moved = true; hint.classList.add("gone"); }
+      }
+      amp += ((walking ? 1 : 0) - amp) * Math.min(1, dt * 9);
+      stage.style.setProperty("--p", p.toFixed(4));
+      if (p >= 1) arrive();
+    } else {
+      amp += (0 - amp) * Math.min(1, dt * 9);
+    }
+
+    if (state === "arriving" || state === "epitaph") {
+      const t = (now - endT) / 1000, fast = reduceMotion.matches;
+      const fade = fast ? 1 : Math.min(1, t / 1.8);
+      figure.setAttribute("opacity", (1 - fade).toFixed(3));
+      cam = fast ? 1 : Math.min(1, Math.max(0, (t - 1.4) / 3.4));
+      const ink = fast ? 1 : Math.min(1, Math.max(0, (t - 3.6) / 1.6));
+      epitaph.setAttribute("opacity", ink.toFixed(3));
+      applyCamera();
+      if (state === "arriving" && (fast || t > 5.6)) {
+        state = "epitaph";
+        ending.classList.add("show");
+        if (CONFIG.credit) creditEl.hidden = false;
+      }
+    }
+
+    if (state === "away") {
+      const t = (now - endT) / 1000;
+      world.style.opacity = String(Math.max(0.28, 1 - (reduceMotion.matches ? 1 : t / 1.6) * 0.72));
+    }
+
+    drawFigure();
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Boot (keeps the run going if this page is updated while open) ------
+  function start(data) {
+    if (data && data.birth) {
+      birth = data.birth; p = data.p || 0;
+      if (data.state === "away") { layout(); walkAway(); birth = data.birth; death = data.death; endingText.textContent = `You stepped away after ${plural(seconds(birth, death), "second")}.`; }
+      else if (data.state === "epitaph" || data.state === "arriving") { layout(); p = 1; arrive(); death = data.death; placeEpitaph(); endT = performance.now() - 10000; }
+    }
+    layout();
+    addEventListener("resize", layout);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (state === "arriving" || state === "epitaph") placeEpitaph(); });
+    requestAnimationFrame((t) => { last = t; frame(t); });
+  }
+  const hot = window.claude && window.claude.hot;
+  if (hot && hot.snapshot) hot.snapshot(() => ({ birth, death, p, state }));
+  if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+})();
+</script>
+
+</body></html>
