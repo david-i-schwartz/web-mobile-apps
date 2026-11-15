@@ -53,10 +53,6 @@ The built folders must always be exactly what `node tools/cli.js site site.json 
 - **Never commit built folders without their sources.** If you publish an app, its file goes in `src/` in the same commit.
 - **After building, run `git status`.** It should list only the files you meant to change. If other apps' folders changed too, `src/` or `tools/` were out of date. Stop and find out why before you push.
 
-## Settings files next to an app
-
-Most app folders hold only what the build makes. The exception is `mechanics-lab/ai-config.json`, the settings file for Mechanics Overlay Lab's optional AI tutor (house rule 1). It's kept by hand: the build doesn't touch it. Keep `baseUrl` empty, and never put an API key in it.
-
 ## Remove an app
 
 Delete its entry in `site.json`, its `src/` file and its built folder. Then build, check, commit and push.

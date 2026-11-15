@@ -99,13 +99,6 @@
       "code": "IPAR",
       "name": "Image, Preserve, Analyze, Report",
       "tagline": "A playable digital-forensics case: image, preserve, analyze and report on a real disk image."
-    },
-    {
-      "file": "src/mechanics-lab.html",
-      "folder": "mechanics-lab",
-      "code": "MOL",
-      "name": "Mechanics Overlay Lab",
-      "tagline": "Statics and dynamics on a deterministic physics core, with an optional AI tutor you set up yourself."
     }
   ],
   "readme": [
