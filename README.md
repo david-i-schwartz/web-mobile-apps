@@ -18,6 +18,7 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`iso-designer/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-designer/): ISO, Iso Bead Designer
 - [`year-planner/`](https://david-i-schwartz.github.io/web-mobile-apps/year-planner/): YRP, RIT Department Year Planner
 - [`ipar/`](https://david-i-schwartz.github.io/web-mobile-apps/ipar/): IPAR, Image, Preserve, Analyze, Report
+- [`five-oclock/`](https://david-i-schwartz.github.io/web-mobile-apps/five-oclock/): SHAVE, Five O'Clock Shadow of the Colossus
 
 ## How it works
 

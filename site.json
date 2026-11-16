@@ -99,6 +99,14 @@
       "code": "IPAR",
       "name": "Image, Preserve, Analyze, Report",
       "tagline": "A playable digital-forensics case: image, preserve, analyze and report on a real disk image."
+    },
+    {
+      "file": "src/five-oclock.html",
+      "folder": "five-oclock",
+      "code": "SHAVE",
+      "name": "Five O'Clock Shadow of the Colossus",
+      "tagline": "A tiny barber climbs three stubbly giants and shaves them before 5:00 PM.",
+      "accent": "#B8432B"
     }
   ],
   "readme": [
