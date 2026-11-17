@@ -1,0 +1,10 @@
+# Keeps the pinned action SHAs in .github/workflows up to date.
+# A new release waits 7 days before Dependabot proposes it, so a hijacked release is usually caught first.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
