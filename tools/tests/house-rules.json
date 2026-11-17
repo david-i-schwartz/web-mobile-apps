@@ -1,0 +1,20 @@
+{
+  "_about": "Settings for house_rules.py. storage_prefixes lists the key prefixes an app may use when they differ from its code plus a colon (rule 4). Each waiver names a check, says why it is accepted for now and when it expires (at most 90 days out), and, for checks that count problems, the most it covers, so a new problem still fails.",
+  "storage_prefixes": {
+    "iso-lab": ["pegiso.", "pil:"]
+  },
+  "waivers": [
+    {
+      "id": "iso-lab/r6-fits-380",
+      "reason": "Known when audits began (17 Nov 2026): the board and panels run 200 px past a 380 px phone. Fix in PIL's next version.",
+      "expires": "2027-02-15",
+      "max": 3
+    },
+    {
+      "id": "iso-lab/r6-touch-44",
+      "reason": "Known when audits began (17 Nov 2026): 88 controls are under 44 x 44 px, most of them 37 px tall. Fix in PIL's next version.",
+      "expires": "2027-02-15",
+      "max": 88
+    }
+  ]
+}
