@@ -7,6 +7,7 @@
 <title>One Way</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="A very small game. There is one direction.">
+<meta name="version" content="1.2 (17 Nov 2026)">
 <style>
 /* Layout: one full-screen scene. A ground line runs left to right, a blank stone waits near the right edge,
    and the interface whispers from the corners. The sky slowly shifts from fog toward dusk as you walk. */
@@ -108,6 +109,19 @@ body {
 }
 .again:hover { border-color: var(--ink); }
 .credit { font-size: 12px; line-height: 1.5; color: var(--muted); max-width: 46ch; }
+.credit a { color: var(--ink); text-underline-offset: 3px; padding-block: 12px; }
+.about { font-size: 13px; line-height: 1.5; color: var(--muted); max-width: 46ch; text-align: left; }
+.about summary {
+  min-height: 44px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; list-style: none; text-decoration: underline; text-underline-offset: 4px;
+}
+.about summary::-webkit-details-marker { display: none; }
+.about p { font-size: 13px; margin: 0 0 6px; }
+.about ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.about strong { color: var(--ink); font-weight: 700; }
+.about-body { max-height: min(26vh, 200px); overflow-y: auto; padding-right: 4px; }
+/* With the notes open at the end, a soft backdrop keeps them clear of the stone. */
+.ending:not(.center):has(.about[open]) { background: linear-gradient(to top, var(--sky-1) 75%, transparent); padding-top: 28px; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -119,18 +133,19 @@ body {
 <!--BODY-->
 <main class="stage" id="stage">
   <svg class="world" id="world" role="img" aria-labelledby="scene-label" preserveAspectRatio="xMidYMid meet">
-    <title id="scene-label">A stick figure stands at the left end of a path. A blank gravestone stands at the right end.</title>
+    <title id="scene-label">A stick-figure baby on hands and knees is at the left end of a path. A blank gravestone stands at the right end.</title>
     <path class="ground" id="ground"></path>
     <g id="tufts"></g>
     <path class="stone" id="stone"></path>
     <g class="epitaph" id="epitaph" opacity="0"></g>
     <g class="figure" id="figure">
+      <polyline id="cane" opacity="0"></polyline>
       <circle id="head" r="9"></circle>
-      <line id="torso"></line>
-      <line id="armA"></line>
-      <line id="armB"></line>
-      <line id="legA"></line>
-      <line id="legB"></line>
+      <polyline id="torso"></polyline>
+      <polyline id="armB"></polyline>
+      <polyline id="legB"></polyline>
+      <polyline id="legA"></polyline>
+      <polyline id="armA"></polyline>
     </g>
   </svg>
 
@@ -147,6 +162,17 @@ body {
     <p id="ending-text" hidden></p>
     <button class="again" id="again" type="button">begin again</button>
     <div class="credit" id="credit" hidden></div>
+    <details class="about" id="about">
+      <summary>About this version</summary>
+      <div class="about-body">
+      <p><strong>Version 1.2</strong>, 17 Nov 2026</p>
+      <ul>
+        <li><strong>1.2</strong> (17 Nov 2026): faster, about 15 seconds of walking. The figure grows up along the way: a crawling baby, a toddler, an adult, then an elder with a cane who walks a little slower. Clicking or tapping the game now also lets the keyboard work when it's embedded in another page, such as itch. The credit line asks the game's original creator to get in touch, with a link to Dave Schwartz's RIT directory page.</li>
+        <li><strong>1.1</strong> (17 Nov 2026): credit line added; no outside fonts.</li>
+        <li><strong>1.0</strong> (5 Nov 2026): first version.</li>
+      </ul>
+      </div>
+    </details>
   </div>
 </main>
 
@@ -154,16 +180,17 @@ body {
 (() => {
   // ---- Settings -----------------------------------------------------------
   const CONFIG = {
-    walkSeconds: 30,     // seconds of continuous walking from the start to the stone
+    walkSeconds: 15,     // seconds of continuous walking from the start to the stone
     tapSeconds: 0.25,    // a quick tap still moves the figure this long
-    credit: "Based on the APC 2026 Chaplain Game Jam.", // credit line for the end screen (placeholder chosen 5 Nov 2026)
+    credit: "Based on the APC 2026 Chaplain Game Jam. Please contact {Dave Schwartz (RIT)} if you are the original creator.", // credit line for the end screen; the part in {braces} links to contactUrl
+    contactUrl: "https://www.rit.edu/directory/disvks-david-schwartz",
   };
 
   // ---- Elements -----------------------------------------------------------
   const $ = (id) => document.getElementById(id);
   const stage = $("stage"), world = $("world"), ground = $("ground"), tufts = $("tufts");
   const stone = $("stone"), epitaph = $("epitaph"), figure = $("figure");
-  const head = $("head"), torso = $("torso"), armA = $("armA"), armB = $("armB"), legA = $("legA"), legB = $("legB");
+  const head = $("head"), torso = $("torso"), armA = $("armA"), armB = $("armB"), legA = $("legA"), legB = $("legB"), cane = $("cane");
   const hint = $("hint"), awayBtn = $("away"), ending = $("ending"), endingText = $("ending-text");
   const againBtn = $("again"), creditEl = $("credit"), sceneLabel = $("scene-label");
   const SVGNS = "http://www.w3.org/2000/svg";
@@ -171,7 +198,18 @@ body {
   const coarse = matchMedia("(pointer: coarse)");
 
   if (coarse.matches) hint.textContent = "Press and hold to walk.";
-  if (CONFIG.credit) { creditEl.textContent = CONFIG.credit; creditEl.hidden = false; }
+  if (CONFIG.credit) {
+    // Text in {braces} becomes a link to CONFIG.contactUrl, opening in a new tab.
+    const m = CONFIG.credit.match(/^(.*?)\{(.+?)\}(.*)$/);
+    if (m && CONFIG.contactUrl) {
+      const a = document.createElement("a");
+      a.href = CONFIG.contactUrl; a.target = "_blank"; a.rel = "noopener"; a.textContent = m[2];
+      creditEl.replaceChildren(m[1], a, m[3]);
+    } else {
+      creditEl.textContent = CONFIG.credit.replace(/[{}]/g, "");
+    }
+    creditEl.hidden = false;
+  }
 
   // ---- World geometry (world units; the scene is 400 units tall) ---------
   const H = 400, G = 292;                    // world height, ground line y
@@ -184,7 +222,7 @@ body {
     W = Math.min(1400, Math.max(520, H * aspect));
     x0 = Math.max(56, W * 0.08);
     sx = W - Math.max(84, W * 0.1);
-    x1 = sx - 58;
+    x1 = sx - 66;   // leaves room for the cane in front of the stone
     base = { x: 0, y: 0, w: W, h: H };
 
     // A ground line that wobbles very slightly, like a pencil line. It runs past both edges.
@@ -223,9 +261,10 @@ body {
   const release = (id) => holds.delete(id);
 
   stage.addEventListener("pointerdown", (e) => {
-    if (e.target.closest("button")) return;
+    if (e.target.closest("button, a, details")) return;  // let links, buttons and About work normally
     if (e.pointerType === "mouse" && e.button !== 0) return;
     e.preventDefault();
+    try { window.focus(); } catch (_) {}  // so the keyboard works when the game is embedded (e.g. on itch)
     try { stage.setPointerCapture(e.pointerId); } catch (_) {}
     press("ptr" + e.pointerId);
   });
@@ -234,7 +273,7 @@ body {
 
   addEventListener("keydown", (e) => {
     if (!WALK_KEYS.has(e.code)) return;
-    if (e.target.closest && e.target.closest("button")) return; // let Space press a focused button
+    if (e.target.closest && e.target.closest("button, a, summary")) return; // let Space and Enter work on a focused control
     e.preventDefault();
     if (!e.repeat) press("key" + e.code);
   });
@@ -330,7 +369,7 @@ body {
     figure.setAttribute("opacity", 1); world.style.opacity = "";
     ending.classList.remove("show", "center"); endingText.hidden = true;
     awayBtn.classList.remove("gone");
-    sceneLabel.textContent = "A stick figure stands at the left end of a path. A blank gravestone stands at the right end.";
+    sceneLabel.textContent = "A stick-figure baby on hands and knees is at the left end of a path. A blank gravestone stands at the right end.";
     stage.style.setProperty("--p", 0);
     applyCamera();
     againBtn.blur();
@@ -353,28 +392,113 @@ body {
     world.style.setProperty("--sw", (1 / Math.sqrt(base.h / v.h)).toFixed(3));
   }
 
+  // ---- A life: crawl, toddle, walk, stoop ---------------------------------
+  // Keyframes along the path (p = 0 at the start, 1 at the stone); values in between blend smoothly.
+  //  s: body size   head: head size for that body   crawl: 1 = hands and knees   toddle: arms out for balance
+  //  lean: stoop (radians)   bend: bent knees   cane: holding a cane   stride: step length
+  //  rate: relative walking speed   cad: steps (radians of the walk cycle) per second
+  const LIFE_KEYS = ["p", "s", "head", "crawl", "toddle", "lean", "bend", "cane", "stride", "rate", "cad"];
+  const LIFE = [
+    [0.00, 0.44, 1.55, 1, 0,   0,    0,    0, 1.0,  0.80, 7.0],  // baby, crawling
+    [0.10, 0.46, 1.52, 1, 0,   0,    0,    0, 1.0,  0.80, 7.0],
+    [0.16, 0.50, 1.45, 0, 1,   0,    0,    0, 0.7,  0.85, 9.0],  // toddler: short quick steps
+    [0.30, 0.72, 1.20, 0, 0.2, 0,    0,    0, 0.9,  1.05, 8.0],  // child
+    [0.45, 1.00, 1.00, 0, 0,   0,    0,    0, 1.0,  1.20, 7.6],  // adult
+    [0.70, 1.00, 1.00, 0, 0,   0.02, 0,    0, 1.0,  1.15, 7.4],
+    [0.84, 0.98, 1.02, 0, 0,   0.24, 0.12, 1, 0.7,  0.85, 6.0],  // older, with a cane
+    [1.00, 0.95, 1.04, 0, 0,   0.42, 0.20, 1, 0.55, 0.70, 5.2],  // elderly: stooped and slower
+  ];
+  const smooth = (t) => t * t * (3 - 2 * t);
+  const mix = (a, b, t) => a + (b - a) * t;
+  function life(q) {
+    q = Math.min(1, Math.max(0, q));
+    let i = 0;
+    while (i < LIFE.length - 2 && q > LIFE[i + 1][0]) i++;
+    const a = LIFE[i], b = LIFE[i + 1], t = smooth((q - a[0]) / (b[0] - a[0]));
+    const L = {};
+    LIFE_KEYS.forEach((k, j) => (L[k] = mix(a[j], b[j], t)));
+    return L;
+  }
+  // Scale speeds so a full, unbroken walk takes CONFIG.walkSeconds however the pace varies.
+  const RATE_SCALE = (() => { let sum = 0; const n = 2000; for (let i = 0; i < n; i++) sum += 1 / life((i + 0.5) / n).rate; return sum / n; })();
+
+  const polar = (o, len, ang) => [o[0] + len * Math.sin(ang), o[1] + len * Math.cos(ang)];  // angle 0 = straight down, + = forward
+  const lerpPt = (a, b, t) => [mix(a[0], b[0], t), mix(a[1], b[1], t)];
+
+  function uprightPose(L, sn, cs) {
+    const s = L.s, rest = 1 - amp;
+    const thigh = 13 * s * (1 - 0.12 * L.toddle), shin = thigh, torsoLen = 27 * s, upper = 10 * s, fore = 10 * s;
+    // Legs, worked out from a hip at (0, 0); then the hip is lowered so the lowest foot sits on the ground.
+    const swing = 0.5 * amp * L.stride * sn, splay = 0.2 * rest;
+    const tA = splay + swing, tB = -splay - swing;
+    const kA = L.bend + 0.7 * amp * L.stride * Math.max(0, cs), kB = L.bend + 0.7 * amp * L.stride * Math.max(0, -cs);
+    const kneeA0 = polar([0, 0], thigh, tA), footA0 = polar(kneeA0, shin, tA - kA);
+    const kneeB0 = polar([0, 0], thigh, tB), footB0 = polar(kneeB0, shin, tB - kB);
+    const hipY = G - Math.max(footA0[1], footB0[1]);
+    const at = (pt) => [pt[0], pt[1] + hipY];
+    const hip = [0, hipY];
+    const neck = polar(hip, torsoLen, Math.PI - L.lean);
+    const r = 9 * s * L.head, headAng = Math.PI - L.lean * 1.5;
+    const head = polar(neck, r + 0.6, headAng);
+    const sh = lerpPt(neck, hip, 0.2);
+    // Arms: swing opposite the legs; a toddler holds them out; an elder holds a cane in the front hand.
+    const armSw = 0.42 * amp * L.stride * sn, armSplay = 0.3 * rest + 0.08;
+    let aA = armSplay - armSw, aB = -armSplay + armSw, eA = 0.15 + 0.25 * amp, eB = eA;
+    aA = mix(aA, 1.2 + 0.15 * amp * sn, L.toddle); aB = mix(aB, -0.9 - 0.15 * amp * sn, L.toddle);
+    eA = mix(eA, 0.6, L.toddle); eB = mix(eB, 0.6, L.toddle);
+    aA = mix(aA, 0.5 + 0.08 * amp * sn, L.cane); eA = mix(eA, 0.25, L.cane);
+    const elA = polar(sh, upper, aA), haA = polar(elA, fore, aA + eA);
+    const elB = polar(sh, upper, aB), haB = polar(elB, fore, aB + eB);
+    return {
+      r, head, neck, hip, sh, elA, haA, elB, haB,
+      kneeA: at(kneeA0), footA: at(footA0), kneeB: at(kneeB0), footB: at(footB0),
+      caneTop: haA, caneTip: [haA[0] + 3 * s, G],
+    };
+  }
+
+  function crawlPose(L, sn, cs) {
+    const k = L.s / 0.44, bob = -0.8 * k * amp * Math.abs(sn), step = 4 * k * amp;
+    const lift = (c) => -2 * k * amp * Math.max(0, c);
+    const hip = [-9 * k, G - 11 * k + bob], sh = [8 * k, G - 13 * k + bob];
+    const neck = [sh[0] + 2.5 * k, sh[1] - 1.5 * k];
+    const r = 9 * L.s * L.head, head = [neck[0] + r * 0.75, neck[1] - r * 0.7];
+    // Diagonal pairs move together: front hand A with knee B, front hand B with knee A.
+    const haA = [sh[0] + 3 * k + step * sn, G + lift(cs)], haB = [sh[0] + 3 * k - step * sn, G + lift(-cs)];
+    const kneeB = [hip[0] + 2 * k + step * sn, G + lift(cs)], kneeA = [hip[0] + 2 * k - step * sn, G + lift(-cs)];
+    const elbow = (ha) => [(sh[0] + ha[0]) / 2 - k, (sh[1] + ha[1]) / 2];
+    return {
+      r, head, neck, hip, sh, elA: elbow(haA), haA, elB: elbow(haB), haB,
+      kneeA, footA: [kneeA[0] - 9 * k, kneeA[1] - 2.5 * k], kneeB, footB: [kneeB[0] - 9 * k, kneeB[1] - 2.5 * k],
+      caneTop: haA, caneTip: haA,
+    };
+  }
+
+  function pose(L) {
+    const sn = Math.sin(phase), cs = Math.cos(phase);
+    if (L.crawl <= 0.001) return uprightPose(L, sn, cs);
+    const c = crawlPose(L, sn, cs);
+    if (L.crawl >= 0.999) return c;
+    const u = uprightPose(L, sn, cs), t = 1 - L.crawl, out = {};  // getting up off the floor
+    for (const key in c) out[key] = key === "r" ? mix(c.r, u.r, t) : lerpPt(c[key], u[key], t);
+    return out;
+  }
+
   // ---- Figure -------------------------------------------------------------
   function drawFigure() {
-    const x = x0 + (x1 - x0) * p;
-    const s = Math.sin(phase), rest = 1 - amp;
-    const legSplay = 0.2 * rest, armSplay = 0.3 * rest + 0.08;   // stance when standing still
-    const leg = 0.5 * amp * s, arm = 0.42 * amp * s;
-    const bob = -1.2 * amp * Math.abs(s);
-    const hipY = G - 26 + bob, shY = G - 46 + bob;
+    const x = x0 + (x1 - x0) * p, L = life(p), P = pose(L);
     figure.setAttribute("transform", `translate(${x.toFixed(2)} 0)`);
-    head.setAttribute("cx", 0.6 * amp); head.setAttribute("cy", G - 62 + bob);
-    set(torso, 0, G - 53 + bob, 0, hipY);
-    limb(legA, hipY, 26, legSplay + leg);
-    limb(legB, hipY, 26, -legSplay - leg);
-    limb(armA, shY, 20, armSplay - arm);   // arms swing opposite the legs
-    limb(armB, shY, 20, -armSplay + arm);
+    figure.style.strokeWidth = (2.3 + 0.9 * Math.min(1, Math.max(0, (L.s - 0.44) / 0.56))).toFixed(2);
+    head.setAttribute("cx", P.head[0].toFixed(2)); head.setAttribute("cy", P.head[1].toFixed(2)); head.setAttribute("r", P.r.toFixed(2));
+    pts(torso, P.neck, P.hip);
+    pts(legA, P.hip, P.kneeA, P.footA);
+    pts(legB, P.hip, P.kneeB, P.footB);
+    pts(armA, P.sh, P.elA, P.haA);
+    pts(armB, P.sh, P.elB, P.haB);
+    pts(cane, P.caneTop, P.caneTip);
+    cane.setAttribute("opacity", Math.min(1, Math.max(0, (L.cane - 0.3) / 0.4)).toFixed(2));
   }
-  function limb(el, y, len, angle) {
-    set(el, 0, y, len * Math.sin(angle), y + len * Math.cos(angle));
-  }
-  function set(el, a, b, c, d) {
-    el.setAttribute("x1", a.toFixed(2)); el.setAttribute("y1", b.toFixed(2));
-    el.setAttribute("x2", c.toFixed(2)); el.setAttribute("y2", d.toFixed(2));
+  function pts(el, ...list) {
+    el.setAttribute("points", list.map((q) => q[0].toFixed(2) + "," + q[1].toFixed(2)).join(" "));
   }
 
   // ---- Loop ---------------------------------------------------------------
@@ -385,8 +509,9 @@ body {
     if (state === "living") {
       const walking = holds.size > 0 || now < tapUntil;
       if (walking) {
-        p = Math.min(1, p + dt / CONFIG.walkSeconds);
-        phase += dt * 5.4;
+        const L = life(p);
+        p = Math.min(1, p + dt * L.rate * RATE_SCALE / CONFIG.walkSeconds);
+        phase += dt * L.cad;
         if (!moved) { moved = true; hint.classList.add("gone"); }
       }
       amp += ((walking ? 1 : 0) - amp) * Math.min(1, dt * 9);
