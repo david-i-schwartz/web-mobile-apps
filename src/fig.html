@@ -197,12 +197,34 @@ details.mini .q{margin-left:4px}
 .lrow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lrow .btns{margin-top:6px}
 #editGroup h2 span{font-weight:400;font-size:14px;color:var(--muted)}
+/* ---- 1.5 editing power tools ---- */
+.seg.more{flex-wrap:wrap;border-radius:26px;margin:8px 0 0}
+.seg.more button{flex:1 1 22%;padding:7px 6px}
+#selBtns{margin:6px 0 0}
+#board .ov{pointer-events:none}
+#board .symln{stroke:var(--accent);stroke-width:.1;stroke-dasharray:.5 .4;opacity:.85}
+#board .symc{fill:none;stroke:var(--accent);stroke-width:.12;stroke-dasharray:.3 .22}
+#board .anc{fill:none;stroke:var(--ink);stroke-width:.13;stroke-dasharray:.28 .2}
+#board .seld{fill:var(--accent);stroke:var(--panel);stroke-width:.05}
+#board .trc{pointer-events:none}
+#trRow{margin:6px 2px 0}
+#viewChecks{margin:4px 2px 0}
+#tileBox{margin:8px 0 0}
+#tileCv{display:block;width:100%;height:auto;margin:0 auto;border-radius:12px;background:var(--vp)}
+.stampNow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:center;margin:8px 0}
+.stampNow canvas,.strow canvas{border-radius:8px;background:var(--vp)}
+.stampNow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#stampList{display:grid;gap:8px;margin-top:8px}
+#txtRow{grid-template-columns:7.5em minmax(0,1fr) 4.4em}
+.strow{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px}
+.strow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strow .btns{margin-top:6px}
 </style>
 </head>
 <body>
 <header>
   <h1>FIG: Fusebead Image Generator</h1>
-  <p>Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand and keep several patterns.</p>
+  <p>Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand, design one on an empty board, and keep several patterns.</p>
   <p id="saveMsg" class="warn" role="status" hidden>This browser can’t save right now (its storage is full or switched off). You can keep working, but changes made from now on won’t be remembered after you close the page.</p>
 </header>
 <main class="wrap">
@@ -244,6 +266,8 @@ details.mini .q{margin-left:4px}
       <h4>Views</h4>
       <ul>
         <li><b>Compare</b>, under the board, slides your picture over the pattern from the left, so you can check the match. It only changes the view.</li>
+        <li><b>Trace</b> shows your picture faintly over the whole board, so you can place beads over it by hand. It only changes the view.</li>
+        <li><b>Tiled view</b> shows nine copies of the pattern edge to edge, so you can see whether its edges meet. It only changes the view.</li>
       </ul>
         </div>
     <div id="editBar" hidden>
@@ -257,6 +281,15 @@ details.mini .q{margin-left:4px}
         <button type="button" class="q" aria-expanded="false" aria-controls="t-edit" aria-label="Help: editing tools">?</button>
         <div class="zoom"><button type="button" class="btn" id="undo">Undo</button><button type="button" class="btn" id="redo">Redo</button></div>
       </div>
+      <div class="seg more" role="group" aria-label="More edit tools">
+        <button type="button" data-k="ed.tool" data-v="line">Line</button>
+        <button type="button" data-k="ed.tool" data-v="box">Box</button>
+        <button type="button" data-k="ed.tool" data-v="ring">Ring</button>
+        <button type="button" data-k="ed.tool" data-v="select">Select</button>
+        <button type="button" data-k="ed.tool" data-v="stamp">Stamp</button>
+        <button type="button" data-k="ed.tool" data-v="lighter">Lighter</button>
+        <button type="button" data-k="ed.tool" data-v="darker">Darker</button>
+      </div>
       <div class="sub tip" id="t-edit" hidden>
         <ul>
           <li>Your edits sit on top of the converted pattern. The picture is still converted underneath, exactly as before.</li>
@@ -264,6 +297,11 @@ details.mini .q{margin-left:4px}
           <li><b>Erase</b> empties a peg.</li>
           <li><b>Fill</b> recolours the whole patch of touching pegs that share one colour. On an empty peg it fills the whole empty area around it.</li>
           <li><b>Pick</b> takes the colour of the bead you tap as the paint colour, then switches to Paint.</li>
+          <li><b>Line</b>, <b>Box</b> and <b>Ring</b> take two taps. Tap one end, then the other; for a ring, tap the middle, then the edge. With a mouse you can drag instead.</li>
+          <li>Shapes follow the board. On hex and iso boards a box is a slanted four-sided patch and a ring is a hexagon.</li>
+          <li><b>Select</b> takes two taps at opposite corners. Then choose Copy as stamp, Move or Erase above the board.</li>
+          <li><b>Stamp</b> places the current stamp with its middle on the peg you tap. Stamps, text and the cube are in the Edit panel.</li>
+          <li><b>Lighter</b> and <b>Darker</b> change the bead you tap to the next lighter or darker bead of a similar colour in your palette.</li>
           <li><b>Undo</b> and <b>Redo</b> step through every edit, including swaps, slides and resizes. Ctrl+Z and Ctrl+Y do the same. The history lasts until you close the page.</li>
           <li><b>On a touch screen</b> a tap edits one peg and a drag still scrolls the board. Tick Drag paints on a touch screen, in the Edit panel, to paint with a drag.</li>
           <li>A peg whose bead changes loses its placed tick.</li>
@@ -271,11 +309,18 @@ details.mini .q{margin-left:4px}
         <h4>Learn More</h4>
         <ul>
           <li><a href="https://en.wikipedia.org/wiki/Flood_fill" target="_blank" rel="noopener noreferrer">Flood fill</a>, Wikipedia: how Fill spreads from the peg you tap through matching neighbours.</li>
+          <li><a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm" target="_blank" rel="noopener noreferrer">Bresenham’s line algorithm</a> and the <a href="https://en.wikipedia.org/wiki/Midpoint_circle_algorithm" target="_blank" rel="noopener noreferrer">midpoint circle algorithm</a>, Wikipedia: how Line and Ring choose their pegs on square boards.</li>
         </ul>
       </div>
       <div class="pc"><span>Paint colour</span><span class="dot" id="paintDot"></span><b id="paintName"></b></div>
       <div class="sws" id="quickSw" role="group" aria-label="Colours in this pattern"></div>
       <p class="sub" id="editMsg" aria-live="polite"></p>
+      <div class="btns" id="selBtns" hidden>
+        <button type="button" class="btn" data-sel="copy">Copy as stamp</button>
+        <button type="button" class="btn" data-sel="move">Move</button>
+        <button type="button" class="btn" data-sel="erase">Erase</button>
+        <button type="button" class="btn" data-sel="none">Clear selection</button>
+      </div>
     </div>
     <div id="vp" tabindex="0" aria-label="Pattern board. Arrow keys move the selection; Space marks the selected bead placed.">
       <svg id="board" role="img" aria-label="Bead pattern"></svg>
@@ -284,10 +329,17 @@ details.mini .q{margin-left:4px}
         <label class="btn primary pick">Choose image<input type="file" class="fileIn" accept="image/*" aria-label="Choose image"></label>
         <div class="pasteBox" id="pasteEmpty" contenteditable="true" role="textbox" aria-label="Paste a picture here" inputmode="none" spellcheck="false" data-ph="Or paste a picture here: copy one, then tap this box and choose Paste (or press Ctrl+V / ⌘V)."></div>
         <p class="sub" id="emptyNote" aria-live="polite"></p>
+        <p><button type="button" class="btn" id="blankGo">Start with an empty board</button></p>
         <p class="sub">If Choose image does nothing, the app you’re viewing this in may not allow file pickers. Paste instead, drop a file here, or open this page in your web browser.</p>
       </div>
     </div>
     <div class="row" id="cmpRow" hidden><label for="cmp">Compare</label><input type="range" id="cmp" min="0" max="100" step="5" value="0"><output id="cmpOut"></output></div>
+    <div class="row" id="trRow" hidden><label for="trace">Trace</label><input type="range" id="trace" min="0" max="80" step="10" value="0"><output id="traceOut"></output></div>
+    <div class="checks" id="viewChecks" hidden><label><input type="checkbox" id="tileCk"> Tiled view</label></div>
+    <div id="tileBox" hidden>
+      <canvas id="tileCv" width="600" height="300" role="img" aria-label="Nine copies of the pattern, edge to edge"></canvas>
+      <p class="sub" id="tileMsg" aria-live="polite"></p>
+    </div>
     <div id="hud" aria-live="polite">
       <span id="hudDot" class="empty"></span>
       <div><div id="hudName">Tap a bead</div><div id="hudWhere">Its colour, coordinate and chunk show here.</div></div>
@@ -315,6 +367,29 @@ details.mini .q{margin-left:4px}
         <label><input type="checkbox" id="keepEd"> Keep my edits when the pattern is re-made</label>
       </div>
       <p class="sub" id="keepMsg"></p>
+      <h3>Symmetry <button type="button" class="q" aria-expanded="false" aria-controls="t-sym" aria-label="Help: symmetry">?</button></h3>
+      <div class="sub tip" id="t-sym" hidden>
+        <ul>
+          <li>With symmetry on, every bead you paint, erase, draw, stamp or shade is repeated around the middle of the board.</li>
+          <li><b>Square boards</b>: 2 ways mirrors left and right. 4 ways also mirrors top and bottom.</li>
+          <li><b>Hex and iso boards</b>: 3 ways or 6 ways turns each bead around the middle peg, like a snowflake.</li>
+          <li>Dashed guides on the board show the middle. Fill, Pick and Select are not repeated.</li>
+        </ul>
+        <h4>Learn More</h4>
+        <ul>
+          <li><a href="https://en.wikipedia.org/wiki/Dihedral_group" target="_blank" rel="noopener noreferrer">Dihedral group</a>, Wikipedia: the mirror and turning symmetries used here.</li>
+        </ul>
+      </div>
+      <div class="seg" role="group" aria-label="Symmetry">
+        <button type="button" data-k="ed.sym" data-v="off">Off</button>
+        <button type="button" data-k="ed.sym" data-v="a" id="symA">2 ways</button>
+        <button type="button" data-k="ed.sym" data-v="b" id="symB">4 ways</button>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="edSolid"> Fill in boxes and rings</label>
+        <label><input type="checkbox" id="blankCk"> Empty board: don’t convert the picture</label>
+      </div>
+      <p class="sub" id="blankMsg"></p>
       <details class="mini" id="swapBox">
         <summary>Swap or Drop a Colour <span id="swapSum"></span></summary>
         <p class="sub">Changes one bead colour everywhere. <button type="button" class="q" aria-expanded="false" aria-controls="t-swap" aria-label="Help: swap or drop a colour">?</button></p>
@@ -352,6 +427,38 @@ details.mini .q{margin-left:4px}
         <p class="sub" id="slideInfo" aria-live="polite"></p>
         <p class="sub gap">Board size</p>
         <div id="rzRows"></div>
+      </details>
+      <details class="mini" id="stampBox">
+        <summary>Stamps and Text <span id="stampSum"></span></summary>
+        <p class="sub">A stamp is a group of beads you can place again and again. <button type="button" class="q" aria-expanded="false" aria-controls="t-stamp" aria-label="Help: stamps and text">?</button></p>
+        <div class="sub tip" id="t-stamp" hidden>
+          <ul>
+            <li><b>Make a stamp</b>: choose Select above the board, tap two corners, then Copy as stamp. Text and Cube below make one too.</li>
+            <li><b>Place it</b>: with the Stamp tool, tap the peg where its middle should go. Empty pegs in a stamp leave the board alone.</li>
+            <li><b>Turn</b> turns the stamp a quarter turn on square boards and a sixth of a turn on hex and iso. <b>Flip</b> mirrors it left to right.</li>
+            <li><b>Save stamp</b> keeps it in this browser under the name you give it. Stamps are not part of project files.</li>
+            <li><b>Text</b> draws your words with this device’s own lettering and turns them into beads in the paint colour. Taller letters read better.</li>
+            <li><b>Cube</b>, on hex and iso boards, makes a 3D-looking cube from the paint colour and two darker beads from your palette.</li>
+            <li>A stamp made on a square board only fits square boards. Hex and iso boards share their stamps.</li>
+          </ul>
+        </div>
+        <div class="stampNow">
+          <canvas id="stampCv" width="192" height="192" style="width:96px;height:96px" role="img" aria-label="The current stamp"></canvas>
+          <div><b id="stampName"></b><p class="sub" id="stampInfo"></p>
+            <div class="btns"><button type="button" class="btn sm" id="stampTurn">Turn</button><button type="button" class="btn sm" id="stampFlip">Flip</button></div></div>
+        </div>
+        <div class="frow"><input type="text" id="stampNm" maxlength="40" placeholder="Name this stamp" aria-label="Stamp name"><button type="button" class="btn" id="stampSave">Save stamp</button></div>
+        <div id="stampList"></div>
+        <h3>Text</h3>
+        <div class="frow"><input type="text" id="txtIn" maxlength="24" placeholder="Type a word" aria-label="Words to turn into beads"><button type="button" class="btn" id="txtDo">Make text stamp</button></div>
+        <div class="row" id="txtRow"><label for="txtH">Letter height</label><input type="range" id="txtH" min="5" max="24" step="1" value="7"><output id="txtHOut"></output></div>
+        <div id="cubeBox">
+          <h3>Cube</h3>
+          <div class="btns" id="cubeBtns">
+            <button type="button" class="btn sm" data-cube="2">Side 2</button><button type="button" class="btn sm" data-cube="3">Side 3</button><button type="button" class="btn sm" data-cube="4">Side 4</button><button type="button" class="btn sm" data-cube="5">Side 5</button>
+          </div>
+        </div>
+        <p class="sub" id="stampMsg" aria-live="polite"></p>
       </details>
       <div class="btns"><button type="button" class="btn" id="edClear">Clear all edits</button></div>
     </div>
@@ -733,12 +840,22 @@ details.mini .q{margin-left:4px}
           <li><b>Colour and colour difference</b>: <a href="https://en.wikipedia.org/wiki/Color_difference" target="_blank" rel="noopener noreferrer">Color difference</a> (Wikipedia), <a href="https://bottosson.github.io/posts/oklab/" target="_blank" rel="noopener noreferrer">A perceptual color space for image processing</a> (Björn Ottosson) and <a href="https://hajim.rochester.edu/ece/sites/gsharma/ciede2000/" target="_blank" rel="noopener noreferrer">The CIEDE2000 color-difference formula</a> (Gaurav Sharma).</li>
           <li><b>Dithering</b>: <a href="https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html" target="_blank" rel="noopener noreferrer">Image dithering: eleven algorithms and source code</a> (Tanner Helland), <a href="https://surma.dev/things/ditherpunk/" target="_blank" rel="noopener noreferrer">Ditherpunk</a> (Surma) and <a href="https://en.wikipedia.org/wiki/Floyd-Steinberg_dithering" target="_blank" rel="noopener noreferrer">Floyd–Steinberg dithering</a> (Wikipedia).</li>
           <li><b>Filling and connected patches</b>: <a href="https://en.wikipedia.org/wiki/Flood_fill" target="_blank" rel="noopener noreferrer">Flood fill</a> (Wikipedia).</li>
-          <li><b>Drawing lines on a grid</b>: <a href="https://www.redblobgames.com/grids/line-drawing/" target="_blank" rel="noopener noreferrer">Line drawing on a grid</a> (Red Blob Games). FIG does not draw lines yet; its shape tools will start here.</li>
+          <li><b>Drawing lines on a grid</b>: <a href="https://www.redblobgames.com/grids/line-drawing/" target="_blank" rel="noopener noreferrer">Line drawing on a grid</a> (Red Blob Games), <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm" target="_blank" rel="noopener noreferrer">Bresenham’s line algorithm</a> and the <a href="https://en.wikipedia.org/wiki/Midpoint_circle_algorithm" target="_blank" rel="noopener noreferrer">midpoint circle algorithm</a> (Wikipedia). FIG’s Line and Ring tools use these ideas.</li>
+          <li><b>Symmetry and tiling</b>: <a href="https://en.wikipedia.org/wiki/Dihedral_group" target="_blank" rel="noopener noreferrer">Dihedral group</a> and <a href="https://en.wikipedia.org/wiki/Tessellation" target="_blank" rel="noopener noreferrer">Tessellation</a> (Wikipedia), behind Symmetry and Tiled view.</li>
         </ul>
       </details>
       <details class="mini" id="about">
-        <summary>About This Version <span>1.4.2 · 14 Nov 2026</span></summary>
+        <summary>About This Version <span>1.5 · 17 Nov 2026</span></summary>
         <ul class="sub">
+          <li>1.5, editing power tools, for designing from scratch. Nothing changes until you use them.</li>
+          <li>Start with an empty board, and Trace your picture faintly over it.</li>
+          <li>Symmetry: 2 or 4 ways on square boards, 3 or 6 ways on hex and iso.</li>
+          <li>Line, Box and Ring, which follow each board’s own directions.</li>
+          <li>Select part of the pattern, then copy it as a stamp, move it or erase it. Stamps can be turned, flipped and saved.</li>
+          <li>Text typed onto the board, and a cube stamp for hex and iso boards.</li>
+          <li>Lighter and Darker step a bead along the real beads in your palette.</li>
+          <li>Tiled view shows nine copies of the pattern, to check whether its edges meet.</li>
+          <li>Still to come from the plan: more than one pattern layer.</li>
           <li>1.4.2, picture input like BIG: paste boxes under the board’s Choose image button and in the Pattern panel (for viewers that block file pickers), messages under the button, and one picture button at a time.</li>
           <li>1.4.1, ideas from BIG: the help by the board comes in three parts (Bead Placement, Sizing and Views), there’s a ? beside the zoom buttons too, and every section heading is in Title Case.</li>
           <li>Edit, beside Inspect and Mark placed: paint, erase, fill and pick on every board, with undo and redo.</li>
@@ -756,6 +873,7 @@ details.mini .q{margin-left:4px}
           <li>FIG’s code is written for FIG. No code, pictures, fonts or colour lists are taken from other apps.</li>
           <li>Published methods used: the Oklab colour space by Björn Ottosson (public domain); Floyd–Steinberg and Atkinson error diffusion; ordered (Bayer) dithering; CIE76 and CIEDE2000 colour difference (Sharma, Wu and Dalal, 2005); flood fill, for Fill and for background removal.</li>
           <li>The editing tools, the project file format and the pattern library (1.4) are FIG’s own. Nothing was borrowed for them.</li>
+          <li>The 1.5 tools are FIG’s own code too. Line and Ring on square boards follow two published methods, Bresenham’s line algorithm and the midpoint circle algorithm. Lines on hex and iso boards step evenly between the two pegs and round to the nearest peg, as Amit Patel describes at Red Blob Games. Text uses this device’s own lettering; no font is included.</li>
           <li>Feature ideas came from looking at other bead, pixel-art and voxel tools. The FIG feature roadmap names each one.</li>
           <li>Help links point to other people’s tutorials. Nothing from them is copied here.</li>
         </ul>
@@ -809,8 +927,9 @@ const PAL=[
   ['Green','#2C9A48'],['Light blue','#4AA6E0'],['Dark blue','#25409A'],['Purple','#6E43A3'],
   ['Pink','#EE86B4'],['Brown','#6E4428'],['Tan','#D6B38A'],['Peach','#F1C9A5']
 ].map(([name,hex])=>({name,hex,on:true}));
-const DEF={source:'image',tap:'inspect',fade:true,labels:false,iso:null,ui:{order:true,legend:true,adj:false,clean:false,swap:false,slide:false,proj:true},
-  keepEdits:true,ed:{tool:'paint',step:'1',lock:false,paint:null},   /* added in 1.4: editing preferences. None of them changes a pattern by itself. */
+const DEF={source:'image',tap:'inspect',fade:true,labels:false,iso:null,ui:{order:true,legend:true,adj:false,clean:false,swap:false,slide:false,proj:true,stamp:false},
+  keepEdits:true,ed:{tool:'paint',step:'1',lock:false,paint:null,sym:'off',solid:false},
+  blank:false,tile:false,trace:0,   /* added in 1.5: an empty board to design on, the tiled view, and how strongly the picture shows over the board */   /* added in 1.4: editing preferences. None of them changes a pattern by itself. */
   lat:{fit:'fit',side:16,orient:'point',cols:48,rows:38,stagger:'cols',scale:100},
   img:{width:58,sampling:'average',palette:PAL,snap:true,cols:2,rows:2,fit:'fit',full:true,
     crop:{x:0,y:0,w:1,h:1},free:{x:0,y:0,w:1,h:1},bg:false,bgTol:40,palSrc:'basic',brandOff:[],special:false,maxColors:24,dither:'none',ditherAmt:80,metric:'lab',rare:0,scheme:'blue',schN:6,schMap:'tone',schBW:false,schSnap:true,
@@ -825,10 +944,10 @@ function merge(d,s){
 }
 /* Every saved setting is checked when the page opens. A choice that is not on its list, or a number outside its
    range, falls back to a safe value, so damaged or edited storage cannot break the page. */
-const CHOICES={source:['image','hexb','iso'],tap:['inspect','mark','edit'],'ed.tool':['paint','erase','fill','pick'],'ed.step':['1','5'],'lat.fit':['fit','fill'],'lat.orient':['point','flat'],'lat.stagger':['cols','rows'],
+const CHOICES={source:['image','hexb','iso'],tap:['inspect','mark','edit'],'ed.tool':['paint','erase','fill','pick','line','box','ring','select','stamp','lighter','darker'],'ed.sym':['off','a','b'],'ed.step':['1','5'],'lat.fit':['fit','fill'],'lat.orient':['point','flat'],'lat.stagger':['cols','rows'],
   'img.sampling':['average','nearest','dominant','median'],'img.fit':['fit','fill'],'img.palSrc':['basic','catalog','scheme'],'img.dither':['none','fs','atk','ordered'],
   'img.metric':['rgb','lab','de2000','oklab'],'img.schMap':['tone','colour'],'img.scheme':SCHEMES.map(d=>d.id),'img.outline':['none','in','out']};
-const LIMITS={'lat.side':[5,30],'lat.cols':[8,80],'lat.rows':[8,80],'lat.scale':[30,100],'img.width':[1,MAX_W],'img.cols':[1,MAX_BOARDS],'img.rows':[1,MAX_BOARDS],
+const LIMITS={'trace':[0,80],'lat.side':[5,30],'lat.cols':[8,80],'lat.rows':[8,80],'lat.scale':[30,100],'img.width':[1,MAX_W],'img.cols':[1,MAX_BOARDS],'img.rows':[1,MAX_BOARDS],
   'img.bgTol':[5,120],'img.maxColors':[4,ALL_COLOURS],'img.ditherAmt':[10,100],'img.rare':[0,50],'img.schN':[2,12],
   'img.adjB':[-100,100],'img.adjC':[-100,100],'img.adjS':[-100,100],'img.adjH':[-180,180],'img.adjW':[-100,100],'img.specks':[0,10],'img.smooth':[0,3]};
 const FULL={x:0,y:0,w:1,h:1};
@@ -1067,10 +1186,126 @@ function readProject(text){
 }
 /* ---------- end of the 1.4 helpers ---------- */
 
+/* ---------- design helpers added in 1.5 ----------
+   Plain functions: data in, data out. Nothing here reads settings or touches the page.
+   Pegs are named by the lattice numbers (u, v) described above. `type` is 'square' for square boards and 'hex' for hex and
+   iso boards, which share one lattice: six neighbours, one step to each (STEPS.hex). */
+const latType=kind=>kind==='square'?'square':'hex';
+const hexDist=(a,b)=>{const du=b[0]-a[0],dv=b[1]-a[1];return Math.max(Math.abs(du),Math.abs(dv),Math.abs(du+dv))};   /* steps between two pegs on a hex lattice */
+/* SYMMETRY. Every peg that mirrors peg (u, v), the peg itself first. mode 'a' is 2 ways on square and 3 ways on hex; mode 'b' is
+   4 ways and 6 ways. On square boards c = [last column, last row], so column u mirrors to c[0] - u. On hex lattices c is the
+   middle peg, and the peg is turned around it a sixth of a turn at a time. */
+function symImages(type,mode,u,v,c){
+  if(mode!=='a'&&mode!=='b')return[[u,v]];
+  if(type==='square'){const o=[[u,v],[c[0]-u,v]];if(mode==='b')o.push([u,c[1]-v],[c[0]-u,c[1]-v]);return o}
+  const o=[];let a=u-c[0],b=v-c[1];
+  for(let k=0;k<6;k++){if(mode==='b'||k%2===0)o.push([a+c[0],b+c[1]]);[a,b]=[-b,a+b]}
+  return o;
+}
+/* one turn about peg (0, 0): a quarter turn on square boards, a sixth of a turn on hex lattices */
+const turnCell=(type,u,v)=>type==='square'?[-v,u]:[-v,u+v];
+/* a left-right mirror as seen on the page, about peg (0, 0) */
+function flipCell(lat,u,v){if(lat.kind==='square')return[-u,v];const[x,y]=stepXY(lat,u,v);return xyStep(lat,-x,y)}
+/* LINE between pegs a and b, both ends included. Square boards: Bresenham's line algorithm. Hex lattices: step evenly from a to
+   b and round each point to the nearest peg, working in three numbers that add up to zero (u, v and -u-v). */
+function lineCells(type,a,b){
+  const out=[];
+  if(type==='square'){
+    let x=a[0],y=a[1];const dx=Math.abs(b[0]-x),dy=-Math.abs(b[1]-y),sx=x<b[0]?1:-1,sy=y<b[1]?1:-1;let err=dx+dy;
+    for(;;){out.push([x,y]);if(x===b[0]&&y===b[1])break;const e2=2*err;if(e2>=dy){err+=dy;x+=sx}if(e2<=dx){err+=dx;y+=sy}}
+    return out;
+  }
+  const n=hexDist(a,b);
+  for(let i=0;i<=n;i++){
+    const t=n?i/n:0,x=a[0]+(b[0]-a[0])*t+1e-6,z=a[1]+(b[1]-a[1])*t+2e-6,y=-x-z;   /* the tiny nudge settles exact ties the same way every time */
+    let rx=Math.round(x),ry=Math.round(y),rz=Math.round(z);const ex=Math.abs(rx-x),ey=Math.abs(ry-y),ez=Math.abs(rz-z);
+    if(ex>ey&&ex>ez)rx=-ry-rz;else if(ey>ez)ry=-rx-rz;else rz=-rx-ry;
+    out.push([rx,rz]);
+  }
+  return out;
+}
+/* BOX with a and b at opposite corners: its sides run along the lattice's two directions, so on hex lattices it is a slanted patch */
+function boxCells(a,b,solid){
+  const u0=Math.min(a[0],b[0]),u1=Math.max(a[0],b[0]),v0=Math.min(a[1],b[1]),v1=Math.max(a[1],b[1]),out=[];
+  for(let v=v0;v<=v1;v++)for(let u=u0;u<=u1;u++)if(solid||u===u0||u===u1||v===v0||v===v1)out.push([u,v]);
+  return out;
+}
+/* RING around peg c that passes through peg p. Square boards: the midpoint circle algorithm, which works out one eighth of the
+   circle and mirrors it into the rest. Hex lattices: every peg the same number of steps from c, which makes a hexagon. */
+function ringCells(type,c,p,solid){
+  const out=[];
+  if(type!=='square'){
+    const n=hexDist(c,p);
+    for(let dv=-n;dv<=n;dv++)for(let du=Math.max(-n,-n-dv);du<=Math.min(n,n-dv);du++)if(solid||hexDist([0,0],[du,dv])===n)out.push([c[0]+du,c[1]+dv]);
+    return out;
+  }
+  const r=Math.round(Math.hypot(p[0]-c[0],p[1]-c[1])),reach=new Map(),pts=new Set();   /* reach: how far the circle goes sideways on each row */
+  const add=(dx,dy)=>{pts.add(dx+','+dy);if(!(reach.get(dy)>=Math.abs(dx)))reach.set(dy,Math.abs(dx))};
+  let x=r,y=0,d=1-r;
+  while(x>=y){for(const[p1,q1]of[[x,y],[y,x]])for(const sx of[1,-1])for(const sy of[1,-1])add(p1*sx,q1*sy);y++;if(d<0)d+=2*y+1;else{x--;d+=2*(y-x)+1}}
+  if(solid)reach.forEach((m,dy)=>{for(let dx=-m;dx<=m;dx++)out.push([c[0]+dx,c[1]+dy])});
+  else pts.forEach(k=>{const[dx,dy]=k.split(',').map(Number);out.push([c[0]+dx,c[1]+dy])});
+  return out;
+}
+/* CUBE: three slanted faces, n pegs on a side, that meet at peg (0, 0). Each entry is [u, v, face], with face 0, 1 or 2. */
+function cubeCells(n){
+  const out=[[0,0,0]],S=STEPS.hex;
+  for(let k=0;k<3;k++){const a=S[2*k],b=S[(2*k+2)%6];for(let i=1;i<=n;i++)for(let j=0;j<n;j++)out.push([i*a[0]+j*b[0],i*a[1]+j*b[1],k])}
+  return out;
+}
+/* move a group of pegs [u, v, ...] so that peg (0, 0) is in its middle */
+function centreCells(cells){
+  if(!cells.length)return[];let su=0,sv=0;for(const c of cells){su+=c[0];sv+=c[1]}
+  const cu=Math.round(su/cells.length),cv=Math.round(sv/cells.length);
+  return cells.map(c=>[c[0]-cu,c[1]-cv].concat(c.slice(2)));
+}
+/* SHADE: which colour is one step lighter (dir 1) or darker (dir -1) than `cur`. Colours are Oklab triples [L, a, b]. The
+   answer is lighter or darker by about a tenth of the way from black to white, and closest in hue: a dark blue steps to a
+   light blue before a purple. Greys have no hue, so the hue part fades out as a colour gets weaker. Returns the colour's
+   place in `labs`, or -1 if nothing is lighter (or darker). */
+function shadeStep(labs,cur,dir){
+  const hue=q=>{const c=Math.hypot(q[1],q[2]),k=c?Math.min(c,0.08)/0.08/c:0;return[q[1]*k,q[2]*k]},h0=hue(cur);
+  let best=-1,bd=Infinity;
+  labs.forEach((q,i)=>{
+    const dL=(q[0]-cur[0])*dir;if(dL<0.03)return;
+    const h=hue(q),d=(dL-0.1)**2+(h[0]-h0[0])**2+(h[1]-h0[1])**2;
+    if(d<bd){bd=d;best=i}
+  });
+  return best;
+}
+/* STAMPS. A stamp is { name, type ('square' or 'hex'), pal: [{ name, hex, code }], cells: [[u, v, pal number], ...] } with peg
+   (0, 0) in its middle. Stamps read from storage are checked here; a malformed one is left out. */
+const MAX_STAMPS=40,MAX_STAMP_CELLS=6000;
+function tidyStamp(o){
+  if(!o||typeof o!=='object'||(o.type!=='square'&&o.type!=='hex')||!Array.isArray(o.pal)||!Array.isArray(o.cells))return null;
+  if(!o.pal.length||o.pal.length>200||!o.cells.length||o.cells.length>MAX_STAMP_CELLS)return null;
+  const pal=[],cells=[],seen=new Set(),ok=v=>Number.isInteger(v)&&Math.abs(v)<=400;
+  for(const p of o.pal){
+    if(!p||typeof p.name!=='string'||!p.name||typeof p.hex!=='string'||!HEX6.test(p.hex))return null;
+    pal.push({name:p.name.slice(0,MAX_NAME),hex:p.hex,code:typeof p.code==='string'?p.code.slice(0,MAX_CODE):''});
+  }
+  for(const c of o.cells){
+    if(!Array.isArray(c)||!ok(c[0])||!ok(c[1])||!Number.isInteger(c[2])||c[2]<0||c[2]>=pal.length)return null;
+    const k=c[0]+','+c[1];if(!seen.has(k)){seen.add(k);cells.push([c[0],c[1],c[2]])}
+  }
+  return{name:(typeof o.name==='string'&&o.name.trim()?o.name.trim():'Stamp').slice(0,40),type:o.type,pal,cells};
+}
+/* TILED VIEW: the two lattice moves that repeat a pattern edge to edge. ext is the beads' extent: { w, h } in pegs on square
+   boards, { r } (steps from the middle) on a hex board, and { cols, rows, stag } on an iso board. */
+function tileMoves(kind,ext){
+  if(kind==='square')return[[ext.w,0],[0,ext.h]];
+  if(kind==='hexb')return[[2*ext.r+1,-ext.r],[ext.r,ext.r+1]];
+  return ext.stag==='cols'?[[ext.cols,-Math.floor(ext.cols/2)],[0,ext.rows]]:[[ext.cols,0],[-Math.floor(ext.rows/2),ext.rows]];
+}
+/* ---------- end of the 1.5 helpers ---------- */
+
 /* the edits themselves: one set per board type, kept in this browser, plus the undo history for this visit */
-const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.4.2',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
+const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.5',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
 const freshEdits=()=>({square:newEdits(),hexb:newEdits(),iso:newEdits()}),freshHist=()=>({square:{undo:[],redo:[]},hexb:{undo:[],redo:[]},iso:{undo:[],redo:[]}});
 let ED=freshEdits(),HIST=freshHist(),E=ED.square,conv=null,savedClean=false;
+/* 1.5: the first tap of a two-tap tool, the selection, the current stamp, the saved stamps, and whether the tiled view needs redrawing */
+let anchor=null,selBox=null,stamp=null,stamps=[],dragFrom=-1,tileDirty=true,stampSig='';
+{const v=store.get('fl:stamps');if(Array.isArray(v))stamps=v.map(tidyStamp).filter(Boolean).slice(0,MAX_STAMPS)}
 {const v=store.get('fl:edits');if(v&&typeof v==='object'){for(const k in ED)ED[k]=tidyEdits(v[k]);savedClean=store.get('fl:saved')===hash(JSON.stringify(ED))}E=ED[KIND[st.source]]}
 const saveEdits=()=>store.set('fl:edits',ED);
 const latNow=()=>({kind:KIND[st.source],flat:st.lat.orient==='flat',stag:st.lat.stagger});
@@ -1693,6 +1928,7 @@ function render(){
 /* Compare: the cropped picture drawn over the pattern and revealed from the left. It is only a view; the pattern is untouched. */
 let cmp=0,srcUrl='';
 function cmpDraw(){
+  traceDraw();
   const svg=$('board'),on=!!pattern&&!!pattern.pic&&!!srcUrl&&cmp>0;let g=$('cmpG');
   if(!on){if(g){g.remove();$('cmpDefs').remove()}return}
   if(!g){
@@ -1705,6 +1941,44 @@ function cmpDraw(){
     if(ring)svg.appendChild(ring);   /* keep the selection ring on top */
   }
   $('cmpRect').setAttribute('width',f3(pattern.W*cmp/100));
+}
+/* Trace (1.5): the cropped picture shown faintly over the whole board. Like Compare, it is only a view. */
+function traceDraw(){
+  const svg=$('board'),on=!!pattern&&!!pattern.pic&&pattern.pic.length>0&&!!srcUrl&&st.trace>0;let g=$('trG');
+  if(!on){if(g)g.remove();return}
+  if(!g){
+    const mk=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e},n5=v=>(+v).toFixed(5);
+    g=mk('g',{id:'trG',class:'trc'},svg);
+    pattern.pic.forEach(p=>{
+      const part=mk('svg',{x:f3(p.x),y:f3(p.y),width:f3(p.w),height:f3(p.h),viewBox:[p.u,p.v,p.uw,p.vh].map(n5).join(' '),preserveAspectRatio:'none'},g);
+      const im=mk('image',{href:srcUrl,x:0,y:0,width:1,height:1,preserveAspectRatio:'none'},part);if(st.img.sampling==='nearest')im.style.imageRendering='pixelated'});
+    const ov=$('ovG');if(ov)svg.appendChild(ov);if(ring)svg.appendChild(ring);   /* keep the guides and the selection ring on top */
+  }
+  g.setAttribute('opacity',(st.trace/100).toFixed(2));
+}
+/* Tiled view (1.5): nine copies of the pattern drawn edge to edge on a small canvas, to show whether its edges meet */
+function tileDraw(){
+  const box=$('tileBox'),on=!!pattern&&st.tile;box.hidden=!on;
+  if(!on||!tileDirty)return;tileDirty=false;
+  const cv=$('tileCv'),g=cv.getContext('2d'),lat=latNow(),kind=pattern.kind,stag=st.lat.stagger,B=[];
+  for(const s of pattern.sites)if(s.c)B.push([uvOf(kind,stag,s),pattern.colors[s.c].hex,s]);
+  if(!B.length){g.clearRect(0,0,cv.width,cv.height);txt('tileMsg','Nothing to repeat yet: the board has no beads.');return}
+  const span=f=>{let lo=Infinity,hi=-Infinity;for(const b of B){const v=f(b);if(v<lo)lo=v;if(v>hi)hi=v}return hi-lo+1};
+  let ext,msg;
+  if(kind==='square'){ext={w:span(b=>b[0][0]),h:span(b=>b[0][1])};msg=`Each copy is ${ext.w} × ${ext.h} pegs.`}
+  else if(kind==='hexb'){let r=0;for(const b of B)r=Math.max(r,hexDist([0,0],b[0]));ext={r};msg=`Each copy is a hexagon ${r+1} pegs on a side.`}
+  else{ext={cols:span(b=>b[2].col),rows:span(b=>b[2].row),stag};const odd=(stag==='cols'?ext.cols:ext.rows)%2;
+    msg=`Each copy is ${ext.cols} × ${ext.rows} pegs.`+(odd?` An odd number of ${stag==='cols'?'columns':'rows'} shifts each copy half a peg from the one before.`:'')}
+  const[A,Bm]=tileMoves(kind,ext),a=stepXY(lat,A[0],A[1]),b=stepXY(lat,Bm[0],Bm[1]),pts=B.map(([p,hex])=>{const[x,y]=stepXY(lat,p[0],p[1]);return[x,y,hex]});
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  for(const[x,y]of pts)for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const X=x+i*a[0]+j*b[0],Y=y+i*a[1]+j*b[1];if(X<x0)x0=X;if(X>x1)x1=X;if(Y<y0)y0=Y;if(Y>y1)y1=Y}
+  const cssW=Math.max(200,Math.min(vp.clientWidth||600,640)),W=Math.round(cssW*Math.min(2,window.devicePixelRatio||1)),k=W/(x1-x0+1.2),H=Math.max(1,Math.round((y1-y0+1.2)*k));
+  cv.width=W;cv.height=H;cv.style.maxWidth=H>W?Math.round(cssW*W/H)+'px':'';   /* a tall picture is shown narrower, so it never grows taller than it is wide */
+  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const[x,y,hex]of pts){
+    const px=(x+i*a[0]+j*b[0]-x0+0.6)*k,py=(y+i*a[1]+j*b[1]-y0+0.6)*k;g.fillStyle=hex;
+    if(k<3.2)g.fillRect(px-k/2,py-k/2,Math.max(1,k),Math.max(1,k));else{g.beginPath();g.arc(px,py,k*0.46,0,6.2832);g.fill()}
+  }
+  txt('tileMsg','Nine copies of the pattern, edge to edge. '+msg+' Look where the copies meet to see whether the edges match.');
 }
 function styles(){
   if(!pattern)return;
@@ -1760,7 +2034,7 @@ function hud(){
 }
 let expTimer=0;
 /* the export text can run to thousands of lines, so it is rebuilt a moment after the last change, not on every tap */
-function refresh(){styles();progress();hud();if($('expDetails').open){clearTimeout(expTimer);expTimer=setTimeout(()=>{$('expText').value=exportText()},EXPORT_DELAY)}}
+function refresh(){styles();progress();hud();tileDraw();if($('expDetails').open){clearTimeout(expTimer);expTimer=setTimeout(()=>{$('expText').value=exportText()},EXPORT_DELAY)}}
 
 /* ---------- zoom and scrolling ---------- */
 const vp=$('vp');
@@ -1892,6 +2166,7 @@ function sync(){
   if(q.getAttribute('aria-controls')!==tipId){q.setAttribute('aria-controls',tipId);q.setAttribute('aria-expanded','false');$('t-size').hidden=true;$('t-lsize').hidden=true}
   imgSync();invSync();fineSync();adjSync();cleanSync();bgSync();editSync();
   $('cmpRow').hidden=!(pattern&&srcUrl);put('cmp',cmp);
+  $('trRow').hidden=!(pattern&&srcUrl);put('trace',st.trace);$('viewChecks').hidden=!pattern;$('tileCk').checked=st.tile;
   $('fade').checked=st.fade;$('labels').checked=st.labels;
 }
 /* ---------- image steps: crop, boards, fit/fill, background ---------- */
@@ -2085,6 +2360,9 @@ function cleanSync(){
 slider('specks',v=>v?String(v):'Off',v=>{st.img.specks=v;rebuild()});
 slider('smooth',v=>v?v+'\u00d7':'Off',v=>{st.img.smooth=v;rebuild()});
 slider('cmp',v=>v?v+'%':'Off',v=>{cmp=v;cmpDraw()},v=>{cmp=v;cmpDraw()});
+slider('trace',v=>v?v+'%':'Off',v=>{st.trace=v;saveSettings();traceDraw()},v=>{st.trace=v;traceDraw()});
+slider('txtH',v=>v+' pegs',()=>{});
+$('tileCk').addEventListener('change',e=>{st.tile=e.target.checked;tileDirty=true;saveSettings();refresh()});
 
 /* ---------- shopping list ---------- */
 /* what to buy: beads needed per colour, less the bags the sheet says are owned, in whole bags */
@@ -2237,6 +2515,7 @@ function setPic(pat){
 }
 /* give every peg of `pat` the colour the conversion plus the edits call for; returns the numbers of the pegs that changed */
 function recolour(pat){
+  tileDirty=true;
   const kind=pat.kind,stag=st.lat.stagger,folds=new Map(),changed=[],colors={},pIds=new Set(),eIds=new Set();
   const fold=key=>{let t=folds.get(key);if(t===undefined){t=swapTo(E,key);folds.set(key,t)}return t};
   const baseAt=k=>conv.at.get(k),keyOf=id=>colKey(conv.colors[id]);
@@ -2251,7 +2530,7 @@ function recolour(pat){
   return changed;
 }
 function compose(base){
-  if(editsEmpty(E))return base;
+  if(editsEmpty(E)&&!st.blank)return base;
   const[a,b]=frameDims(),d=conv.dims,pat=a!==d[0]||b!==d[1]?blankFrame(base.kind,a,b,base.P):base;
   recolour(pat);return pat;
 }
@@ -2268,7 +2547,7 @@ function patchEls(list){
 const patKey=()=>'fl:prog:'+pattern.kind+':'+hash(pattern.sites.filter(s=>s.c).map(s=>s.k+'='+s.c).join(';'));
 /* the pattern changed under the saved ticks: keep the ticks that still hold, under the pattern's new name */
 function progMove(){const key=patKey();if(key!==progKey&&progKey)store.del(progKey);progKey=key;prog.size?saveProg():store.del(key)}
-function resetCmp(){const g=$('cmpG');if(g){g.remove();$('cmpDefs').remove()}cmpDraw()}
+function resetCmp(){const g=$('cmpG'),t=$('trG');if(g){g.remove();$('cmpDefs').remove()}if(t)t.remove();cmpDraw()}
 /* after an edit that the board already shows */
 function editDone(changed){
   for(const i of changed)prog.delete(pattern.sites[i].k);
@@ -2329,17 +2608,19 @@ function toolAt(i){
     const c=pattern.colors[s.c];st.ed.paint={name:c.name,hex:c.hex,code:c.code||''};st.ed.tool='paint';
     saveSettings();sync();refresh();note('Picked '+c.name+'. Paint is on.');return;
   }
+  if(TOOL15[t]){tool15(i,t);return}
   if(t!=='erase'&&!st.ed.paint){refresh();note('Choose a paint colour first.');return}
-  const val=t==='erase'?0:palIndex(E,st.ed.paint)+1,list=t==='fill'?floodPatch(i,j=>pattern.sites[j].c,nearIdx()):[i],cells=[];
+  const val=t==='erase'?0:palIndex(E,st.ed.paint)+1,list=t==='fill'?floodPatch(i,j=>pattern.sites[j].c,nearIdx()):symIdx(i),cells=[];
   for(const j of list){const k=cellKey(pattern.sites[j]),b=cellOf(k),a=normal(k,val);if(a!==b)cells.push([k,b,a])}
   if(!cells.length){refresh();note(t==='erase'?'That peg is already empty.':'That is already '+st.ed.paint.name+'.');return}
   doOp(delta(t,cells));
-  note(t==='fill'?'Filled '+plural(cells.length,'peg')+' with '+st.ed.paint.name+'.':t==='erase'?'Erased 1 peg.':'Painted 1 peg '+st.ed.paint.name+'.');
+  note(t==='fill'?'Filled '+plural(cells.length,'peg')+' with '+st.ed.paint.name+'.':t==='erase'?'Erased '+plural(cells.length,'peg')+'.':'Painted '+plural(cells.length,'peg')+' '+st.ed.paint.name+'.');
 }
 /* a drag with the mouse or a pen (or a finger, when Drag paints is on) paints or erases every peg it passes */
 let stroke=null,skipClick=false;
 const boardPt=e=>{const r=$('board').getBoundingClientRect();return[(e.clientX-r.left)/r.width*pattern.W,(e.clientY-r.top)/r.height*pattern.H]};
-function strokeSite(i){
+function strokeSite(i){for(const j of symIdx(i))strokeOne(j)}   /* 1.5: with symmetry on, a stroke is mirrored as it goes */
+function strokeOne(i){
   const s=pattern.sites[i],k=cellKey(s);if(stroke.seen.has(k))return;stroke.seen.add(k);
   const b=cellOf(k),a=normal(k,stroke.val);if(a===b)return;
   stroke.cells.push([k,b,a]);if(a===null)delete E.cells[k];else E.cells[k]=a;
@@ -2365,7 +2646,7 @@ $('board').addEventListener('pointerdown',e=>{
   skipClick=true;
   const[x,y]=boardPt(e),i=siteNear(x,y),t=st.ed.tool;if(i<0)return;
   e.preventDefault();
-  if(t==='fill'||t==='pick'){toolAt(i);return}
+  if(t!=='paint'&&t!=='erase'){toolAt(i);dragFrom=TWO[t]&&anchor?i:-1;return}   /* a two-tap tool can also be dragged from one end to the other */
   if(t==='paint'&&!st.ed.paint){note('Choose a paint colour first.');return}
   if(pattern.colors===conv.colors)pattern.colors={...conv.colors};
   stroke={val:t==='erase'?0:palIndex(E,st.ed.paint)+1,cells:[],idx:[],seen:new Set(),x,y};
@@ -2374,6 +2655,10 @@ $('board').addEventListener('pointerdown',e=>{
 });
 $('board').addEventListener('pointermove',e=>{if(stroke){const[x,y]=boardPt(e);strokeTo(x,y)}});
 $('board').addEventListener('pointerup',endStroke);
+$('board').addEventListener('pointerup',e=>{
+  const d=dragFrom;dragFrom=-1;if(d<0||!anchor||!pattern)return;
+  const[x,y]=boardPt(e),j=siteNear(x,y);if(j>=0&&j!==d)toolAt(j);
+});
 $('board').addEventListener('pointercancel',endStroke);
 function editClick(e){
   if(skipClick){skipClick=false;return}
@@ -2484,14 +2769,18 @@ const ARROW='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
 const TARGET='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg>';
 const dirName=(x,y)=>[Math.abs(y)<0.2?'':y>0?'down':'up',Math.abs(x)<0.2?'':x>0?'right':'left'].filter(Boolean).join(' and ');
 function editSync(){
+  if(anchor&&(anchor.tool!==st.ed.tool||st.tap!=='edit'))anchor=null;
+  if(selBox&&(st.ed.tool!=='select'||st.tap!=='edit'))selBox=null;
   const on=st.tap==='edit'&&!!pattern&&!!conv,parts=pattern&&conv?editParts():[];
   $('editBar').hidden=!on;$('editGroup').hidden=!on;
   $('board').classList.toggle('editing',on);$('board').classList.toggle('lock',on&&st.ed.lock);
+  overlay();
   $('edNote').hidden=!parts.length;
   txt('edNote',parts.length?'Edited: '+parts.join(', ')+'. '+(st.keepEdits?'Edits are kept when a setting changes.':'Edits are cleared when a setting changes.'):'');
   $('keepEd').checked=st.keepEdits;$('edLock').checked=st.ed.lock;
   if(!on)return;
   const h=hist(),lat=latNow();
+  powerSync(lat);
   $('undo').disabled=!h.undo.length;$('redo').disabled=!h.redo.length;$('edClear').disabled=!parts.length;
   txt('edSum',parts.length?'('+parts.join(', ')+')':'(no edits yet)');
   txt('keepMsg',st.keepEdits?'Changing a setting re-makes the pattern and lays your edits back over it, peg for peg.':'Changing a setting re-makes the pattern from the picture alone. Undo brings the edits back.');
@@ -2535,6 +2824,229 @@ $('quickSw').addEventListener('click',e=>pickPaint(quickList,e));
 $('allSw').addEventListener('click',e=>pickPaint(allList,e));
 $('swFind').addEventListener('input',()=>editSync());
 
+/* ---------- editing power tools (1.5) ----------
+   Every tool here ends in the same place as Paint: a list of pegs to set, turned into one undo step by putCells(). So undo,
+   kept edits, project files and the library need nothing new. */
+const TWO={line:1,box:1,ring:1,select:1},TOOL15={line:1,box:1,ring:1,select:1,stamp:1,lighter:1,darker:1};
+const FIRST={line:'Now tap the other end of the line.',box:'Now tap the opposite corner of the box.',ring:'Now tap a peg on the edge of the ring.',select:'Now tap the opposite corner.'};
+/* every peg of the board by its lattice numbers */
+function uvMap(){
+  let m=pattern.byUV;
+  if(!m){m=pattern.byUV=new Map();const k=pattern.kind,g=st.lat.stagger;pattern.sites.forEach((s,i)=>{const[u,v]=uvOf(k,g,s);m.set(u+','+v,i)})}
+  return m;
+}
+/* the middle that symmetry works around: see symImages() */
+function symC(){
+  if(pattern.symC)return pattern.symC;const k=pattern.kind;let c;
+  if(k==='square')c=[pattern.nbx*BOARD-1,pattern.nby*BOARD-1];
+  else if(k==='hexb')c=[0,0];
+  else{const i=siteNear(pattern.W/2,pattern.H/2);c=i<0?[0,0]:uvOf(k,st.lat.stagger,pattern.sites[i])}
+  return pattern.symC=c;
+}
+/* peg i and the pegs that mirror it, as peg numbers; just [i] with symmetry off */
+function symIdx(i){
+  if(st.ed.sym==='off')return[i];
+  const[u,v]=uvOf(pattern.kind,st.lat.stagger,pattern.sites[i]),m=uvMap(),out=[];
+  for(const[a,b]of symImages(latType(pattern.kind),st.ed.sym,u,v,symC())){const j=m.get(a+','+b);if(j!==undefined&&!out.includes(j))out.push(j)}
+  return out;
+}
+/* set a list of pegs [u, v, value] (value 0 = empty, or a pal number + 1) as one undo step; returns how many pegs changed */
+function putCells(list,what,sym=true){
+  const m=uvMap(),type=latType(pattern.kind),mode=sym?st.ed.sym:'off',c=mode==='off'?null:symC(),seen=new Set(),cells=[];
+  for(const[u,v,val]of list)for(const[a,b]of symImages(type,mode,u,v,c)){
+    const i=m.get(a+','+b);if(i===undefined)continue;
+    const k=cellKey(pattern.sites[i]);if(seen.has(k))continue;seen.add(k);
+    const bf=cellOf(k),af=normal(k,val);if(af!==bf)cells.push([k,bf,af]);
+  }
+  if(cells.length)doOp(delta(what,cells));
+  return cells.length;
+}
+const paintPal=()=>activePal().filter(p=>p.on!==false).map(p=>({name:p.name,hex:p.hex,code:p.code||''}));
+const labOf=c=>toOklab(...hexRgb(c.hex));
+/* one tap of a 1.5 tool on peg i */
+function tool15(i,t){
+  const s=pattern.sites[i],kind=pattern.kind,type=latType(kind),uv=uvOf(kind,st.lat.stagger,s);
+  if(t==='stamp'){
+    if(!stamp){refresh();note('No stamp yet. Use Select and Copy as stamp, or make one under Stamps and Text in the Edit panel.');return}
+    if(stamp.type!==type){refresh();note('This stamp was made for '+(stamp.type==='square'?'square boards':'hex and iso boards')+', so it doesn’t fit here.');return}
+    const idx=stamp.pal.map(p=>palIndex(E,p)+1),n=putCells(stamp.cells.map(c=>[uv[0]+c[0],uv[1]+c[1],idx[c[2]]]),'stamp');
+    if(n)note('Stamped '+plural(n,'peg')+'.');else{refresh();note('Nothing changed: the stamp matches what is already there.')}
+    return;
+  }
+  if(t==='lighter'||t==='darker'){
+    if(!s.c){refresh();note('That peg is empty. Tap a bead.');return}
+    const P=paintPal(),labs=P.map(labOf),dir=t==='lighter'?1:-1,was=pattern.colors[s.c].name,cells=[];
+    for(const j of symIdx(i)){
+      const q=pattern.sites[j];if(!q.c)continue;
+      const n=shadeStep(labs,labOf(pattern.colors[q.c]),dir);if(n<0)continue;
+      const k=cellKey(q),bf=cellOf(k),af=normal(k,palIndex(E,P[n])+1);if(af!==bf)cells.push([k,bf,af]);
+    }
+    if(!cells.length){refresh();note('Your palette has no '+t+' bead than '+was+'.');return}
+    doOp(delta('shade '+t,cells));
+    const now=pattern.sites[i].c;note(was+' is now '+(now?pattern.colors[now].name:'empty')+(cells.length>1?', on '+plural(cells.length,'peg'):'')+'.');
+    return;
+  }
+  if(t!=='select'&&!st.ed.paint){refresh();note('Choose a paint colour first.');return}
+  if(!anchor||anchor.tool!==t){if(t==='select')selBox=null;anchor={i,tool:t,uv};sync();refresh();note(FIRST[t]);return}
+  const a=anchor.uv;anchor=null;
+  if(t==='select'){
+    const m=uvMap(),idx=[];for(const[u,v]of boxCells(a,uv,true)){const j=m.get(u+','+v);if(j!==undefined)idx.push(j)}
+    selBox={idx};sync();refresh();
+    note('Selected '+plural(idx.length,'peg')+', '+idx.filter(j=>pattern.sites[j].c).length+' with beads. Choose Copy as stamp, Move or Erase.');
+    return;
+  }
+  const val=palIndex(E,st.ed.paint)+1,pts=t==='line'?lineCells(type,a,uv):t==='box'?boxCells(a,uv,st.ed.solid):ringCells(type,a,uv,st.ed.solid);
+  const n=putCells(pts.map(p=>[p[0],p[1],val]),t);
+  if(n)note('Drew a '+t+': '+plural(n,'peg')+' in '+st.ed.paint.name+'.');else{sync();refresh();note('Nothing changed: those pegs are already '+st.ed.paint.name+'.')}
+}
+/* the beads inside the selection, as a stamp */
+function clipSel(){
+  const pal=[],at=new Map(),cells=[],k=pattern.kind,g=st.lat.stagger;
+  for(const i of selBox.idx){
+    const s=pattern.sites[i];if(!s.c)continue;
+    const c=pattern.colors[s.c],key=colKey(c);let n=at.get(key);
+    if(n===undefined){n=pal.length;at.set(key,n);pal.push({name:c.name,hex:c.hex,code:c.code||''})}
+    const[u,v]=uvOf(k,g,s);cells.push([u,v,n]);
+  }
+  return cells.length?{name:'Selection',type:latType(k),pal,cells:centreCells(cells)}:null;
+}
+$('selBtns').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-sel]');if(!b||!selBox||!pattern)return;const act=b.dataset.sel;
+  if(act==='none'){selBox=null;anchor=null;sync();note('Selection cleared.');return}
+  const clip=clipSel();if(!clip){note('There are no beads in the selection.');return}
+  const n=clip.cells.length;
+  if(act!=='erase'){stamp=clip;st.ed.tool='stamp'}
+  if(act!=='copy'){
+    const cells=[];
+    for(const i of selBox.idx){const s=pattern.sites[i];if(!s.c)continue;const k=cellKey(s),bf=cellOf(k),af=normal(k,0);if(af!==bf)cells.push([k,bf,af])}
+    selBox=null;if(cells.length)doOp(delta(act==='move'?'lift the selection':'erase the selection',cells));
+  }
+  selBox=null;saveSettings();sync();refresh();
+  note(act==='erase'?'Erased '+plural(n,'bead')+'.':(act==='move'?'Lifted ':'Copied ')+plural(n,'bead')+'. Stamp is on: tap the peg where the middle should go.');
+});
+$('edSolid').addEventListener('change',e=>{st.ed.solid=e.target.checked;saveSettings();sync()});
+$('blankCk').addEventListener('change',e=>{st.blank=e.target.checked;saveSettings();rebuild()});
+$('blankGo').addEventListener('click',()=>{st.blank=true;st.tap='edit';saveSettings();rebuild();note('An empty board. Choose a paint colour and a tool, then tap the board.')});
+
+/* guides drawn over the board in Edit: the middle that symmetry works around, the first tap of a two-tap tool, and the selection */
+function overlay(){
+  const svg=$('board');let g=$('ovG');if(g)g.remove();
+  if(!(st.tap==='edit'&&pattern&&conv))return;
+  const hasSym=st.ed.sym!=='off';if(!hasSym&&!anchor&&!selBox)return;
+  g=document.createElementNS(NS,'g');g.setAttribute('id','ovG');g.setAttribute('class','ov');svg.appendChild(g);
+  const mk=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,typeof a[k]==='number'?f3(a[k]):a[k]);g.appendChild(e);return e};
+  if(hasSym){
+    if(pattern.kind==='square'){
+      mk('line',{x1:pattern.W/2,y1:0,x2:pattern.W/2,y2:pattern.H,class:'symln'});
+      if(st.ed.sym==='b')mk('line',{x1:0,y1:pattern.H/2,x2:pattern.W,y2:pattern.H/2,class:'symln'});
+    }else{const c=symC(),s=pattern.sites[uvMap().get(c[0]+','+c[1])];if(s)mk('circle',{cx:s.x,cy:s.y,r:0.62,class:'symc'})}
+  }
+  const an=anchor&&pattern.sites[anchor.i];if(an)mk('circle',{cx:an.x,cy:an.y,r:0.6,class:'anc'});
+  if(selBox)for(const i of selBox.idx){const s=pattern.sites[i];mk('circle',{cx:s.x,cy:s.y,r:0.12,class:'seld'})}
+  if(ring)svg.appendChild(ring);
+}
+
+/* ---------- stamps, text and the cube (1.5) ---------- */
+/* the lattice a stamp is drawn and flipped on: the board's own when it fits, otherwise a plain hex lattice */
+const stampLat=sp=>sp.type==='square'?{kind:'square'}:KIND[st.source]==='square'?{kind:'hexb',flat:false}:latNow();
+function drawStamp(cv,sp){
+  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);if(!sp)return;
+  const lat=stampLat(sp),pts=sp.cells.map(c=>{const[x,y]=stepXY(lat,c[0],c[1]);return[x,y,sp.pal[c[2]].hex]});
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const[x,y]of pts){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  const k=Math.min((cv.width-8)/(x1-x0+1),(cv.height-8)/(y1-y0+1),cv.width/6),ox=(cv.width-(x1-x0)*k)/2,oy=(cv.height-(y1-y0)*k)/2;
+  g.lineWidth=1;g.strokeStyle='rgba(120,128,140,.75)';
+  for(const[x,y,hex]of pts){g.beginPath();g.arc(ox+(x-x0)*k,oy+(y-y0)*k,Math.max(0.6,k*0.44),0,6.2832);g.fillStyle=hex;g.fill();if(k>5)g.stroke()}
+}
+const stampFor=t=>t==='square'?'square boards':'hex and iso boards';
+function stampSync(type){
+  drawStamp($('stampCv'),stamp);
+  txt('stampName',stamp?stamp.name:'No stamp yet');
+  txt('stampInfo',stamp?plural(stamp.cells.length,'bead')+', '+plural(stamp.pal.length,'colour')+(stamp.type===type?'.':'. It is for '+stampFor(stamp.type)+', so it doesn’t fit this board.')
+    :'Select part of the pattern and choose Copy as stamp, or make text'+(type==='hex'?' or a cube':'')+' below.');
+  $('stampTurn').disabled=$('stampFlip').disabled=$('stampSave').disabled=!stamp;
+  txt('stampSum',stamps.length?'('+stamps.length+' saved)':'');
+  const sig=type+st.lat.orient+st.lat.stagger+'|'+hash(JSON.stringify(stamps));
+  if(sig===stampSig)return;stampSig=sig;
+  const box=$('stampList');box.textContent='';
+  stamps.forEach((sp,n)=>{
+    const row=document.createElement('div'),cv=document.createElement('canvas'),body=document.createElement('div'),nm=document.createElement('b'),info=document.createElement('div'),btns=document.createElement('div');
+    row.className='strow';cv.width=112;cv.height=112;cv.style.width='56px';cv.style.height='56px';cv.setAttribute('role','img');cv.setAttribute('aria-label','Stamp '+sp.name);drawStamp(cv,sp);
+    nm.textContent=sp.name;info.className='sub';info.textContent=plural(sp.cells.length,'bead')+', for '+stampFor(sp.type);btns.className='btns';
+    for(const[label,act]of[['Use','use'],['Delete','del']]){const b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent=label;b.dataset.st=act;b.dataset.n=n;b.setAttribute('aria-label',label+' stamp '+sp.name);btns.appendChild(b)}
+    body.append(nm,info,btns);row.append(cv,body);box.appendChild(row);
+  });
+}
+/* the parts of the Edit bar and panel that came with 1.5 */
+function powerSync(lat){
+  const sq=lat.kind==='square';
+  txt('symA',sq?'2 ways':'3 ways');txt('symB',sq?'4 ways':'6 ways');
+  $('edSolid').checked=st.ed.solid;$('blankCk').checked=st.blank;
+  txt('blankMsg',st.blank?(srcUrl?'The board starts empty. Your picture is kept for Trace, under the board.':'The board starts empty. Choose a picture if you want one to trace.'):'');
+  $('selBtns').hidden=!(st.ed.tool==='select'&&selBox);
+  $('cubeBox').hidden=sq;
+  readout('txtH',+$('txtH').value);
+  stampSync(latType(lat.kind));
+}
+const stampSay=t=>txt('stampMsg',t);
+function useStamp(sp,msg){stamp=sp;st.ed.tool='stamp';saveSettings();sync();stampSay(msg+' Stamp is on: tap the board where its middle should go.')}
+$('stampTurn').addEventListener('click',()=>{if(!stamp)return;stamp.cells=stamp.cells.map(c=>turnCell(stamp.type,c[0],c[1]).concat(c[2]));sync();stampSay('Turned.')});
+$('stampFlip').addEventListener('click',()=>{if(!stamp)return;const lat=stampLat(stamp);stamp.cells=stamp.cells.map(c=>flipCell(lat,c[0],c[1]).concat(c[2]));sync();stampSay('Flipped.')});
+$('stampSave').addEventListener('click',()=>{
+  if(!stamp)return;
+  const name=($('stampNm').value.trim()||stamp.name).slice(0,40),old=stamps.findIndex(x=>x.name===name),sp=tidyStamp({...clone(stamp),name});
+  if(!sp){stampSay('That stamp is too large to save.');return}
+  if(old<0&&stamps.length>=MAX_STAMPS){stampSay('You have '+MAX_STAMPS+' saved stamps, which is the most FIG keeps. Delete one first.');return}
+  if(old<0)stamps.unshift(sp);else stamps[old]=sp;
+  stamp.name=name;const kept=store.set('fl:stamps',stamps);$('stampNm').value='';sync();
+  stampSay((old<0?'Saved “':'Updated “')+name+'”'+(kept?' in this browser.':', but this browser isn’t keeping it: it will be gone when you close the page.'));
+});
+let stArm=null;
+$('stampList').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-st]');if(!b)return;const n=+b.dataset.n,sp=stamps[n];if(!sp)return;
+  if(b.dataset.st==='use'){useStamp(clone(sp),'“'+sp.name+'” is the current stamp.');return}
+  if(stArm!==b){if(stArm)stArm.textContent='Delete';stArm=b;b.textContent='Tap again to delete';setTimeout(()=>{if(stArm===b){stArm=null;b.textContent='Delete'}},3000);return}
+  stArm=null;stamps.splice(n,1);store.set('fl:stamps',stamps);sync();stampSay('Deleted “'+sp.name+'”.');
+});
+/* Text: the browser draws the words in this device's own bold lettering on a hidden canvas, and each peg that lands on ink gets a bead */
+function textStamp(str,h){
+  const lat=latNow(),type=latType(lat.kind),S=8,px=Math.round(h*S/0.72),cv=document.createElement('canvas'),g=cv.getContext('2d',{willReadFrequently:true});
+  const font='bold '+px+'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';g.font=font;
+  const w=Math.min(4096,Math.ceil(g.measureText(str).width)+2*S),H=Math.ceil(px*1.4);cv.width=w;cv.height=H;
+  g.font=font;g.textBaseline='alphabetic';g.fillStyle='#000';g.fillText(str,S,Math.round(px*1.05));
+  let d;try{d=g.getImageData(0,0,w,H).data}catch(e){return null}
+  const ink=(x,y)=>{x=Math.round(x);y=Math.round(y);return x>=0&&y>=0&&x<w&&y<H?d[(y*w+x)*4+3]:0};
+  const on=(cx,cy)=>{let t=0;for(const[ox,oy]of[[0,0],[-0.25,-0.25],[0.25,-0.25],[-0.25,0.25],[0.25,0.25]])t+=ink(cx+ox*S,cy+oy*S);return t>5*255*0.5};
+  const cells=[];
+  if(type==='square'){for(let v=0;v*S<H;v++)for(let u=0;u*S<w;u++)if(on((u+0.5)*S,(v+0.5)*S))cells.push([u,v,0])}
+  else{const R=Math.ceil((w+H)/S)+2;for(let v=-R;v<=R;v++)for(let u=-R;u<=R;u++){const[x,y]=stepXY(lat,u,v);if(x<0||y<0||x*S>w||y*S>H)continue;if(on(x*S,y*S))cells.push([u,v,0])}}
+  if(!cells.length||cells.length>MAX_STAMP_CELLS)return cells.length?'big':null;
+  const p=st.ed.paint;
+  return{name:('Text: '+str).slice(0,40),type,pal:[{name:p.name,hex:p.hex,code:p.code||''}],cells:centreCells(cells)};
+}
+$('txtDo').addEventListener('click',()=>{
+  const str=$('txtIn').value.trim();
+  if(!str){stampSay('Type a word first.');return}
+  if(!st.ed.paint){stampSay('Choose a paint colour first.');return}
+  const sp=textStamp(str,+$('txtH').value);
+  if(sp==='big'){stampSay('That text is too big for a stamp. Use fewer letters or a smaller height.');return}
+  if(!sp){stampSay('Those letters came out empty here. Try other letters or a taller height.');return}
+  useStamp(sp,'Text stamp ready: '+plural(sp.cells.length,'bead')+' in '+st.ed.paint.name+'.');
+});
+/* Cube: three faces in the paint colour and the next two darker beads of the palette (or lighter ones, if nothing is darker) */
+function cubeStamp(n){
+  const P=paintPal(),labs=P.map(labOf),ramp=[st.ed.paint];
+  for(let k=0;k<2;k++){const i=shadeStep(labs,labOf(ramp[ramp.length-1]),-1);if(i<0)break;ramp.push(P[i])}
+  while(ramp.length<3){const i=shadeStep(labs,labOf(ramp[0]),1);if(i<0)break;ramp.unshift(P[i])}
+  while(ramp.length<3)ramp.push(ramp[ramp.length-1]);
+  return{name:'Cube, side '+n,type:'hex',pal:ramp.map(c=>({name:c.name,hex:c.hex,code:c.code||''})),cells:cubeCells(n)};
+}
+$('cubeBtns').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-cube]');if(!b)return;
+  if(!st.ed.paint){stampSay('Choose a paint colour first.');return}
+  const sp=cubeStamp(+b.dataset.cube),names=[...new Set(sp.pal.map(p=>p.name))];
+  useStamp(sp,'Cube ready in '+names.join(', ')+'.'+(names.length<3?' Your palette has too few shades of that colour for three different faces.':''));
+});
+
 /* ---------- project file and library (1.4) ---------- */
 const PROJ_ERR={notfig:'That file is not a FIG project file.',newer:'That project file was made by a newer FIG. Update FIG to open it.',big:'That file is too large to be a FIG project file.'};
 const MAX_PROJ_BYTES=30e6,MAX_LIB=200,THUMB_URL=/^data:image\/png;base64,[A-Za-z0-9+/]+=*$/;
@@ -2542,7 +3054,7 @@ const patName=()=>$('libName').value.trim().slice(0,60);
 function boardText(){const d=frameDims();return pattern.kind==='square'?`${d[0]} × ${d[1]} square board${d[0]*d[1]>1?'s':''}`:pattern.kind==='hexb'?`hex board, ${d[0]} per side`:`${d[0]} × ${d[1]} iso board`}
 function makeProject(name){
   const set=clone(st),snap=snapPattern(pattern.kind,pattern.sites,pattern.colors),d=frameDims();
-  delete set.ui;delete set.tap;delete set.ed;delete set.keepEdits;set.iso=null;   /* view and editing preferences stay with the browser */
+  delete set.ui;delete set.tap;delete set.ed;delete set.keepEdits;delete set.tile;delete set.trace;set.iso=null;   /* view and editing preferences stay with the browser */
   snap.board=pattern.kind==='square'?{type:'square',boardsAcross:d[0],boardsDown:d[1],pegsPerBoard:BOARD}
     :pattern.kind==='hexb'?{type:'hex',pegsPerSide:d[0],orientation:st.lat.orient}:{type:'iso',columns:d[0],rows:d[1],offsetEverySecond:st.lat.stagger==='cols'?'column':'row'};
   return{format:'fig-project',version:1,app:'FIG '+VERSION,saved:new Date().toISOString(),name,settings:set,picture:srcUrl||null,
@@ -2558,7 +3070,7 @@ async function saveProject(){
 function openProject(text){
   const msg=$('projMsg');let p;
   try{p=readProject(text)}catch(e){msg.textContent=PROJ_ERR[e&&e.message]||PROJ_ERR.notfig;say(msg.textContent);return}
-  const mine={tap:st.tap,ui:st.ui,ed:st.ed,keepEdits:st.keepEdits,fade:st.fade,labels:st.labels};
+  const mine={tap:st.tap,ui:st.ui,ed:st.ed,keepEdits:st.keepEdits,fade:st.fade,labels:st.labels,tile:st.tile,trace:st.trace};
   st=Object.assign(tidy(merge(DEF,p.settings)),mine);st.iso=null;
   let extra='';
   if(p.sheet){const v=cleanInv(p.sheet);if(v&&v.rows.length){if(inv&&JSON.stringify(inv)!==JSON.stringify(v))extra=' It brought its own bead sheet, which replaced the one loaded here.';inv=v;store.set('fl:inv',inv)}}
@@ -2599,7 +3111,7 @@ $('projIn').addEventListener('change',e=>{
 function markSaved(){savedClean=true;store.set('fl:saved',hash(JSON.stringify(ED)))}
 let guardFn=null;
 function guard(what,fn){
-  if(!pattern||editsEmpty(E)||savedClean){fn();return}
+  if(!pattern||editsEmpty(E)||savedClean||(st.blank&&what==='Loading a new picture')){fn();return}   /* on an empty board a new picture replaces nothing */
   guardFn=fn;txt('guardMsg','The pattern on screen has edits that are not saved. '+what+' replaces it.');
   $('guard').hidden=false;$('guard').scrollIntoView({block:'nearest'});$('guardNo').focus({preventScroll:true});
 }
@@ -2675,7 +3187,7 @@ $('libList').addEventListener('click',async e=>{
    'edit' = an edit that needs the pattern made again (a dropped colour, a new board size) */
 function rebuild(why){
   const was=why==='edit'&&pattern?new Map(pattern.sites.map(s=>[s.k,s.c])):null,oldW=pattern?pattern.W:0,oldH=pattern?pattern.H:0;
-  if(why==='new'){   /* edits belong to the picture they were made on */
+  if(why==='new'&&!st.blank){   /* edits belong to the picture they were made on; on an empty board the picture is only there to trace, so they stay */
     if(Object.values(ED).some(e=>!editsEmpty(e)||e.pal.length)){ED=freshEdits();saveEdits()}
     HIST=freshHist();savedClean=false;
   }
@@ -2684,8 +3196,10 @@ function rebuild(why){
     const d=clearDelta('clear the edits when a setting changed');applyDelta(E,d,1);pushUndo(d);saveEdits();savedClean=false;
   }
   let base=st.source==='image'?buildImage():buildLattice();
-  if(!base&&!picPending&&(forceBlank||!editsEmpty(E))){const d=setDims();base=blankFrame(KIND[st.source],d[0],d[1],activePal())}   /* edits with no picture: an empty board under them */
+  if(!base&&!picPending&&(forceBlank||st.blank||!editsEmpty(E))){const d=setDims();base=blankFrame(KIND[st.source],d[0],d[1],activePal())}   /* edits with no picture: an empty board under them */
   conv=base?convOf(base):null;
+  if(conv&&st.blank)conv.at=new Map();   /* 1.5, an empty board: nothing is converted. The picture, if there is one, is kept for Trace. */
+  anchor=null;selBox=null;dragFrom=-1;tileDirty=true;
   pattern=base?compose(base):null;
   sel=-1;focus=null;
   if(pattern){
@@ -2732,6 +3246,7 @@ function loadImage(url,fresh,seq=++loadSeq){
       $('cropMsg').textContent='';
       picSay(`${im.naturalWidth} × ${im.naturalHeight} px loaded`);
     }
+    if(fresh&&st.blank&&!st.trace)st.trace=40;   /* a picture chosen for an empty board is there to be traced, so show it */
     rebuild(fresh?'new':'load');
     if(!fresh)finishOpen();
   };
@@ -2800,7 +3315,7 @@ $('copy').addEventListener('click',async()=>{
 });
 
 /* ---------- start ---------- */
-[['orderBox','order'],['legendBox','legend'],['adjBox','adj'],['cleanBox','clean'],['swapBox','swap'],['slideBox','slide'],['projBox','proj']].forEach(([id,k])=>{const d=$(id);d.open=st.ui[k]!==false;
+[['orderBox','order'],['legendBox','legend'],['adjBox','adj'],['cleanBox','clean'],['swapBox','swap'],['slideBox','slide'],['projBox','proj'],['stampBox','stamp']].forEach(([id,k])=>{const d=$(id);d.open=st.ui[k]!==false;
   d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
 palUI();
 const storedImg=store.get('fl:img');
