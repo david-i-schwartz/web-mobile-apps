@@ -54,6 +54,15 @@ with sync_playwright() as p:
         check(pg.url.endswith(jumps[-1][0]), 'tapping a section link jumps to it')
         pg.screenshot(path=os.path.join(OUT, 'site-iphone-front.png'), full_page=True)
         pg.goto(BASE); pg.wait_for_timeout(300)
+    ins = pg.locator('#instructions')
+    check(ins.count() == 1 and not ins.evaluate('e => e.open'), 'an Instructions button, closed to start')
+    ins.locator('summary').first.click(); pg.wait_for_timeout(150); t = ins.inner_text()
+    check(ins.evaluate('e => e.open') and pg.evaluate('document.querySelector(\'.dev[data-dev="ios"]\').open') and all(w in t for w in ['Open in Safari', 'Share', 'Add to Home Screen', 'Tap Add']),
+          'Instructions opens with the iPhone and iPad steps showing (Open in Safari, Share, Add to Home Screen, Add)')
+    pg.screenshot(path=os.path.join(OUT, 'site-iphone-instructions.png'))
+    ins.locator('summary').first.click(); pg.locator('.more a[href="#instructions"]').click(); pg.wait_for_timeout(150)
+    check(ins.evaluate('e => e.open'), 'the link at the bottom opens Instructions')
+    pg.goto(BASE); pg.wait_for_timeout(300)
     first = hrefs[0]
     check(all(pg.evaluate(f"fetch('{f}/icon-192.png').then(r=>r.ok)") for f in FOLDERS), 'every app has its icon')
     for f in FOLDERS:

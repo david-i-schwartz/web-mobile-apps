@@ -367,6 +367,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
     <details class="group">
       <summary>About This Version <span class="sub" id="genWhen"></span></summary>
       <ul class="sub">
+        <li>1.5 (17 Nov 2026): a site’s front page has an Instructions button that opens the steps for putting an app on a Home Screen, for iPhone and iPad, Android and computers, with the visitor’s own device opened first. It replaces the steps that sat at the bottom of the page.</li>
         <li>1.4 (17 Nov 2026): a site’s front page can group its apps under headings, with a row of links to each section at the top; an app can sit in more than one section. Apps themselves are unchanged (core 1.3).</li>
         <li>1.3 (14 Nov 2026): one picture button at a time (the Picture panel points to the grid’s Choose image button until there is a picture), and the Compare slider from FIG and BIG in the picture part, with a Views section in the grid help.</li>
         <li>1.2 (14 Nov 2026): ideas from BIG for every app. The help by the grid comes in two parts, placing and sizing, with a ? beside the zoom buttons too; the Picture help says what the section does; and every section heading is in Title Case.</li>
@@ -394,7 +395,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
    brief(spec) -> text                                     the build brief to hand to Claude or another AI with the app */
 (function(root){
 'use strict';
-const GEN_VERSION='1.4',CORE_VERSION='1.3';
+const GEN_VERSION='1.5',CORE_VERSION='1.3';
 const MODULES=['base','home','board','picture','edit','progress','project','export'];
 const FEATURES=['board','picture','edit','progress','project','export'];
 const NEEDS_BOARD=['picture','edit','progress','export'];
@@ -844,6 +845,46 @@ ${groups.map(g=>`  <section class="sec" id="${esc(g.id)}" aria-labelledby="h-${e
 ${cardsOf(g.apps)}
     </div>
   </section>`).join('\n')}`;
+  /* the Instructions button: one place for how to open an app and put it on a Home Screen, with the visitor's device
+     opened first. The steps and button pictures match what core/home.js shows inside each app. */
+  const ic=p=>`<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
+  const I={share:ic('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:ic('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+    plus:ic('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:ic('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
+    compass:ic('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>'),info:ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor"/>')};
+  const help=`  <details class="howto" id="instructions">
+    <summary>${I.info}Instructions</summary>
+    <div class="howto-body group">
+      <p>Tap an app to open it. To keep one on your phone or tablet, add it to your Home Screen: it then opens like any other app, with its own icon, and works without a connection.</p>
+      <details class="dev" data-dev="ios">
+        <summary>iPhone or iPad</summary>
+        <ol>
+          <li>Open the app in <b>Safari</b>. If the link opened inside Messages, Mail, Gmail or another app, tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b> first.</li>
+          <li>Tap ${I.share} <b>Share</b>. No Share button? Tap ${I.dots} first. On an iPad, it’s at the top right.</li>
+          <li>Tap ${I.plus} <b>Add to Home Screen</b>. You may need to scroll down to see it.</li>
+          <li>Tap <b>Add</b>.</li>
+        </ol>
+        <p class="sub">Best done before you start: on an iPhone or iPad, the Home Screen app keeps its own copy of your work, separate from Safari’s.</p>
+      </details>
+      <details class="dev" data-dev="android">
+        <summary>Android</summary>
+        <ol>
+          <li>Open the app in <b>Chrome</b>. If the link opened inside another app, tap ${I.kebab} and choose <b>Open in Chrome</b> first.</li>
+          <li>Tap ${I.kebab} (top right).</li>
+          <li>Tap <b>Add to Home screen</b> or <b>Install app</b>.</li>
+          <li>Tap <b>Install</b> or <b>Add</b>.</li>
+        </ol>
+        <p class="sub">If the app shows an <b>Install</b> button at the bottom, tapping it does the same.</p>
+      </details>
+      <details class="dev" data-dev="computer">
+        <summary>Computer</summary>
+        <ol>
+          <li>Open the app and bookmark it.</li>
+          <li>In Chrome or Edge you can also install it as an app, from the browser’s menu.</li>
+        </ol>
+      </details>
+      <p class="sub">On a phone, each app also shows the steps for that phone the first time it opens. Everything runs on your device: pictures and work you make are never uploaded. When an app is updated, you get the new version the next time you open it online.</p>
+    </div>
+  </details>`;
   return`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -867,7 +908,21 @@ ${css.trim()}
 .sec{max-width:760px;margin:22px auto 0;padding:0}
 .sec>h2,.sec>.sub{padding:0 16px}.sec>.sub{margin:-4px 0 10px}
 .sec>h2{margin-bottom:6px}
-.how{max-width:760px;margin:18px auto 0;padding:0 16px}
+.ic{display:inline-flex;vertical-align:-5px;width:22px;height:22px;margin:0 2px}.ic svg{width:100%;height:100%}
+.howto{max-width:760px;margin:10px auto 4px;padding:0 16px}
+.howto>summary{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 18px 0 12px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:650;cursor:pointer;list-style:none}
+.howto>summary::-webkit-details-marker,.dev>summary::-webkit-details-marker{display:none}
+.howto>summary::after{content:"";width:8px;height:8px;margin-left:6px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-2px,-2px)}
+.howto[open]>summary::after{transform:rotate(-135deg) translate(-2px,-2px)}
+.howto-body{margin-top:10px}.howto-body>p:first-child{margin-top:0}.howto[open]{margin-bottom:14px}
+.dev{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--bg)}
+.dev>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;font-weight:650;cursor:pointer;list-style:none}
+.dev>summary::before{content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(-45deg);margin-right:4px;flex:none}
+.dev[open]>summary::before{transform:rotate(45deg)}
+.dev .this{font-weight:400;font-size:13px;color:var(--muted);margin-left:auto}
+.dev ol{margin:0;padding:0 14px 4px 36px}.dev li{margin:6px 0}.dev>.sub{padding:0 14px 12px}
+.howto summary:focus-visible,.more a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.more{max-width:760px;margin:22px auto 0;padding:0 16px}.more a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink)}
 header,.foot{max-width:760px}
 </style>
 </head>
@@ -877,18 +932,23 @@ header,.foot{max-width:760px}
   <p>${esc(site.tagline)}</p>
 </header>
 <main>
+${help}
 ${listing}
-  <section class="how group">
-    <h2>Put an App on Your Phone or Tablet</h2>
-    <ol class="sub">
-      <li>Tap an app above to open it.</li>
-      <li>A card at the bottom shows the two or three taps for your phone. On an iPhone or iPad: <b>Share</b>, then <b>Add to Home Screen</b>, then <b>Add</b>.</li>
-      <li>Open it from your Home Screen from then on. It works without a connection once it has opened once.</li>
-    </ol>
-    <p class="sub">Everything runs in your browser. Pictures and work you make stay on your device.</p>
-  </section>
+  <p class="more"><a href="#instructions">How to put an app on your phone or tablet</a></p>
 </main>
 <p class="foot">${esc(site.foot||'')}</p>
+<script>
+(function(){
+  /* open the steps for this device, and open Instructions when a link goes to it */
+  var u=navigator.userAgent,ios=/iPad|iPhone|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1);
+  var d=document.querySelector('.dev[data-dev="'+(ios?'ios':/Android/.test(u)?'android':'computer')+'"]');
+  if(d){d.open=true;d.querySelector('summary').insertAdjacentHTML('beforeend','<span class="this">This device</span>')}
+  var h=document.getElementById('instructions');
+  function show(){if(location.hash==='#instructions')h.open=true}
+  window.addEventListener('hashchange',show);show();
+  document.querySelectorAll('a[href="#instructions"]').forEach(function(a){a.addEventListener('click',function(){h.open=true})});
+})();
+<\/script>
 </body>
 </html>
 `;

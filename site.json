@@ -1,6 +1,6 @@
 {
   "title": "Web & Mobile Apps",
-  "tagline": "Small apps that run in any browser, on a phone, tablet or computer. Open one, then add it to your Home Screen.",
+  "tagline": "Small apps that run in any browser, on a phone, tablet or computer.",
   "base": "https://david-i-schwartz.github.io/web-mobile-apps/",
   "accent": "#3D4FB5",
   "foot": "Each app is one HTML file that runs in your browser. Nothing you make is uploaded. Code licensed under GPL-3.0.",
