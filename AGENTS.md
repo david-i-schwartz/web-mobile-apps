@@ -48,7 +48,7 @@ To move an app, change its `section` in `site.json`. To add, rename or reorder s
 ## Update the generator's core
 
 When HTML App Generator gets a new version, do these steps in one commit:
-1. Copy the new kit's `cli.js`, `generate.js`, `web.js`, `core/` and `html/` into `tools/`. The kit is on RIT Drive as `html-app-generator-<version>-kit.zip`. Check that the new kit's `cli.js` and `web.js` still support `"sections"` (the front page sections, added here on 17 Nov 2026); if they don't, keep this repository's versions of those two files and `tests/phones.py`, or the front page goes back to one long list.
+1. Copy the new kit's `cli.js`, `generate.js`, `web.js`, `core/`, `html/` and `tests/phones.py` into `tools/` (`tests/phones.py` goes to `tools/tests/`). The kit is on RIT Drive as `html-app-generator-<version>-kit.zip`. Use version 1.4 or later: older kits don't know the front page's sections, and the page would go back to one long list.
 2. Put the new generator page in `src/generator.html`.
 3. Build. Apps made with the generator are remade on the new core automatically.
 

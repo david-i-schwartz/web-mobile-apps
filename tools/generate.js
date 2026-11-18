@@ -5,7 +5,7 @@
    brief(spec) -> text                                     the build brief to hand to Claude or another AI with the app */
 (function(root){
 'use strict';
-const GEN_VERSION='1.3',CORE_VERSION='1.3';
+const GEN_VERSION='1.4',CORE_VERSION='1.3';
 const MODULES=['base','home','board','picture','edit','progress','project','export'];
 const FEATURES=['board','picture','edit','progress','project','export'];
 const NEEDS_BOARD=['picture','edit','progress','export'];
