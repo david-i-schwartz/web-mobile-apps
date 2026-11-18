@@ -5,20 +5,37 @@ AI-Generated Apps via HTML+JavaScript Files
 
 Site: https://david-i-schwartz.github.io/web-mobile-apps/
 
+## Apps
+
+### Websites
+
+- [`generator/`](https://david-i-schwartz.github.io/web-mobile-apps/generator/): GEN, HTML App Generator
+- [`milspeak/`](https://david-i-schwartz.github.io/web-mobile-apps/milspeak/): MIL, The Civilian's Guide to Milspeak
+
+### Games
+
+- [`seventh/`](https://david-i-schwartz.github.io/web-mobile-apps/seventh/): SEV, Seventh
+- [`one-way/`](https://david-i-schwartz.github.io/web-mobile-apps/one-way/): ONE, One Way
+- [`ipar/`](https://david-i-schwartz.github.io/web-mobile-apps/ipar/): IPAR, Image, Preserve, Analyze, Report
+- [`five-oclock/`](https://david-i-schwartz.github.io/web-mobile-apps/five-oclock/): SHAVE, Five O'Clock Shadow of the Colossus
+
+### Crafts
+
 - [`fig/`](https://david-i-schwartz.github.io/web-mobile-apps/fig/): FIG, Fusebead Image Generator
 - [`big/`](https://david-i-schwartz.github.io/web-mobile-apps/big/): BIG, Brick Image Generator
 - [`tig/`](https://david-i-schwartz.github.io/web-mobile-apps/tig/): TIG, Tile Image Generator
-- [`generator/`](https://david-i-schwartz.github.io/web-mobile-apps/generator/): GEN, HTML App Generator
 - [`iso-lab/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-lab/): PIL, Pegboard Iso Lab
-- [`milspeak/`](https://david-i-schwartz.github.io/web-mobile-apps/milspeak/): MIL, The Civilian's Guide to Milspeak
-- [`torah-tutor/`](https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/): TORAH, Torah Tutor
-- [`seventh/`](https://david-i-schwartz.github.io/web-mobile-apps/seventh/): SEV, Seventh
-- [`one-way/`](https://david-i-schwartz.github.io/web-mobile-apps/one-way/): ONE, One Way
 - [`hex-cubes/`](https://david-i-schwartz.github.io/web-mobile-apps/hex-cubes/): HEX, Hex Bead Cubes
 - [`iso-designer/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-designer/): ISO, Iso Bead Designer
-- [`year-planner/`](https://david-i-schwartz.github.io/web-mobile-apps/year-planner/): YRP, RIT Department Year Planner
+
+### Teaching
+
+- [`torah-tutor/`](https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/): TORAH, Torah Tutor
 - [`ipar/`](https://david-i-schwartz.github.io/web-mobile-apps/ipar/): IPAR, Image, Preserve, Analyze, Report
-- [`five-oclock/`](https://david-i-schwartz.github.io/web-mobile-apps/five-oclock/): SHAVE, Five O'Clock Shadow of the Colossus
+
+### Administration
+
+- [`year-planner/`](https://david-i-schwartz.github.io/web-mobile-apps/year-planner/): YRP, RIT Department Year Planner
 
 ## How it works
 

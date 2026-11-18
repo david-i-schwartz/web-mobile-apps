@@ -4,22 +4,47 @@
   "base": "https://david-i-schwartz.github.io/web-mobile-apps/",
   "accent": "#3D4FB5",
   "foot": "Each app is one HTML file that runs in your browser. Nothing you make is uploaded. Code licensed under GPL-3.0.",
+  "sections": [
+    {
+      "name": "Websites",
+      "blurb": "Reference sites, and the tool that makes apps like these."
+    },
+    {
+      "name": "Games",
+      "blurb": "Short games that run in a browser."
+    },
+    {
+      "name": "Crafts",
+      "blurb": "Pattern makers for fuse beads, bricks and tiles."
+    },
+    {
+      "name": "Teaching",
+      "blurb": "Practice tools and cases for learning."
+    },
+    {
+      "name": "Administration",
+      "blurb": "Planning tools for running an academic department."
+    }
+  ],
   "apps": [
     {
       "file": "src/fig.html",
       "code": "FIG",
       "name": "Fusebead Image Generator",
-      "folder": "fig"
+      "folder": "fig",
+      "section": "Crafts"
     },
     {
       "file": "src/big.html",
       "code": "BIG",
       "name": "Brick Image Generator",
-      "folder": "big"
+      "folder": "big",
+      "section": "Crafts"
     },
     {
       "file": "src/tig.html",
-      "folder": "tig"
+      "folder": "tig",
+      "section": "Crafts"
     },
     {
       "file": "src/generator.html",
@@ -27,7 +52,8 @@
       "name": "HTML App Generator",
       "tagline": "Make single-file apps like these: fill in a short spec, watch the app take shape, download it.",
       "accent": "#3D4FB5",
-      "folder": "generator"
+      "folder": "generator",
+      "section": "Websites"
     },
     {
       "file": "src/iso-lab.html",
@@ -35,7 +61,8 @@
       "code": "PIL",
       "name": "Pegboard Iso Lab",
       "tagline": "Design 3D-illusion bead patterns: isometric shapes, tessellations, seeded terrain and pipe tiles, on a pegboard.",
-      "accent": "#F2C230"
+      "accent": "#F2C230",
+      "section": "Crafts"
     },
     {
       "file": "src/milspeak.html",
@@ -43,7 +70,8 @@
       "code": "MIL",
       "name": "The Civilian's Guide to Milspeak",
       "tagline": "A plain-language guide to military ranks, structures, codes and terms.",
-      "accent": "#F97316"
+      "accent": "#F97316",
+      "section": "Websites"
     },
     {
       "file": "src/torah-tutor.html",
@@ -51,7 +79,8 @@
       "code": "TORAH",
       "name": "Torah Tutor",
       "tagline": "Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part.",
-      "accent": "#2B4C9B"
+      "accent": "#2B4C9B",
+      "section": "Teaching"
     },
     {
       "file": "src/seventh.html",
@@ -59,7 +88,8 @@
       "code": "SEV",
       "name": "Seventh",
       "tagline": "A short platformer about rest: gather manna for six days, and on the seventh, stop.",
-      "accent": "#2C5AA0"
+      "accent": "#2C5AA0",
+      "section": "Games"
     },
     {
       "file": "src/one-way.html",
@@ -67,7 +97,8 @@
       "code": "ONE",
       "name": "One Way",
       "tagline": "A tiny game: a stick figure, a path, a blank gravestone and one direction.",
-      "accent": "#4C6848"
+      "accent": "#4C6848",
+      "section": "Games"
     },
     {
       "file": "src/hex-cubes.html",
@@ -75,7 +106,8 @@
       "code": "HEX",
       "name": "Hex Bead Cubes",
       "tagline": "Tumbling-block cube patterns for a hexagonal pegboard, marked off bead by bead as you build.",
-      "accent": "#0E7C7B"
+      "accent": "#0E7C7B",
+      "section": "Crafts"
     },
     {
       "file": "src/iso-designer.html",
@@ -83,7 +115,8 @@
       "code": "ISO",
       "name": "Iso Bead Designer",
       "tagline": "Stack cubes and read off a bead chart for a 48 × 38 isometric pegboard.",
-      "accent": "#A8149A"
+      "accent": "#A8149A",
+      "section": "Crafts"
     },
     {
       "file": "src/year-planner.html",
@@ -91,14 +124,19 @@
       "code": "YRP",
       "name": "RIT Department Year Planner",
       "tagline": "One academic year of recurring tasks, dates and owners for an RIT department, written for roles instead of people.",
-      "accent": "#1F4E8C"
+      "accent": "#1F4E8C",
+      "section": "Administration"
     },
     {
       "file": "src/ipar.html",
       "folder": "ipar",
       "code": "IPAR",
       "name": "Image, Preserve, Analyze, Report",
-      "tagline": "A playable digital-forensics case: image, preserve, analyze and report on a real disk image."
+      "tagline": "A playable digital-forensics case: image, preserve, analyze and report on a real disk image.",
+      "section": [
+        "Games",
+        "Teaching"
+      ]
     },
     {
       "file": "src/five-oclock.html",
@@ -106,7 +144,8 @@
       "code": "SHAVE",
       "name": "Five O'Clock Shadow of the Colossus",
       "tagline": "A tiny barber climbs three stubbly giants and shaves them before 5:00 PM.",
-      "accent": "#B8432B"
+      "accent": "#B8432B",
+      "section": "Games"
     }
   ],
   "readme": [
@@ -116,6 +155,8 @@
     "**Web & Mobile Apps** gives single-file HTML apps live web addresses, so they open on any phone, tablet or computer and can be added to the Home Screen.",
     "",
     "Site: https://david-i-schwartz.github.io/web-mobile-apps/",
+    "",
+    "## Apps",
     "",
     "__APPS__",
     "",

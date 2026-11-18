@@ -8,7 +8,8 @@
      node cli.js test-brief spec.json|app.html      print the test brief for an independent reviewer (a different AI)
      node cli.js web app.html folder [--code FIG --name "..." --accent #0E7C7B --url https://...]
                                                     make a web folder for hosting: index.html, Home Screen icons, offline helper
-     node cli.js site site.json folder              make a whole site: a front page plus a web folder for each app in site.json */
+     node cli.js site site.json folder              make a whole site: a front page plus a web folder for each app in site.json
+                                                    (with "sections" in site.json and a "section" on each app, the front page groups them) */
 const fs=require('fs'),path=require('path'),zlib=require('zlib'),G=require('./generate.js'),W=require('./web.js');
 const here=__dirname,files={};
 for(const f of G.coreFiles)files[f]=fs.readFileSync(path.join(here,f),'utf8');
@@ -36,14 +37,18 @@ function site(cfg,dir,out){
     if(!/^[a-z0-9][a-z0-9-]{0,40}$/.test(f)||['src','tools','tests','node_modules'].includes(f))fail(`"${f}" can't be a folder name: use lowercase letters, digits and hyphens, and not src, tools or tests.`);
     if(apps.some(x=>x.folder===f))fail(`Two apps want the folder "${f}". Give one a different "folder" in site.json.`);
     if(!r0.error&&url){const s={...r0.spec,homeUrl:url};html=G.generate(s,files,r0.regions).html}
-    const r=writeWeb(html,path.join(out,f),{...a,url});apps.push({...r.info,folder:f});
+    const r=writeWeb(html,path.join(out,f),{...a,url});apps.push({...r.info,folder:f,section:a.section});
     if(a.keep)fs.writeFileSync(path.join(out,f,a.keep),html);
     console.log(`  ${f}/  ${r.info.code}: ${r.info.name}${r.info.generated?'':' (Home Screen helper added)'}`);
   }
-  fs.writeFileSync(path.join(out,'index.html'),W.siteIndex({title:cfg.title||'Apps',tagline:cfg.tagline||'',accent:cfg.accent||'#3D4FB5',foot:cfg.foot||''},apps,files));
+  const groups=W.groupApps(cfg.sections,apps);
+  for(const g of groups)if(g.id==='more-apps')console.error(`Note: ${g.apps.map(x=>x.folder).join(', ')} ${g.apps.length===1?'has':'have'} no "section" from the "sections" list in site.json, so ${g.apps.length===1?'it goes':'they go'} under More Apps.`);
+  fs.writeFileSync(path.join(out,'index.html'),W.siteIndex({title:cfg.title||'Apps',tagline:cfg.tagline||'',accent:cfg.accent||'#3D4FB5',foot:cfg.foot||'',sections:cfg.sections},apps,files));
   fs.writeFileSync(path.join(out,'.nojekyll'),'');
-  /* the README's app list follows site.json: a line "__APPS__" becomes one line per app */
-  if(cfg.readme)fs.writeFileSync(path.join(out,'README.md'),cfg.readme.map(l=>l==='__APPS__'?apps.map(x=>`- [\`${x.folder}/\`](${base?base+x.folder+'/':x.folder+'/'}): ${x.code}, ${x.name}`).join('\n'):l).join('\n')+'\n');
+  /* the README's app list follows site.json: a line "__APPS__" becomes one line per app, under a heading per section if there are sections */
+  const line=x=>`- [\`${x.folder}/\`](${base?base+x.folder+'/':x.folder+'/'}): ${x.code}, ${x.name}`;
+  const list=groups.length?groups.map(g=>`### ${g.name}\n\n${g.apps.map(line).join('\n')}`).join('\n\n'):apps.map(line).join('\n');
+  if(cfg.readme)fs.writeFileSync(path.join(out,'README.md'),cfg.readme.map(l=>l==='__APPS__'?list:l).join('\n')+'\n');
   console.log(`Made the site in ${out}: a front page and ${apps.length} apps.`);
 }
 if(cmd==='new'&&a&&b)write(b,G.generate(specFrom(a),files));

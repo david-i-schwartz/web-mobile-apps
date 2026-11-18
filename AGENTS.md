@@ -22,8 +22,9 @@ It gives single-file HTML apps a web address, so they open on any phone, tablet 
 4. **Add it to `site.json`**, inside `"apps"`:
    ```json
    {"file": "src/milspeak.html", "folder": "milspeak", "code": "MIL", "name": "Civilian's Guide to Milspeak",
-    "tagline": "One plain sentence about what it does.", "accent": "#2E5AAC"}
+    "tagline": "One plain sentence about what it does.", "accent": "#2E5AAC", "section": "Websites"}
    ```
+   - `section`: where the app goes on the front page. Use one of the names in `"sections"` at the top of `site.json`: Websites, Games, Crafts, Teaching or Administration. To show an app in two sections, give a list, such as `["Games", "Teaching"]`. If you aren't sure which fits, ask the owner. An app without a section still builds, but it lands under More Apps and the build prints a note.
    - `code`: 2 to 6 capital letters or digits. It's drawn as beads on the Home Screen icon.
    - `accent`: the app's main colour. If you leave it out, the build uses the page's `--accent` colour, or teal.
    - An app made with HTML App Generator has a spec inside it, so `file` and `folder` are enough.
@@ -40,10 +41,14 @@ It gives single-file HTML apps a web address, so they open on any phone, tablet 
 
 Replace `src/<folder>.html` with the new version. Then build, check, commit and push, as in steps 5 to 7. People who added the app to their Home Screen get the new version the next time they open it online.
 
+## Move an app or change the sections
+
+To move an app, change its `section` in `site.json`. To add, rename or reorder sections, edit `"sections"` (each has a `name` and a one-line `blurb`; the front page shows them in that order) and update the apps that use them. Then build, check, commit and push. Only `index.html` and `README.md` should change.
+
 ## Update the generator's core
 
 When HTML App Generator gets a new version, do these steps in one commit:
-1. Copy the new kit's `cli.js`, `generate.js`, `web.js`, `core/` and `html/` into `tools/`. The kit is on RIT Drive as `html-app-generator-<version>-kit.zip`.
+1. Copy the new kit's `cli.js`, `generate.js`, `web.js`, `core/` and `html/` into `tools/`. The kit is on RIT Drive as `html-app-generator-<version>-kit.zip`. Check that the new kit's `cli.js` and `web.js` still support `"sections"` (the front page sections, added here on 17 Nov 2026); if they don't, keep this repository's versions of those two files and `tests/phones.py`, or the front page goes back to one long list.
 2. Put the new generator page in `src/generator.html`.
 3. Build. Apps made with the generator are remade on the new core automatically.
 

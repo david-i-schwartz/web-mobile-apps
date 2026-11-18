@@ -1,7 +1,8 @@
 /* Web folders: what an app needs to live at a web address and go on a phone's Home Screen.
    webFolder(html, info) -> {files: {name: text}, icons: [{name, size}]}   index.html, manifest.webmanifest, sw.js (+ icons to draw)
    iconPixels(size, code, accent) -> RGBA pixels of a bead-letter icon      (Node turns them into PNG with pngFrom; the page uses a canvas)
-   siteIndex(site, apps) -> the front page listing the apps
+   siteIndex(site, apps) -> the front page listing the apps (grouped under headings when site.sections is set)
+   groupApps(sections, apps) -> [{name, id, blurb, apps}] for those headings
    zip(files) -> a .zip (stored, not compressed) of [{name, data: Uint8Array}]
    Works for apps the generator made and for apps it didn't (FIG, BIG): those get the Home Screen helper added. */
 (function(root){
@@ -117,13 +118,39 @@ self.addEventListener('fetch',e=>{
     icons:[{name:'icon-192.png',size:192},{name:'icon-512.png',size:512},{name:'apple-touch-icon.png',size:180}]};
 }
 
+/* ---------- sections: site.json can list "sections" ([{name, blurb}] or names) and give each app a "section" (a name, or a
+   list of names to show it in more than one). Returns [{name, id, blurb, apps}] in the sections' order, empty sections left
+   out, and apps with no known section last under "More Apps". With no sections listed it returns [] (one plain list). ---------- */
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'section';
+function groupApps(sections,apps){
+  const named=(sections||[]).map(s=>typeof s==='string'?{name:s}:s).filter(s=>s&&String(s.name||'').trim());
+  if(!named.length)return[];
+  const secsOf=a=>[].concat(a.section||[]).map(s=>String(s).trim()).filter(Boolean),known=new Set(named.map(s=>String(s.name).trim()));
+  const groups=named.map(s=>{const name=String(s.name).trim();return{name,id:slug(name),blurb:s.blurb||'',apps:apps.filter(a=>secsOf(a).includes(name))}});
+  const rest=apps.filter(a=>!secsOf(a).some(n=>known.has(n)));
+  if(rest.length)groups.push({name:'More Apps',id:'more-apps',blurb:'',apps:rest});
+  return groups.filter(g=>g.apps.length);
+}
+
 /* ---------- the front page that lists the apps ---------- */
 function siteIndex(site,apps,files){
   const css=files['core/core.css'];
-  const cards=apps.map(a=>`      <a class="app" href="${esc(a.folder)}/">
+  const cardsOf=list=>list.map(a=>`      <a class="app" href="${esc(a.folder)}/">
         <img src="${esc(a.folder)}/icon-192.png" alt="" width="64" height="64">
         <span><b>${esc(a.code)}: ${esc(a.name)}</b><span class="sub">${esc(a.tagline||'')}</span></span>
       </a>`).join('\n');
+  const groups=groupApps(site.sections,apps);
+  const listing=!groups.length?`  <nav class="list" aria-label="Apps">
+${cardsOf(apps)}
+  </nav>`:`  <nav class="jump" aria-label="Sections">
+${groups.map(g=>`    <a href="#${esc(g.id)}">${esc(g.name)} <span class="n">${g.apps.length}<span class="sr"> ${g.apps.length===1?'app':'apps'}</span></span></a>`).join('\n')}
+  </nav>
+${groups.map(g=>`  <section class="sec" id="${esc(g.id)}" aria-labelledby="h-${esc(g.id)}">
+    <h2 id="h-${esc(g.id)}">${esc(g.name)}</h2>${g.blurb?`\n    <p class="sub">${esc(g.blurb)}</p>`:''}
+    <div class="list">
+${cardsOf(g.apps)}
+    </div>
+  </section>`).join('\n')}`;
   return`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,6 +166,14 @@ ${css.trim()}
 .app{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);text-decoration:none;min-height:44px}
 .app img{border-radius:14px}.app b{display:block;font-size:17px;margin-bottom:2px}
 .app:hover,.app:focus-visible{border-color:var(--accent)}
+.app:focus-visible,.jump a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.jump{display:flex;flex-wrap:wrap;gap:8px;max-width:760px;margin:6px auto 4px;padding:0 16px}
+.jump a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--chip);color:var(--ink);text-decoration:none;font-size:15px}
+.jump a:hover{border-color:var(--accent)}
+.jump .n{display:inline-block;min-width:22px;padding:0 6px;border-radius:999px;background:var(--panel);color:var(--muted);font-size:13px;line-height:22px;text-align:center}
+.sec{max-width:760px;margin:22px auto 0;padding:0}
+.sec>h2,.sec>.sub{padding:0 16px}.sec>.sub{margin:-4px 0 10px}
+.sec>h2{margin-bottom:6px}
 .how{max-width:760px;margin:18px auto 0;padding:0 16px}
 header,.foot{max-width:760px}
 </style>
@@ -149,9 +184,7 @@ header,.foot{max-width:760px}
   <p>${esc(site.tagline)}</p>
 </header>
 <main>
-  <nav class="list" aria-label="Apps">
-${cards}
-  </nav>
+${listing}
   <section class="how group">
     <h2>Put an App on Your Phone or Tablet</h2>
     <ol class="sub">
@@ -168,7 +201,7 @@ ${cards}
 `;
 }
 
-const api={iconPixels,pngFrom,zip,crc32,webFolder,siteIndex,infoOf,inkFor,HOME_JS_NAME};
+const api={iconPixels,pngFrom,zip,crc32,webFolder,siteIndex,groupApps,infoOf,inkFor,HOME_JS_NAME};
 root.AppWeb=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -182,6 +182,14 @@ details.mini .q{margin-left:4px}
 .app{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);text-decoration:none;min-height:44px}
 .app img{border-radius:14px}.app b{display:block;font-size:17px;margin-bottom:2px}
 .app:hover,.app:focus-visible{border-color:var(--accent)}
+.app:focus-visible,.jump a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.jump{display:flex;flex-wrap:wrap;gap:8px;max-width:760px;margin:6px auto 4px;padding:0 16px}
+.jump a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--chip);color:var(--ink);text-decoration:none;font-size:15px}
+.jump a:hover{border-color:var(--accent)}
+.jump .n{display:inline-block;min-width:22px;padding:0 6px;border-radius:999px;background:var(--panel);color:var(--muted);font-size:13px;line-height:22px;text-align:center}
+.sec{max-width:760px;margin:22px auto 0;padding:0}
+.sec>h2,.sec>.sub{padding:0 16px}.sec>.sub{margin:-4px 0 10px}
+.sec>h2{margin-bottom:6px}
 .how{max-width:760px;margin:18px auto 0;padding:0 16px}
 header,.foot{max-width:760px}
 </style>
@@ -192,7 +200,53 @@ header,.foot{max-width:760px}
   <p>Small apps that run in any browser, on a phone, tablet or computer. Open one, then add it to your Home Screen.</p>
 </header>
 <main>
-  <nav class="list" aria-label="Apps">
+  <nav class="jump" aria-label="Sections">
+    <a href="#websites">Websites <span class="n">2<span class="sr"> apps</span></span></a>
+    <a href="#games">Games <span class="n">4<span class="sr"> apps</span></span></a>
+    <a href="#crafts">Crafts <span class="n">6<span class="sr"> apps</span></span></a>
+    <a href="#teaching">Teaching <span class="n">2<span class="sr"> apps</span></span></a>
+    <a href="#administration">Administration <span class="n">1<span class="sr"> app</span></span></a>
+  </nav>
+  <section class="sec" id="websites" aria-labelledby="h-websites">
+    <h2 id="h-websites">Websites</h2>
+    <p class="sub">Reference sites, and the tool that makes apps like these.</p>
+    <div class="list">
+      <a class="app" href="generator/">
+        <img src="generator/icon-192.png" alt="" width="64" height="64">
+        <span><b>GEN: HTML App Generator</b><span class="sub">Make single-file apps like these: fill in a short spec, watch the app take shape, download it.</span></span>
+      </a>
+      <a class="app" href="milspeak/">
+        <img src="milspeak/icon-192.png" alt="" width="64" height="64">
+        <span><b>MIL: The Civilian&#39;s Guide to Milspeak</b><span class="sub">A plain-language guide to military ranks, structures, codes and terms.</span></span>
+      </a>
+    </div>
+  </section>
+  <section class="sec" id="games" aria-labelledby="h-games">
+    <h2 id="h-games">Games</h2>
+    <p class="sub">Short games that run in a browser.</p>
+    <div class="list">
+      <a class="app" href="seventh/">
+        <img src="seventh/icon-192.png" alt="" width="64" height="64">
+        <span><b>SEV: Seventh</b><span class="sub">A short platformer about rest: gather manna for six days, and on the seventh, stop.</span></span>
+      </a>
+      <a class="app" href="one-way/">
+        <img src="one-way/icon-192.png" alt="" width="64" height="64">
+        <span><b>ONE: One Way</b><span class="sub">A tiny game: a stick figure, a path, a blank gravestone and one direction.</span></span>
+      </a>
+      <a class="app" href="ipar/">
+        <img src="ipar/icon-192.png" alt="" width="64" height="64">
+        <span><b>IPAR: Image, Preserve, Analyze, Report</b><span class="sub">A playable digital-forensics case: image, preserve, analyze and report on a real disk image.</span></span>
+      </a>
+      <a class="app" href="five-oclock/">
+        <img src="five-oclock/icon-192.png" alt="" width="64" height="64">
+        <span><b>SHAVE: Five O&#39;Clock Shadow of the Colossus</b><span class="sub">A tiny barber climbs three stubbly giants and shaves them before 5:00 PM.</span></span>
+      </a>
+    </div>
+  </section>
+  <section class="sec" id="crafts" aria-labelledby="h-crafts">
+    <h2 id="h-crafts">Crafts</h2>
+    <p class="sub">Pattern makers for fuse beads, bricks and tiles.</p>
+    <div class="list">
       <a class="app" href="fig/">
         <img src="fig/icon-192.png" alt="" width="64" height="64">
         <span><b>FIG: Fusebead Image Generator</b><span class="sub">Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand and keep several patterns.</span></span>
@@ -205,29 +259,9 @@ header,.foot{max-width:760px}
         <img src="tig/icon-192.png" alt="" width="64" height="64">
         <span><b>TIG: Tile Image Generator</b><span class="sub">Turn a picture into a tile mosaic on mesh sheets, then follow it tile by tile. Everything stays in this browser.</span></span>
       </a>
-      <a class="app" href="generator/">
-        <img src="generator/icon-192.png" alt="" width="64" height="64">
-        <span><b>GEN: HTML App Generator</b><span class="sub">Make single-file apps like these: fill in a short spec, watch the app take shape, download it.</span></span>
-      </a>
       <a class="app" href="iso-lab/">
         <img src="iso-lab/icon-192.png" alt="" width="64" height="64">
         <span><b>PIL: Pegboard Iso Lab</b><span class="sub">Design 3D-illusion bead patterns: isometric shapes, tessellations, seeded terrain and pipe tiles, on a pegboard.</span></span>
-      </a>
-      <a class="app" href="milspeak/">
-        <img src="milspeak/icon-192.png" alt="" width="64" height="64">
-        <span><b>MIL: The Civilian&#39;s Guide to Milspeak</b><span class="sub">A plain-language guide to military ranks, structures, codes and terms.</span></span>
-      </a>
-      <a class="app" href="torah-tutor/">
-        <img src="torah-tutor/icon-192.png" alt="" width="64" height="64">
-        <span><b>TORAH: Torah Tutor</b><span class="sub">Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part.</span></span>
-      </a>
-      <a class="app" href="seventh/">
-        <img src="seventh/icon-192.png" alt="" width="64" height="64">
-        <span><b>SEV: Seventh</b><span class="sub">A short platformer about rest: gather manna for six days, and on the seventh, stop.</span></span>
-      </a>
-      <a class="app" href="one-way/">
-        <img src="one-way/icon-192.png" alt="" width="64" height="64">
-        <span><b>ONE: One Way</b><span class="sub">A tiny game: a stick figure, a path, a blank gravestone and one direction.</span></span>
       </a>
       <a class="app" href="hex-cubes/">
         <img src="hex-cubes/icon-192.png" alt="" width="64" height="64">
@@ -237,19 +271,32 @@ header,.foot{max-width:760px}
         <img src="iso-designer/icon-192.png" alt="" width="64" height="64">
         <span><b>ISO: Iso Bead Designer</b><span class="sub">Stack cubes and read off a bead chart for a 48 × 38 isometric pegboard.</span></span>
       </a>
-      <a class="app" href="year-planner/">
-        <img src="year-planner/icon-192.png" alt="" width="64" height="64">
-        <span><b>YRP: RIT Department Year Planner</b><span class="sub">One academic year of recurring tasks, dates and owners for an RIT department, written for roles instead of people.</span></span>
+    </div>
+  </section>
+  <section class="sec" id="teaching" aria-labelledby="h-teaching">
+    <h2 id="h-teaching">Teaching</h2>
+    <p class="sub">Practice tools and cases for learning.</p>
+    <div class="list">
+      <a class="app" href="torah-tutor/">
+        <img src="torah-tutor/icon-192.png" alt="" width="64" height="64">
+        <span><b>TORAH: Torah Tutor</b><span class="sub">Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part.</span></span>
       </a>
       <a class="app" href="ipar/">
         <img src="ipar/icon-192.png" alt="" width="64" height="64">
         <span><b>IPAR: Image, Preserve, Analyze, Report</b><span class="sub">A playable digital-forensics case: image, preserve, analyze and report on a real disk image.</span></span>
       </a>
-      <a class="app" href="five-oclock/">
-        <img src="five-oclock/icon-192.png" alt="" width="64" height="64">
-        <span><b>SHAVE: Five O&#39;Clock Shadow of the Colossus</b><span class="sub">A tiny barber climbs three stubbly giants and shaves them before 5:00 PM.</span></span>
+    </div>
+  </section>
+  <section class="sec" id="administration" aria-labelledby="h-administration">
+    <h2 id="h-administration">Administration</h2>
+    <p class="sub">Planning tools for running an academic department.</p>
+    <div class="list">
+      <a class="app" href="year-planner/">
+        <img src="year-planner/icon-192.png" alt="" width="64" height="64">
+        <span><b>YRP: RIT Department Year Planner</b><span class="sub">One academic year of recurring tasks, dates and owners for an RIT department, written for roles instead of people.</span></span>
       </a>
-  </nav>
+    </div>
+  </section>
   <section class="how group">
     <h2>Put an App on Your Phone or Tablet</h2>
     <ol class="sub">

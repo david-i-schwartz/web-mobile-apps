@@ -41,13 +41,26 @@ with sync_playwright() as p:
     br = p.chromium.launch()
     print('== the front page')
     ctx, pg, errs = open_as(br, 'iphone', '')
-    check(pg.title() == 'Web & Mobile Apps' and pg.locator('.app').count() == len(FOLDERS), f'front page lists the {len(FOLDERS)} apps')
+    hrefs = pg.eval_on_selector_all('.app', 'els => els.map(e => e.getAttribute("href").replace(/\\/$/, ""))')
+    check(pg.title() == 'Web & Mobile Apps' and sorted(set(hrefs)) == sorted(FOLDERS), f'front page lists the {len(FOLDERS)} apps')
+    SECTIONS = [(s if isinstance(s, str) else s.get('name', '')).strip() for s in json.load(open(CFG)).get('sections', [])] if os.path.exists(CFG) else []
+    if SECTIONS:
+        heads = [h.strip() for h in pg.locator('.sec > h2').all_inner_texts()]
+        check(heads == [s for s in SECTIONS if s in heads] and 'More Apps' not in heads, 'sections in order, every app in one: ' + ', '.join(heads))
+        jumps = pg.eval_on_selector_all('.jump a', 'els => els.map(e => [e.getAttribute("href"), !!document.querySelector(e.getAttribute("href"))])')
+        check(len(jumps) == len(heads) and all(ok for _, ok in jumps), 'each section link at the top goes to its section')
+        check(pg.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'nothing sticks out sideways at phone width')
+        pg.locator('.jump a').last.click(); pg.wait_for_timeout(300)
+        check(pg.url.endswith(jumps[-1][0]), 'tapping a section link jumps to it')
+        pg.screenshot(path=os.path.join(OUT, 'site-iphone-front.png'), full_page=True)
+        pg.goto(BASE); pg.wait_for_timeout(300)
+    first = hrefs[0]
     check(all(pg.evaluate(f"fetch('{f}/icon-192.png').then(r=>r.ok)") for f in FOLDERS), 'every app has its icon')
     for f in FOLDERS:
         m = json.loads(pg.evaluate(f"fetch('{f}/manifest.webmanifest').then(r=>r.text())"))
         check(m['display'] == 'standalone' and m['start_url'] == './' and len(m['icons']) == 3, f'{f}: manifest ' + m['name'])
     pg.locator('.app').first.click(); pg.wait_for_timeout(600)
-    check(pg.url.endswith('/' + FOLDERS[0] + '/'), 'tapping an app opens it')
+    check(pg.url.endswith('/' + first + '/'), 'tapping an app opens it')
     pg.screenshot(path=os.path.join(OUT, 'site-iphone-fig.png')); ctx.close()
 
     print('== iPhone Safari (TIG, made by the generator)')
