@@ -74,6 +74,15 @@
       "section": "Websites"
     },
     {
+      "file": "src/smils.html",
+      "folder": "smils",
+      "code": "SMILS",
+      "name": "SMILS — Searchable Military Speak",
+      "tagline": "Search 782 military terms, jump to the section that explains them, and keep a list of anything missing.",
+      "accent": "#15534A",
+      "section": "Websites"
+    },
+    {
       "file": "src/torah-tutor.html",
       "folder": "torah-tutor",
       "code": "TORAH",
