@@ -12,6 +12,7 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`generator/`](https://david-i-schwartz.github.io/web-mobile-apps/generator/): GEN, HTML App Generator
 - [`milspeak/`](https://david-i-schwartz.github.io/web-mobile-apps/milspeak/): MIL, The Civilian's Guide to Milspeak
 - [`smils/`](https://david-i-schwartz.github.io/web-mobile-apps/smils/): SMILS, SMILS — Searchable Military Speak
+- [`site-shortcuts/`](https://david-i-schwartz.github.io/web-mobile-apps/site-shortcuts/): SITE, Site Shortcuts
 
 ### Games
 

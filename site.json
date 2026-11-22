@@ -155,6 +155,12 @@
       "tagline": "A tiny barber climbs three stubbly giants and shaves them before 5:00 PM.",
       "accent": "#B8432B",
       "section": "Games"
+    },
+    {
+      "file": "src/site-shortcuts.html",
+      "folder": "site-shortcuts",
+      "code": "SITE",
+      "section": "Websites"
     }
   ],
   "readme": [
