@@ -18,6 +18,10 @@
       "blurb": "Pattern makers for fuse beads, bricks and tiles."
     },
     {
+      "name": "Music",
+      "blurb": "Tools for band practice."
+    },
+    {
       "name": "Teaching",
       "blurb": "Practice tools and cases for learning."
     },
@@ -161,6 +165,11 @@
       "folder": "site-shortcuts",
       "code": "SITE",
       "section": "Websites"
+    },
+    {
+      "file": "src/jam.html",
+      "folder": "jam",
+      "section": "Music"
     }
   ],
   "readme": [

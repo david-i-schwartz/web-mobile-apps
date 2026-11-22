@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#C2410C">
+<meta name="generator" content="HTML App Generator 1.5">
+<title>JAM: Jam Cutter</title>
+<script>document.documentElement.classList.remove('nojs')/* scripts run, so the app shows instead of the preview note */</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23C2410C%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2242%22%20font-family%3D%22system-ui%2Csans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%3EJAM%3C%2Ftext%3E%3C%2Fsvg%3E">
+<script type="application/json" id="app-spec">
+{
+ "code": "JAM",
+ "name": "Jam Cutter",
+ "tagline": "Finds where the band is playing in a practice recording, cuts each take into MP3s, and lets you name, keep or toss them. Everything stays on this device.",
+ "version": "1.0",
+ "date": "22 Nov 2026",
+ "unit": {
+  "one": "cell",
+  "many": "cells"
+ },
+ "shape": "circle",
+ "pitch": 0,
+ "accent": "#C2410C",
+ "accentDark": "",
+ "features": {
+  "board": false,
+  "picture": false,
+  "edit": false,
+  "progress": false,
+  "project": false,
+  "export": false
+ },
+ "grid": {
+  "minW": 4,
+  "maxW": 160,
+  "defW": 48,
+  "defH": 48,
+  "maxCells": 40000
+ },
+ "boards": [],
+ "palette": [
+  {
+   "name": "White",
+   "hex": "#FFFFFF"
+  },
+  {
+   "name": "Light grey",
+   "hex": "#C8CCD2"
+  },
+  {
+   "name": "Dark grey",
+   "hex": "#5E636B"
+  },
+  {
+   "name": "Black",
+   "hex": "#15171B"
+  },
+  {
+   "name": "Red",
+   "hex": "#D7262E"
+  },
+  {
+   "name": "Orange",
+   "hex": "#F07D1A"
+  },
+  {
+   "name": "Yellow",
+   "hex": "#F6CF2A"
+  },
+  {
+   "name": "Lime",
+   "hex": "#9BCB3C"
+  },
+  {
+   "name": "Green",
+   "hex": "#2E9A4B"
+  },
+  {
+   "name": "Teal",
+   "hex": "#138C8C"
+  },
+  {
+   "name": "Light blue",
+   "hex": "#6CB8E6"
+  },
+  {
+   "name": "Blue",
+   "hex": "#2457B8"
+  },
+  {
+   "name": "Purple",
+   "hex": "#6E3FA3"
+  },
+  {
+   "name": "Pink",
+   "hex": "#EE8CB4"
+  },
+  {
+   "name": "Tan",
+   "hex": "#D9B98C"
+  },
+  {
+   "name": "Brown",
+   "hex": "#7A4A2A"
+  }
+ ],
+ "sets": [],
+ "learn": [
+  {
+   "topic": "Finding the playing level",
+   "links": [
+    {
+     "title": "Otsu's method",
+     "url": "https://en.wikipedia.org/wiki/Otsu%27s_method",
+     "source": "Wikipedia"
+    },
+    {
+     "title": "Hysteresis",
+     "url": "https://en.wikipedia.org/wiki/Hysteresis",
+     "source": "Wikipedia"
+    }
+   ]
+  },
+  {
+   "topic": "Loudness and smoothing",
+   "links": [
+    {
+     "title": "dBFS",
+     "url": "https://en.wikipedia.org/wiki/DBFS",
+     "source": "Wikipedia"
+    },
+    {
+     "title": "Root mean square",
+     "url": "https://en.wikipedia.org/wiki/Root_mean_square",
+     "source": "Wikipedia"
+    },
+    {
+     "title": "Median filter",
+     "url": "https://en.wikipedia.org/wiki/Median_filter",
+     "source": "Wikipedia"
+    }
+   ]
+  },
+  {
+   "topic": "Hearing where the sound changes",
+   "links": [
+    {
+     "title": "Audio EQ Cookbook",
+     "url": "https://www.w3.org/TR/audio-eq-cookbook/",
+     "source": "W3C"
+    },
+    {
+     "title": "Butterworth filter",
+     "url": "https://en.wikipedia.org/wiki/Butterworth_filter",
+     "source": "Wikipedia"
+    }
+   ]
+  },
+  {
+   "topic": "How an MP3 is made",
+   "links": [
+    {
+     "title": "MP3",
+     "url": "https://en.wikipedia.org/wiki/MP3",
+     "source": "Wikipedia"
+    },
+    {
+     "title": "Modified discrete cosine transform",
+     "url": "https://en.wikipedia.org/wiki/Modified_discrete_cosine_transform",
+     "source": "Wikipedia"
+    },
+    {
+     "title": "Huffman coding",
+     "url": "https://en.wikipedia.org/wiki/Huffman_coding",
+     "source": "Wikipedia"
+    }
+   ]
+  },
+  {
+   "topic": "What the browser does",
+   "links": [
+    {
+     "title": "File System API",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/File_System_API",
+     "source": "MDN"
+    },
+    {
+     "title": "WebCodecs API",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebCodecs_API",
+     "source": "MDN"
+    },
+    {
+     "title": "Web Share API",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API",
+     "source": "MDN"
+    }
+   ]
+  }
+ ],
+ "changes": [
+  "First version. Finds takes and parts the way Jam Cutter 1.1 (jamcutter.py) does, with the same defaults, and cuts the MP3s in the browser.",
+  "Folder mode for a computer with Google Drive for desktop: finds new recordings in the Inbox, cuts them into the Jams folder, and remembers what it has cut in Jam Cutter log.json.",
+  "Review: listen, name, keep or toss each clip, and file keepers by song. One-recording mode for phones shares the cuts to Drive or saves a zip."
+ ],
+ "credits": [
+  "Takes and parts are found the way Jam Cutter 1.1 (jamcutter.py, the command-line version) finds them, ported line for line.",
+  "MP3 encoding is JAM's own code, written to the MPEG-1 Audio Layer III standard (ISO/IEC 11172-3). The standard's Huffman code tables come from the shine encoder library and its filter-bank window from the mpg123 library, both free software (LGPL).",
+  "The filters follow Robert Bristow-Johnson's Audio EQ Cookbook, and the playing level uses Otsu's method (Nobuyuki Otsu, 1979)."
+ ],
+ "homeUrl": "https://david-i-schwartz.github.io/web-mobile-apps/jam/",
+ "oldCodes": [],
+ "key": "jam:",
+ "oldKeys": [],
+ "ext": ".jam.json",
+ "core": "1.3",
+ "generator": "1.5"
+}
+</script>
+<style>
+/* ==== CORE CSS: made by HTML App Generator 1.5 (core 1.3). Upgrade it with the generator rather than editing it here. ==== */
+/* Core stylesheet of HTML App Generator apps. It grew from the stylesheet FIG and BIG share.
+   The app's accent colours come after it, then the app's own styles (APP CSS). */
+
+:root{
+  --bg:#EEF1F5;--panel:#FFFFFF;--ink:#1D2230;--muted:#5B6375;--line:#D5DAE3;--accent:#0E7C7B;--accent-ink:#FFFFFF;--chip:#E3E8EF;--edge:#6F7888;
+  --board:#DCE1E8;--peg:#B4BBC6;--vp:#F5F7FA;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5}
+header{max-width:1180px;margin:0 auto;padding:18px 16px 2px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.1;margin:0 0 4px;letter-spacing:-0.01em;font-weight:800}
+header p{margin:0;color:var(--muted);max-width:62ch}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.wrap{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}.stage{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px}
+.controls{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+h2{font-size:19px;margin:0 0 8px;line-height:1.25;font-weight:750}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+h3{font-size:16px;margin:14px 0 4px;font-weight:700}
+.sub{font-size:14px;color:var(--muted);margin:2px 0 0}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:flex;background:var(--chip);border-radius:999px;padding:3px;gap:3px;margin:6px 0}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:7px 12px;border-radius:999px;cursor:pointer;min-height:44px;line-height:1.2}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.toolbar .seg{margin:0}
+.tapwrap{display:flex;align-items:center}
+.zoom{display:flex;align-items:center;gap:6px}
+#cmpRow{margin:10px 2px 0}
+#board .cmp{pointer-events:none}
+.btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
+.ib{width:44px;padding:0;font-size:20px;line-height:1}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#vp{position:relative;overflow:auto;max-height:70vh;border-radius:12px;background:var(--vp);outline:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#vp:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+#board{display:block;margin:0 auto;touch-action:manipulation}
+#board .cell{pointer-events:all;cursor:pointer;transition:opacity .15s}
+#board .peg{fill:var(--peg);stroke:transparent;stroke-width:.6;pointer-events:all;cursor:pointer}
+#board .bd{fill:var(--board)}
+#board .cl{stroke:var(--muted);stroke-width:.07;opacity:.75}
+#board .ring{fill:none;stroke:var(--accent);stroke-width:.14;pointer-events:none}
+#board .lbl{fill:var(--ink);stroke:var(--board);stroke-width:.28;paint-order:stroke;font-weight:700;font-size:.9px;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#board .cell{transition:none}}
+#empty{padding:48px 20px;text-align:center;color:var(--muted)}
+#empty p{margin:0 auto 14px;max-width:34ch}
+#hud{display:flex;gap:10px;align-items:flex-start;margin:12px 2px 0;min-height:44px}
+#hudDot{width:26px;height:26px;border-radius:50%;flex:none;margin-top:2px;border:1px solid var(--line)}
+#hudDot.empty{background:transparent!important;border-style:dashed}
+#hudName{font-weight:700;font-size:17px;line-height:1.3}
+#hudWhere{font-size:14px;color:var(--muted)}
+.bar{height:10px;background:var(--chip);border-radius:99px;overflow:hidden;margin:4px 0 6px}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#pct{font-size:15px;color:var(--ink);margin:0 0 10px;font-variant-numeric:tabular-nums}
+#legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}
+.crow{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;font-size:15px;cursor:pointer;min-height:44px;text-align:left}
+.crow[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.crow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .ct{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+.crow.done .ct{color:var(--accent)}
+.dot{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);flex:none}
+.checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:15px}
+.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;align-items:center;gap:10px;margin:6px 0}
+.row label{color:var(--muted);font-size:15px}
+.row output{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;min-height:28px;accent-color:var(--accent)}
+#cropWrap{display:flex;justify-content:center;margin:8px 0 4px;background:var(--vp);border-radius:12px;padding:8px}
+#cropCv{display:block;touch-action:none;cursor:crosshair;border-radius:4px;max-width:100%}
+.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;vertical-align:middle;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
+.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.q::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+.tip{background:var(--chip);border-radius:10px;padding:8px 12px;margin:4px 0 8px}
+.tip p{margin:0 0 6px}.tip p:last-child{margin:0}
+input[type=color]{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+input[type=text],select{width:100%;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:44px}
+details summary{cursor:pointer;font-size:19px;font-weight:750}
+details.mini{margin-top:12px}
+details.mini summary{font-size:16px;font-weight:700;min-height:36px;display:list-item;padding:6px 0}
+details.mini summary span{font-weight:400;font-size:14px;color:var(--muted)}
+textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:8px;resize:vertical}
+#imgMsg,#copyMsg{font-size:14px;color:var(--muted)}
+button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible,label.btn:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.warn{margin:8px 0 0;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:14px;max-width:62ch}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sub.gap{margin:6px 0 0}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+.group ul{margin:6px 0 0;padding-left:20px}
+.group li{margin:4px 0}
+.seg.four{flex-wrap:wrap;border-radius:26px}
+.seg.four button{flex:1 1 40%}
+.row.wide{grid-template-columns:7.5em minmax(0,1fr) 3.4em}
+input.zero{--zero:linear-gradient(90deg,var(--line) calc(50% - 1px),var(--muted) calc(50% - 1px),var(--muted) calc(50% + 1px),var(--line) calc(50% + 1px))}
+input.zero::-webkit-slider-runnable-track{background:var(--zero)}
+input.zero::-moz-range-track{background:var(--zero)}
+#bgDot{width:26px;height:26px}
+#cropCv.picking{cursor:copy;outline:3px solid var(--accent);outline-offset:2px}
+#adjReset:disabled{opacity:.5;cursor:default}
+.tip{text-align:left}
+.tip ul{margin:0;padding-left:1.15em}
+.tip li{margin:0 0 6px}
+.tip li:last-child{margin-bottom:0}
+.tip h4{font-size:14px;font-weight:700;color:var(--ink);margin:10px 0 4px}
+.tip h4:first-child{margin-top:0}
+.tip p + ul,.tip ul + p{margin-top:6px}
+.tip a,#learn a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+h2 .q{margin-left:4px}
+details.mini .q{margin-left:4px}
+/* ---- editing ---- */
+.btn:disabled,.ib:disabled{opacity:.45;cursor:default}
+#editBar{margin:0 0 10px}
+.ebar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.ebar .seg{margin:0;flex:1 1 250px}
+.ebar .zoom{margin-left:auto}
+.pc{display:flex;align-items:center;gap:8px;margin:10px 2px 2px;font-size:15px;min-width:0}
+.pc .dot{width:22px;height:22px}
+.pc b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sws{display:flex;flex-wrap:wrap;gap:10px;padding:6px 6px 8px}
+.swb{position:relative;flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--edge);padding:0;cursor:pointer}
+.swb::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.swb[aria-pressed="true"]{box-shadow:0 0 0 2px var(--panel),0 0 0 5px var(--accent)}
+#editMsg{min-height:1.5em;margin:2px 2px 0}
+#board.editing .cell{cursor:crosshair}
+#board.lock{touch-action:none}
+.btn.sm{min-height:36px;padding:4px 12px;font-size:14px}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin:8px 0}
+/* ---- from BIG, made general ---- */
+#board .ov{pointer-events:none}
+#board .stud{fill:rgba(255,255,255,.16);stroke:rgba(0,0,0,.3);stroke-width:.06}
+#board .hole{fill:var(--board)}
+#board .cell{cursor:pointer}
+#board .bnum{fill:var(--muted);font-size:.8px;font-weight:700;pointer-events:none}
+.seg.six{flex-wrap:wrap;border-radius:26px}
+.seg.six button{flex:1 1 30%}
+.lsw[aria-pressed="false"]{opacity:.22;border-style:dashed}
+.lsw[aria-pressed="true"]{box-shadow:none}
+#palSw,#paintSw{max-height:228px;overflow-y:auto}
+#editBar .sws{padding:6px 2px 8px}
+.pasteBox{margin:12px auto 0;max-width:36ch;min-height:48px;padding:10px 14px;border:2px dashed var(--edge);border-radius:12px;color:var(--muted);font-size:14px;text-align:center;caret-color:transparent;outline:none;overflow:hidden;cursor:text;-webkit-user-select:text;user-select:text}
+.pasteBox:empty::before{content:attr(data-ph)}
+.pasteBox:focus{border-color:var(--accent);color:var(--ink)}
+.pasteBox:focus:empty::before{content:"Now paste: long-press here and choose Paste, or press Ctrl+V / \2318 V."}
+.pasteBox img{max-width:100%;max-height:80px}
+#empty .sub{max-width:40ch;margin:8px auto 0}
+.stepper{display:grid;grid-template-columns:7.5em 44px minmax(3em,auto) 44px;gap:8px;align-items:center;margin:6px 0}
+.stepper label{color:var(--muted);font-size:15px}
+.stepper output{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.controls.solo{max-width:760px;margin:0 auto;width:100%}
+.wrap.solo{grid-template-columns:minmax(0,1fr)!important}
+.foot{max-width:1180px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font-size:13px}
+/* ---- when scripts can't run (a phone's file preview): only the header and a note show ---- */
+.nojs-note{display:none}
+.nojs .nojs-note{display:block;max-width:640px;margin:8px auto 24px;padding:16px 18px;border:2px solid var(--accent);border-radius:14px;background:var(--panel);font-size:17px;line-height:1.5}
+.nojs .nojs-note a{color:var(--accent);font-weight:700;word-break:break-all}
+.nojs main,.nojs .foot{display:none}
+#homeHow .hh-lead{margin-top:0}
+/* ---- JAM's accent colours (from the spec) ---- */
+:root{--accent:#C2410C;--accent-ink:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#D78461;--accent-ink:#221510}}
+:root[data-theme="dark"]{--accent:#D78461;--accent-ink:#221510}
+/* ==== APP CSS START ==== */
+.fname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flab{color:var(--muted);font-size:14px;margin-right:4px}
+.frow input[type=text],.frow select{min-width:0}
+.recs{list-style:none;padding:0!important;margin:8px 0 0}
+.recs li{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0}
+.recs li b{overflow-wrap:anywhere}
+.recs .meta{color:var(--muted);font-size:14px}
+.recs .st{margin-left:auto;font-size:14px;font-weight:700}
+.recs .st.ok{color:var(--accent)}
+.workmsg{margin:10px 0 2px;font-weight:600}
+.stripwrap{background:var(--vp);border-radius:12px;padding:6px;margin:8px 0 4px}
+#strip{display:block;width:100%;height:110px;cursor:pointer;touch-action:manipulation;border-radius:8px}
+#strip:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.takeHead{font-size:16px;font-weight:700;margin:18px 0 2px}
+.takeHead span{font-weight:400;color:var(--muted);font-size:14px;margin-left:6px}
+.clip{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--panel)}
+.clip.part{margin-left:18px}
+.clip.cur{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.clip.tossed{opacity:.55}
+.clip.tossed .num{text-decoration:line-through}
+.clipHead{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}
+.num{font:700 18px/1.2 ui-monospace,Menlo,Consolas,monospace;color:var(--accent)}
+.times{font:14px ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+.badge{font-size:12px;border:1px solid var(--line);border-radius:10px;padding:0 8px;color:var(--muted)}
+.clip audio{width:100%;height:44px;margin:6px 0 4px;display:block}
+.clipRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:4px}
+.clipRow.song{grid-template-columns:auto minmax(0,1fr)}
+.clipRow.song label{color:var(--muted);font-size:14px}
+.keep{display:flex;gap:8px;align-items:center;min-height:44px;padding:0 4px;cursor:pointer;font-size:15px}
+.newsong{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:6px}
+kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:13px;background:var(--panel)}
+.fileNote{font-size:13px;color:var(--muted);overflow-wrap:anywhere;margin-top:2px}
+@media (max-width:520px){.clip.part{margin-left:8px}#strip{height:84px}.frow{grid-template-columns:minmax(0,1fr)}}
+.pick.dis{opacity:.5;pointer-events:none}
+#cutMsg:not(:empty){margin-top:10px}
+/* 44 px touch targets (house rule 6) without changing the look: the ? keeps its 24 px circle inside a 44 px hit area */
+.q{width:44px;height:44px;border:10px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line);margin:-10px -10px -10px -4px}
+.q:focus-visible{outline-offset:-8px}
+.btn,.btn.sm,.pick{min-height:44px}
+details>summary{min-height:44px;box-sizing:border-box;padding-top:8px;padding-bottom:8px}
+.pick{display:inline-flex;align-items:center;box-sizing:border-box}
+.pick input[type=file]{inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}
+h2 .q,h3 .q{margin:-10px -10px -10px -7px}
+/* ==== APP CSS END ==== */
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="JAM">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="nojs-note" id="nojsNote"><p><b>This is only a preview, so JAM can’t run here.</b></p><p>To use it, open this link in Safari or Chrome: <a href="https://david-i-schwartz.github.io/web-mobile-apps/jam/">https://david-i-schwartz.github.io/web-mobile-apps/jam/</a></p></div>
+<header>
+  <h1 id="appTitle">JAM: Jam Cutter</h1>
+  <p id="appTag">Finds where the band is playing in a practice recording, cuts each take into MP3s, and lets you name, keep or toss them. Everything stays on this device.</p>
+</header>
+<main class="wrap solo">
+  <div class="controls solo">
+    <p class="warn" id="saveMsg" hidden>This browser isn’t keeping your work between visits.</p>
+    <!-- ==== APP PANELS START ==== -->
+    <section class="group" id="cutBox">
+      <h2>Cut a Practice <button type="button" class="q" aria-controls="tipCut" aria-expanded="false" aria-label="Help: Cut a Practice">?</button></h2>
+      <div class="tip" id="tipCut" hidden>
+        <h4>What This Does</h4>
+        <p>JAM listens to a practice recording, finds where the band is playing (not talking or tuning), and cuts each take into its own MP3. Long takes are also cut into parts where the sound changes, such as a new riff or a break.</p>
+        <h4>Getting the Recording Here</h4>
+        <ul><li>After practice, in Google Recorder, tap <b>Share</b>, then <b>Drive</b>, and save it to <b>S&amp;W / Jams / Inbox</b>.</li>
+          <li>Or download it from recorder.google.com into that folder.</li></ul>
+        <h4>Two Ways to Work</h4>
+        <ul><li><b>Folders</b> (a computer with Chrome or Edge, and Google Drive for desktop): JAM finds new recordings in the Inbox, cuts them, and saves the cuts in the Jams folder. Drive for desktop uploads them.</li>
+          <li><b>One recording</b> (any phone or computer): choose a recording, review the cuts, then share them to Drive or save a zip.</li></ul>
+        <p>Nothing is uploaded by JAM itself, and your original recordings are never deleted.</p>
+      </div>
+
+      <div id="folderMode" hidden>
+        <h3>Your Folders</h3>
+        <div class="frow"><span class="fname"><span class="flab">Inbox</span> <b id="fInbox">not chosen</b></span><button type="button" class="btn sm" id="pickInbox">Choose Inbox folder</button></div>
+        <div class="frow"><span class="fname"><span class="flab">Jams</span> <b id="fJams">not chosen</b></span><button type="button" class="btn sm" id="pickJams">Choose Jams folder</button></div>
+        <div class="frow"><span class="fname"><span class="flab">New Songs</span> <b id="fSongs">optional</b></span><button type="button" class="btn sm" id="pickSongs">Choose New Songs folder</button></div>
+        <p class="sub" id="folderMsg" aria-live="polite"></p>
+        <div class="btns">
+          <button type="button" class="btn primary" id="reconnect" hidden>Reconnect folders</button>
+          <button type="button" class="btn primary" id="checkNew" disabled>Check for new recordings</button>
+        </div>
+        <ul class="recs" id="newList" aria-live="polite"></ul>
+        <div class="btns"><button type="button" class="btn primary" id="cutAll" hidden>Cut them</button></div>
+      </div>
+
+      <h3 id="oneHead">One Recording</h3>
+      <div class="btns">
+        <label class="btn primary pick" id="pickWrap">Choose recording<input type="file" id="pickFile" accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg,.opus,.flac,.webm,.mp4,.3gp,.amr,.aif,.aiff,.caf" aria-label="Choose recording"></label>
+      </div>
+      <p class="sub" id="modeNote"></p>
+
+      <div id="work" hidden>
+        <p id="workMsg" class="workmsg" aria-live="polite"></p>
+        <div class="bar" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" id="workBar"><span id="workFill"></span></div>
+        <div class="btns"><button type="button" class="btn sm" id="stopBtn">Stop</button></div>
+      </div>
+      <p class="sub" id="cutMsg" aria-live="polite"></p>
+    </section>
+
+    <section class="group" id="reviewBox" hidden>
+      <h2>Review <button type="button" class="q" aria-controls="tipReview" aria-expanded="false" aria-label="Help: Review">?</button></h2>
+      <div class="tip" id="tipReview" hidden>
+        <h4>What This Is</h4>
+        <p>Listen to each cut, name the keepers, and toss the rest. Nothing changes in your folders until you press Apply.</p>
+        <h4>The Strip</h4>
+        <ul><li>The grey shape is how loud the recording is. Shaded areas are takes, thin lines are where parts start, and the dashed line is the level that counts as playing.</li>
+          <li>Tap or click the strip to play from that moment.</li></ul>
+        <h4>Clips</h4>
+        <ul><li>A long take comes as the full take plus its parts, so nothing is only available chopped up.</li>
+          <li>A name turns the file into <i>recording - name.mp3</i>. Blank keeps the file name.</li>
+          <li>Song files a copy into that song's folder in New Songs.</li></ul>
+        <h4>Keys</h4>
+        <ul><li><kbd>J</kbd> next clip, <kbd>K</kbd> previous, <kbd>Space</kbd> play or pause, <kbd>X</kbd> toss or keep.</li></ul>
+      </div>
+      <div class="frow" id="recRow" hidden><label for="recPick" class="flab">Recording</label><select id="recPick"></select></div>
+      <p class="sub" id="revMeta"></p>
+      <div class="stripwrap"><canvas id="strip" role="img" aria-label="Loudness of the recording, with the takes marked. Click to play from a moment."></canvas></div>
+      <div class="btns">
+        <button type="button" class="btn sm" id="keepAll">Keep all</button>
+        <button type="button" class="btn sm" id="fullOnly">Full takes only</button>
+        <button type="button" class="btn sm" id="recut" hidden>Cut again with Advanced settings</button>
+      </div>
+      <div id="clipList"></div>
+      <div class="btns" id="applyRow">
+        <button type="button" class="btn primary" id="applyBtn" hidden>Apply</button>
+        <button type="button" class="btn primary" id="shareBtn" hidden>Share to Drive</button>
+        <button type="button" class="btn" id="zipBtn" hidden>Save zip</button>
+      </div>
+      <p class="sub" id="applyMsg" aria-live="polite"></p>
+    </section>
+
+    <details class="group" id="advBox" data-ui="adv">
+      <summary>Advanced</summary>
+      <p class="sub gap">These are used for the next cut. The defaults are the ones Jam Cutter 1.1 uses.</p>
+      <div class="row wide"><label for="sSens">Sensitivity</label><input type="range" id="sSens" min="-12" max="12" step="0.5"><output id="sSensOut"></output></div>
+      <p class="sub">Lower catches quieter playing; higher ignores more talking and noodling.</p>
+      <div class="checks"><label><input type="checkbox" data-k="jam.autoThr"> Find the playing level by itself</label></div>
+      <div class="row wide" id="thrRow"><label for="sThr">Playing level</label><input type="range" id="sThr" min="-80" max="0" step="0.5"><output id="sThrOut"></output></div>
+      <div class="row wide"><label for="sGap">Keep stops shorter than</label><input type="range" id="sGap" min="0" max="30" step="0.5"><output id="sGapOut"></output></div>
+      <div class="row wide"><label for="sMin">Ignore playing shorter than</label><input type="range" id="sMin" min="0" max="60" step="1"><output id="sMinOut"></output></div>
+      <div class="row wide"><label for="sPre">Keep before each take</label><input type="range" id="sPre" min="0" max="10" step="0.5"><output id="sPreOut"></output></div>
+      <div class="row wide"><label for="sPost">Keep after each take</label><input type="range" id="sPost" min="0" max="10" step="0.5"><output id="sPostOut"></output></div>
+      <div class="row wide"><label for="sSplit">Split takes longer than</label><input type="range" id="sSplit" min="0" max="600" step="5"><output id="sSplitOut"></output></div>
+      <div class="row wide"><label for="sPart">Shortest part</label><input type="range" id="sPart" min="5" max="120" step="1"><output id="sPartOut"></output></div>
+      <div class="row wide"><label for="sPSens">Part sensitivity</label><input type="range" id="sPSens" min="0.3" max="3" step="0.1"><output id="sPSensOut"></output></div>
+      <p class="sub">Below 1 finds more parts, above 1 fewer.</p>
+      <div class="frow"><label for="sArtist" class="flab">Artist in the MP3s</label><input type="text" id="sArtist" maxlength="100" autocomplete="off"></div>
+      <h3>MP3 Quality</h3>
+      <div class="seg six" role="group" aria-label="MP3 quality">
+        <button type="button" data-k="jam.kbps" data-v="128">128 kb/s</button><button type="button" data-k="jam.kbps" data-v="160">160</button>
+        <button type="button" data-k="jam.kbps" data-v="192">192</button><button type="button" data-k="jam.kbps" data-v="256">256</button>
+        <button type="button" data-k="jam.kbps" data-v="320">320</button>
+      </div>
+      <div class="checks"><label><input type="checkbox" data-k="jam.moveDone"> After cutting, move the recording to Inbox / Done</label></div>
+      <div class="btns"><button type="button" class="btn sm" id="resetAdv">Back to the defaults</button></div>
+    </details>
+<!-- ==== APP PANELS END ==== -->    <section class="group" id="learn">
+      <h2>Learn the Ideas</h2>
+      <ul class="sub" id="learnList"></ul>
+    </section>
+    <details class="group" id="homeBox">
+      <summary>On Your Phone</summary>
+      <div class="sub" id="homeHow"></div>
+    </details>
+    <details class="group">
+      <summary>About This Version <span class="sub" id="aboutWhen"></span></summary>
+      <ul class="sub" id="aboutList"></ul>
+    </details>
+    <details class="group">
+      <summary>Credits</summary>
+      <ul class="sub" id="creditList"></ul>
+    </details>
+  </div>
+</main>
+<p class="foot">JAM 1.0, made with HTML App Generator 1.5. One file, no server: everything stays in this browser.</p>
+<div id="sr" class="sr" aria-live="polite"></div>
+<script>
+/* JAM: Jam Cutter 1.0. Made with HTML App Generator 1.5 (core 1.3).
+   The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
+(()=>{
+'use strict';
+const HAS={"board":false,"picture":false,"edit":false,"progress":false,"project":false,"export":false};
+/* ---------- base: helpers, storage, settings, controls and files. Every app has this part. ---------- */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const plural=(n,one,many)=>n.toLocaleString()+' '+(n===1?one:(many||one+'s'));
+const txt=(id,t)=>{const e=$(id);if(e&&e.textContent!==t)e.textContent=t};
+const signed=v=>v>0?'+'+v:v<0?'−'+(-v):'0';
+const hashStr=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(36)};
+
+/* The app spec: name, version, colours, sizes and words, written by the generator. The page reads it at start-up. */
+const SPEC=JSON.parse($('app-spec').textContent);
+const VERSION=SPEC.version,KEY=SPEC.key;
+
+/* ---------- storage: localStorage when it works, memory when it doesn't ---------- */
+const mem={},unsaved=new Set();
+const store={
+  get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
+  set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok},
+  del(k){delete mem[k];unsaved.delete(k);try{localStorage.removeItem(k)}catch(e){}}
+};
+/* An app that was renamed moves what this browser saved under its old names (SPEC.oldKeys). */
+try{for(const ok of SPEC.oldKeys||[]){const old=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(ok))old.push(k)}
+  for(const k of old){const n=KEY+k.slice(ok.length);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}
+
+/* ---------- hooks: the app's own code (APP CODE) can set any of these ---------- */
+const APP={
+  unit:{one:SPEC.unit.one,many:SPEC.unit.many},
+  palette:SPEC.palette.map((c,i)=>({name:c.name,hex:c.hex.toUpperCase(),code:c.code||'',i})),
+  describe:null,     /* (x, y, colourIndex) => {name, where}: what the readout says about a tapped cell */
+  cellSvg:null,      /* (cell) => SVG markup for one cell; cell has i, x, y, cx, cy, c, hex */
+  cellPaint:null,    /* (g, cell, u) => draws one cell on a canvas for Save picture; u is pixels per cell */
+  lists:[],          /* more lists under Export: {id, label, ext, make: () => text} */
+  onPattern:null,    /* (pattern) => after every rebuild */
+  onSync:null,       /* () => keep the app's own controls in step with the settings */
+  onRefresh:null,    /* () => after every redraw of the cell states */
+  projectOut:null,   /* () => extra data to keep in project files */
+  projectIn:null,    /* (data) => read that data back (tidy it first: files can be old or hand-made) */
+  onStart:null       /* () => once, when the page has loaded */
+};
+const PAL_BY=new Map(APP.palette.map(c=>[c.name,c]));
+const units=n=>plural(n,APP.unit.one,APP.unit.many);   /* "3 beads", "1 bead" */
+const HOOK={load:[],start:[],sync:[],refresh:[],compose:[],after:[],resize:[]};
+
+/* ---------- settings: defaults, allowed choices and number limits, gathered from each part and from the app ---------- */
+const DEF={tap:'inspect',ui:{}},CHOICES={tap:['inspect']},LIMITS={},TIDY=[];
+function addSettings(def,choices,limits,tidyFn){
+  (function deep(d,s){for(const k in s){if(s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k])){if(!d[k]||typeof d[k]!=='object')d[k]={};deep(d[k],s[k])}else d[k]=s[k]}})(DEF,def||{});
+  for(const k in choices||{})CHOICES[k]=[...new Set([...(CHOICES[k]||[]),...choices[k]])];
+  Object.assign(LIMITS,limits||{});if(tidyFn)TIDY.push(tidyFn);
+}
+const getIn=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const setIn=(o,p,v)=>{const ks=p.split('.'),l=ks.pop();ks.reduce((a,k)=>a[k],o)[l]=v};
+function merge(d,s){
+  if(d===null)return null;   /* null defaults are read back by that part's own tidy step */
+  if(Array.isArray(d))return Array.isArray(s)?s.slice(0,500):d.slice();
+  if(typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&typeof s==='object'&&!Array.isArray(s)?s[k]:undefined);return o}
+  return typeof s===typeof d&&(typeof s!=='number'||Number.isFinite(s))?s:d;
+}
+/* tidy: anything read from storage or a file becomes valid settings */
+function tidy(s){
+  if(!s||typeof s!=='object')s={};
+  const o=merge(DEF,s);
+  for(const p in CHOICES)if(!CHOICES[p].includes(getIn(o,p)))setIn(o,p,getIn(DEF,p));
+  for(const p in LIMITS){const[a,b,f]=LIMITS[p],v=Number(getIn(o,p)),d=getIn(DEF,p);setIn(o,p,clamp(Number.isFinite(v)?(f?v:Math.round(v)):d,a,b))}
+  const ui={};if(s.ui&&typeof s.ui==='object')for(const k in s.ui)if(/^\w{1,30}$/.test(k))ui[k]=!!s.ui[k];o.ui=ui;
+  for(const f of TIDY)f(o,s);
+  return o;
+}
+let st=null;
+const saveSettings=()=>store.set(KEY+'settings',st);
+
+/* one-off messages for screen readers */
+function say(t){const e=$('sr');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=t},60)}
+
+/* ---------- controls ----------
+   .seg buttons with data-k (a setting path) and data-v (its value), checkboxes with data-k, and sliders set up with slider().
+   watch(test, fn) says what happens after a setting changes; anything unclaimed rebuilds. */
+const WATCH=[];
+function watch(test,fn){WATCH.push([test,fn])}
+function changed(k){for(const[t,f]of WATCH)if(typeof t==='function'?t(k):t.test(k)){f(k);return}rebuild()}
+function asValue(k,v){const d=getIn(DEF,k);return typeof d==='number'?Number(v):typeof d==='boolean'?v==='true':v}
+document.querySelectorAll('.seg button[data-k]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.k;setIn(st,k,asValue(k,b.dataset.v));changed(k)}));
+document.querySelectorAll('input[type=checkbox][data-k]').forEach(c=>c.addEventListener('change',()=>{setIn(st,c.dataset.k,c.checked);changed(c.dataset.k)}));
+const OUT={},FMT={};
+function readout(id,v){const t=(FMT[id]||String)(v),o=$(OUT[id]||id+'Out');if(o&&o.textContent!==t)o.textContent=t;const e=$(id);if(e)e.setAttribute('aria-valuetext',t)}
+function put(id,v){const e=$(id);if(!e)return;e.value=v;readout(id,v)}
+/* fmt: value to text; commit: once when the drag ends; live: on every step of the drag */
+function slider(id,fmt,commit,live){FMT[id]=fmt;const e=$(id);if(!e)return;e.addEventListener('input',()=>{if(live)live(+e.value);readout(id,+e.value)});e.addEventListener('change',()=>commit(+e.value))}
+/* a slider tied straight to a setting */
+function bindSlider(id,key,fmt){slider(id,fmt||String,v=>{setIn(st,key,v);changed(key)});HOOK.sync.push(()=>put(id,getIn(st,key)))}
+function fillBox(id,html){const b=$(id);if(b&&b.dataset.h!==html){b.innerHTML=html;b.dataset.h=html}}
+/* a button that needs a second tap within 3 seconds, for things that can't be undone */
+function twoTap(id,again,fn){const b=$(id);if(!b)return;const label=b.textContent;let armed=0;
+  b.addEventListener('click',()=>{if(!armed){b.textContent=again;armed=setTimeout(()=>{armed=0;b.textContent=label},3000);return}
+    clearTimeout(armed);armed=0;b.textContent=label;fn()})}
+
+/* the three steps every change goes through: rebuild (remake what's shown), sync (controls), refresh (cell states) */
+let rebuild=()=>{saveSettings();sync();refresh()};
+function sync(){
+  document.querySelectorAll('.seg button[data-k]').forEach(b=>b.setAttribute('aria-pressed',String(String(getIn(st,b.dataset.k))===b.dataset.v)));
+  document.querySelectorAll('input[type=checkbox][data-k]').forEach(c=>{c.checked=!!getIn(st,c.dataset.k)});
+  for(const f of HOOK.sync)f();
+  if(APP.onSync)APP.onSync();
+}
+function refresh(){for(const f of HOOK.refresh)f();if(APP.onRefresh)APP.onRefresh()}
+
+/* ---------- files ---------- */
+/* hand a file to the person: through the host's save box where there is one, otherwise as an ordinary download. True if it went. */
+async function saveFile(name,blob,msg){
+  let dl=null;
+  try{if(window.claude&&typeof window.claude.use==='function')dl=await window.claude.use('downloads')}catch(e){}
+  if(dl){
+    try{await dl.save({filename:name,data:blob});msg.textContent='Saved '+name+'.';return true}
+    catch(e){msg.textContent=e&&e.code==='declined'?'Save cancelled.':'Saving isn’t available here. Open the page in your browser instead.';return false}
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);msg.textContent='Downloaded '+name+'.';return true;
+}
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+const fileBase=()=>{const n=$('projName');return slug(n&&n.value.trim()||'')||slug(SPEC.code+' '+SPEC.unit.one+'s')||'app'};
+/* a CSV cell: quoted when needed, and never read as a formula by a spreadsheet */
+const csv=v=>{let s=String(v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+
+/* ---------- the parts of the page written from the spec: header, Learn the ideas, About, Credits ---------- */
+function specText(){
+  document.title=SPEC.code+': '+SPEC.name;txt('appTitle',SPEC.code+': '+SPEC.name);txt('appTag',SPEC.tagline);
+  const L=$('learnList');if(L)L.innerHTML=(SPEC.learn||[]).map(t=>`<li><b>${esc(t.topic)}</b>: `+t.links.map(l=>
+    `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.title)}</a>`+(l.source?` (${esc(l.source)})`:'')).join(', ')+'.</li>').join('');
+  const lg=$('learn');if(lg)lg.hidden=!(SPEC.learn||[]).length;
+  txt('aboutWhen',SPEC.version+' · '+SPEC.date);
+  const A=$('aboutList');if(A)A.innerHTML=(SPEC.changes||[]).map(c=>`<li>${esc(c)}</li>`).join('');
+  const C=$('creditList');if(C)C.innerHTML=(SPEC.credits||[]).concat(CREDITS).map(c=>`<li>${esc(c)}</li>`).join('');
+}
+const CREDITS=[];   /* each part adds the credits it needs */
+
+/* ---------- start-up ---------- */
+function start(){
+  st=tidy(store.get(KEY+'settings'));
+  for(const f of HOOK.load)f();
+  specText();
+  /* a help tip can have more than one ? button: they open and close it together */
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden;t.hidden=!open;
+    document.querySelectorAll('.q[aria-controls="'+id+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
+  document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
+    d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
+  for(const f of HOOK.start)f();
+  if(APP.onStart)APP.onStart();
+  rebuild();
+  homeHint({code:SPEC.code,name:SPEC.name,url:SPEC.homeUrl||'',key:KEY,mount:$('homeHow')});
+}
+
+/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
+   Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
+   Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the
+   buttons. On a phone it shows once as a card at the bottom until it's dismissed; the steps also go in `mount` if given.
+   Self-contained, so it can also be added to apps the generator didn't make (FIG, BIG): homeHint({code, name, url, key, mount}). */
+function homeHint(cfg){
+  const d=document,ua=navigator.userAgent||'',code=String(cfg.code||'this app'),name=String(cfg.name||code);
+  const e=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),ios=ipad||/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+  let standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches}catch(x){}
+  let framed=false;try{framed=window.self!==window.top}catch(x){framed=true}
+  const web=/^https?:$/.test(location.protocol);
+  const inApp=/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|Pinterest|; wv\)/.test(ua)||(ios&&!/Safari\//.test(ua));
+  const iosOther=/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const where=standalone?'installed':!web?'file':framed?'framed':ios?(inApp?'ios-app':'ios'):android?(inApp?'android-app':'android'):'computer';
+  const url=cfg.url||(web&&!framed?location.href.split('#')[0]:'');
+  const key=(cfg.key||code.toLowerCase()+':')+'homeHint';
+  /* pictures of the buttons to tap (drawn here, not taken from any system) */
+  const svg=p=>`<span class="hh-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
+  const I={share:svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:svg('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+    plus:svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:svg('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
+    compass:svg('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>')};
+  let prompt=null;
+  function steps(){
+    if(where==='ios')return{lead:'It opens like an app, with its own icon.',list:[
+      `Tap ${I.share} <b>Share</b>${iosOther?' (in the address bar or the '+I.dots+' menu)':ipad?' (top right)':''}.`+(iosOther?'':` No Share button? Tap ${I.dots} first.`),
+      `Tap ${I.plus} <b>Add to Home Screen</b>.`,'Tap <b>Add</b>.'],note:'Best done before you start: the Home Screen app keeps its own copy of your work.'};
+    if(where==='ios-app')return{lead:'This page is open inside another app, which can’t add it to your Home Screen.',list:[
+      `Tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b>. (Or copy the link and paste it into Safari.)`,
+      `In Safari, tap ${I.share} <b>Share</b>, then ${I.plus} <b>Add to Home Screen</b>.`],copy:true};
+    if(where==='android')return{lead:'It opens like an app, with its own icon.',list:prompt?[`Tap <b>Install ${e(code)}</b> below.`]:[
+      `Tap ${I.kebab} (top right).`,'Tap <b>Add to Home screen</b> or <b>Install app</b>.','Tap <b>Install</b> or <b>Add</b>.']};
+    if(where==='android-app')return{lead:'This page is open inside another app, which can’t add it to your Home screen.',list:[
+      `Tap ${I.kebab} and choose <b>Open in Chrome</b> (or your browser).`,`Then tap ${I.kebab} again and <b>Add to Home screen</b>.`],copy:true};
+    if(where==='installed')return{lead:`${e(code)} is on your Home Screen. Open it from there any time.`,list:[]};
+    if(where==='file')return{lead:`You opened ${e(code)} as a file. It works here, but a phone can’t run a file like this.`+
+      (url?` On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a> instead and follow the steps it shows.`:' To use it on a phone, it needs a web address.'),list:[],copy:!!url};
+    return{lead:url?`On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a>, and it shows the two or three taps that put ${e(code)} on the Home Screen. On a computer, bookmark it.`:
+      `To put ${e(code)} on a phone, open its web address there.`,list:[],copy:!!url};
+  }
+  function html(withTitle){
+    const s=steps();
+    return(withTitle?`<div class="hh-t"><span>Put ${e(code)} on your Home Screen</span><button type="button" class="hh-x" aria-label="Close">×</button></div>`:'')+
+      `<p class="hh-lead">${s.lead}</p>`+(s.list.length?`<ol class="hh-steps">${s.list.map(l=>`<li>${l}</li>`).join('')}</ol>`:'')+(s.note?`<p class="hh-note">${s.note}</p>`:'')+
+      `<div class="hh-btns">${prompt?`<button type="button" class="hh-b hh-go" data-hh="install">Install ${e(code)}</button>`:''}${s.copy&&url?'<button type="button" class="hh-b" data-hh="copy">Copy link</button>':''}${withTitle?'<button type="button" class="hh-b" data-hh="later">Not now</button>':''}<span class="hh-msg" aria-live="polite"></span></div>`;
+  }
+  if(!d.getElementById('hh-style')){const st=d.createElement('style');st.id='hh-style';st.textContent=
+`#hh{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9999;max-width:520px;margin:0 auto;background:var(--panel,#fff);color:var(--ink,#1b1f24);border:1px solid var(--edge,#c3c9d2);border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.28);padding:12px 14px 10px;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+#hh .hh-t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.hh-lead{margin:4px 0}.hh-steps{margin:6px 0;padding-left:1.4em}.hh-steps li{margin:5px 0}
+.hh-i{display:inline-flex;vertical-align:-5px;width:24px;height:24px;align-items:center;justify-content:center;border-radius:7px;background:var(--chip,#e9edf2);color:var(--accent,#0E7C7B);margin:0 1px}.hh-i svg{width:18px;height:18px}
+.hh-note,.hh-msg{color:var(--muted,#5b6470);font-size:13px;margin:4px 0}.hh-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.hh-b{min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--edge,#c3c9d2);background:var(--chip,#e9edf2);color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.hh-go{background:var(--accent,#0E7C7B);color:var(--accent-ink,#fff);border-color:transparent}
+#hh .hh-x{min-width:44px;min-height:44px;border:0;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
+@media (prefers-color-scheme:dark){#hh{background:var(--panel,#1d2229);color:var(--ink,#e8ebef);border-color:var(--edge,#3a424d)}.hh-i,.hh-b{background:var(--chip,#2a313a)}}`;
+    d.head.appendChild(st)}
+  const phone=where==='ios'||where==='ios-app'||where==='android'||where==='android-app';
+  let later=0;try{later=+localStorage.getItem(key)||0}catch(x){}
+  let card=null;
+  function wire(box){box.addEventListener('click',async ev=>{
+    const b=ev.target.closest('[data-hh],.hh-x');if(!b)return;const m=box.querySelector('.hh-msg'),act=b.dataset.hh||'later';
+    if(act==='install'&&prompt){prompt.prompt();try{const r=await prompt.userChoice;if(r&&r.outcome==='accepted')hide()}catch(x){}prompt=null;draw()}
+    else if(act==='copy'){try{await navigator.clipboard.writeText(url);if(m)m.textContent='Link copied.'}catch(x){if(m)m.textContent=url}}
+    else if(act==='later'){try{localStorage.setItem(key,String(Date.now()))}catch(x){}hide()}
+  })}
+  function hide(){if(card){card.remove();card=null}}
+  function draw(){
+    if(cfg.mount){cfg.mount.innerHTML=html(false);if(!cfg.mount.dataset.hh){cfg.mount.dataset.hh='1';wire(cfg.mount)}}
+    if(card)card.innerHTML=html(true);
+  }
+  if(phone&&Date.now()-later>30*864e5){card=d.createElement('div');card.id='hh';card.setAttribute('role','dialog');card.setAttribute('aria-label','Put '+code+' on your Home Screen');d.body.appendChild(card);wire(card)}
+  window.addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();prompt=ev;draw()});
+  window.addEventListener('appinstalled',()=>{hide()});
+  draw();
+  return where;
+}
+
+/* ==== APP CODE START ==== */
+/* JAM's own code: the sound core (JAMCORE, also run in Workers), the recording reader, then the page. */
+function JAMCORE(){'use strict';
+/* MPEG-1 Layer III tables (ISO/IEC 11172-3). Huffman codes from the standard as tabulated in the shine library (LGPL);
+   the synthesis window from the standard as tabulated in mpg123 (LGPL). Codes are hex, lengths are base-36 digits. */
+const HUFF_SRC={
+ 1:{x:2,y:2,c:'1,1,1,0',l:'1323'},
+ 2:{x:3,y:3,c:'1,2,1,3,1,1,3,2,0',l:'136335556'},
+ 3:{x:3,y:3,c:'3,2,1,1,1,1,3,2,0',l:'226325556'},
+ 5:{x:4,y:4,c:'1,2,6,5,3,1,4,4,7,5,7,1,6,1,1,0',l:'1367336766787678'},
+ 6:{x:4,y:4,c:'7,3,5,1,6,2,3,2,5,4,4,1,3,3,2,0',l:'3357324544566567'},
+ 7:{x:6,y:6,c:'1,2,a,13,10,a,3,3,7,a,5,3,b,4,d,11,8,4,c,b,12,f,b,2,7,6,9,e,3,1,6,4,5,3,2,0',l:'13688934677865788977899977899a889aaa'},
+ 8:{x:6,y:6,c:'3,4,6,12,c,5,5,1,2,10,9,3,7,3,5,e,7,3,13,11,f,d,a,4,d,5,8,b,5,1,c,4,4,1,1,0',l:'23688932488864688988899a8789aa9899bb'},
+ 9:{x:6,y:6,c:'7,5,9,e,f,7,6,4,5,5,6,7,7,6,8,8,8,5,f,6,9,a,5,1,b,7,9,6,4,1,e,4,6,2,6,0',l:'335689334568445678656778767789878899'},
+ 10:{x:8,y:8,c:'1,2,a,17,23,1e,c,11,3,3,8,c,12,15,c,7,b,9,f,15,20,28,13,6,e,d,16,22,2e,17,12,7,14,13,21,2f,1b,16,9,3,1f,16,29,1a,15,14,5,3,e,d,a,b,10,6,5,1,9,8,7,8,4,4,2,0',l:'1368999a3467898866789a997789aa9a889aaaaa99aabbab889aaabb989aabbb'},
+ 11:{x:8,y:8,c:'3,4,a,18,22,21,15,f,5,3,4,a,20,11,b,a,b,7,d,12,1e,1f,14,5,19,b,13,3b,1b,12,c,5,23,21,1f,3a,1e,10,7,5,1c,1a,20,13,11,f,8,e,e,c,9,d,e,9,4,1,b,4,6,6,6,3,2,0',l:'23578989334688785567898876798a8988899a9a889aabab87789aaa8789aaaa'},
+ 12:{x:8,y:8,c:'9,6,10,21,29,27,26,1a,7,5,6,9,17,10,1a,b,11,7,b,e,15,1e,a,7,11,a,f,c,12,1c,e,5,20,d,16,13,12,10,9,5,28,11,1f,1d,11,d,4,2,1b,c,b,f,a,7,4,1,1b,c,8,c,6,3,1,0',l:'4357899933457788545678786566788876778889878889898778899a9889999a'},
+ 13:{x:16,y:16,c:'1,5,e,15,22,33,2e,47,2a,34,44,34,43,2c,2b,13,3,4,c,13,1f,1a,2c,21,1f,18,20,18,1f,23,16,e,f,d,17,24,3b,31,4d,41,1d,28,1e,28,1b,21,2a,10,16,14,25,3d,38,4f,49,40,2b,4c,38,25,1a,1f,19,e,23,10,3c,39,61,4b,72,5b,36,49,37,29,30,35,17,18,3a,1b,32,60,4c,46,5d,54,4d,3a,4f,1d,4a,31,29,11,2f,2d,4e,4a,73,5e,5a,4f,45,53,47,32,3b,26,24,f,48,22,38,5f,5c,55,5b,5a,56,49,4d,41,33,2c,2b,2a,2b,14,1e,2c,37,4e,48,57,4e,3d,2e,36,25,1e,14,10,35,19,29,25,2c,3b,36,51,42,4c,39,36,25,12,27,b,23,21,1f,39,2a,52,48,50,2f,3a,37,15,16,1a,26,16,35,19,17,26,46,3c,33,24,37,1a,22,17,1b,e,9,7,22,20,1c,27,31,4b,1e,34,30,28,34,1c,12,11,9,5,2d,15,22,40,38,32,31,2d,1f,13,c,f,a,7,6,3,30,17,14,27,24,23,35,15,10,17,d,a,6,1,4,2,10,f,11,1b,19,14,1d,b,11,c,10,8,1,1,0,1',l:'1467899a9abbccdd3467889999aabccc667899aa9aabbcdd77899aaaabbbbcdd8799aabbabbccdde989aaabbbbcbddee99aabbbbbcccddeea9abbbccccdddegg989aabbccccddeffa9aabbbdcddeeegfaaabbccdcdedefghbaabccccdddefffgbbbccdcdeefffgggcbcdddeeeeefgfggdccdddfeehfffhggccdeeefeffggjijg'},
+ 15:{x:16,y:16,c:'7,c,12,35,2f,4c,7c,6c,59,7b,6c,77,6b,51,7a,3f,d,5,10,1b,2e,24,3d,33,2a,46,34,53,41,29,3b,24,13,11,f,18,29,22,3b,30,28,40,32,4e,3e,50,38,21,1d,1c,19,2b,27,3f,37,5d,4c,3b,5d,48,36,4b,32,1d,34,16,2a,28,43,39,5f,4f,48,39,59,45,31,42,2e,1b,4d,25,23,42,3a,34,5b,4a,3e,30,4f,3f,5a,3e,28,26,7d,20,3c,38,32,5c,4e,41,37,57,47,33,49,33,46,1e,6d,35,31,5e,58,4b,42,7a,5b,49,38,2a,40,2c,15,19,5a,2b,29,4d,49,3f,38,5c,4d,42,2f,43,30,35,24,14,47,22,43,3c,3a,31,58,4c,43,6a,47,36,26,27,17,f,6d,35,33,2f,5a,52,3a,39,30,48,39,29,17,1b,3e,9,56,2a,28,25,46,40,34,2b,46,37,2a,19,1d,12,b,b,76,44,1e,37,32,2e,4a,41,31,27,18,10,16,d,e,7,5b,2c,27,26,22,3f,34,2d,1f,34,1c,13,e,8,9,3,7b,3c,3a,35,2f,2b,20,16,25,18,11,c,f,a,2,1,47,25,22,1e,1c,14,11,1a,15,10,a,6,8,6,2,0',l:'345778999aabbbcd43567788899aaabb55567788899aabbb6667788999aaabbb7677889999aaabbb8778889999aabbbc978889999aaabbcc9889999aaaaabbbc9889999aaaabbccc989999aaabbbbccca999aaaaabbbbcdca999aaaabbbbcccdba9aaabbbbbbccddbaaaabbbbcccccddcbbbbbbbccccddcdcbbbbbbcccccdddd'},
+ 16:{x:16,y:16,c:'1,5,e,2c,4a,3f,6e,5d,ac,95,8a,f2,e1,c3,178,11,3,4,c,14,23,3e,35,2f,53,4b,44,77,c9,6b,cf,9,f,d,17,26,43,3a,67,5a,a1,48,7f,75,6e,d1,ce,10,2d,15,27,45,40,72,63,57,9e,8c,fc,d4,c7,183,16d,1a,4b,24,44,41,73,65,b3,a4,9b,108,f6,e2,18b,17e,16a,9,42,1e,3b,38,66,b9,ad,109,8e,fd,e8,190,184,17a,1bd,10,6f,36,34,64,b8,b2,a0,85,101,f4,e4,d9,181,16e,2cb,a,62,30,5b,58,a5,9d,94,105,f8,197,18d,174,17c,379,374,8,55,54,51,9f,9c,8f,104,f9,1ab,191,188,17f,2d7,2c9,2c4,7,9a,4c,49,8d,83,100,f5,1aa,196,18a,180,2df,167,2c6,160,b,8b,81,43,7d,f7,e9,e5,db,189,2e7,2e1,2d0,375,372,1b7,4,f3,78,76,73,e3,df,18c,2ea,2e6,2e0,2d1,2c8,2c2,df,1b4,6,ca,e0,de,da,d8,185,182,17d,16c,378,1bb,2c3,1b8,1b5,6c0,4,2eb,d3,d2,d0,172,17b,2de,2d3,2ca,6c7,373,36d,36c,d83,361,2,179,171,66,bb,2d6,2d2,166,2c7,2c5,362,6c6,367,d82,366,1b2,0,c,a,7,b,a,11,b,9,d,c,a,7,5,3,1,3',l:'146899aabbbcccd934678999aaabcbc8667899aababbbcc987899aaabbcccdda9899aabbbcccddd99899abbcbccdddeaa99abbbbccccddeaa9aabbbccddddffaaaabbbccddddeeeabaabbccddddededbbbabccccdeeeffeacbbbccdeeeeeedebcccccddddfeeeegbecccddeeegfffhfbddbceedeefgfhfeb98899aaabbbbbbb8'},
+ 24:{x:16,y:16,c:'f,d,2e,50,92,106,f8,1b2,1aa,29d,28d,289,26d,205,408,58,e,c,15,26,47,82,7a,d8,d1,c6,147,159,13f,129,117,2a,2f,16,29,4a,44,80,78,dd,cf,c2,b6,154,13b,127,21d,12,51,27,4b,46,86,7d,74,dc,cc,be,b2,145,137,125,10f,10,93,48,45,87,7f,76,70,d2,c8,bc,160,143,132,11d,21c,e,107,42,81,7e,77,72,d6,ca,c0,b4,155,13d,12d,119,106,c,f9,7b,79,75,71,d7,ce,c3,b9,15b,14a,134,123,110,208,a,1b3,73,6f,6d,d3,cb,c4,bb,161,14c,139,12a,11b,213,17d,11,1ab,d4,d0,cd,c9,c1,ba,b1,a9,140,12f,11e,10c,202,179,10,14f,c7,c5,bf,bd,b5,ae,14d,141,131,121,113,209,17b,173,b,29c,b8,b7,b3,af,158,14b,13a,130,122,115,212,17f,175,16e,a,28c,15a,ab,a8,a4,13e,135,12b,11f,114,107,201,177,170,16a,6,288,142,13c,138,133,12e,124,11c,10d,105,200,178,172,16c,167,4,26c,12c,128,126,120,11a,111,10a,203,17c,176,171,16d,169,165,2,409,118,116,112,10b,108,103,17e,17a,174,16f,16b,168,166,164,0,2b,14,13,11,f,d,b,9,7,6,4,7,5,3,1,3',l:'4467899aabbbbbc94456788999aaaaa865677889999aaab776778889999aaaa78778888999aaaab79788889999aaaaa7988889999aaaaab7a8889999aaaaabb8a99999999aaaabb8a999999aaaaabbb8b9999aaaaaabbbb8ba999aaaaaabbbb8baaaaaaaaabbbbb8baaaaaaabbbbbbb8caaaaaabbbbbbbb88777777777788884'},
+ 32:{x:1,y:16,c:'1,5,4,5,6,5,4,4,7,3,6,0,7,2,3,1',l:'1445465645565666'},
+ 33:{x:1,y:16,c:'f,e,d,c,b,a,9,8,7,6,5,4,3,2,1,0',l:'4444444444444444'},
+};
+const WIN_BASE=[0,-1,-1,-1,-1,-1,-1,-2,-2,-2,-2,-3,-3,-4,-4,-5,-5,-6,-7,-7,-8,-9,-10,-11,-13,-14,-16,-17,-19,-21,-24,-26,-29,-31,-35,-38,-41,-45,-49,-53,-58,-63,-68,-73,-79,-85,-91,-97,-104,-111,-117,-125,-132,-139,-147,-154,-161,-169,-176,-183,-190,-196,-202,-208,-213,-218,-222,-225,-227,-228,-228,-227,-224,-221,-215,-208,-200,-189,-177,-163,-146,-127,-106,-83,-57,-29,2,36,72,111,153,197,244,294,347,401,459,519,581,645,711,779,848,919,991,1064,1137,1210,1283,1356,1428,1498,1567,1634,1698,1759,1817,1870,1919,1962,2001,2032,2057,2075,2085,2087,2080,2063,2037,2000,1952,1893,1822,1739,1644,1535,1414,1280,1131,970,794,605,402,185,-45,-288,-545,-814,-1095,-1388,-1692,-2006,-2330,-2663,-3004,-3351,-3705,-4063,-4425,-4788,-5153,-5517,-5879,-6237,-6589,-6935,-7271,-7597,-7910,-8209,-8491,-8755,-8998,-9219,-9416,-9585,-9727,-9838,-9916,-9959,-9966,-9935,-9863,-9750,-9592,-9389,-9139,-8840,-8492,-8092,-7640,-7134,-6574,-5959,-5288,-4561,-3776,-2935,-2037,-1082,-70,998,2122,3300,4533,5818,7154,8540,9975,11455,12980,14548,16155,17799,19478,21189,22929,24694,26482,28289,30112,31947,33791,35640,37489,39336,41176,43006,44821,46617,48390,50137,51853,53534,55178,56778,58333,59838,61289,62684,64019,65290,66494,67629,68692,69679,70590,71420,72169,72835,73415,73908,74313,74630,74856,74992,75038];
+const SFB_L={44100:[0,4,8,12,16,20,24,30,36,44,52,62,74,90,110,134,162,196,238,288,342,418,576],48000:[0,4,8,12,16,20,24,30,36,42,50,60,72,88,106,128,156,190,230,276,330,384,576],32000:[0,4,8,12,16,20,24,30,36,44,54,66,82,102,126,156,194,240,296,364,448,550,576]};
+/* ---------- JAM core: sound analysis (a port of jamcutter.py 1.1) and an MP3 encoder ----------
+   Pure code with no page access, so the same text runs in a Worker, on the page and in Node for the tests. */
+const BLOCK=0.25;                 /* analysis resolution in seconds */
+const ARATE=16000;                /* analysis sample rate */
+const BANDS=[[40,120],[120,300],[300,700],[700,1500],[1500,3000],[3000,6000],[6000,7900]];
+
+/* Python's round(): halves go to the even number */
+function pyRound(x){const f=Math.floor(x),d=x-f;if(d>0.5)return f+1;if(d<0.5)return f;return f%2===0?f:f+1}
+/* Python's '%.3f' for the times written to marker files */
+function pyFixed(v,n){const m=Math.pow(10,n),s=v*m;if(Math.abs(s-Math.trunc(s))===0.5){const r=pyRound(s);return(r/m).toFixed(n)}return v.toFixed(n)}
+function gcd(a,b){while(b){const t=a%b;a=b;b=t}return a}
+
+/* ---------- resampling: a windowed-sinc filter (Kaiser, beta 9, cutoff 0.97 of the lower Nyquist), like ffmpeg's default ---------- */
+function besselI0(x){let s=1,t=1;for(let k=1;k<40;k++){t*=(x/(2*k))*(x/(2*k));s+=t;if(t<1e-12*s)break}return s}
+class Resampler{
+  constructor(fsIn,fsOut){
+    this.fsIn=fsIn;this.fsOut=fsOut;this.pass=fsIn===fsOut;
+    if(this.pass)return;
+    const g=gcd(fsIn,fsOut);this.L=fsOut/g;this.M=fsIn/g;
+    const low=Math.min(fsIn,fsOut),fc=0.97*low/2,K=Math.ceil(16*fsIn/low),beta=9,I0b=besselI0(beta);
+    this.K=K;const W=2*K;this.W=W;
+    this.taps=new Float32Array(this.L*W);
+    for(let p=0;p<this.L;p++){
+      const f=p/this.L;let sum=0;
+      for(let j=-K+1;j<=K;j++){
+        const t=(j-f)/fsIn,x=2*fc*t,r=(j-f)/K;
+        const sinc=Math.abs(x)<1e-12?1:Math.sin(Math.PI*x)/(Math.PI*x);
+        const win=Math.abs(r)>=1?0:besselI0(beta*Math.sqrt(1-r*r))/I0b;
+        const h=sinc*win;this.taps[p*W+j+K-1]=h;sum+=h;
+      }
+      for(let j=0;j<W;j++)this.taps[p*W+j]/=sum;
+    }
+    this.buf=new Float32Array(K);this.base=-K;this.n=0;this.total=0;
+  }
+  _run(limit){
+    const{L,M,K,W,taps}=this,buf=this.buf,base=this.base,end=base+buf.length;
+    const out=[];let n=this.n;
+    for(;;){
+      if(limit!==undefined&&n>=limit)break;
+      const num=n*M,k0=Math.floor(num/L),p=num-k0*L;
+      if(k0+K>=end)break;
+      let s=0;const o=k0-K+1-base,t0=p*W;
+      for(let j=0;j<W;j++)s+=buf[o+j]*taps[t0+j];
+      out.push(s);n++;
+    }
+    this.n=n;
+    const keep=Math.floor(n*M/L)-K+1;      /* oldest input still needed */
+    if(keep>base){const cut=keep-base;this.buf=this.buf.slice(cut);this.base=keep}
+    return Float32Array.from(out);
+  }
+  push(x){
+    if(this.pass)return x;
+    this.total+=x.length;
+    const b=new Float32Array(this.buf.length+x.length);b.set(this.buf);b.set(x,this.buf.length);this.buf=b;
+    return this._run();
+  }
+  end(){
+    if(this.pass)return new Float32Array(0);
+    const b=new Float32Array(this.buf.length+2*this.K+2);b.set(this.buf);this.buf=b;
+    return this._run(Math.round(this.total*this.L/this.M));
+  }
+}
+
+/* ---------- filters: RBJ biquads with Q 0.707, as ffmpeg's highpass and lowpass ---------- */
+function biquad(type,f,fs){
+  const w=2*Math.PI*f/fs,c=Math.cos(w),al=Math.sin(w)/(2*0.707),a0=1+al;
+  const b=type==='hp'?[(1+c)/2,-(1+c),(1+c)/2]:[(1-c)/2,1-c,(1-c)/2];
+  return{b0:b[0]/a0,b1:b[1]/a0,b2:b[2]/a0,a1:-2*c/a0,a2:(1-al)/a0,x1:0,x2:0,y1:0,y2:0};
+}
+function runBiquad(q,x){
+  let{b0,b1,b2,a1,a2,x1,x2,y1,y2}=q;
+  for(let i=0;i<x.length;i++){const v=x[i],y=b0*v+b1*x1+b2*x2-a1*y1-a2*y2;x2=x1;x1=v;y2=y1;y1=y;x[i]=y}
+  q.x1=x1;q.x2=x2;q.y1=y1;q.y2=y2;
+}
+
+/* ---------- Analyzer: loudness and band levels every 0.25 s, streamed so long files never sit in memory ---------- */
+class Analyzer{
+  constructor(sr){
+    this.rs=new Resampler(sr,ARATE);this.nb=Math.round(ARATE*BLOCK);
+    this.chains=[[biquad('hp',70,ARATE)]].concat(BANDS.map(([lo,hi])=>[biquad('hp',lo,ARATE),biquad('hp',lo,ARATE),biquad('lp',hi,ARATE),biquad('lp',hi,ARATE)]));
+    this.acc=new Float64Array(this.chains.length);this.fill=0;this.series=this.chains.map(()=>[]);this.tmp=new Float64Array(0);
+    this.samples=0;
+  }
+  push(planes){
+    const n=planes[0].length,ch=planes.length,m=new Float32Array(n);
+    /* ffmpeg's stereo to mono: (L + R) / sqrt(2) */
+    if(ch===1)m.set(planes[0]);else{for(let c=0;c<ch;c++){const p=planes[c];for(let i=0;i<n;i++)m[i]+=p[i]}const g=1/Math.sqrt(ch);for(let i=0;i<n;i++)m[i]*=g}
+    this.samples+=n;
+    this._feed(this.rs.push(m));
+  }
+  _feed(x){
+    const n=x.length;if(!n)return;
+    if(this.tmp.length<n)this.tmp=new Float64Array(n);
+    const tmp=this.tmp,nb=this.nb;
+    for(let c=0;c<this.chains.length;c++){
+      for(let i=0;i<n;i++)tmp[i]=x[i];
+      const view=tmp.subarray(0,n);for(const q of this.chains[c])runBiquad(q,view);
+      let a=this.acc[c],f=this.fill;const ser=this.series[c];
+      for(let i=0;i<n;i++){a+=tmp[i]*tmp[i];if(++f===nb){ser.push(dbOf(a/nb));a=0;f=0}}
+      this.acc[c]=a;
+    }
+    this.fill=(this.fill+n)%nb;
+  }
+  end(){
+    this._feed(this.rs.end());
+    if(this.fill>0){for(let c=0;c<this.chains.length;c++)this.series[c].push(dbOf(this.acc[c]/this.fill));this.fill=0}
+    const count=Math.min(...this.series.map(s=>s.length));
+    const db=this.series[0].slice(0,count),bands=[];
+    for(let i=0;i<count;i++){const b=new Array(BANDS.length);for(let j=0;j<BANDS.length;j++)b[j]=this.series[j+1][i];bands.push(b)}
+    return{db,bands,samples:this.samples};
+  }
+}
+function dbOf(ms){if(!(ms>0))return-100;const v=10*Math.log10(ms);return v<-100?-100:v>0?0:v}
+
+/* ---------- deciding takes and parts: jamcutter.py 1.1, line for line ---------- */
+function rollingMedian(xs,win){
+  const half=win>>1,n=xs.length,out=new Array(n);
+  for(let i=0;i<n;i++){const w=xs.slice(Math.max(0,i-half),Math.min(n,i+half+1)).sort((a,b)=>a-b);out[i]=w[w.length>>1]}
+  return out;
+}
+function rollingMean(xs,win){
+  const half=win>>1,n=xs.length,cs=[0];for(const v of xs)cs.push(cs[cs.length-1]+v);
+  const out=new Array(n);for(let i=0;i<n;i++){const a=Math.max(0,i-half),b=Math.min(n,i+half+1);out[i]=(cs[b]-cs[a])/(b-a)}
+  return out;
+}
+function envelope(db){return rollingMean(rollingMedian(db,Math.trunc(2.0/BLOCK)|1),Math.trunc(1.0/BLOCK)|1)}
+function autoThreshold(env){
+  const lo=-100,hi=0,nb=hi-lo+1,bins=new Array(nb).fill(0);
+  for(const v of env)bins[pyRound(Math.min(hi,Math.max(lo,v)))-lo]++;
+  const cw=[0],cs=[0];
+  for(let i=0;i<nb;i++){cw.push(cw[i]+bins[i]);cs.push(cs[i]+(i+lo)*bins[i])}
+  const total=cw[nb];
+  const stats=(a,b)=>{const w=cw[b]-cw[a];return[w,w?(cs[b]-cs[a])/w:0]};
+  const mu=cs[nb]/total;
+  let best2=-1,t2=null;
+  for(let k=1;k<nb;k++){const[w0,m0]=stats(0,k),[w1,m1]=stats(k,nb);if(w0&&w1){const v=w0*(m0-mu)**2+w1*(m1-mu)**2;if(v>best2){best2=v;t2=k}}}
+  let best3=-1,t3=null;
+  for(let a=1;a<nb-1;a++){const[w0,m0]=stats(0,a);if(!w0)continue;
+    for(let b=a+1;b<nb;b++){const[w1,m1]=stats(a,b),[w2,m2]=stats(b,nb);
+      if(w1&&w2){const v=w0*(m0-mu)**2+w1*(m1-mu)**2+w2*(m2-mu)**2;if(v>best3){best3=v;t3=[a,b,m1,m2,w1/total]}}}}
+  if(t3){const[,b,m1,m2,frac]=t3;if(m2-m1>=10&&frac>=0.04){const[,mlo]=stats(0,b);return{thr:b+lo-0.5,mLo:mlo,mHi:m2,shape:'talk and playing apart'}}}
+  if(t2!==null){const[,mlo]=stats(0,t2),[,mhi]=stats(t2,nb);if(mhi-mlo>=10)return{thr:t2+lo-0.5,mLo:mlo,mHi:mhi,shape:'two clear levels'}}
+  const o=env.slice().sort((a,b)=>a-b),median=o[o.length>>1],floor=o[Math.trunc(o.length*0.02)];
+  return{thr:median-15,mLo:floor,mHi:median,shape:'one level throughout'};
+}
+function findTakes(env,threshold,gap,minTake,pre,post,duration,hyst=3.0){
+  const runs=[];let on=false,start=0;
+  for(let i=0;i<env.length;i++){const v=env[i];
+    if(!on&&v>=threshold){on=true;start=i}
+    else if(on&&v<threshold-hyst){runs.push([start*BLOCK,i*BLOCK]);on=false}}
+  if(on)runs.push([start*BLOCK,env.length*BLOCK]);
+  const merged=[];
+  for(const[s,e]of runs){const last=merged[merged.length-1];
+    if(last&&s-last.end<gap){last.stops.push([last.end,s]);last.end=e}else merged.push({start:s,end:e,stops:[]})}
+  const takes=merged.filter(t=>t.end-t.start>=minTake);
+  for(let i=0;i<takes.length;i++){const t=takes[i];
+    const loLim=i===0?0:(takes[i-1].end+t.start)/2,hiLim=i===takes.length-1?duration:(t.end+takes[i+1].start)/2;
+    t.coreStart=t.start;t.coreEnd=t.end;t.start=Math.max(loLim,t.start-pre);t.end=Math.min(hiLim,t.end+post)}
+  return takes;
+}
+function changeCurve(bands){
+  const n=bands.length,d=BANDS.length;
+  const cols=[];for(let j=0;j<d;j++)cols.push(rollingMedian(bands.map(b=>Math.max(-90,b[j])),Math.trunc(2.25/BLOCK)|1));
+  const cs=[new Array(d+1).fill(0)];
+  for(let i=0;i<n;i++){
+    let sum=0;const v=new Array(d);for(let j=0;j<d;j++){v[j]=cols[j][i];sum+=v[j]}
+    const mean=sum/d,prev=cs[i],row=new Array(d+1);
+    for(let j=0;j<d;j++)row[j]=prev[j]+(v[j]-mean);row[d]=prev[d]+0.5*mean;cs.push(row);
+  }
+  const curve=new Array(n).fill(0);
+  for(const w of[Math.trunc(6/BLOCK),Math.trunc(12/BLOCK)]){
+    for(let i=w;i<n-w;i++){const a0=cs[i-w],a=cs[i],b=cs[i+w];let s=0;
+      for(let k=0;k<=d;k++){const diff=((a[k]-a0[k])-(b[k]-a[k]))/w;s+=diff*diff}
+      curve[i]+=Math.sqrt(s)}
+  }
+  return curve;
+}
+function splitIntoParts(takes,curve,splitOver,minPart,partSens){
+  let playing=[];
+  for(const t of takes)playing=playing.concat(curve.slice(Math.trunc(t.coreStart/BLOCK),Math.trunc(t.coreEnd/BLOCK)));
+  if(!playing.length)return;
+  const srt=playing.slice().sort((a,b)=>a-b),med=srt[srt.length>>1],p90=srt[Math.trunc(srt.length*0.9)];
+  const level=med+0.6*(p90-med)*partSens,gap=Math.trunc(minPart/BLOCK);
+  for(const t of takes){
+    t.parts=[];
+    if(!splitOver||t.coreEnd-t.coreStart<splitOver)continue;
+    const lo=Math.trunc((t.coreStart+minPart)/BLOCK),hi=Math.trunc((t.coreEnd-minPart)/BLOCK),cuts=[];
+    for(const[a,b]of t.stops){const c=Math.trunc((a+b)/2/BLOCK);if(lo<=c&&c<=hi&&cuts.every(x=>Math.abs(c-x)>=gap))cuts.push(c)}
+    const cands=[];for(let i=lo;i<=hi;i++)cands.push(i);
+    cands.sort((x,y)=>(-curve[x])-(-curve[y]));
+    for(const i of cands){if(curve[i]<level)break;if(cuts.every(x=>Math.abs(i-x)>=gap))cuts.push(i)}
+    if(!cuts.length)continue;
+    const edges=[t.start].concat(cuts.slice().sort((a,b)=>a-b).map(c=>c*BLOCK),[t.end]);
+    for(let k=0;k<edges.length-1;k++){
+      const s=edges[k]-(k?1.0:0.0),e=edges[k+1]+(k<edges.length-2?1.0:0.0);
+      t.parts.push({start:Math.max(t.start,s),end:Math.min(t.end,e)});
+    }
+  }
+}
+/* the whole decision, from the two series; o holds the settings (the same names and defaults as jamcutter.py) */
+function decide(db,bands,o){
+  const duration=db.length*BLOCK,env=envelope(db),auto=autoThreshold(env);
+  const threshold=o.autoThreshold?auto.thr+o.sensitivity:o.threshold;
+  const takes=findTakes(env,threshold,o.gap,o.minTake,o.pre,o.post,duration);
+  takes.forEach((t,i)=>{t.n=i+1;t.label='Take '+String(i+1).padStart(2,'0');
+    const a=Math.trunc(t.coreStart/BLOCK),core=env.slice(a,Math.max(a+1,Math.trunc(t.coreEnd/BLOCK))).sort((x,y)=>x-y);
+    t.level=Math.round(core[core.length>>1]*10)/10;t.parts=[]});
+  if(takes.length&&o.splitOver)splitIntoParts(takes,changeCurve(bands),o.splitOver,o.minPart,o.partSens);
+  return{duration,env,threshold,auto,takes};
+}
+/* marker files, as jamcutter.py writes them */
+function markerList(takes){
+  const out=[];
+  for(const t of takes){
+    out.push([t.label,t.start,t.end-t.start,'auto-detected take']);
+    (t.parts||[]).forEach((p,k)=>out.push([t.label+' part '+(k+1),p.start,p.end-p.start,'sound change inside take']));
+    for(const[a]of t.stops)out.push(['stop in '+t.label,a,0,'short stop inside take']);
+  }
+  return out;
+}
+function audacityLabels(takes){return markerList(takes).map(([l,s,len])=>pyFixed(s,3)+'\t'+pyFixed(s+len,3)+'\t'+l+'\n').join('')}
+function auditionTime(t){t=Math.max(0,t);const h=Math.trunc(t/3600),m=Math.trunc((t%3600)/60),s=t-h*3600-m*60,ss=pyFixed(s,3).padStart(6,'0');
+  return h?h+':'+String(m).padStart(2,'0')+':'+ss:m+':'+ss}
+function auditionCsv(takes){
+  const rows=['Name\tStart\tDuration\tTime Format\tType\tDescription'];
+  for(const[l,s,len,d]of markerList(takes))rows.push(l+'\t'+auditionTime(s)+'\t'+auditionTime(len)+'\tdecimal\tCue\t'+d);
+  return(rows.join('\n')+'\n').replace(/\n/g,'\r\n');
+}
+function hmsTag(t){t=pyRound(t);return Math.trunc(t/3600)+'h'+String(Math.trunc((t%3600)/60)).padStart(2,'0')+'m'+String(t%60).padStart(2,'0')+'s'}
+function clock(t){t=Math.max(0,t);const s=Math.trunc(t),h=Math.trunc(s/3600),m=Math.trunc((s%3600)/60),x=s%60;
+  return h?h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'):m+':'+String(x).padStart(2,'0')}
+/* the MP3s: a whole take, or for a long take its full version plus its parts (jamcutter.py's names) */
+function makeClips(takes,base){
+  const p2=n=>String(n).padStart(2,'0'),clips=[];
+  for(const t of takes){
+    t.clips=[];
+    if(t.parts.length){
+      t.clips.push({kind:'full',id:'T'+p2(t.n),take:t.n,part:0,start:t.start,end:t.end,
+        fname:`${base}_T${p2(t.n)}_full_${hmsTag(t.start)}.mp3`,title:`${base} - take ${p2(t.n)} (full) @ ${clock(t.start)}`});
+      t.parts.forEach((p,k)=>t.clips.push({kind:'part',id:`T${p2(t.n)}-${p2(k+1)}`,take:t.n,part:k+1,start:p.start,end:p.end,
+        fname:`${base}_T${p2(t.n)}-${p2(k+1)}_${hmsTag(p.start)}.mp3`,title:`${base} - take ${p2(t.n)} part ${k+1} @ ${clock(p.start)}`}));
+    }else t.clips.push({kind:'take',id:'T'+p2(t.n),take:t.n,part:0,start:t.start,end:t.end,
+      fname:`${base}_T${p2(t.n)}_${hmsTag(t.start)}.mp3`,title:`${base} - take ${p2(t.n)} @ ${clock(t.start)}`});
+    clips.push(...t.clips);
+  }
+  return clips;
+}
+
+/* ---------- MP3 (MPEG-1 Audio Layer III) encoder, written for JAM ----------
+   Constant bit rate, long blocks, mid/side stereo, one step size per granule found by a binary search.
+   No psychoacoustic model, so it is plainer than LAME, but it needs no outside code. */
+const HUFF=(()=>{const t={};for(const k in HUFF_SRC){const s=HUFF_SRC[k];
+  t[k]={xlen:s.x,ylen:s.y,codes:Int32Array.from(s.c.split(',').map(v=>parseInt(v,16))),lens:Uint8Array.from(s.l.split('').map(v=>parseInt(v,36)))}}
+  const LB16=[1,2,3,4,6,8,10,13],LB24=[4,5,6,7,8,9,11,13];
+  for(let i=0;i<8;i++){t[16+i]=Object.assign({},t[16],{linbits:LB16[i]});t[24+i]=Object.assign({},t[24],{linbits:LB24[i]})}
+  for(const k in t)if(!t[k].linbits)t[k].linbits=0;
+  return t})();
+const SMALL_FAM=[[1,1],[2,2,3],[3,5,6],[5,7,8,9],[7,10,11,12],[15,13,15]];   /* [largest value, tables...] */
+const SUBDV=[[0,0],[0,0],[0,0],[0,0],[0,0],[0,1],[1,1],[1,1],[1,2],[2,2],[2,3],[2,3],[3,4],[3,4],[3,4],[4,5],[4,5],[4,6],[5,6],[5,6],[5,7],[6,7],[6,7]];
+const ENC_C=(()=>{const c=new Float64Array(512);for(let n=0;n<512;n++){const w=WIN_BASE[n<=256?n:512-n];c[n]=((n>>6)&1?-1:1)*w/2097152}return c})();
+const MDCT_COS=(()=>{const t=new Float64Array(18*36);for(let m=0;m<18;m++)for(let k=0;k<36;k++)
+  t[m*36+k]=Math.sin(Math.PI/36*(k+0.5))*Math.cos(Math.PI/72*(2*k+19)*(2*m+1))/9;return t})();   /* /9: the decoder's inverse transform has no 2/N */
+const AA=(()=>{const c=[-0.6,-0.535,-0.33,-0.185,-0.095,-0.041,-0.0142,-0.0037];return{cs:c.map(x=>1/Math.sqrt(1+x*x)),ca:c.map(x=>x/Math.sqrt(1+x*x))}})();
+const PF=(()=>{  /* fast matrixing tables: S[k] from 17 cosine and 15 sine terms */
+  const cosT=new Float64Array(16*17),sinT=new Float64Array(16*16);
+  for(let k=0;k<16;k++){for(let u=0;u<=16;u++)cosT[k*17+u]=Math.cos((2*k+1)*u*Math.PI/64);for(let v=1;v<=15;v++)sinT[k*16+v]=Math.sin((2*k+1)*v*Math.PI/64)}
+  return{cosT,sinT}})();
+const BITRATES=[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320];
+const MP3_RATES={44100:0,48000:1,32000:2};
+
+class BitWriter{
+  constructor(n){this.b=new Uint8Array(n||2048);this.pos=0}
+  put(v,n){while(n>0){const byte=this.pos>>3,off=this.pos&7,take=Math.min(n,8-off);
+    if(byte>=this.b.length){const nb=new Uint8Array(this.b.length*2);nb.set(this.b);this.b=nb}
+    const bits=(v>>>(n-take))&((1<<take)-1);this.b[byte]|=bits<<(8-off-take);this.pos+=take;n-=take}}
+}
+
+class Mp3Encoder{
+  /* opt: sr, channels, kbps, total (samples in the clip, at sr), fadeIn and fadeOut (seconds) */
+  constructor(opt){
+    this.inSr=opt.sr;this.nch=Math.min(2,opt.channels||1);
+    this.sr=MP3_RATES[opt.sr]!==undefined?opt.sr:48000;
+    this.rs=this.sr!==opt.sr?Array.from({length:this.nch},()=>new Resampler(opt.sr,this.sr)):null;
+    let br=BITRATES.indexOf(opt.kbps||192);if(br<1)br=11;this.brIndex=br;this.kbps=BITRATES[br];
+    this.total=Math.round((opt.total||0)*this.sr/opt.sr);
+    this.fin=Math.round((opt.fadeIn||0)*this.sr);this.fout=Math.round((opt.fadeOut||0)*this.sr);
+    this.t=0;this.frameBuf=Array.from({length:this.nch},()=>new Float64Array(1152));this.fill=0;
+    this.ring=Array.from({length:this.nch},()=>new Float64Array(512));this.roff=new Int32Array(this.nch);
+    this.prevSb=Array.from({length:this.nch},()=>new Float64Array(576));this.curSb=Array.from({length:this.nch},()=>new Float64Array(576));
+    this.xr=Array.from({length:this.nch},()=>new Float64Array(576));this.x34=Array.from({length:this.nch},()=>new Float64Array(576));
+    this.ix=Array.from({length:this.nch},()=>new Int32Array(576));
+    this.sfb=SFB_L[this.sr];this.frac=0;this.out=[];this.bytes=0;
+    this.cutLine=Math.min(576,Math.ceil(18000/(this.sr/2)*576));
+    this.z=new Float64Array(512);this.y=new Float64Array(64);
+  }
+  push(planes){
+    let ps=planes.slice(0,this.nch);
+    if(ps.length<this.nch)ps=[ps[0],ps[0]];
+    if(this.rs)ps=ps.map((p,c)=>this.rs[c].push(p));
+    this._take(ps);
+  }
+  _take(ps){
+    const n=ps[0].length;
+    for(let i=0;i<n;i++){
+      let g=1;const t=this.t++;
+      if(this.fin>0&&t<this.fin)g*=t/this.fin;
+      if(this.fout>0&&this.total>0){const left=this.total-t;if(left<this.fout)g*=Math.max(0,left)/this.fout}
+      for(let c=0;c<this.nch;c++)this.frameBuf[c][this.fill]=ps[c][i]*g;
+      if(++this.fill===1152){this._frame();this.fill=0}
+    }
+  }
+  end(){
+    if(this.rs){const ps=this.rs.map(r=>r.end());if(ps[0].length)this._take(ps)}
+    if(this.fill>0){for(let c=0;c<this.nch;c++)this.frameBuf[c].fill(0,this.fill);this._frame();this.fill=0}
+    for(let c=0;c<this.nch;c++)this.frameBuf[c].fill(0);this._frame();   /* one more frame lets the filter bank empty */
+    return this.out;
+  }
+  /* 32 new samples into the polyphase filter bank (ISO 11172-3, C.1.3) -> 32 subband samples */
+  _subband(c,src,o,dst,t){
+    const ring=this.ring[c];let off=(this.roff[c]-32)&511;this.roff[c]=off;
+    for(let i=0;i<32;i++)ring[(off+i)&511]=src[o+31-i];
+    const z=this.z,y=this.y;
+    for(let i=0;i<512;i++)z[i]=ENC_C[i]*ring[(off+i)&511];
+    for(let i=0;i<64;i++)y[i]=z[i]+z[i+64]+z[i+128]+z[i+192]+z[i+256]+z[i+320]+z[i+384]+z[i+448];
+    const{cosT,sinT}=PF;
+    const A0=y[16];
+    for(let k=0;k<16;k++){
+      let ce=A0,co=0,se=0,so=0;const ck=k*17,sk=k*16;
+      for(let u=1;u<=16;u++){const a=(y[16+u]+y[16-u])*cosT[ck+u];if(u&1)co+=a;else ce+=a}
+      for(let v=1;v<=15;v++){const b=(y[48+v]-y[48-v])*sinT[sk+v];if(v&1)so+=b;else se+=b}
+      const sg=k&1?-1:1;
+      dst[k*18+t]=(ce+co)-sg*(se+so);
+      dst[(31-k)*18+t]=(ce-co)+sg*(so-se);
+    }
+  }
+  _granule(gr){
+    const nch=this.nch;
+    for(let c=0;c<nch;c++){
+      const src=this.frameBuf[c],cur=this.curSb[c],prev=this.prevSb[c],xr=this.xr[c];
+      for(let t=0;t<18;t++)this._subband(c,src,gr*576+t*32,cur,t);
+      for(let k=1;k<32;k+=2)for(let t=1;t<18;t+=2)cur[k*18+t]=-cur[k*18+t];
+      for(let k=0;k<32;k++){
+        const o=k*18;
+        for(let m=0;m<18;m++){let s=0;const r=m*36;
+          for(let i=0;i<18;i++)s+=prev[o+i]*MDCT_COS[r+i]+cur[o+i]*MDCT_COS[r+18+i];
+          xr[o+m]=s}
+      }
+      for(let k=1;k<32;k++){const a=k*18-1,b=k*18;
+        for(let i=0;i<8;i++){const bu=xr[a-i],bd=xr[b+i];xr[a-i]=bu*AA.cs[i]+bd*AA.ca[i];xr[b+i]=bd*AA.cs[i]-bu*AA.ca[i]}}
+      this.prevSb[c]=cur;this.curSb[c]=prev;
+    }
+    if(nch===2){const L=this.xr[0],R=this.xr[1];for(let i=0;i<576;i++){const l=L[i],r=R[i];L[i]=(l+r)*Math.SQRT1_2;R[i]=(l-r)*Math.SQRT1_2}}
+    for(let c=0;c<nch;c++){const xr=this.xr[c],x34=this.x34[c];for(let i=0;i<576;i++)x34[i]=i<this.cutLine?Math.pow(Math.abs(xr[i]),0.75):0}
+  }
+  _quant(c,gg){
+    const x34=this.x34[c],ix=this.ix[c],is=Math.pow(2,-0.1875*(gg-210));let max=0;
+    for(let i=0;i<576;i++){const v=Math.floor(x34[i]*is+0.4054);ix[i]=v;if(v>max)max=v}
+    return max;
+  }
+  _count(ix){
+    let i=576;while(i>1&&ix[i-1]===0&&ix[i-2]===0)i-=2;const c1End=i;
+    while(i>3&&ix[i-1]<=1&&ix[i-2]<=1&&ix[i-3]<=1&&ix[i-4]<=1)i-=4;const bigEnd=i;
+    let bitsA=0,bitsB=0;const hA=HUFF[32].lens;
+    for(let j=bigEnd;j<c1End;j+=4){const v=ix[j],w=ix[j+1],x=ix[j+2],y=ix[j+3],nz=v+w+x+y;bitsA+=hA[v*8+w*4+x*2+y]+nz;bitsB+=4+nz}
+    const sfb=this.sfb;let n=0;while(n<21&&sfb[n+1]<bigEnd)n++;
+    let[r0,r1]=SUBDV[Math.min(22,n+1)];
+    const b1=Math.min(sfb[r0+1],bigEnd),b2=Math.min(sfb[r0+r1+2],bigEnd);
+    const t0=this._table(ix,0,b1),t1=this._table(ix,b1,b2),t2=this._table(ix,b2,bigEnd);
+    const c1t=bitsB<bitsA?1:0;
+    return{bits:t0[1]+t1[1]+t2[1]+(c1t?bitsB:bitsA),bigValues:bigEnd/2,c1End,bigEnd,r0,r1,b1,b2,tables:[t0[0],t1[0],t2[0]],c1t};
+  }
+  _table(ix,a,b){
+    if(b<=a)return[0,0];
+    let max=0;for(let i=a;i<b;i++)if(ix[i]>max)max=ix[i];
+    if(max===0)return[0,0];
+    let cands;
+    if(max<=15){const f=SMALL_FAM.findIndex(x=>x[0]>=max);cands=SMALL_FAM[f].slice(1).concat(f+1<SMALL_FAM.length?SMALL_FAM[f+1].slice(1):[])}
+    else{const need=max-15;let t16=16,t24=24;while(t16<23&&(1<<HUFF[t16].linbits)-1<need)t16++;while(t24<31&&(1<<HUFF[t24].linbits)-1<need)t24++;cands=[t16,t24]}
+    let best=0,bestBits=Infinity;
+    for(const t of cands){const bits=this._tbits(ix,a,b,t);if(bits<bestBits){bestBits=bits;best=t}}
+    return[best,bestBits];
+  }
+  _tbits(ix,a,b,t){
+    const h=HUFF[t],lens=h.lens,yl=h.ylen,lb=h.linbits;let bits=0;
+    if(lb){for(let i=a;i<b;i+=2){let x=ix[i],y=ix[i+1];if(x>14){bits+=lb;x=15}if(y>14){bits+=lb;y=15}bits+=lens[x*16+y]+(x?1:0)+(y?1:0)}}
+    else for(let i=a;i<b;i+=2){const x=ix[i],y=ix[i+1];bits+=lens[x*yl+y]+(x?1:0)+(y?1:0)}
+    return bits;
+  }
+  _write(bw,ix,info){
+    const reg=[[0,info.b1],[info.b1,info.b2],[info.b2,info.bigEnd]];
+    for(let r=0;r<3;r++){const t=info.tables[r];if(!t)continue;const h=HUFF[t],lb=h.linbits,yl=h.ylen;
+      for(let i=reg[r][0];i<reg[r][1];i+=2){
+        const ax=Math.abs(ix[i]),ay=Math.abs(ix[i+1]),sx=this._sign[i],sy=this._sign[i+1];
+        if(lb){const x=Math.min(ax,15),y=Math.min(ay,15),k=x*16+y;bw.put(h.codes[k],h.lens[k]);
+          if(x===15)bw.put(ax-15,lb);if(ax)bw.put(sx,1);if(y===15)bw.put(ay-15,lb);if(ay)bw.put(sy,1)}
+        else{const k=ax*yl+ay;bw.put(h.codes[k],h.lens[k]);if(ax)bw.put(sx,1);if(ay)bw.put(sy,1)}
+      }}
+    const h=HUFF[32+info.c1t];
+    for(let i=info.bigEnd;i<info.c1End;i+=4){
+      const v=ix[i],w=ix[i+1],x=ix[i+2],y=ix[i+3],k=v*8+w*4+x*2+y;
+      if(info.c1t)bw.put(15-k,4);else bw.put(h.codes[k],h.lens[k]);
+      if(v)bw.put(this._sign[i],1);if(w)bw.put(this._sign[i+1],1);if(x)bw.put(this._sign[i+2],1);if(y)bw.put(this._sign[i+3],1);
+    }
+  }
+  _frame(){
+    const nch=this.nch,sideBytes=nch===2?32:17;
+    const slot=144*this.kbps*1000/this.sr;let bytes=Math.floor(slot),pad=0;
+    this.frac+=slot-bytes;if(this.frac>=1-1e-9){pad=1;this.frac-=1}bytes+=pad;
+    const mainBits=(bytes-4-sideBytes)*8;
+    const side=[];const main=new BitWriter(bytes);let used=0;
+    for(let gr=0;gr<2;gr++){
+      this._granule(gr);
+      const budget=gr===0?Math.floor(mainBits/2):mainBits-used;
+      let lo=0,hi=255,best=null;
+      const fits=gg=>{let tot=0;const infos=[];
+        for(let c=0;c<nch;c++){if(this._quant(c,gg)>8206)return null;const inf=this._count(this.ix[c]);if(inf.bits>4095)return null;tot+=inf.bits;infos.push(inf)}
+        return tot<=budget?infos:null};
+      while(lo<hi){const mid=(lo+hi)>>1;if(fits(mid))hi=mid;else lo=mid+1}
+      best=fits(lo);if(!best){lo=255;best=fits(255)||[]}
+      for(let c=0;c<nch;c++){
+        const xr=this.xr[c],ix=this.ix[c];this._quant(c,lo);
+        this._sign=this._sign||new Uint8Array(576);for(let i=0;i<576;i++)this._sign[i]=xr[i]<0?1:0;
+        const inf=best[c]||this._count(ix),start=main.pos;
+        this._write(main,ix,inf);
+        side.push({len:main.pos-start,bv:inf.bigValues,gg:lo,t:inf.tables,r0:inf.r0,r1:inf.r1,c1t:inf.c1t});
+        used+=main.pos-start;
+      }
+    }
+    const fb=new BitWriter(bytes);
+    fb.put(0xFFFB,16);fb.put(this.brIndex,4);fb.put(MP3_RATES[this.sr],2);fb.put(pad,1);fb.put(0,1);
+    fb.put(nch===2?1:3,2);fb.put(nch===2?2:0,2);fb.put(0,1);fb.put(1,1);fb.put(0,2);
+    fb.put(0,9);fb.put(0,nch===2?3:5);for(let c=0;c<nch;c++)fb.put(0,4);
+    for(const s of side){fb.put(s.len,12);fb.put(s.bv,9);fb.put(s.gg,8);fb.put(0,4);fb.put(0,1);
+      fb.put(s.t[0],5);fb.put(s.t[1],5);fb.put(s.t[2],5);fb.put(s.r0,4);fb.put(s.r1,3);fb.put(0,1);fb.put(0,1);fb.put(s.c1t,1)}
+    const frame=fb.b.subarray(0,bytes);frame.set(main.b.subarray(0,Math.ceil(main.pos/8)),4+sideBytes);
+    this.out.push(frame);this.bytes+=bytes;
+  }
+}
+
+/* ---------- ID3v2.3 tags ---------- */
+function id3Tag(tags){
+  const enc=s=>{const a=[1,0xFF,0xFE];for(const ch of String(s))for(const u of ch.length>1?[ch.charCodeAt(0),ch.charCodeAt(1)]:[ch.charCodeAt(0)]){a.push(u&255,u>>8)}return a};
+  const frames=[];
+  const add=(id,body)=>{const n=body.length;frames.push(...[...id].map(c=>c.charCodeAt(0)),n>>>24&255,n>>>16&255,n>>>8&255,n&255,0,0,...body)};
+  if(tags.title)add('TIT2',enc(tags.title));
+  if(tags.artist)add('TPE1',enc(tags.artist));
+  if(tags.album)add('TALB',enc(tags.album));
+  if(tags.year)add('TYER',enc(tags.year));
+  if(tags.comment){const t=enc(tags.comment);add('COMM',[1,0x65,0x6E,0x67,0xFF,0xFE,0,0].concat(t.slice(1)))}
+  const size=frames.length+256,ss=[size>>>21&127,size>>>14&127,size>>>7&127,size&127];
+  const out=new Uint8Array(10+size);out.set([0x49,0x44,0x33,3,0,0].concat(ss));out.set(frames,10);
+  return out;
+}
+/* the MP3 without its ID3v2 tag, so a clip can be tagged again after renaming */
+function stripId3(u8){if(u8.length>10&&u8[0]===0x49&&u8[1]===0x44&&u8[2]===0x33){const s=((u8[6]&127)<<21)|((u8[7]&127)<<14)|((u8[8]&127)<<7)|(u8[9]&127);return u8.subarray(10+s+((u8[5]&16)?10:0))}return u8}
+return{BLOCK,BANDS,Resampler,Analyzer,decide,envelope,autoThreshold,markerList,audacityLabels,auditionCsv,makeClips,Mp3Encoder,id3Tag,stripId3,clock,hmsTag,pyRound,pyFixed};
+}
+/* ---------- reading recordings: an MP4/M4A reader and a streaming decoder ----------
+   Long practices never sit in memory whole: AAC packets are read from the file in slices and decoded with WebCodecs
+   in order; older browsers fall back to decodeAudioData on the whole file. */
+const MP4_CONT=new Set(['moov','trak','mdia','minf','stbl','edts','dinf','udta']);
+function boxes(dv,start,end){
+  const out=[];let o=start;
+  while(o+8<=end){let size=dv.getUint32(o),hdr=8;const type=String.fromCharCode(dv.getUint8(o+4),dv.getUint8(o+5),dv.getUint8(o+6),dv.getUint8(o+7));
+    if(size===1){size=Number(dv.getBigUint64(o+8));hdr=16}else if(size===0)size=end-o;
+    if(size<hdr||o+size>end)break;out.push({type,start:o,body:o+hdr,end:o+size});o+=size}
+  return out;
+}
+const child=(dv,b,t)=>boxes(dv,b.body,b.end).find(x=>x.type===t);
+function descLen(dv,o){let n=0,i=0,b;do{b=dv.getUint8(o+i);n=(n<<7)|(b&127);i++}while(b&128&&i<4);return[n,o+i]}
+/* the first AAC audio track of an MP4/M4A: codec settings and where every packet is */
+async function openMp4(file){
+  const head=new DataView(await file.slice(0,Math.min(file.size,64)).arrayBuffer());
+  if(head.byteLength<12||String.fromCharCode(head.getUint8(4),head.getUint8(5),head.getUint8(6),head.getUint8(7))!=='ftyp')return null;
+  let off=0,moov=null;
+  while(off+8<=file.size){
+    const h=new DataView(await file.slice(off,off+16).arrayBuffer());if(h.byteLength<8)break;
+    let size=h.getUint32(0),hdr=8;const type=String.fromCharCode(h.getUint8(4),h.getUint8(5),h.getUint8(6),h.getUint8(7));
+    if(size===1){size=Number(h.getBigUint64(8));hdr=16}else if(size===0)size=file.size-off;
+    if(size<8)break;
+    if(type==='moov'){if(size>200e6)return null;moov=new DataView(await file.slice(off,off+size).arrayBuffer());break}
+    off+=size;
+  }
+  if(!moov)return null;
+  const top=boxes(moov,0,moov.byteLength)[0];
+  for(const trak of boxes(moov,top.body,top.end).filter(b=>b.type==='trak')){
+    const mdia=child(moov,trak,'mdia');if(!mdia)continue;
+    const hdlr=child(moov,mdia,'hdlr');if(!hdlr||moov.getUint32(hdlr.body+8)!==0x736f756e)continue;   /* 'soun' */
+    const mdhd=child(moov,mdia,'mdhd'),v=moov.getUint8(mdhd.body);
+    const timescale=moov.getUint32(mdhd.body+(v===1?20:12));
+    const stbl=child(moov,child(moov,mdia,'minf'),'stbl');if(!stbl)continue;
+    const stsd=child(moov,stbl,'stsd'),entry=boxes(moov,stsd.body+8,stsd.end)[0];
+    if(!entry||entry.type!=='mp4a')continue;
+    const qv=moov.getUint16(entry.body+8);
+    let channels=moov.getUint16(entry.body+16),sampleRate=moov.getUint32(entry.body+24)>>>16;
+    const ext=entry.body+28+(qv===1?16:qv===2?36:0);
+    const esds=boxes(moov,ext,entry.end).find(b=>b.type==='esds');if(!esds)continue;
+    let o=esds.body+4,asc=null;
+    if(moov.getUint8(o)===3){let[,p]=descLen(moov,o+1);const fl=moov.getUint8(p+2);p+=3;if(fl&128)p+=2;if(fl&64)p+=1+moov.getUint8(p);if(fl&32)p+=2;
+      if(moov.getUint8(p)===4){let[,q]=descLen(moov,p+1);const oti=moov.getUint8(q);if(oti!==0x40&&oti!==0x67&&oti!==0x66)continue;q+=13;
+        if(moov.getUint8(q)===5){const[n,r]=descLen(moov,q+1);asc=new Uint8Array(moov.buffer,moov.byteOffset+r,n).slice()}}}
+    if(!asc)continue;
+    let aot=asc[0]>>3;if(aot===31)aot=32+(((asc[0]&7)<<3)|(asc[1]>>5));
+    /* packet tables */
+    const stts=child(moov,stbl,'stts'),stsc=child(moov,stbl,'stsc'),stsz=child(moov,stbl,'stsz'),stco=child(moov,stbl,'stco')||child(moov,stbl,'co64');
+    if(!stts||!stsc||!stsz||!stco)continue;
+    const n=moov.getUint32(stsz.body+8),fixed=moov.getUint32(stsz.body+4);
+    const sizes=new Uint32Array(n);for(let i=0;i<n;i++)sizes[i]=fixed||moov.getUint32(stsz.body+12+4*i);
+    const dts=new Float64Array(n+1);{let i=0,t=0;const ne=moov.getUint32(stts.body+4);
+      for(let e=0;e<ne;e++){const c=moov.getUint32(stts.body+8+8*e),d=moov.getUint32(stts.body+12+8*e);for(let k=0;k<c&&i<n;k++){dts[i++]=t;t+=d}}
+      for(;i<=n;i++)dts[i]=t}
+    const big=stco.type==='co64',nc=moov.getUint32(stco.body+4),chunk=new Float64Array(nc);
+    for(let i=0;i<nc;i++)chunk[i]=big?Number(moov.getBigUint64(stco.body+8+8*i)):moov.getUint32(stco.body+8+4*i);
+    const offsets=new Float64Array(n),ns=moov.getUint32(stsc.body+4),sc=[];
+    for(let e=0;e<ns;e++)sc.push([moov.getUint32(stsc.body+8+12*e),moov.getUint32(stsc.body+12+12*e)]);
+    {let s=0;for(let e=0;e<sc.length;e++){const first=sc[e][0]-1,last=e+1<sc.length?sc[e+1][0]-1:nc;
+      for(let c=first;c<last&&s<n;c++){let p=chunk[c];for(let k=0;k<sc[e][1]&&s<n;k++){offsets[s]=p;p+=sizes[s];s++}}}}
+    /* an edit list's first media time is priming to drop, as ffmpeg does */
+    let skip=0;const edts=child(moov,trak,'edts'),elst=edts&&child(moov,edts,'elst');
+    if(elst){const ev=moov.getUint8(elst.body),ne=moov.getUint32(elst.body+4);
+      for(let e=0;e<ne;e++){const mt=ev===1?Number(moov.getBigInt64(elst.body+16+20*e)):moov.getInt32(elst.body+12+12*e);if(mt>=0){skip=mt;break}}}
+    return{codec:'mp4a.40.'+aot,aot,asc,channels,sampleRate,timescale,n,sizes,offsets,dts,skip,duration:dts[n]/timescale};
+  }
+  return null;
+}
+const waitEvent=(t,ev)=>new Promise(r=>t.addEventListener(ev,r,{once:true}));
+/* can this browser stream-decode this track? Returns a decoder config or null */
+async function decoderConfig(trk){
+  if(!trk||typeof AudioDecoder==='undefined')return null;
+  for(const codec of[trk.codec,'mp4a.40.2']){
+    const cfg={codec,sampleRate:trk.sampleRate,numberOfChannels:trk.channels,description:trk.asc};
+    try{const s=await AudioDecoder.isConfigSupported(cfg);if(s&&s.supported)return cfg}catch(e){}
+  }
+  return null;
+}
+/* decode packets i0..i1 in order; onAudio(planes, firstSample, rate) gets each piece and may return a promise to slow us down */
+async function decodePackets(file,trk,cfg,i0,i1,onAudio,isCancelled){
+  let failure=null,pending=Promise.resolve();
+  const dec=new AudioDecoder({
+    output:ad=>{
+      const nch=ad.numberOfChannels,nf=ad.numberOfFrames,planes=[];
+      try{for(let c=0;c<nch;c++){const a=new Float32Array(nf);ad.copyTo(a,{planeIndex:c,format:'f32-planar'});planes.push(a)}}
+      catch(e){failure=failure||e}
+      const first=Math.round(ad.timestamp*ad.sampleRate/1e6),rate=ad.sampleRate;ad.close();
+      if(planes.length)pending=pending.then(()=>onAudio(planes,first,rate));
+    },
+    error:e=>{failure=failure||e}
+  });
+  dec.configure(cfg);
+  const us=t=>t*1e6/trk.timescale;
+  let i=i0;
+  while(i<i1){
+    if(failure)break;if(isCancelled&&isCancelled())break;
+    let j=i,bytes=0;while(j<i1&&bytes<1<<18&&(j===i||trk.offsets[j]===trk.offsets[j-1]+trk.sizes[j-1])){bytes+=trk.sizes[j];j++}
+    const buf=new Uint8Array(await file.slice(trk.offsets[i],trk.offsets[i]+bytes).arrayBuffer());
+    let rel=0;
+    for(let k=i;k<j;k++){
+      dec.decode(new EncodedAudioChunk({type:'key',timestamp:us(trk.dts[k]),duration:us(trk.dts[k+1]-trk.dts[k]),data:buf.subarray(rel,rel+trk.sizes[k])}));
+      rel+=trk.sizes[k];
+      if(dec.decodeQueueSize>40)await waitEvent(dec,'dequeue');
+    }
+    i=j;
+    await pending;
+  }
+  if(!failure&&dec.state==='configured')await dec.flush().catch(e=>{failure=failure||e});
+  await pending;
+  try{dec.close()}catch(e){}
+  if(failure)throw failure;
+}
+/* ---------- JAM: the page ---------- */
+const J=JAMCORE();
+const AUDIO_EXT=/\.(m4a|mp3|wav|aac|ogg|opus|flac|webm|mp4|3gp|amr|wma|aif|aiff|caf)$/i;
+const LOG_NAME='Jam Cutter log.json',REVIEW_NAME='Jam Cutter review.json';
+const stem=n=>String(n).replace(/\.[^.]*$/,'');
+const fmtT=t=>J.clock(t);
+const mb=n=>(n/1048576).toFixed(n<10485760?1:0)+' MB';
+const safeName=(t,limit=80)=>String(t||'').replace(/[\\/:*?"<>|\x00-\x1f]/g,'').trim().replace(/^\.+|\.+$/g,'').replace(/\s+/g,' ').slice(0,limit).trim();
+const num=(v,d=0)=>Number.isFinite(+v)?+v:d,str=(v,n=300)=>typeof v==='string'?v.slice(0,n):'';
+
+addSettings({jam:{sens:0,autoThr:true,thr:-30,gap:5,minTake:8,pre:2,post:2,splitOver:90,minPart:15,partSens:1,artist:'Saints and Winos',kbps:192,moveDone:false}},
+  {'jam.kbps':[128,160,192,256,320]},
+  {'jam.sens':[-12,12,true],'jam.thr':[-80,0,true],'jam.gap':[0,30,true],'jam.minTake':[0,60,true],'jam.pre':[0,10,true],'jam.post':[0,10,true],
+   'jam.splitOver':[0,600,true],'jam.minPart':[5,120,true],'jam.partSens':[0.3,3,true]},
+  o=>{o.jam.artist=String(o.jam.artist).replace(/[\x00-\x1f]/g,'').trim().slice(0,100)});
+const decideOpts=()=>({autoThreshold:st.jam.autoThr,sensitivity:st.jam.sens,threshold:st.jam.thr,gap:st.jam.gap,minTake:st.jam.minTake,
+  pre:st.jam.pre,post:st.jam.post,splitOver:st.jam.splitOver,minPart:st.jam.minPart,partSens:st.jam.partSens});
+
+/* ---------- workers: analysis and MP3 encoding off the page, so it stays responsive ---------- */
+function workerMain(scope,J){
+  let an=null;const encs=new Map();
+  scope.onmessage=e=>{const m=e.data;
+    try{
+      if(m.cmd==='ana')an=new J.Analyzer(m.sr);
+      else if(m.cmd==='anaPush'){an.push(m.planes);scope.postMessage({cmd:'ack'})}
+      else if(m.cmd==='anaEnd'){const r=an.end();an=null;scope.postMessage({cmd:'done',id:m.id,r})}
+      else if(m.cmd==='enc')encs.set(m.id,new J.Mp3Encoder(m.opt));
+      else if(m.cmd==='encPush'){encs.get(m.id).push(m.planes);scope.postMessage({cmd:'ack'})}
+      else if(m.cmd==='encEnd'){const parts=encs.get(m.id).end();encs.delete(m.id);let n=0;for(const p of parts)n+=p.length;
+        const u=new Uint8Array(n);let o=0;for(const p of parts){u.set(p,o);o+=p.length}scope.postMessage({cmd:'done',id:m.id,data:u},[u.buffer])}
+      else if(m.cmd==='drop'){encs.clear();an=null}
+    }catch(err){scope.postMessage({cmd:'err',id:m.id,msg:String(err&&err.message||err)});if(m.cmd==='anaPush'||m.cmd==='encPush')scope.postMessage({cmd:'ack'})}
+  };
+}
+const WORKER_SRC='const J=('+JAMCORE.toString()+')();('+workerMain.toString()+')(self,J);';
+function localWorker(){   /* the same thing on the page, for places that block workers */
+  const t=new EventTarget(),inner={postMessage:(m,tr)=>setTimeout(()=>t.dispatchEvent(Object.assign(new Event('message'),{data:m})),0)};
+  const w={onmessage:null,postMessage:m=>setTimeout(()=>inner.onmessage({data:m}),0),terminate(){}};
+  t.addEventListener('message',e=>w.onmessage&&w.onmessage(e));workerMain(inner,J);return w;
+}
+let workerUrl=null;
+function makeWorker(){
+  try{workerUrl=workerUrl||URL.createObjectURL(new Blob([WORKER_SRC],{type:'text/javascript'}));const w=new Worker(workerUrl);return w}
+  catch(e){return localWorker()}
+}
+const LIMIT=6;
+function wrapWorker(w){
+  const o={w,inflight:0,waiters:[],calls:new Map(),jobs:0,broken:false};
+  w.onmessage=e=>{const m=e.data;
+    if(m.cmd==='ack'){o.inflight--;while(o.waiters.length&&o.inflight<LIMIT)o.waiters.shift()()}
+    else if(m.cmd==='done'||m.cmd==='err'){const c=o.calls.get(m.id);if(c){o.calls.delete(m.id);m.cmd==='err'?c.reject(new Error(m.msg)):c.resolve(m)}else if(m.cmd==='err')o.lastErr=m.msg}};
+  w.onerror=e=>{o.broken=true;for(const c of o.calls.values())c.reject(new Error(e.message||'worker stopped'));o.calls.clear();o.inflight=0;o.waiters.splice(0).forEach(f=>f())};
+  o.send=(m,tr)=>w.postMessage(m,tr||[]);
+  o.push=async(m,tr)=>{while(o.inflight>=LIMIT&&!o.broken)await new Promise(r=>o.waiters.push(r));if(o.broken)throw new Error(o.lastErr||'worker stopped');o.inflight++;w.postMessage(m,tr||[])};
+  o.call=m=>new Promise((resolve,reject)=>{o.calls.set(m.id,{resolve,reject});w.postMessage(m)});
+  return o;
+}
+let POOL=null,ANA=null,seq=0;
+function pool(){
+  if(!POOL){const n=Math.max(1,Math.min(4,(navigator.hardwareConcurrency||2)-1));POOL=Array.from({length:n},()=>wrapWorker(makeWorker()))}
+  return POOL;
+}
+function anaWorker(){if(!ANA)ANA=wrapWorker(makeWorker());return ANA}
+function resetWorkers(){for(const w of(POOL||[]).concat(ANA?[ANA]:[]))try{w.w.terminate()}catch(e){}POOL=null;ANA=null}
+
+/* ---------- getting sound out of a recording ---------- */
+/* streaming (WebCodecs) when the browser can; otherwise decodeAudioData on the whole file */
+async function openSource(file){
+  let trk=null;try{trk=await openMp4(file)}catch(e){trk=null}
+  const cfg=trk?await decoderConfig(trk):null;
+  if(cfg){
+    let rate=0;
+    const skipOut=r=>Math.round(trk.skip*r/trk.timescale);
+    const range=async(t0,t1,onAudio,cancelled)=>{   /* recording seconds t0..t1 -> onAudio(planes, firstSample, rate) */
+      const ts=trk.timescale,a=t0*ts+trk.skip,b=t1*ts+trk.skip;
+      let i0=0,i1=trk.n;
+      if(t0>0){let lo=0,hi=trk.n;while(lo<hi){const m=(lo+hi)>>1;if(trk.dts[m+1]<=a)lo=m+1;else hi=m}i0=Math.max(0,lo-4)}
+      if(t1!==Infinity){let lo=0,hi=trk.n;while(lo<hi){const m=(lo+hi)>>1;if(trk.dts[m]<b)lo=m+1;else hi=m}i1=Math.min(trk.n,lo+2)}
+      await decodePackets(file,trk,cfg,i0,i1,(planes,first,r)=>{
+        rate=r;const s0=Math.round(t0*r)+skipOut(r),s1=t1===Infinity?Infinity:Math.round(t1*r)+skipOut(r),len=planes[0].length;
+        const a2=Math.max(first,s0),b2=Math.min(first+len,s1);if(b2<=a2)return;
+        const p=a2===first&&b2===first+len?planes:planes.map(x=>x.subarray(a2-first,b2-first));
+        return onAudio(p,a2-skipOut(r),r);
+      },cancelled);
+    };
+    return{kind:'stream',duration:trk.duration-trk.skip/trk.timescale,range,get rate(){return rate}};
+  }
+  /* whole-file fallback */
+  const buf=await file.arrayBuffer();
+  const Ctx=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!Ctx)throw new Error('This browser can’t read audio files.');
+  const ctx=new Ctx(1,1,48000);
+  const ab=await new Promise((res,rej)=>{const p=ctx.decodeAudioData(buf,res,rej);if(p&&p.then)p.then(res,rej)});
+  const chans=[];for(let c=0;c<Math.min(2,ab.numberOfChannels);c++)chans.push(ab.getChannelData(c));
+  const r=ab.sampleRate;
+  const range=async(t0,t1,onAudio,cancelled)=>{
+    const s0=Math.max(0,Math.round(t0*r)),s1=Math.min(ab.length,t1===Infinity?ab.length:Math.round(t1*r));
+    for(let s=s0;s<s1;s+=r){if(cancelled&&cancelled())return;const e=Math.min(s1,s+r);await onAudio(chans.map(c=>c.slice(s,e)),s,r)}
+  };
+  return{kind:'buffer',duration:ab.duration,range,rate:r};
+}
+
+/* ---------- cutting one recording ---------- */
+let cancelled=false;
+function progress(text,frac){$('work').hidden=false;txt('workMsg',text);const f=$('workFill');if(f)f.style.width=Math.round(clamp(frac,0,1)*100)+'%';$('workBar').setAttribute('aria-valuenow',String(Math.round(clamp(frac,0,1)*100)))}
+/* out: {write(name, blob)} or null to keep the files in memory */
+async function cutRecording(file,out,label){
+  const t0=performance.now(),base=stem(file.name)||'recording',year=String(new Date(file.lastModified||Date.now()).getFullYear());
+  progress(label+': opening…',0);
+  const src=await openSource(file);
+  const dur=src.duration||1;
+  /* 1. listen */
+  const aw=anaWorker();let started=false,heard=0;
+  await src.range(0,Infinity,async(planes,first,rate)=>{
+    if(!started){aw.send({cmd:'ana',sr:rate});started=true}
+    heard=first+planes[0].length;progress(`${label}: listening for the band… ${fmtT(heard/rate)} of ${fmtT(dur)}`,0.35*heard/rate/dur);
+    const own=planes.map(p=>p.byteOffset||p.length!==p.buffer.byteLength/4?p.slice():p);
+    await aw.push({cmd:'anaPush',planes:own},own.map(p=>p.buffer));
+  },()=>cancelled);
+  if(cancelled)throw new Error('stopped');
+  if(!started)throw new Error('No sound found in this file.');
+  const{r}=await aw.call({cmd:'anaEnd',id:++seq});
+  if(!r.db.length)throw new Error('No sound found in this file.');
+  const res=J.decide(r.db,r.bands,decideOpts());
+  const clips=J.makeClips(res.takes,base);
+  /* 2. cut: decode each take once and feed its full version and its parts to the encoders */
+  const rate=src.rate,P=pool(),total=clips.reduce((a,c)=>a+c.end-c.start,0)||1;let doneSec=0,written=0;
+  const kbps=st.jam.kbps,artist=st.jam.artist;
+  for(const t of res.takes){
+    if(cancelled)break;
+    const jobs=t.clips.map(c=>({c,s:Math.round(c.start*rate),e:Math.round(c.end*rate),w:null,id:0,open:false,closed:false,fed:0,last:null}));
+    const finish=async j=>{j.closed=true;await j.last;const m=await j.w.call({cmd:'encEnd',id:j.id});j.w.jobs--;
+      const tag=J.id3Tag({title:j.c.title,artist,album:base,year,comment:`Jam Cutter: ${fmtT(j.c.start)} to ${fmtT(j.c.end)} of ${file.name}`});
+      j.c.blob=new Blob([tag,m.data],{type:'audio/mpeg'});j.c.size=j.c.blob.size;
+      if(out){await out.write(j.c.fname,j.c.blob);j.c.blob=null}
+      written++;};
+    const finishing=[];
+    await src.range(t.start,t.end,async(planes,first)=>{
+      const len=planes[0].length,sends=[];
+      for(const j of jobs){
+        if(j.closed)continue;const a=Math.max(first,j.s),b=Math.min(first+len,j.e);
+        if(b>a){
+          if(!j.open){j.w=P.slice().sort((x,y)=>x.jobs-y.jobs)[0];j.w.jobs++;j.id=++seq;j.open=true;
+            j.w.send({cmd:'enc',id:j.id,opt:{sr:rate,channels:Math.min(2,planes.length),kbps,total:j.e-j.s,fadeIn:0.03,fadeOut:Math.min(0.25,(j.c.end-j.c.start)/4)}})}
+          const pl=planes.map(p=>p.slice(a-first,b-first));j.last=j.w.push({cmd:'encPush',id:j.id,planes:pl},pl.map(p=>p.buffer));sends.push(j.last);j.fed+=b-a;
+        }
+        if(j.open&&!j.closed&&first+len>=j.e)finishing.push(finish(j));
+      }
+      await Promise.all(sends);
+      doneSec+=len/rate*Math.max(1,sends.length);
+      progress(`${label}: cutting take ${t.n} of ${res.takes.length} · ${written} of ${clips.length} MP3s`,0.35+0.65*Math.min(1,doneSec/total));
+    },()=>cancelled);
+    for(const j of jobs)if(j.open&&!j.closed)finishing.push(finish(j));
+    await Promise.all(finishing);
+  }
+  if(cancelled){for(const w of P)w.send({cmd:'drop'});throw new Error('stopped')}
+  /* 3. markers and review data */
+  const labels=J.audacityLabels(res.takes),csv=J.auditionCsv(res.takes);
+  const extra=[[base+'_audacity_labels.txt',new Blob([labels],{type:'text/plain'})],[base+'_audition_markers.csv',new Blob([csv],{type:'text/csv'})]];
+  if(out)for(const[n,b]of extra)await out.write(n,b);
+  const step=Math.max(1,Math.floor(res.env.length/2400)),env=[];
+  for(let i=0;i<res.env.length;i+=step){let m=-100;for(let k=i;k<Math.min(res.env.length,i+step);k++)m=Math.max(m,res.env[k]);env.push(Math.round(m*10)/10)}
+  return{base,source:file.name,size:file.size,lastModified:file.lastModified||0,year,duration:res.duration,threshold:Math.round(res.threshold*10)/10,
+    shape:res.auto.shape,envStep:step*J.BLOCK,env,extra,seconds:(performance.now()-t0)/1000,
+    takes:res.takes.map(t=>({n:t.n,start:t.start,end:t.end,level:t.level,stops:t.stops.map(s=>[s[0],s[1]]),parts:t.parts.map(p=>({start:p.start,end:p.end}))})),
+    clips:clips.map(c=>({id:c.id,kind:c.kind,take:c.take,part:c.part,start:c.start,end:c.end,file:c.fname,title:c.title,blob:c.blob||null,size:c.size||0,keep:true,name:'',song:'',loc:'main',copied:''}))};
+}
+
+/* ---------- folders (computer, Chrome or Edge): File System Access, handles kept in IndexedDB ---------- */
+const F={inbox:null,jams:null,songs:null,ok:{},songList:[]};
+const KINDS=['inbox','jams','songs'];
+let framed=false;try{framed=window.self!==window.top}catch(e){framed=true}
+const phoneLike=/Android|iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+const FOLDERS=typeof window.showDirectoryPicker==='function'&&!phoneLike&&!framed;
+const IDB={
+  open(){return this.p=this.p||new Promise((res,rej)=>{const r=indexedDB.open(KEY+'handles',1);r.onupgradeneeded=()=>r.result.createObjectStore('h');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
+  async run(mode,fn){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('h',mode),q=fn(tx.objectStore('h'));tx.oncomplete=()=>res(q&&q.result);tx.onerror=tx.onabort=()=>rej(tx.error)})},
+  get(k){return this.run('readonly',s=>s.get(k))},set(k,v){return this.run('readwrite',s=>s.put(v,k))},del(k){return this.run('readwrite',s=>s.delete(k))}
+};
+async function exists(dir,name){try{await dir.getFileHandle(name);return true}catch(e){return false}}
+async function writeBlob(dir,name,blob){const fh=await dir.getFileHandle(name,{create:true}),w=await fh.createWritable();try{await w.write(blob);await w.close()}catch(e){try{await w.abort()}catch(x){}throw e}}
+async function readFile(dir,name){return(await dir.getFileHandle(name)).getFile()}
+async function copyFile(sd,sn,dd,dn){await writeBlob(dd,dn,await readFile(sd,sn))}
+async function moveFile(sd,sn,dd,dn){const fh=await sd.getFileHandle(sn);
+  if(typeof fh.move==='function'){try{await fh.move(dd,dn);return}catch(e){}}
+  await copyFile(sd,sn,dd,dn);await sd.removeEntry(sn)}
+async function unique(dir,stemName,ext,keep){let n=stemName+ext,k=2;while(n!==keep&&await exists(dir,n))n=`${stemName} (${k++})${ext}`;return n}
+function showFolders(){
+  for(const k of KINDS){const h=F[k],el=$('f'+k[0].toUpperCase()+k.slice(1));if(el)el.textContent=h?(h.name+(F.ok[k]?'':' (needs your OK)')):(k==='songs'?'optional':'not chosen');
+    const b=$('pick'+k[0].toUpperCase()+k.slice(1));if(b)b.textContent=(h?'Change ':'Choose ')+({inbox:'Inbox',jams:'Jams',songs:'New Songs'}[k])+' folder'}
+  const need=KINDS.some(k=>F[k]&&!F.ok[k]);$('reconnect').hidden=!need;
+  $('checkNew').disabled=!(F.inbox&&F.jams&&F.ok.inbox&&F.ok.jams);
+}
+async function permsOk(ask){
+  for(const k of KINDS){const h=F[k];if(!h){F.ok[k]=false;continue}
+    try{let p=await h.queryPermission({mode:'readwrite'});if(p!=='granted'&&ask)p=await h.requestPermission({mode:'readwrite'});F.ok[k]=p==='granted'}catch(e){F.ok[k]=false}}
+  showFolders();
+}
+async function loadFolders(){
+  for(const k of KINDS){try{const h=await IDB.get(KEY+k);if(h&&h.kind==='directory')F[k]=h}catch(e){}}
+  await permsOk(false);
+  if(F.jams&&F.ok.jams){await loadSongs();await refreshRecList()}
+}
+async function pickFolder(k){
+  let h;try{h=await window.showDirectoryPicker({id:'jam-'+k,mode:'readwrite',startIn:F.jams||F.inbox||'documents'})}
+  catch(e){if(e&&e.name==='AbortError')return;txt('folderMsg','Couldn’t open that folder: '+(e&&e.message||e));return}
+  F[k]=h;F.ok[k]=true;
+  let remembered=true;try{await IDB.set(KEY+k,h)}catch(e){remembered=false}
+  const tips={inbox:'Recorder files go here (S&W / Jams / Inbox).',jams:'Each recording’s cuts go in their own folder here (S&W / Jams).',songs:'Keepers can be copied into a song’s folder here (S&W / New Songs).'};
+  txt('folderMsg',(remembered?'':'This browser won’t remember the folder for next time. ')+tips[k]);say(h.name+' chosen.');
+  showFolders();
+  if(k==='jams'){await refreshRecList()}if(k==='songs')await loadSongs();
+}
+async function loadSongs(){
+  F.songList=[];if(!F.songs||!F.ok.songs)return;
+  try{for await(const[n,h]of F.songs.entries())if(h.kind==='directory'&&!n.startsWith('.'))F.songList.push(n)}catch(e){}
+  F.songList.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
+}
+/* the log of recordings already cut, kept in the Jams folder so it works on every computer */
+async function readLog(){
+  let raw=null,bad=false;
+  try{const f=await readFile(F.jams,LOG_NAME);try{raw=JSON.parse(await f.text())}catch(e){bad=true}}catch(e){}
+  if(bad){try{await copyFile(F.jams,LOG_NAME,F.jams,await unique(F.jams,'Jam Cutter log (unreadable)','.json'))}catch(e){}}
+  return tidyLog(raw);
+}
+function tidyLog(x){
+  const out={app:'JAM',note:'Jam Cutter remembers which recordings it has cut. Keep this file in the Jams folder.',recordings:[]};
+  for(const r of(x&&Array.isArray(x.recordings)?x.recordings:[])){
+    if(!r||typeof r.name!=='string')continue;
+    out.recordings.push({name:str(r.name),size:num(r.size),lastModified:num(r.lastModified),processedAt:str(r.processedAt,40),appVersion:str(r.appVersion,20),
+      folder:str(r.folder),duration:num(r.duration),threshold:num(r.threshold),
+      clips:(Array.isArray(r.clips)?r.clips:[]).filter(c=>c&&typeof c.file==='string').slice(0,2000).map(c=>({id:str(c.id,20),kind:str(c.kind,10),start:num(c.start),end:num(c.end),file:str(c.file),keep:c.keep!==false}))});
+  }
+  return out;
+}
+async function writeLog(log){await writeBlob(F.jams,LOG_NAME,new Blob([JSON.stringify(log,null,1)],{type:'application/json'}))}
+const dateKey=f=>{const d=new Date(f.lastModified||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+/* Recorder's names ("Nov 20 at 7-15 PM") have no year: take it from the file's date */
+function folderName(f){
+  const b=stem(f.name),m=/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}) at (\d{1,2})[-:.](\d{2})\s*([AP]M)\b/i.exec(b);
+  const d=new Date(f.lastModified||Date.now());
+  if(m){const mo='janfebmaraprmayjunjulaugsepoctnovdec'.indexOf(m[1].toLowerCase())/3,day=+m[2];let y=d.getFullYear();
+    if(mo>d.getMonth()||(mo===d.getMonth()&&day>d.getDate()+1))y--;
+    return safeName(`${y}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')} ${+m[3]}-${m[4]} ${m[5].toUpperCase()}`,120)}
+  return safeName(dateKey(f)+' '+b,120)||dateKey(f);
+}
+let NEW=[];
+async function checkNew(){
+  $('cutAll').hidden=true;$('newList').innerHTML='';
+  if(!F.inbox||!F.jams)return;
+  txt('folderMsg','Looking in '+F.inbox.name+'…');
+  try{
+    const log=await readLog(),seen=new Set(log.recordings.map(r=>r.name+'|'+r.size));NEW=[];
+    for await(const[n,h]of F.inbox.entries()){if(h.kind!=='file'||!AUDIO_EXT.test(n)||n.startsWith('.'))continue;const f=await h.getFile();if(!seen.has(n+'|'+f.size))NEW.push({name:n,file:f,state:''})}
+    NEW.sort((a,b)=>a.file.lastModified-b.file.lastModified);
+    for(const r of NEW){try{const t=await openMp4(r.file);r.len=t?t.duration-t.skip/t.timescale:null}catch(e){r.len=null}}
+    drawNew();
+    const msg=NEW.length?plural(NEW.length,'new recording')+' in '+F.inbox.name+'.':'No new recordings in '+F.inbox.name+'. Everything there has been cut.';
+    txt('folderMsg',msg);say(msg);$('cutAll').hidden=!NEW.length;
+  }catch(e){txt('folderMsg','Couldn’t read the folders: '+(e&&e.message||e))}
+}
+function drawNew(){
+  $('newList').innerHTML=NEW.map((r,i)=>`<li><b>${esc(r.name)}</b><span class="meta">${r.len?fmtT(r.len)+' · ':''}${mb(r.file.size)} · ${esc(new Date(r.file.lastModified).toLocaleString())}</span><span class="st ${r.state==='done'?'ok':''}" id="ns${i}">${esc(r.state==='done'?'Cut ✓':r.state)}</span></li>`).join('');
+}
+let busy=false;
+function setBusy(b){busy=b;cancelled=false;for(const id of['checkNew','cutAll','pickFile','pickInbox','pickJams','pickSongs','recut','applyBtn'])if($(id))$(id).disabled=b||(id==='checkNew'&&!(F.inbox&&F.jams&&F.ok.inbox&&F.ok.jams));
+  $('pickWrap').classList.toggle('dis',b);if(!b)$('work').hidden=true;
+  if(b&&navigator.wakeLock)navigator.wakeLock.request('screen').then(l=>{wake=l}).catch(()=>{});else if(!b&&wake){wake.release().catch(()=>{});wake=null}}
+let wake=null;
+async function cutToFolder(file,label,again){
+  const fname=folderName(file);let name=fname,k=2;
+  for(;;){try{await F.jams.getDirectoryHandle(name);name=`${fname} (${k++})`}catch(e){break}}
+  const dir=await F.jams.getDirectoryHandle(name,{create:true});
+  const rec=await cutRecording(file,{write:(n,b)=>writeBlob(dir,n,b)},label);
+  rec.folder=name;rec.mode='folder';rec.dir=dir;
+  await writeReview(rec);
+  const log=await readLog();
+  log.recordings.push({name:file.name,size:file.size,lastModified:file.lastModified,processedAt:new Date().toISOString(),appVersion:VERSION,folder:name,
+    duration:Math.round(rec.duration*100)/100,threshold:rec.threshold,clips:rec.clips.map(c=>({id:c.id,kind:c.kind,start:c.start,end:c.end,file:c.file,keep:true}))});
+  await writeLog(log);
+  return rec;
+}
+async function cutAll(){
+  if(busy||!NEW.length)return;setBusy(true);let last=null,n=0;
+  try{
+    for(let i=0;i<NEW.length;i++){
+      const r=NEW[i];if(r.state==='done')continue;r.state='cutting…';drawNew();
+      try{last=await cutToFolder(r.file,`${i+1} of ${NEW.length} · ${r.name}`);r.state='done';n++;
+        if(st.jam.moveDone){try{const done=await F.inbox.getDirectoryHandle('Done',{create:true});await moveFile(F.inbox,r.name,done,await unique(done,stem(r.name),r.name.slice(stem(r.name).length)))}catch(e){r.state='done (not moved: '+(e.message||e)+')'}}}
+      catch(e){r.state=e.message==='stopped'?'stopped':'failed: '+(e&&e.message||e);resetWorkers();if(cancelled){drawNew();break}}
+      drawNew();
+    }
+    const msg=n?`Cut ${plural(n,'recording')}. The MP3s are in ${F.jams.name}, one folder per recording.`:'Nothing was cut.';txt('folderMsg',msg);say(msg);
+    $('cutAll').hidden=NEW.every(r=>r.state==='done');
+  }finally{setBusy(false)}
+  await refreshRecList(last&&last.folder);
+  if(last)openReview(last);
+}
+async function writeReview(rec){
+  const data={app:'JAM',version:VERSION,recording:rec.base,source:rec.source,size:rec.size,lastModified:rec.lastModified,year:rec.year,duration:rec.duration,
+    threshold:rec.threshold,shape:rec.shape,envStep:rec.envStep,env:rec.env,takes:rec.takes,
+    clips:rec.clips.map(c=>({id:c.id,kind:c.kind,take:c.take,part:c.part,start:c.start,end:c.end,file:c.file,title:c.title,keep:c.keep,name:c.name,song:c.song,loc:c.loc,copied:c.copied}))};
+  await writeBlob(rec.dir,REVIEW_NAME,new Blob([JSON.stringify(data)],{type:'application/json'}));
+}
+function tidyReview(x,dir,folder){
+  if(!x||typeof x!=='object'||!Array.isArray(x.clips))return null;
+  const takes=(Array.isArray(x.takes)?x.takes:[]).slice(0,500).map(t=>({n:num(t.n),start:num(t.start),end:num(t.end),level:num(t.level),
+    stops:(Array.isArray(t.stops)?t.stops:[]).filter(Array.isArray).map(s=>[num(s[0]),num(s[1])]),parts:(Array.isArray(t.parts)?t.parts:[]).map(p=>({start:num(p.start),end:num(p.end)}))}));
+  const clips=x.clips.slice(0,2000).filter(c=>c&&typeof c.file==='string').map(c=>({id:str(c.id,20),kind:['full','part','take'].includes(c.kind)?c.kind:'take',take:num(c.take),part:num(c.part),
+    start:num(c.start),end:num(c.end),file:str(c.file),title:str(c.title),keep:c.keep!==false,name:str(c.name,80),song:str(c.song,120),loc:c.loc==='tossed'?'tossed':'main',copied:str(c.copied)}));
+  return{mode:'folder',dir,folder,base:str(x.recording)||folder,source:str(x.source),size:num(x.size),lastModified:num(x.lastModified),year:str(x.year,4),
+    duration:num(x.duration,1),threshold:num(x.threshold,-30),shape:str(x.shape),envStep:num(x.envStep,0.25)||0.25,env:(Array.isArray(x.env)?x.env:[]).slice(0,10000).map(v=>num(v,-100)),takes,clips};
+}
+async function refreshRecList(select){
+  const box=$('recRow'),sel=$('recPick');
+  if(!F.jams||!F.ok.jams){box.hidden=true;return}
+  const log=await readLog(),recs=log.recordings.slice().reverse();
+  box.hidden=!recs.length;
+  sel.innerHTML=recs.map(r=>`<option value="${esc(r.folder)}">${esc(r.folder)} · ${plural(r.clips.length,'clip')}</option>`).join('');
+  if(select)sel.value=select;
+  if(recs.length&&!R&&!busy)await openLogged(recs[0].folder);   /* after a reload, show the latest recording */
+}
+async function openLogged(folder){
+  try{const dir=await F.jams.getDirectoryHandle(folder);let x=null;try{x=JSON.parse(await(await readFile(dir,REVIEW_NAME)).text())}catch(e){}
+    const rec=tidyReview(x,dir,folder);if(!rec){txt('cutMsg','The review file for '+folder+' is missing, so it can’t be reviewed here.');return}
+    openReview(rec);
+  }catch(e){txt('cutMsg','Couldn’t find the folder '+folder+' in '+F.jams.name+'.')}
+}
+
+/* ---------- one recording (phones, and computers without folder access) ---------- */
+async function cutOne(file){
+  if(busy||!file)return;setBusy(true);
+  try{
+    const rec=await cutRecording(file,null,file.name);
+    rec.mode='memory';rec.folder=folderName(file);
+    const msg=`Cut ${plural(rec.clips.length,'MP3')} from ${file.name} in ${Math.round(rec.seconds)} s. Review them below.`;txt('cutMsg',msg);say(msg);
+    openReview(rec);
+  }catch(e){txt('cutMsg',e.message==='stopped'?'Stopped.':'Couldn’t cut that recording: '+(e&&e.message||e)+(/memory|allocation|Array buffer/i.test(String(e))?' It may be too long for this browser; try Chrome on a computer.':''));resetWorkers()}
+  finally{setBusy(false)}
+}
+
+/* ---------- review ---------- */
+let R=null,cur=0,urls=[];
+const draftKey=()=>KEY+'review:'+(R.mode==='folder'?R.folder:'memory:'+R.source+'|'+R.size);
+function openReview(rec){
+  R=rec;cur=0;
+  if(R.mode==='memory'){const d=store.get(draftKey());if(d&&Array.isArray(d.c))d.c.forEach((s,i)=>{const c=R.clips[i];if(c&&s&&s.id===c.id){c.keep=s.k!==false;c.name=str(s.n,80)}})}
+  else{const d=store.get(draftKey());if(d&&Array.isArray(d.c))d.c.forEach((s,i)=>{const c=R.clips[i];if(c&&s&&s.id===c.id){c.keep=s.k!==false;c.name=str(s.n,80);c.song=str(s.s,120)}})}
+  $('reviewBox').hidden=false;
+  const playing=R.takes.reduce((a,t)=>a+t.end-t.start,0),parts=R.clips.filter(c=>c.kind==='part').length;
+  txt('revMeta',`${R.base}: ${plural(R.takes.length,'take')}${parts?', '+plural(parts,'part'):''} · ${fmtT(playing)} of playing in ${fmtT(R.duration)} · playing level ${R.threshold} dB`+(R.mode==='folder'?' · in '+R.folder:''));
+  $('applyBtn').hidden=R.mode!=='folder';$('recut').hidden=R.mode!=='folder';
+  const canShare=R.mode==='memory'&&!!(navigator.canShare&&navigator.share);
+  $('shareBtn').hidden=!canShare;$('zipBtn').hidden=R.mode!=='memory';
+  txt('applyMsg',R.mode==='folder'?'Apply renames the keepers, moves the rest to _tossed, and files copies by song.':'Share or save the keepers when you’re done. Tossed clips are left out.');
+  drawClips();drawStrip();
+  if(R.mode==='folder')$('recPick').value=R.folder;
+}
+function storeDraft(){if(R)store.set(draftKey(),{c:R.clips.map(c=>({id:c.id,k:c.keep,n:c.name,s:c.song}))})}
+function label(c){return String(c.take).padStart(2,'0')+(c.kind==='part'?'.'+c.part:'')}
+function songOptions(c){
+  const list=F.songList.slice();if(c.song&&!list.includes(c.song))list.push(c.song);
+  return'<option value="">No song</option>'+list.map(s=>`<option value="${esc(s)}"${s===c.song?' selected':''}>${esc(s)}</option>`).join('')+'<option value="__new">New song idea…</option>';
+}
+async function clipUrl(c){
+  if(c.blob)return URL.createObjectURL(c.blob);
+  if(R.mode==='folder'){try{const d=c.loc==='tossed'?await R.dir.getDirectoryHandle('_tossed'):R.dir;return URL.createObjectURL(await readFile(d,c.file))}catch(e){return''}}
+  return'';
+}
+function drawClips(){
+  for(const u of urls)URL.revokeObjectURL(u);urls=[];
+  const L=$('clipList'),songs=R.mode==='folder'&&F.songs&&F.ok.songs;let h='';
+  if(!R.clips.length)h='<p class="sub">No takes found. Try a lower Sensitivity under Advanced, then cut again.</p>';
+  for(const t of R.takes){
+    const cl=R.clips.map((c,i)=>[c,i]).filter(([c])=>c.take===t.n),split=cl.some(([c])=>c.kind==='part');
+    if(split)h+=`<h3 class="takeHead">Take ${String(t.n).padStart(2,'0')}<span>${fmtT(t.start)} – ${fmtT(t.end)} · ${fmtT(t.end-t.start)} · ${plural(cl.length-1,'part')}</span></h3>`;
+    for(const[c,i]of cl){
+      const stops=c.kind!=='part'&&t.stops.length?' · stops at '+t.stops.map(s=>fmtT(s[0])).join(', '):'';
+      h+=`<section class="clip${c.kind==='part'?' part':''}${c.keep?'':' tossed'}" id="clip${i}" data-i="${i}" aria-label="Clip ${label(c)}">
+<div class="clipHead"><span class="num">${label(c)}</span><span class="times">${fmtT(c.start)} – ${fmtT(c.end)} · ${fmtT(c.end-c.start)}${c.kind!=='part'?' · '+t.level+' dB':''}${stops}</span>${c.kind==='full'?'<span class="badge">full take</span>':''}</div>
+<audio controls preload="none" id="au${i}" aria-label="Play clip ${label(c)}"></audio>
+<div class="clipRow"><input type="text" id="nm${i}" maxlength="80" placeholder="Name it (optional)" aria-label="Name for clip ${label(c)}" value="${esc(c.name)}">
+<label class="keep"><input type="checkbox" id="kp${i}"${c.keep?' checked':''}> Keep</label></div>
+${songs?`<div class="clipRow song"><label for="sg${i}">Song</label><select id="sg${i}">${songOptions(c)}</select></div><div class="newsong" id="nsb${i}" hidden><input type="text" id="nsn${i}" maxlength="80" placeholder="Song idea name" aria-label="New song idea name"><button type="button" class="btn sm" id="nsa${i}">Add</button></div>`:''}
+<div class="fileNote" id="fn${i}">${esc(c.loc==='tossed'?'_tossed/'+c.file:c.file)}</div></section>`;
+    }
+  }
+  L.innerHTML=h;
+  R.clips.forEach((c,i)=>{
+    const au=$('au'+i);
+    clipUrl(c).then(u=>{if(u){urls.push(u);au.src=u}});
+    au.addEventListener('play',()=>{document.querySelectorAll('#clipList audio').forEach(a=>{if(a!==au)a.pause()});select(i,false)});
+    $('nm'+i).addEventListener('input',e=>{c.name=e.target.value;storeDraft()});
+    $('kp'+i).addEventListener('change',e=>{setKeep(i,e.target.checked)});
+    const sg=$('sg'+i);if(sg)sg.addEventListener('change',()=>{if(sg.value==='__new'){$('nsb'+i).hidden=false;$('nsn'+i).focus();return}c.song=sg.value;storeDraft()});
+    const add=$('nsa'+i);if(add){const go=()=>{const n=safeName($('nsn'+i).value,120);if(!n)return;if(!F.songList.includes(n))F.songList.push(n);c.song=n;storeDraft();
+      $('nsb'+i).hidden=true;document.querySelectorAll('#clipList select').forEach((s,k)=>{const ci=+s.id.slice(2);s.innerHTML=songOptions(R.clips[ci])});say('Song idea '+n+' added.')};
+      add.addEventListener('click',go);$('nsn'+i).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go()}})}
+    $('clip'+i).addEventListener('click',e=>{if(!e.target.closest('input,select,button,audio,label'))select(i,false)});
+  });
+  select(Math.min(cur,R.clips.length-1),false);
+}
+function setKeep(i,v){const c=R.clips[i];c.keep=v;const el=$('clip'+i);if(el){el.classList.toggle('tossed',!v);$('kp'+i).checked=v}storeDraft()}
+function select(i,scroll){
+  if(!R||!R.clips.length)return;cur=clamp(i,0,R.clips.length-1);
+  document.querySelectorAll('#clipList .clip').forEach(e=>e.classList.toggle('cur',e.id==='clip'+cur));
+  if(scroll){const el=$('clip'+cur);if(el)el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
+  drawStrip();
+}
+function drawStrip(){
+  const cv=$('strip');if(!cv||!R||$('reviewBox').hidden)return;
+  const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim();
+  const r=window.devicePixelRatio||1,W=cv.width=Math.max(1,Math.round(cv.clientWidth*r)),H=cv.height=Math.max(1,Math.round(cv.clientHeight*r)),g=cv.getContext('2d');
+  const lo=-70,hi=0,y=v=>H-(clamp(v,lo,hi)-lo)/(hi-lo)*H,x=t=>t/R.duration*W;
+  g.clearRect(0,0,W,H);
+  g.globalAlpha=0.16;g.fillStyle=col('--accent');for(const t of R.takes)g.fillRect(x(t.start),0,Math.max(1,x(t.end)-x(t.start)),H);
+  const c0=R.clips[cur];if(c0){g.globalAlpha=0.32;g.fillRect(x(c0.start),0,Math.max(1,x(c0.end)-x(c0.start)),H)}
+  g.globalAlpha=1;g.beginPath();g.moveTo(0,H);R.env.forEach((v,i)=>g.lineTo(x(i*R.envStep),y(v)));g.lineTo(W,H);g.closePath();g.fillStyle=col('--edge');g.globalAlpha=0.75;g.fill();g.globalAlpha=1;
+  g.strokeStyle=col('--ink');g.globalAlpha=0.55;g.lineWidth=r;
+  for(const c of R.clips)if(c.kind==='part'&&c.part>1){const px=x(c.start+1);g.beginPath();g.moveTo(px,H*0.25);g.lineTo(px,H);g.stroke()}
+  g.globalAlpha=1;g.setLineDash([6*r,5*r]);g.strokeStyle=col('--accent');g.lineWidth=1.5*r;g.beginPath();g.moveTo(0,y(R.threshold));g.lineTo(W,y(R.threshold));g.stroke();g.setLineDash([]);
+  g.fillStyle=col('--ink');g.font=`${Math.round(12*r)}px system-ui,sans-serif`;for(const t of R.takes)g.fillText(String(t.n),x(t.start)+3*r,14*r);
+}
+function stripClick(e){
+  if(!R||!R.clips.length)return;
+  const rect=$('strip').getBoundingClientRect(),t=(e.clientX-rect.left)/rect.width*R.duration;
+  let best=-1;R.clips.forEach((c,i)=>{if(t>=c.start&&t<=c.end&&(best<0||R.clips[best].kind==='full'))best=i});
+  if(best<0){let bd=Infinity;R.clips.forEach((c,i)=>{const d=t<c.start?c.start-t:t-c.end;if(d<bd){bd=d;best=i}})}
+  select(best,true);
+  const au=$('au'+best),c=R.clips[best];if(!au)return;
+  const go=()=>{au.currentTime=clamp(t-c.start,0,c.end-c.start);au.play().catch(()=>{})};
+  if(au.readyState>=1)go();else{au.preload='auto';au.addEventListener('loadedmetadata',go,{once:true});au.load()}
+}
+document.addEventListener('keydown',e=>{
+  if(!R||$('reviewBox').hidden||e.ctrlKey||e.metaKey||e.altKey)return;
+  const tg=e.target;if(tg&&(tg.tagName==='INPUT'&&tg.type!=='checkbox'||tg.tagName==='SELECT'||tg.tagName==='TEXTAREA'||tg.tagName==='AUDIO'&&e.key===' '))return;
+  const k=e.key.toLowerCase();
+  if(k==='j'){select(cur+1,true);say('Clip '+label(R.clips[cur]))}
+  else if(k==='k'){select(cur-1,true);say('Clip '+label(R.clips[cur]))}
+  else if(k===' '){const au=$('au'+cur);if(au){e.preventDefault();au.paused?au.play().catch(()=>{}):au.pause()}}
+  else if(k==='x'){setKeep(cur,!R.clips[cur].keep);say('Clip '+label(R.clips[cur])+(R.clips[cur].keep?' kept':' tossed'))}
+});
+/* final names: "<recording> - <name>.mp3" for named keepers, as jamcutter.py's --apply */
+async function retag(blob,c,name){
+  const u=new Uint8Array(await blob.arrayBuffer()),body=J.stripId3(u);
+  return new Blob([J.id3Tag({title:name,artist:st.jam.artist,album:R.base,year:R.year,comment:`Jam Cutter: ${fmtT(c.start)} to ${fmtT(c.end)} of ${R.source}`}),body],{type:'audio/mpeg'});
+}
+async function applyFolder(){
+  if(busy||!R||R.mode!=='folder')return;
+  if(!F.jams||!F.ok.jams){txt('applyMsg','Reconnect the folders first.');return}
+  setBusy(true);const errs=[];let kept=0,tossed=0,renamed=0,filed=0;
+  try{
+    const dir=R.dir;let td=null;const tdir=async()=>td=td||await dir.getDirectoryHandle('_tossed',{create:true});
+    for(const c of R.clips){
+      try{
+        if(!c.keep){if(c.loc!=='tossed'){await moveFile(dir,c.file,await tdir(),c.file);c.loc='tossed'}tossed++;continue}
+        if(c.loc==='tossed'){await moveFile(await tdir(),c.file,dir,c.file);c.loc='main'}
+        kept++;
+        const nm=safeName(c.name);
+        if(nm){const nf=await unique(dir,R.base+' - '+nm,'.mp3',c.file);
+          if(nf!==c.file){await writeBlob(dir,nf,await retag(await readFile(dir,c.file),c,nm));await dir.removeEntry(c.file);c.file=nf;renamed++}}
+        if(c.song&&F.songs&&F.ok.songs&&c.copied!==c.song+'/'+c.file){
+          const sd=await F.songs.getDirectoryHandle(c.song,{create:true}),tn=await unique(sd,stem(c.file),'.mp3');
+          await copyFile(dir,c.file,sd,tn);c.copied=c.song+'/'+c.file;filed++}
+      }catch(e){errs.push(c.file+': '+(e&&e.message||e))}
+    }
+    await writeReview(R);
+    const log=await readLog(),e=log.recordings.slice().reverse().find(r=>r.folder===R.folder);
+    if(e){e.clips=R.clips.map(c=>({id:c.id,kind:c.kind,start:c.start,end:c.end,file:c.loc==='tossed'?'_tossed/'+c.file:c.file,keep:c.keep}));await writeLog(log)}
+    store.del(draftKey());
+    const msg=`Kept ${kept} (renamed ${renamed}), ${tossed} in _tossed`+(filed?`, ${filed} filed by song`:'')+'.'+(errs.length?' Some didn’t work: '+errs.slice(0,3).join('; '):'');
+    txt('applyMsg',msg);say(msg);
+    drawClips();await loadSongs();
+  }catch(e){txt('applyMsg','Couldn’t apply: '+(e&&e.message||e))}
+  finally{setBusy(false)}
+}
+async function keepers(){
+  const out=[],used=new Set();
+  for(const c of R.clips){if(!c.keep||!c.blob)continue;const nm=safeName(c.name);let n=c.file,b=c.blob;
+    if(nm){let s=R.base+' - '+nm,k=2;n=s+'.mp3';while(used.has(n))n=`${s} (${k++}).mp3`;b=await retag(c.blob,c,nm)}
+    used.add(n);out.push([n,b])}
+  return out;
+}
+async function shareKeepers(){
+  const k=await keepers();if(!k.length){txt('applyMsg','Nothing is kept.');return}
+  const files=k.map(([n,b])=>new File([b],n,{type:'audio/mpeg'}));
+  try{if(navigator.canShare&&!navigator.canShare({files})){txt('applyMsg','This phone can’t share that many files at once. Use Save zip instead.');return}
+    await navigator.share({files,title:R.base});txt('applyMsg','Shared '+plural(files.length,'MP3')+'. In the share sheet, choose Drive and the S&W / Jams folder.')}
+  catch(e){if(e&&e.name==='AbortError')return;txt('applyMsg','Sharing didn’t work here ('+(e&&e.message||e)+'). Use Save zip instead.')}
+}
+async function saveZip(){
+  const k=await keepers(),entries=k.concat(R.extra||[]);if(!k.length){txt('applyMsg','Nothing is kept.');return}
+  const blob=await zipBlob(entries.map(([n,b])=>[R.folder+'/'+n,b]));
+  await saveFile(R.folder+'.zip',blob,$('applyMsg'));
+}
+/* a plain (stored, not compressed) zip: MP3s don't shrink anyway */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+async function zipBlob(entries){
+  const parts=[],central=[];let off=0;const enc=new TextEncoder(),d=new Date(),dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1)),dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate());
+  for(const[name,blob]of entries){
+    const data=new Uint8Array(await blob.arrayBuffer()),nm=enc.encode(name),crc=crc32(data),h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,dt,true);h.setUint16(12,dd,true);
+    h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(h.buffer,nm,data);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);
+    c.setUint16(12,dt,true);c.setUint16(14,dd,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,nm.length,true);
+    c.setUint32(42,off,true);central.push(c.buffer,nm);off+=30+nm.length+data.length;
+  }
+  const size=central.reduce((a,b)=>a+b.byteLength,0),e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,entries.length,true);e.setUint16(10,entries.length,true);e.setUint32(12,size,true);e.setUint32(16,off,true);
+  return new Blob(parts.concat(central,[e.buffer]),{type:'application/zip'});
+}
+async function recut(){
+  if(busy||!R||R.mode!=='folder')return;
+  let file=null;
+  for(const d of[F.inbox,F.inbox&&await F.inbox.getDirectoryHandle('Done').catch(()=>null)])if(d&&!file){try{const f=await readFile(d,R.source);if(!R.size||f.size===R.size)file=f}catch(e){}}
+  if(!file){txt('applyMsg','The original recording ('+R.source+') isn’t in the Inbox or Inbox / Done, so it can’t be cut again.');return}
+  setBusy(true);
+  try{const rec=await cutToFolder(file,'Cutting again · '+file.name,true);await refreshRecList(rec.folder);openReview(rec);txt('applyMsg','Cut again into '+rec.folder+'. The earlier cuts are still in their own folder, so use whichever you like.')}
+  catch(e){txt('applyMsg',e.message==='stopped'?'Stopped.':'Couldn’t cut it again: '+(e&&e.message||e))}
+  finally{setBusy(false)}
+}
+
+/* ---------- Advanced ---------- */
+const sec=v=>v+' s',db1=v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' dB';
+bindSlider('sSens','jam.sens',db1);bindSlider('sThr','jam.thr',v=>(v<0?'−':'')+Math.abs(v)+' dB');bindSlider('sGap','jam.gap',sec);bindSlider('sMin','jam.minTake',sec);
+bindSlider('sPre','jam.pre',sec);bindSlider('sPost','jam.post',sec);bindSlider('sSplit','jam.splitOver',v=>v?v+' s':'never');bindSlider('sPart','jam.minPart',sec);
+bindSlider('sPSens','jam.partSens',v=>(+v).toFixed(1));
+HOOK.sync.push(()=>{$('thrRow').hidden=st.jam.autoThr;const a=$('sArtist');if(a&&document.activeElement!==a)a.value=st.jam.artist});
+APP.onStart=()=>{
+  $('sArtist').addEventListener('change',e=>{st.jam.artist=String(e.target.value).replace(/[\x00-\x1f]/g,'').trim().slice(0,100);saveSettings();sync()});
+  $('resetAdv').addEventListener('click',()=>{st.jam=clone(DEF.jam);saveSettings();sync();say('Advanced settings are back to the defaults.')});
+  $('pickFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)cutOne(f)});
+  $('stopBtn').addEventListener('click',()=>{cancelled=true;txt('workMsg','Stopping…')});
+  $('strip').addEventListener('click',stripClick);
+  addEventListener('resize',()=>drawStrip());
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>drawStrip())}catch(e){}
+  $('keepAll').addEventListener('click',()=>{if(R)R.clips.forEach((c,i)=>setKeep(i,true))});
+  $('fullOnly').addEventListener('click',()=>{if(R)R.clips.forEach((c,i)=>setKeep(i,c.kind!=='part'))});
+  $('applyBtn').addEventListener('click',applyFolder);$('shareBtn').addEventListener('click',shareKeepers);$('zipBtn').addEventListener('click',saveZip);
+  $('recut').addEventListener('click',recut);
+  $('recPick').addEventListener('change',e=>openLogged(e.target.value));
+  if(FOLDERS){
+    $('folderMode').hidden=false;$('oneHead').textContent='Or One Recording';
+    txt('modeNote','Choose one recording to cut it without folders; you’ll get a zip to save.');
+    for(const k of KINDS)$('pick'+k[0].toUpperCase()+k.slice(1)).addEventListener('click',()=>pickFolder(k));
+    $('reconnect').addEventListener('click',async()=>{await permsOk(true);if(F.jams&&F.ok.jams){await loadSongs();await refreshRecList()}});
+    $('checkNew').addEventListener('click',checkNew);$('cutAll').addEventListener('click',cutAll);
+    loadFolders().catch(()=>{});
+  }else{
+    $('oneHead').hidden=true;
+    txt('modeNote',typeof window.showDirectoryPicker==='function'&&framed?'Folder mode needs JAM opened in its own tab. Here, choose one recording at a time.':
+      'The one-click folder mode works on a computer in Chrome or Edge. Here, choose one recording at a time, then share the cuts to Drive or save a zip.');
+  }
+  if(typeof AudioDecoder==='undefined')txt('cutMsg','This browser reads the whole recording into memory, so very long practices may not fit. Chrome or Edge handles them best.');
+};
+/* ==== APP CODE END ==== */
+
+start();
+})();
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>

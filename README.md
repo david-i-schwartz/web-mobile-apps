@@ -30,6 +30,10 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`hex-cubes/`](https://david-i-schwartz.github.io/web-mobile-apps/hex-cubes/): HEX, Hex Bead Cubes
 - [`iso-designer/`](https://david-i-schwartz.github.io/web-mobile-apps/iso-designer/): ISO, Iso Bead Designer
 
+### Music
+
+- [`jam/`](https://david-i-schwartz.github.io/web-mobile-apps/jam/): JAM, Jam Cutter
+
 ### Teaching
 
 - [`torah-tutor/`](https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/): TORAH, Torah Tutor
