@@ -13,7 +13,7 @@
  "code": "JAM",
  "name": "Jam Cutter",
  "tagline": "Finds where the band is playing in a practice recording, cuts each take into MP3s, and lets you name, keep or toss them. Everything stays on this device.",
- "version": "1.0",
+ "version": "1.1",
  "date": "22 Nov 2026",
  "unit": {
   "one": "cell",
@@ -196,9 +196,27 @@
      "source": "MDN"
     }
    ]
+  },
+  {
+   "topic": "Reading Recorder’s zip",
+   "links": [
+    {
+     "title": "ZIP (file format)",
+     "url": "https://en.wikipedia.org/wiki/ZIP_(file_format)",
+     "source": "Wikipedia"
+    },
+    {
+     "title": "Compression Streams API",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API",
+     "source": "MDN"
+    }
+   ]
   }
  ],
  "changes": [
+  "Opens Recorder’s zip (the recording and its transcript together) as well as the .m4a, and reads a download’s name (Nov_20_at_7-15_PM) as the recording’s date.",
+  "Transcripts, as an option: kept with the cuts and shown in Review. Text copied from recorder.google.com has times, so pasting it shows what was said beside each clip.",
+  "Plainer steps for downloading from recorder.google.com and for working without Google Drive for desktop.",
   "First version. Finds takes and parts the way Jam Cutter 1.1 (jamcutter.py) does, with the same defaults, and cuts the MP3s in the browser.",
   "Folder mode for a computer with Google Drive for desktop: finds new recordings in the Inbox, cuts them into the Jams folder, and remembers what it has cut in Jam Cutter log.json.",
   "Review: listen, name, keep or toss each clip, and file keepers by song. One-recording mode for phones shares the cuts to Drive or saves a zip."
@@ -437,6 +455,14 @@ details>summary{min-height:44px;box-sizing:border-box;padding-top:8px;padding-bo
 .pick{display:inline-flex;align-items:center;box-sizing:border-box}
 .pick input[type=file]{inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}
 h2 .q,h3 .q{margin:-10px -10px -10px -7px}
+.said{font-size:14px;color:var(--muted);margin:4px 0 2px;overflow-wrap:anywhere}
+.said b{color:var(--ink);font-weight:600}
+.at{font:13px ui-monospace,Menlo,Consolas,monospace;color:var(--accent)}
+.tx{margin:8px 0}
+.tx>summary{cursor:pointer;font-weight:600}
+#txParas p{margin:6px 0;font-size:15px;overflow-wrap:anywhere}
+#txParas{max-height:360px;overflow:auto;padding-right:4px}
+.tx textarea{width:100%;min-height:120px;box-sizing:border-box;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel);color:var(--ink)}
 /* ==== APP CSS END ==== */
 </style>
 <link rel="manifest" href="manifest.webmanifest">
@@ -461,11 +487,16 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
         <h4>What This Does</h4>
         <p>JAM listens to a practice recording, finds where the band is playing (not talking or tuning), and cuts each take into its own MP3. Long takes are also cut into parts where the sound changes, such as a new riff or a break.</p>
         <h4>Getting the Recording Here</h4>
-        <ul><li>After practice, in Google Recorder, tap <b>Share</b>, then <b>Drive</b>, and save it to <b>S&amp;W / Jams / Inbox</b>.</li>
-          <li>Or download it from recorder.google.com into that folder.</li></ul>
+        <ul><li><b>On a computer:</b> at recorder.google.com, open the recording and choose <b>Download</b>. Tick <b>Audio file (.m4a)</b>. Tick <b>Text file (.txt)</b> too if you want the transcript: Recorder then gives you a zip, and JAM opens that as well.</li>
+          <li><b>On a phone:</b> in Google Recorder, tap <b>Share</b> and save the recording to Drive.</li>
+          <li>Tip: in Chrome’s download settings, turn on <i>Ask where to save each file</i> and save straight into your Inbox folder.</li></ul>
         <h4>Two Ways to Work</h4>
-        <ul><li><b>Folders</b> (a computer with Chrome or Edge, and Google Drive for desktop): JAM finds new recordings in the Inbox, cuts them, and saves the cuts in the Jams folder. Drive for desktop uploads them.</li>
-          <li><b>One recording</b> (any phone or computer): choose a recording, review the cuts, then share them to Drive or save a zip.</li></ul>
+        <ul><li><b>Folders</b> (a computer with Chrome or Edge): JAM finds new recordings in an Inbox folder, cuts them, and saves the cuts in a Jams folder, one folder per recording.
+            With Google Drive for desktop, choose the S&amp;W folders and Drive uploads the cuts for you. Without it, choose ordinary folders on the computer, then drag each new folder into <b>S&amp;W / Jams</b> at drive.google.com.</li>
+          <li><b>One recording</b> (any phone or computer): choose a recording (the .m4a, or Recorder’s zip), review the cuts, then share them to Drive or save a zip.</li></ul>
+        <h4>Transcripts</h4>
+        <ul><li>A transcript from Recorder is kept with the cuts and shown in Review.</li>
+          <li>Recorder’s downloaded text has no times. The transcript on recorder.google.com does: copy it from there and paste it in Review to see what was said beside each clip.</li></ul>
         <p>Nothing is uploaded by JAM itself, and your original recordings are never deleted.</p>
       </div>
 
@@ -485,7 +516,7 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
 
       <h3 id="oneHead">One Recording</h3>
       <div class="btns">
-        <label class="btn primary pick" id="pickWrap">Choose recording<input type="file" id="pickFile" accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg,.opus,.flac,.webm,.mp4,.3gp,.amr,.aif,.aiff,.caf" aria-label="Choose recording"></label>
+        <label class="btn primary pick" id="pickWrap">Choose recording<input type="file" id="pickFile" multiple accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg,.opus,.flac,.webm,.mp4,.3gp,.amr,.aif,.aiff,.caf,.zip,application/zip,.txt,text/plain" aria-label="Choose recording"></label>
       </div>
       <p class="sub" id="modeNote"></p>
 
@@ -508,7 +539,8 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
         <h4>Clips</h4>
         <ul><li>A long take comes as the full take plus its parts, so nothing is only available chopped up.</li>
           <li>A name turns the file into <i>recording - name.mp3</i>. Blank keeps the file name.</li>
-          <li>Song files a copy into that song's folder in New Songs.</li></ul>
+          <li>Song files a copy into that song's folder in New Songs.</li>
+          <li>With a transcript that has times, each clip shows what was said in it, and before it for a take. Small ticks along the bottom of the strip mark those times.</li></ul>
         <h4>Keys</h4>
         <ul><li><kbd>J</kbd> next clip, <kbd>K</kbd> previous, <kbd>Space</kbd> play or pause, <kbd>X</kbd> toss or keep.</li></ul>
       </div>
@@ -519,6 +551,15 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
         <button type="button" class="btn sm" id="keepAll">Keep all</button>
         <button type="button" class="btn sm" id="fullOnly">Full takes only</button>
         <button type="button" class="btn sm" id="recut" hidden>Cut again with Advanced settings</button>
+      </div>
+      <div id="txBox" hidden>
+        <details class="tx" id="txList" hidden><summary id="txSum">Transcript</summary><div id="txParas"></div></details>
+        <details class="tx" id="txAdd"><summary id="txAddSum">Paste the transcript with its times</summary>
+          <p class="sub">At recorder.google.com, open this recording, select its transcript (the times and the words), copy it, and paste it here.</p>
+          <textarea id="txPaste" rows="5" aria-label="Paste the transcript"></textarea>
+          <div class="btns"><button type="button" class="btn" id="txUse">Use this transcript</button></div>
+        </details>
+        <p class="sub" id="txMsg" aria-live="polite"></p>
       </div>
       <div id="clipList"></div>
       <div class="btns" id="applyRow">
@@ -551,6 +592,7 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
         <button type="button" data-k="jam.kbps" data-v="192">192</button><button type="button" data-k="jam.kbps" data-v="256">256</button>
         <button type="button" data-k="jam.kbps" data-v="320">320</button>
       </div>
+      <div class="checks"><label><input type="checkbox" data-k="jam.transcript"> Use Recorder’s transcript when there is one</label></div>
       <div class="checks"><label><input type="checkbox" data-k="jam.moveDone"> After cutting, move the recording to Inbox / Done</label></div>
       <div class="btns"><button type="button" class="btn sm" id="resetAdv">Back to the defaults</button></div>
     </details>
@@ -572,10 +614,10 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
     </details>
   </div>
 </main>
-<p class="foot">JAM 1.0, made with HTML App Generator 1.5. One file, no server: everything stays in this browser.</p>
+<p class="foot">JAM 1.1, made with HTML App Generator 1.5. One file, no server: everything stays in this browser.</p>
 <div id="sr" class="sr" aria-live="polite"></div>
 <script>
-/* JAM: Jam Cutter 1.0. Made with HTML App Generator 1.5 (core 1.3).
+/* JAM: Jam Cutter 1.1. Made with HTML App Generator 1.5 (core 1.3).
    The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
 (()=>{
 'use strict';
@@ -1417,7 +1459,7 @@ const mb=n=>(n/1048576).toFixed(n<10485760?1:0)+' MB';
 const safeName=(t,limit=80)=>String(t||'').replace(/[\\/:*?"<>|\x00-\x1f]/g,'').trim().replace(/^\.+|\.+$/g,'').replace(/\s+/g,' ').slice(0,limit).trim();
 const num=(v,d=0)=>Number.isFinite(+v)?+v:d,str=(v,n=300)=>typeof v==='string'?v.slice(0,n):'';
 
-addSettings({jam:{sens:0,autoThr:true,thr:-30,gap:5,minTake:8,pre:2,post:2,splitOver:90,minPart:15,partSens:1,artist:'Saints and Winos',kbps:192,moveDone:false}},
+addSettings({jam:{sens:0,autoThr:true,thr:-30,gap:5,minTake:8,pre:2,post:2,splitOver:90,minPart:15,partSens:1,artist:'Saints and Winos',kbps:192,moveDone:false,transcript:true}},
   {'jam.kbps':[128,160,192,256,320]},
   {'jam.sens':[-12,12,true],'jam.thr':[-80,0,true],'jam.gap':[0,30,true],'jam.minTake':[0,60,true],'jam.pre':[0,10,true],'jam.post':[0,10,true],
    'jam.splitOver':[0,600,true],'jam.minPart':[5,120,true],'jam.partSens':[0.3,3,true]},
@@ -1508,12 +1550,80 @@ async function openSource(file){
   return{kind:'buffer',duration:ab.duration,range,rate:r};
 }
 
+/* ---------- Recorder's downloads: zips, underscore names and transcripts ---------- */
+const REC_NAME=/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?[ _](\d{1,2})[ _]at[ _](\d{1,2})[-:.](\d{2})[ _]?([AP]M)\b/i;
+/* "Nov_20_at_7-15_PM.m4a" (downloaded) and "Nov 20 at 7-15 PM.m4a" (shared to Drive) are the same recording */
+function baseName(name){let b=stem(String(name).split(/[\\/]/).pop());if(b.includes('_')&&REC_NAME.test(b))b=b.replace(/_/g,' ');return b}
+/* a zip's table of contents. Recorder stores its files without compression, so the audio is read straight out of the zip */
+async function readZip(file){
+  const n=Math.min(file.size,65557),tail=new DataView(await file.slice(file.size-n).arrayBuffer());
+  let e=-1;for(let i=n-22;i>=0;i--)if(tail.getUint32(i,true)===0x06054b50){e=i;break}
+  if(e<0)throw new Error('it isn’t a zip file');
+  const count=tail.getUint16(e+10,true),size=tail.getUint32(e+12,true),off=tail.getUint32(e+16,true);
+  if(off===0xFFFFFFFF||size===0xFFFFFFFF||off+size>file.size)throw new Error('this zip is too big or damaged');
+  const cd=new DataView(await file.slice(off,off+size).arrayBuffer()),out=[];let p=0;
+  for(let k=0;k<count&&p+46<=cd.byteLength;k++){
+    if(cd.getUint32(p,true)!==0x02014b50)break;
+    const flags=cd.getUint16(p+8,true),method=cd.getUint16(p+10,true),csize=cd.getUint32(p+20,true),
+      nl=cd.getUint16(p+28,true),el=cd.getUint16(p+30,true),cl=cd.getUint16(p+32,true),lho=cd.getUint32(p+42,true);
+    const name=new TextDecoder('utf-8').decode(new Uint8Array(cd.buffer,cd.byteOffset+p+46,Math.min(nl,cd.byteLength-p-46)));
+    out.push({name,method,csize,lho,flags});p+=46+nl+el+cl;
+  }
+  return out;
+}
+async function zipEntry(file,z){
+  if(z.flags&1)throw new Error('this zip has a password');
+  const h=new DataView(await file.slice(z.lho,z.lho+30).arrayBuffer());
+  if(h.byteLength<30||h.getUint32(0,true)!==0x04034b50)throw new Error('this zip is damaged');
+  const start=z.lho+30+h.getUint16(26,true)+h.getUint16(28,true),raw=file.slice(start,start+z.csize);
+  if(z.method===0)return raw;
+  if(z.method===8&&typeof DecompressionStream==='function')return new Response(raw.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob();
+  throw new Error('this zip is packed in a way this browser can’t open');
+}
+/* the recordings and transcripts inside a zip, as files */
+async function zipFiles(file){
+  const out=[];
+  for(const z of await readZip(file)){
+    const name=z.name.split('/').pop();
+    if(!name||z.name.endsWith('/')||z.name.startsWith('__MACOSX')||name.startsWith('.')||!(AUDIO_EXT.test(name)||/\.txt$/i.test(name)))continue;
+    out.push(new File([await zipEntry(file,z)],name,{lastModified:file.lastModified||Date.now()}));
+  }
+  return out;
+}
+/* sort files (recordings, Recorder's zips, transcripts) into recordings by name; a plain audio file wins over the same one in a zip */
+async function groupRecordings(files){
+  const groups=new Map(),get=b=>{if(!groups.has(b))groups.set(b,{base:b,audio:null,txt:null,items:[],lastModified:0});return groups.get(b)};
+  const note=(g,f)=>{if(!g.items.some(x=>x.name===f.name&&x.size===f.size))g.items.push({name:f.name,size:f.size});g.lastModified=Math.max(g.lastModified,f.lastModified||0)};
+  for(const f of files){
+    if(/\.zip$/i.test(f.name)){let inner=[];try{inner=await zipFiles(f)}catch(e){continue}
+      for(const x of inner){const g=get(baseName(x.name));if(AUDIO_EXT.test(x.name)){if(!g.audio)g.audio=x}else if(!g.txt)g.txt=x;note(g,f)}}
+    else if(AUDIO_EXT.test(f.name)){const g=get(baseName(f.name));g.audio=f;note(g,f)}
+    else if(/\.txt$/i.test(f.name)){const g=get(baseName(f.name));g.txt=f;note(g,f)}
+  }
+  return[...groups.values()].filter(g=>g.audio).sort((a,b)=>a.lastModified-b.lastModified);
+}
+/* transcripts: paragraphs, with times when the text has them (copied from recorder.google.com it does; the .txt download doesn't) */
+function tidyTx(t){return String(t||'').replace(/\r\n?/g,'\n').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'').slice(0,1000000).trim()}
+function parseTx(text){
+  const paras=[],TS=/^\s*\[?(?:(\d{1,2}):)?(\d{1,2}):([0-5]\d)\]?(?:\s+(.*))?\s*$/;let cur=null;
+  for(const line of tidyTx(text).split('\n')){
+    if(/^\s*Transcribed by\b/i.test(line))continue;
+    const m=TS.exec(line);
+    if(m&&(!m[4]||/^\D/.test(m[4]))){cur={t:(+(m[1]||0))*3600+(+m[2])*60+(+m[3]),text:(m[4]||'').trim()};paras.push(cur);continue}
+    if(!line.trim()){if(cur&&cur.t===null&&cur.text)cur=null;continue}
+    if(!cur){cur={t:null,text:''};paras.push(cur)}
+    cur.text=(cur.text?cur.text+' ':'')+line.trim();
+  }
+  const out=paras.filter(p=>p.text);
+  return{paras:out,timed:out.filter(p=>p.t!==null).length>=2};
+}
+
 /* ---------- cutting one recording ---------- */
 let cancelled=false;
 function progress(text,frac){$('work').hidden=false;txt('workMsg',text);const f=$('workFill');if(f)f.style.width=Math.round(clamp(frac,0,1)*100)+'%';$('workBar').setAttribute('aria-valuenow',String(Math.round(clamp(frac,0,1)*100)))}
-/* out: {write(name, blob)} or null to keep the files in memory */
-async function cutRecording(file,out,label){
-  const t0=performance.now(),base=stem(file.name)||'recording',year=String(new Date(file.lastModified||Date.now()).getFullYear());
+/* rec: {base, audio (a File), txt (a File or null), items, lastModified}; out: {write(name, blob)} or null to keep the files in memory */
+async function cutRecording(rec,out,label){
+  const file=rec.audio,t0=performance.now(),base=rec.base||baseName(file.name)||'recording',year=String(new Date(rec.lastModified||file.lastModified||Date.now()).getFullYear());
   progress(label+': opening…',0);
   const src=await openSource(file);
   const dur=src.duration||1;
@@ -1565,10 +1675,12 @@ async function cutRecording(file,out,label){
   /* 3. markers and review data */
   const labels=J.audacityLabels(res.takes),csv=J.auditionCsv(res.takes);
   const extra=[[base+'_audacity_labels.txt',new Blob([labels],{type:'text/plain'})],[base+'_audition_markers.csv',new Blob([csv],{type:'text/csv'})]];
+  let transcript='';if(st.jam.transcript&&rec.txt){try{transcript=tidyTx(await rec.txt.text())}catch(e){}}
+  if(transcript)extra.push([base+'_transcript.txt',new Blob([transcript],{type:'text/plain'})]);
   if(out)for(const[n,b]of extra)await out.write(n,b);
   const step=Math.max(1,Math.floor(res.env.length/2400)),env=[];
   for(let i=0;i<res.env.length;i+=step){let m=-100;for(let k=i;k<Math.min(res.env.length,i+step);k++)m=Math.max(m,res.env[k]);env.push(Math.round(m*10)/10)}
-  return{base,source:file.name,size:file.size,lastModified:file.lastModified||0,year,duration:res.duration,threshold:Math.round(res.threshold*10)/10,
+  return{base,source:file.name,size:file.size,lastModified:rec.lastModified||file.lastModified||0,year,transcript,sources:rec.items&&rec.items.length?rec.items:[{name:file.name,size:file.size}],duration:res.duration,threshold:Math.round(res.threshold*10)/10,
     shape:res.auto.shape,envStep:step*J.BLOCK,env,extra,seconds:(performance.now()-t0)/1000,
     takes:res.takes.map(t=>({n:t.n,start:t.start,end:t.end,level:t.level,stops:t.stops.map(s=>[s[0],s[1]]),parts:t.parts.map(p=>({start:p.start,end:p.end}))})),
     clips:clips.map(c=>({id:c.id,kind:c.kind,take:c.take,part:c.part,start:c.start,end:c.end,file:c.fname,title:c.title,blob:c.blob||null,size:c.size||0,keep:true,name:'',song:'',loc:'main',copied:''}))};
@@ -1614,7 +1726,7 @@ async function pickFolder(k){
   catch(e){if(e&&e.name==='AbortError')return;txt('folderMsg','Couldn’t open that folder: '+(e&&e.message||e));return}
   F[k]=h;F.ok[k]=true;
   let remembered=true;try{await IDB.set(KEY+k,h)}catch(e){remembered=false}
-  const tips={inbox:'Recorder files go here (S&W / Jams / Inbox).',jams:'Each recording’s cuts go in their own folder here (S&W / Jams).',songs:'Keepers can be copied into a song’s folder here (S&W / New Songs).'};
+  const tips={inbox:'Put recordings here: the .m4a, or Recorder’s zip with the transcript.',jams:'Each recording’s cuts go in their own folder here. Without Google Drive for desktop, drag those folders into S&W / Jams at drive.google.com.',songs:'Keepers can be copied into a song’s folder here (S&W / New Songs).'};
   txt('folderMsg',(remembered?'':'This browser won’t remember the folder for next time. ')+tips[k]);say(h.name+' chosen.');
   showFolders();
   if(k==='jams'){await refreshRecList()}if(k==='songs')await loadSongs();
@@ -1637,20 +1749,20 @@ function tidyLog(x){
     if(!r||typeof r.name!=='string')continue;
     out.recordings.push({name:str(r.name),size:num(r.size),lastModified:num(r.lastModified),processedAt:str(r.processedAt,40),appVersion:str(r.appVersion,20),
       folder:str(r.folder),duration:num(r.duration),threshold:num(r.threshold),
+      sources:(Array.isArray(r.sources)?r.sources:[]).filter(x=>x&&typeof x.name==='string').slice(0,20).map(x=>({name:str(x.name),size:num(x.size)})),
       clips:(Array.isArray(r.clips)?r.clips:[]).filter(c=>c&&typeof c.file==='string').slice(0,2000).map(c=>({id:str(c.id,20),kind:str(c.kind,10),start:num(c.start),end:num(c.end),file:str(c.file),keep:c.keep!==false}))});
   }
   return out;
 }
 async function writeLog(log){await writeBlob(F.jams,LOG_NAME,new Blob([JSON.stringify(log,null,1)],{type:'application/json'}))}
-const dateKey=f=>{const d=new Date(f.lastModified||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const dateKey=d=>{return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 /* Recorder's names ("Nov 20 at 7-15 PM") have no year: take it from the file's date */
-function folderName(f){
-  const b=stem(f.name),m=/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}) at (\d{1,2})[-:.](\d{2})\s*([AP]M)\b/i.exec(b);
-  const d=new Date(f.lastModified||Date.now());
+function folderName(base,lastModified){
+  const b=String(base),m=REC_NAME.exec(b),d=new Date(lastModified||Date.now());
   if(m){const mo='janfebmaraprmayjunjulaugsepoctnovdec'.indexOf(m[1].toLowerCase())/3,day=+m[2];let y=d.getFullYear();
     if(mo>d.getMonth()||(mo===d.getMonth()&&day>d.getDate()+1))y--;
     return safeName(`${y}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')} ${+m[3]}-${m[4]} ${m[5].toUpperCase()}`,120)}
-  return safeName(dateKey(f)+' '+b,120)||dateKey(f);
+  return safeName(dateKey(d)+' '+b,120)||dateKey(d);
 }
 let NEW=[];
 async function checkNew(){
@@ -1658,33 +1770,35 @@ async function checkNew(){
   if(!F.inbox||!F.jams)return;
   txt('folderMsg','Looking in '+F.inbox.name+'…');
   try{
-    const log=await readLog(),seen=new Set(log.recordings.map(r=>r.name+'|'+r.size));NEW=[];
-    for await(const[n,h]of F.inbox.entries()){if(h.kind!=='file'||!AUDIO_EXT.test(n)||n.startsWith('.'))continue;const f=await h.getFile();if(!seen.has(n+'|'+f.size))NEW.push({name:n,file:f,state:''})}
-    NEW.sort((a,b)=>a.file.lastModified-b.file.lastModified);
-    for(const r of NEW){try{const t=await openMp4(r.file);r.len=t?t.duration-t.skip/t.timescale:null}catch(e){r.len=null}}
+    const log=await readLog(),seen=new Set(),files=[];
+    for(const r of log.recordings){seen.add(r.name+'|'+r.size);for(const x of r.sources)seen.add(x.name+'|'+x.size)}
+    for await(const[n,h]of F.inbox.entries()){if(h.kind!=='file'||n.startsWith('.')||!(AUDIO_EXT.test(n)||/\.(zip|txt)$/i.test(n)))continue;files.push(await h.getFile())}
+    NEW=(await groupRecordings(files)).filter(g=>!g.items.some(x=>seen.has(x.name+'|'+x.size))).map(g=>({rec:g,state:''}));
+    for(const r of NEW){try{const t=await openMp4(r.rec.audio);r.len=t?t.duration-t.skip/t.timescale:null}catch(e){r.len=null}}
     drawNew();
     const msg=NEW.length?plural(NEW.length,'new recording')+' in '+F.inbox.name+'.':'No new recordings in '+F.inbox.name+'. Everything there has been cut.';
     txt('folderMsg',msg);say(msg);$('cutAll').hidden=!NEW.length;
   }catch(e){txt('folderMsg','Couldn’t read the folders: '+(e&&e.message||e))}
 }
 function drawNew(){
-  $('newList').innerHTML=NEW.map((r,i)=>`<li><b>${esc(r.name)}</b><span class="meta">${r.len?fmtT(r.len)+' · ':''}${mb(r.file.size)} · ${esc(new Date(r.file.lastModified).toLocaleString())}</span><span class="st ${r.state==='done'?'ok':''}" id="ns${i}">${esc(r.state==='done'?'Cut ✓':r.state)}</span></li>`).join('');
+  $('newList').innerHTML=NEW.map((r,i)=>`<li><b>${esc(r.rec.base)}</b><span class="meta">${r.len?fmtT(r.len)+' · ':''}${mb(r.rec.audio.size)}${r.rec.txt?' · with transcript':''} · from ${esc(r.rec.items.map(x=>x.name).join(', '))}</span><span class="st ${r.state==='done'?'ok':''}" id="ns${i}">${esc(r.state==='done'?'Cut ✓':r.state)}</span></li>`).join('');
 }
 let busy=false;
 function setBusy(b){busy=b;cancelled=false;for(const id of['checkNew','cutAll','pickFile','pickInbox','pickJams','pickSongs','recut','applyBtn'])if($(id))$(id).disabled=b||(id==='checkNew'&&!(F.inbox&&F.jams&&F.ok.inbox&&F.ok.jams));
   $('pickWrap').classList.toggle('dis',b);if(!b)$('work').hidden=true;
   if(b&&navigator.wakeLock)navigator.wakeLock.request('screen').then(l=>{wake=l}).catch(()=>{});else if(!b&&wake){wake.release().catch(()=>{});wake=null}}
 let wake=null;
-async function cutToFolder(file,label,again){
-  const fname=folderName(file);let name=fname,k=2;
+async function cutToFolder(rec0,label){
+  const fname=folderName(rec0.base,rec0.lastModified);let name=fname,k=2;
   for(;;){try{await F.jams.getDirectoryHandle(name);name=`${fname} (${k++})`}catch(e){break}}
   const dir=await F.jams.getDirectoryHandle(name,{create:true});
-  const rec=await cutRecording(file,{write:(n,b)=>writeBlob(dir,n,b)},label);
+  const rec=await cutRecording(rec0,{write:(n,b)=>writeBlob(dir,n,b)},label);
   rec.folder=name;rec.mode='folder';rec.dir=dir;
   await writeReview(rec);
   const log=await readLog();
-  log.recordings.push({name:file.name,size:file.size,lastModified:file.lastModified,processedAt:new Date().toISOString(),appVersion:VERSION,folder:name,
-    duration:Math.round(rec.duration*100)/100,threshold:rec.threshold,clips:rec.clips.map(c=>({id:c.id,kind:c.kind,start:c.start,end:c.end,file:c.file,keep:true}))});
+  const prim=rec0.items.find(x=>x.name===rec0.audio.name)||rec0.items.find(x=>/\.zip$/i.test(x.name))||rec0.items[0];
+  log.recordings.push({name:prim.name,size:prim.size,lastModified:rec0.lastModified,processedAt:new Date().toISOString(),appVersion:VERSION,folder:name,
+    duration:Math.round(rec.duration*100)/100,threshold:rec.threshold,sources:rec0.items,clips:rec.clips.map(c=>({id:c.id,kind:c.kind,start:c.start,end:c.end,file:c.file,keep:true}))});
   await writeLog(log);
   return rec;
 }
@@ -1693,12 +1807,13 @@ async function cutAll(){
   try{
     for(let i=0;i<NEW.length;i++){
       const r=NEW[i];if(r.state==='done')continue;r.state='cutting…';drawNew();
-      try{last=await cutToFolder(r.file,`${i+1} of ${NEW.length} · ${r.name}`);r.state='done';n++;
-        if(st.jam.moveDone){try{const done=await F.inbox.getDirectoryHandle('Done',{create:true});await moveFile(F.inbox,r.name,done,await unique(done,stem(r.name),r.name.slice(stem(r.name).length)))}catch(e){r.state='done (not moved: '+(e.message||e)+')'}}}
+      try{last=await cutToFolder(r.rec,`${i+1} of ${NEW.length} · ${r.rec.base}`);r.state='done';n++;
+        if(st.jam.moveDone){try{const done=await F.inbox.getDirectoryHandle('Done',{create:true});
+          for(const it of r.rec.items)await moveFile(F.inbox,it.name,done,await unique(done,stem(it.name),it.name.slice(stem(it.name).length)))}catch(e){r.state='done (not moved: '+(e.message||e)+')'}}}
       catch(e){r.state=e.message==='stopped'?'stopped':'failed: '+(e&&e.message||e);resetWorkers();if(cancelled){drawNew();break}}
       drawNew();
     }
-    const msg=n?`Cut ${plural(n,'recording')}. The MP3s are in ${F.jams.name}, one folder per recording.`:'Nothing was cut.';txt('folderMsg',msg);say(msg);
+    const msg=n?`Cut ${plural(n,'recording')}. The MP3s are in ${F.jams.name}, one folder per recording. Not using Google Drive for desktop? Drag the new folder into S&W / Jams at drive.google.com.`:'Nothing was cut.';txt('folderMsg',msg);say(msg);
     $('cutAll').hidden=NEW.every(r=>r.state==='done');
   }finally{setBusy(false)}
   await refreshRecList(last&&last.folder);
@@ -1706,7 +1821,7 @@ async function cutAll(){
 }
 async function writeReview(rec){
   const data={app:'JAM',version:VERSION,recording:rec.base,source:rec.source,size:rec.size,lastModified:rec.lastModified,year:rec.year,duration:rec.duration,
-    threshold:rec.threshold,shape:rec.shape,envStep:rec.envStep,env:rec.env,takes:rec.takes,
+    threshold:rec.threshold,shape:rec.shape,envStep:rec.envStep,env:rec.env,takes:rec.takes,transcript:rec.transcript||'',sources:rec.sources||[],
     clips:rec.clips.map(c=>({id:c.id,kind:c.kind,take:c.take,part:c.part,start:c.start,end:c.end,file:c.file,title:c.title,keep:c.keep,name:c.name,song:c.song,loc:c.loc,copied:c.copied}))};
   await writeBlob(rec.dir,REVIEW_NAME,new Blob([JSON.stringify(data)],{type:'application/json'}));
 }
@@ -1717,7 +1832,8 @@ function tidyReview(x,dir,folder){
   const clips=x.clips.slice(0,2000).filter(c=>c&&typeof c.file==='string').map(c=>({id:str(c.id,20),kind:['full','part','take'].includes(c.kind)?c.kind:'take',take:num(c.take),part:num(c.part),
     start:num(c.start),end:num(c.end),file:str(c.file),title:str(c.title),keep:c.keep!==false,name:str(c.name,80),song:str(c.song,120),loc:c.loc==='tossed'?'tossed':'main',copied:str(c.copied)}));
   return{mode:'folder',dir,folder,base:str(x.recording)||folder,source:str(x.source),size:num(x.size),lastModified:num(x.lastModified),year:str(x.year,4),
-    duration:num(x.duration,1),threshold:num(x.threshold,-30),shape:str(x.shape),envStep:num(x.envStep,0.25)||0.25,env:(Array.isArray(x.env)?x.env:[]).slice(0,10000).map(v=>num(v,-100)),takes,clips};
+    duration:num(x.duration,1),threshold:num(x.threshold,-30),shape:str(x.shape),envStep:num(x.envStep,0.25)||0.25,env:(Array.isArray(x.env)?x.env:[]).slice(0,10000).map(v=>num(v,-100)),takes,clips,
+    transcript:tidyTx(x.transcript),sources:(Array.isArray(x.sources)?x.sources:[]).filter(s=>s&&typeof s.name==='string').slice(0,20).map(s=>({name:str(s.name),size:num(s.size)}))};
 }
 async function refreshRecList(select){
   const box=$('recRow'),sel=$('recPick');
@@ -1736,12 +1852,14 @@ async function openLogged(folder){
 }
 
 /* ---------- one recording (phones, and computers without folder access) ---------- */
-async function cutOne(file){
-  if(busy||!file)return;setBusy(true);
+async function cutOne(files){
+  if(busy||!files||!files.length)return;setBusy(true);
   try{
-    const rec=await cutRecording(file,null,file.name);
-    rec.mode='memory';rec.folder=folderName(file);
-    const msg=`Cut ${plural(rec.clips.length,'MP3')} from ${file.name} in ${Math.round(rec.seconds)} s. Review them below.`;txt('cutMsg',msg);say(msg);
+    const recs=await groupRecordings(files);
+    if(!recs.length)throw new Error(files.some(f=>/\.zip$/i.test(f.name))?'there’s no recording in that zip.':'there’s no recording there. Choose the .m4a, or Recorder’s zip.');
+    const r0=recs[0],rec=await cutRecording(r0,null,r0.base);
+    rec.mode='memory';rec.folder=folderName(r0.base,r0.lastModified);
+    const msg=`Cut ${plural(rec.clips.length,'MP3')} from ${r0.base} in ${Math.round(rec.seconds)} s. Review them below.`+(rec.transcript?' Its transcript is under the strip.':'')+(recs.length>1?' Only the first recording was cut; choose one at a time.':'');txt('cutMsg',msg);say(msg);
     openReview(rec);
   }catch(e){txt('cutMsg',e.message==='stopped'?'Stopped.':'Couldn’t cut that recording: '+(e&&e.message||e)+(/memory|allocation|Array buffer/i.test(String(e))?' It may be too long for this browser; try Chrome on a computer.':''));resetWorkers()}
   finally{setBusy(false)}
@@ -1755,13 +1873,14 @@ function openReview(rec){
   if(R.mode==='memory'){const d=store.get(draftKey());if(d&&Array.isArray(d.c))d.c.forEach((s,i)=>{const c=R.clips[i];if(c&&s&&s.id===c.id){c.keep=s.k!==false;c.name=str(s.n,80)}})}
   else{const d=store.get(draftKey());if(d&&Array.isArray(d.c))d.c.forEach((s,i)=>{const c=R.clips[i];if(c&&s&&s.id===c.id){c.keep=s.k!==false;c.name=str(s.n,80);c.song=str(s.s,120)}})}
   $('reviewBox').hidden=false;
+  R.tx=R.transcript?parseTx(R.transcript):null;txt('txMsg','');
   const playing=R.takes.reduce((a,t)=>a+t.end-t.start,0),parts=R.clips.filter(c=>c.kind==='part').length;
   txt('revMeta',`${R.base}: ${plural(R.takes.length,'take')}${parts?', '+plural(parts,'part'):''} · ${fmtT(playing)} of playing in ${fmtT(R.duration)} · playing level ${R.threshold} dB`+(R.mode==='folder'?' · in '+R.folder:''));
   $('applyBtn').hidden=R.mode!=='folder';$('recut').hidden=R.mode!=='folder';
   const canShare=R.mode==='memory'&&!!(navigator.canShare&&navigator.share);
   $('shareBtn').hidden=!canShare;$('zipBtn').hidden=R.mode!=='memory';
   txt('applyMsg',R.mode==='folder'?'Apply renames the keepers, moves the rest to _tossed, and files copies by song.':'Share or save the keepers when you’re done. Tossed clips are left out.');
-  drawClips();drawStrip();
+  drawTranscript();drawClips();drawStrip();
   if(R.mode==='folder')$('recPick').value=R.folder;
 }
 function storeDraft(){if(R)store.set(draftKey(),{c:R.clips.map(c=>({id:c.id,k:c.keep,n:c.name,s:c.song}))})}
@@ -1785,7 +1904,7 @@ function drawClips(){
     for(const[c,i]of cl){
       const stops=c.kind!=='part'&&t.stops.length?' · stops at '+t.stops.map(s=>fmtT(s[0])).join(', '):'';
       h+=`<section class="clip${c.kind==='part'?' part':''}${c.keep?'':' tossed'}" id="clip${i}" data-i="${i}" aria-label="Clip ${label(c)}">
-<div class="clipHead"><span class="num">${label(c)}</span><span class="times">${fmtT(c.start)} – ${fmtT(c.end)} · ${fmtT(c.end-c.start)}${c.kind!=='part'?' · '+t.level+' dB':''}${stops}</span>${c.kind==='full'?'<span class="badge">full take</span>':''}</div>
+<div class="clipHead"><span class="num">${label(c)}</span><span class="times">${fmtT(c.start)} – ${fmtT(c.end)} · ${fmtT(c.end-c.start)}${c.kind!=='part'?' · '+t.level+' dB':''}${stops}</span>${c.kind==='full'?'<span class="badge">full take</span>':''}</div>${saidHtml(c)}
 <audio controls preload="none" id="au${i}" aria-label="Play clip ${label(c)}"></audio>
 <div class="clipRow"><input type="text" id="nm${i}" maxlength="80" placeholder="Name it (optional)" aria-label="Name for clip ${label(c)}" value="${esc(c.name)}">
 <label class="keep"><input type="checkbox" id="kp${i}"${c.keep?' checked':''}> Keep</label></div>
@@ -1808,6 +1927,38 @@ ${songs?`<div class="clipRow song"><label for="sg${i}">Song</label><select id="s
   });
   select(Math.min(cur,R.clips.length-1),false);
 }
+/* what was said: beside each clip when the transcript has times, otherwise as text under the strip */
+const txSnip=(s,n=140)=>{s=String(s);return s.length>n?s.slice(0,n-1).trimEnd()+'…':s};
+function saidHtml(c){
+  const T=R&&R.tx;if(!T||!T.timed||!st.jam.transcript)return'';
+  const P=T.paras.filter(p=>p.t!==null),inside=P.filter(p=>p.t>=c.start&&p.t<c.end);let before=[];
+  if(c.kind!=='part'){const prev=R.takes.filter(t=>t.n<c.take).reduce((a,t)=>Math.max(a,t.end),0);before=P.filter(p=>p.t>=prev&&p.t<c.start).slice(-2)}
+  if(!inside.length&&!before.length)return'';
+  const q=p=>`<span class="at">${fmtT(p.t)}</span> “${esc(txSnip(p.text))}”`;
+  return'<div class="said">'+(before.length?`<div><b>Before:</b> ${before.map(q).join(' ')}</div>`:'')+
+    (inside.length?`<div><b>Said:</b> ${inside.slice(0,3).map(q).join(' ')}${inside.length>3?` <i>and ${inside.length-3} more</i>`:''}</div>`:'')+'</div>';
+}
+function drawTranscript(){
+  const box=$('txBox');if(!R||!st.jam.transcript){box.hidden=true;return}
+  box.hidden=false;const T=R.tx,has=!!(T&&T.paras.length);
+  $('txList').hidden=!has;
+  if(has){
+    txt('txSum',T.timed?`Transcript (${plural(T.paras.length,'part')}, with times)`:`Transcript (${plural(T.paras.length,'paragraph')})`);
+    $('txParas').innerHTML=(T.timed?'':'<p class="sub">Recorder’s downloaded text has no times, so it isn’t matched to the clips. To see what was said beside each clip, paste the transcript from recorder.google.com below.</p>')+
+      T.paras.map(p=>`<p>${p.t!==null?`<span class="at">${fmtT(p.t)}</span> `:''}${esc(p.text)}</p>`).join('');
+  }
+  txt('txAddSum',T&&T.timed?'Replace the transcript':'Paste the transcript with its times');
+}
+async function useTranscript(){
+  const t=tidyTx($('txPaste').value);if(!t||!R)return;
+  const T=parseTx(t),name=R.base+'_transcript.txt',blob=new Blob([t],{type:'text/plain'});
+  R.transcript=t;R.tx=T;
+  if(R.mode==='folder'){try{await writeBlob(R.dir,name,blob);await writeReview(R)}catch(e){txt('txMsg','Couldn’t save the transcript: '+(e&&e.message||e));return}}
+  else R.extra=(R.extra||[]).filter(([n])=>n!==name).concat([[name,blob]]);
+  $('txPaste').value='';$('txAdd').open=false;
+  const msg=T.timed?`Transcript added: ${plural(T.paras.filter(p=>p.t!==null).length,'time')} placed beside the clips.`:'Transcript added, but it has no times, so it’s shown as text under the strip.';
+  txt('txMsg',msg);say(msg);drawTranscript();drawClips();drawStrip();
+}
 function setKeep(i,v){const c=R.clips[i];c.keep=v;const el=$('clip'+i);if(el){el.classList.toggle('tossed',!v);$('kp'+i).checked=v}storeDraft()}
 function select(i,scroll){
   if(!R||!R.clips.length)return;cur=clamp(i,0,R.clips.length-1);
@@ -1828,6 +1979,7 @@ function drawStrip(){
   for(const c of R.clips)if(c.kind==='part'&&c.part>1){const px=x(c.start+1);g.beginPath();g.moveTo(px,H*0.25);g.lineTo(px,H);g.stroke()}
   g.globalAlpha=1;g.setLineDash([6*r,5*r]);g.strokeStyle=col('--accent');g.lineWidth=1.5*r;g.beginPath();g.moveTo(0,y(R.threshold));g.lineTo(W,y(R.threshold));g.stroke();g.setLineDash([]);
   g.fillStyle=col('--ink');g.font=`${Math.round(12*r)}px system-ui,sans-serif`;for(const t of R.takes)g.fillText(String(t.n),x(t.start)+3*r,14*r);
+  if(R.tx&&R.tx.timed&&st.jam.transcript){g.fillStyle=col('--muted');for(const p of R.tx.paras)if(p.t!==null)g.fillRect(x(p.t)-r/2,H-7*r,Math.max(1,r),7*r)}   /* ticks where something was said */
 }
 function stripClick(e){
   if(!R||!R.clips.length)return;
@@ -1921,11 +2073,13 @@ async function zipBlob(entries){
 }
 async function recut(){
   if(busy||!R||R.mode!=='folder')return;
-  let file=null;
-  for(const d of[F.inbox,F.inbox&&await F.inbox.getDirectoryHandle('Done').catch(()=>null)])if(d&&!file){try{const f=await readFile(d,R.source);if(!R.size||f.size===R.size)file=f}catch(e){}}
-  if(!file){txt('applyMsg','The original recording ('+R.source+') isn’t in the Inbox or Inbox / Done, so it can’t be cut again.');return}
+  const want=R.sources&&R.sources.length?R.sources:[{name:R.source,size:R.size}],files=[];
+  for(const d of[F.inbox,F.inbox&&await F.inbox.getDirectoryHandle('Done').catch(()=>null)]){if(!d)continue;
+    for(const w of want){if(files.some(f=>f.name===w.name))continue;try{const f=await readFile(d,w.name);if(!w.size||f.size===w.size)files.push(f)}catch(e){}}}
+  const recs=await groupRecordings(files),rec0=recs.find(g=>g.base===R.base)||recs[0];
+  if(!rec0){txt('applyMsg','The original recording ('+want.map(w=>w.name).join(', ')+') isn’t in the Inbox or Inbox / Done, so it can’t be cut again.');return}
   setBusy(true);
-  try{const rec=await cutToFolder(file,'Cutting again · '+file.name,true);await refreshRecList(rec.folder);openReview(rec);txt('applyMsg','Cut again into '+rec.folder+'. The earlier cuts are still in their own folder, so use whichever you like.')}
+  try{const rec=await cutToFolder(rec0,'Cutting again · '+rec0.base);await refreshRecList(rec.folder);openReview(rec);txt('applyMsg','Cut again into '+rec.folder+'. The earlier cuts are still in their own folder, so use whichever you like.')}
   catch(e){txt('applyMsg',e.message==='stopped'?'Stopped.':'Couldn’t cut it again: '+(e&&e.message||e))}
   finally{setBusy(false)}
 }
@@ -1935,11 +2089,14 @@ const sec=v=>v+' s',db1=v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' dB';
 bindSlider('sSens','jam.sens',db1);bindSlider('sThr','jam.thr',v=>(v<0?'−':'')+Math.abs(v)+' dB');bindSlider('sGap','jam.gap',sec);bindSlider('sMin','jam.minTake',sec);
 bindSlider('sPre','jam.pre',sec);bindSlider('sPost','jam.post',sec);bindSlider('sSplit','jam.splitOver',v=>v?v+' s':'never');bindSlider('sPart','jam.minPart',sec);
 bindSlider('sPSens','jam.partSens',v=>(+v).toFixed(1));
+let lastTx=null;
+HOOK.sync.push(()=>{if(R&&lastTx!==null&&lastTx!==st.jam.transcript){drawTranscript();drawClips();drawStrip()}lastTx=st.jam.transcript});
 HOOK.sync.push(()=>{$('thrRow').hidden=st.jam.autoThr;const a=$('sArtist');if(a&&document.activeElement!==a)a.value=st.jam.artist});
 APP.onStart=()=>{
   $('sArtist').addEventListener('change',e=>{st.jam.artist=String(e.target.value).replace(/[\x00-\x1f]/g,'').trim().slice(0,100);saveSettings();sync()});
   $('resetAdv').addEventListener('click',()=>{st.jam=clone(DEF.jam);saveSettings();sync();say('Advanced settings are back to the defaults.')});
-  $('pickFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)cutOne(f)});
+  $('pickFile').addEventListener('change',e=>{const fs=e.target.files?[...e.target.files]:[];e.target.value='';if(fs.length)cutOne(fs)});
+  $('txUse').addEventListener('click',useTranscript);
   $('stopBtn').addEventListener('click',()=>{cancelled=true;txt('workMsg','Stopping…')});
   $('strip').addEventListener('click',stripClick);
   addEventListener('resize',()=>drawStrip());
@@ -1951,7 +2108,7 @@ APP.onStart=()=>{
   $('recPick').addEventListener('change',e=>openLogged(e.target.value));
   if(FOLDERS){
     $('folderMode').hidden=false;$('oneHead').textContent='Or One Recording';
-    txt('modeNote','Choose one recording to cut it without folders; you’ll get a zip to save.');
+    txt('modeNote','Or choose one recording (the .m4a, or Recorder’s zip) to cut it without folders; you’ll get a zip to save.');
     for(const k of KINDS)$('pick'+k[0].toUpperCase()+k.slice(1)).addEventListener('click',()=>pickFolder(k));
     $('reconnect').addEventListener('click',async()=>{await permsOk(true);if(F.jams&&F.ok.jams){await loadSongs();await refreshRecList()}});
     $('checkNew').addEventListener('click',checkNew);$('cutAll').addEventListener('click',cutAll);
@@ -1959,7 +2116,7 @@ APP.onStart=()=>{
   }else{
     $('oneHead').hidden=true;
     txt('modeNote',typeof window.showDirectoryPicker==='function'&&framed?'Folder mode needs JAM opened in its own tab. Here, choose one recording at a time.':
-      'The one-click folder mode works on a computer in Chrome or Edge. Here, choose one recording at a time, then share the cuts to Drive or save a zip.');
+      'The one-click folder mode works on a computer in Chrome or Edge. Here, choose one recording at a time (the .m4a, or Recorder’s zip), then share the cuts to Drive or save a zip.');
   }
   if(typeof AudioDecoder==='undefined')txt('cutMsg','This browser reads the whole recording into memory, so very long practices may not fit. Chrome or Edge handles them best.');
 };
