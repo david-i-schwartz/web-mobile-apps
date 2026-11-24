@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hex bead cubes</title>
+<title>Hex Bead Cubes</title>
 <style>
 :root{
   --bg:#EEF1F5;--panel:#FFFFFF;--ink:#1D2230;--muted:#5B6375;--line:#D5DAE3;--accent:#0E7C7B;--accent-ink:#FFFFFF;--chip:#E3E8EF;
@@ -127,6 +127,25 @@ textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--line);bo
 button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible,label.btn:focus-within{outline:3px solid var(--accent);outline-offset:2px}
 .warn{margin:8px 0 0;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:14px;max-width:62ch}
 @media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+
+/* ---- fold-up sections (house rule 10): tap a heading to open or close its section; the app remembers each one ---- */
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"";flex:none;width:0;height:0;border-style:solid;border-width:6px 0 6px 9px;border-color:transparent transparent transparent currentColor;opacity:.65;transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold>summary>h2,details.fold>summary>h3{flex:1;min-width:0;margin-top:0;margin-bottom:0}
+details.fold[open]>summary{margin-bottom:8px}
+details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::before{transition:none}}
+
+/* the ? help button: a 24 px circle inside a 44 px touch target (house rule 6), as in HTML App Generator's core 1.4 */
+.q{width:44px;height:44px;border:10px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line);margin:-10px -10px -10px -4px}
+.q[aria-expanded="true"]{border-color:transparent;box-shadow:inset 0 0 0 1px var(--accent)}
+.q:focus-visible{outline-offset:-8px}
+.q::after{content:none}
+details.group.fold>summary{margin:-10px 0;padding:10px 0}
+details.group.fold[open]>summary{margin-bottom:0}
+details.group.fold>summary h2{font-size:19px}
 </style>
 </head>
 <body>
@@ -174,8 +193,8 @@ button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-vi
   </section>
 
   <section class="controls">
-    <div class="group">
-      <h2>Cubes</h2>
+    <details class="group fold" id="cubesBox" data-ui="cubes" open>
+      <summary><h2>Cubes</h2></summary>
       <div id="hexPanel">
         <p class="sub" style="margin:4px 0">Cube settings <button type="button" class="q" aria-expanded="false" aria-controls="t-hex" aria-label="Help: hex cubes">?</button></p>
         <p class="sub tip" id="t-hex" hidden>Board side is the number of pegs along one edge of the hexagon. Each cube is one chunk. Even rows use outlines 1, 3 and 5; odd rows use 2, 4 and 6.</p>
@@ -202,10 +221,10 @@ button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-vi
       </div>
 
       <div class="btns"><button type="button" class="btn" id="resetSettings">Reset pattern settings</button></div>
-    </div>
+    </details>
 
-    <div class="group">
-      <h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2>
+    <details class="group fold" id="progBox" data-ui="prog" open>
+      <summary><h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2></summary>
       <p class="sub tip" id="t-prog" hidden>Tap a colour to show only that colour; tap it again to show everything. In Mark placed mode, tapping a bead ticks it off. Tap a bead in Inspect mode to see its chunk and mark the whole chunk at once.</p>
       <div class="bar"><span id="barFill"></span></div>
       <p id="pct"></p>
@@ -222,11 +241,10 @@ button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-vi
         <label><input type="checkbox" id="labels"> Show chunk labels</label>
       </div>
       <div class="btns"><button type="button" class="btn" id="resetProg">Reset progress</button></div>
-    </div>
+    </details>
 
-    <div class="group">
-      <details id="expDetails">
-        <summary>Export</summary>
+    <details class="group fold" id="expDetails" data-ui="exp" open>
+        <summary><h2>Export</h2></summary>
         <div class="btns">
           <select id="expKind" aria-label="What to export">
             <option value="beads">Bead list (CSV)</option>
@@ -240,9 +258,14 @@ button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-vi
         <h3>Lists</h3>
         <textarea id="expText" readonly aria-label="Export text"></textarea>
         <div class="btns"><button type="button" class="btn" id="copy">Copy</button><span id="copyMsg" aria-live="polite"></span></div>
-      </details>
-    </div>
-    <p class="sub">Version 1.1 · 12 Nov 2026. Saved settings are now checked when the page opens, and you are told if this browser can’t save.</p>
+    </details>
+    <details class="group fold" id="aboutBox" data-ui="about">
+      <summary><h2>About This Version</h2></summary>
+      <ul class="sub">
+        <li>1.2 (24 Nov 2026): sections fold up. Tap Cubes, Progress or Export to open or close it, and the app remembers how you left each one. The ? buttons are bigger targets for fingers.</li>
+        <li>1.1 (12 Nov 2026): saved settings are now checked when the page opens, and you are told if this browser can’t save.</li>
+      </ul>
+    </details>
   </section>
 </main>
 
@@ -617,6 +640,32 @@ $('copy').onclick=async()=>{
   d.addEventListener('toggle',()=>{if(st.ui.legend!==d.open){st.ui.legend=d.open;saveSettings()}})}
 swatches();
 rebuild();
+})();
+</script>
+
+<script id="fold-layer">
+/* Fold-up sections (house rule 10). Every <details data-ui="name"> is remembered in this browser under 'hc:ui';
+   a button inside a heading works without folding its section; a link or help that points into a folded section opens it;
+   reveal(el) opens the folded sections round el. */
+(()=>{
+  const KEY='hc:ui',ui={};
+  try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&typeof v==='object'&&!Array.isArray(v))for(const k in v)if(/^[\w-]{1,40}$/.test(k))ui[k]=!!v[k]}catch(e){}
+  const restore=d=>{const k=d.dataset.ui;if(k in ui&&d.open!==ui[k])d.open=ui[k]};
+  const scan=r=>{if(r.matches&&r.matches('details[data-ui]'))restore(r);if(r.querySelectorAll)r.querySelectorAll('details[data-ui]').forEach(restore)};
+  scan(document);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)scan(n)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details[data-ui]'))return;const k=d.dataset.ui;if(ui[k]===d.open)return;
+    ui[k]=d.open;try{localStorage.setItem(KEY,JSON.stringify(ui))}catch(err){}},true);
+  const reveal=el=>{for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el};
+  window.reveal=reveal;
+  /* a button in a heading (a ? help button, say) does its own job and doesn't fold the section; if it shows something inside a folded section, the section opens */
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('summary button');if(!b)return;e.preventDefault();
+    setTimeout(()=>{const t=document.getElementById(b.getAttribute('aria-controls')||'');if(t&&!t.hidden)reveal(t)})},true);
+  /* a link to a place in a folded section opens it */
+  const toHash=()=>{const id=decodeURIComponent(location.hash.slice(1));const t=id&&document.getElementById(id);if(t)reveal(t)};
+  addEventListener('hashchange',toHash);document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;
+    const t=document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));if(t)reveal(t)},true);
+  toHash();
 })();
 </script>
 </body>

@@ -237,7 +237,17 @@ textarea{min-height:84px;resize:vertical}
   .top{gap:10px}
 }
 </style>
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}
+/* ---- fold-up sections (house rule 10): tap a heading to open or close its section; the app remembers each one ---- */
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"";flex:none;width:0;height:0;border-style:solid;border-width:6px 0 6px 9px;border-color:transparent transparent transparent currentColor;opacity:.65;transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold>summary>h2,details.fold>summary>h3{flex:1;min-width:0;margin-top:0;margin-bottom:0}
+details.fold[open]>summary{margin-bottom:8px}
+details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::before{transition:none}}
+</style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="IPAR">
@@ -302,8 +312,9 @@ const EVI = Object.fromEntries(CASE.evidence.map(e => [e.id, e]));
 const BOARD = Object.fromEntries(CASE.boards.map(b => [b.id, b]));
 const PTS = { best: 10, acceptable: 5, harmful: 0 };
 const RLABEL = { best: 'Best', acceptable: 'Acceptable', harmful: 'Harmful' };
-const APP = { code: 'IPAR', name: 'IPAR', version: '0.2', date: '2026-11-14', home: 'https://david-i-schwartz.github.io/web-mobile-apps/ipar/',
+const APP = { code: 'IPAR', name: 'IPAR', version: '0.3', date: '2026-11-24', home: 'https://david-i-schwartz.github.io/web-mobile-apps/ipar/',
   changes: [
+    ['0.3', '24 November 2026', ['Sections fold up: tap a heading on the start screen, the debrief or About to open or close it, and IPAR remembers how you left each one. About This Version, Credits, Learn the Ideas and On Your Phone start closed.']],
     ['0.2', '14 November 2026', ['On the Web & Mobile Apps site, so it opens on phones and tablets and can go on the Home Screen.',
       'Your place in the case is kept in this browser, so you can stop and pick up where you left off.',
       'Save your results as a file, as well as copying them.', 'About This Version, Credits and Learn the Ideas.', 'Larger buttons on touch screens.']],
@@ -1136,9 +1147,9 @@ function showDebrief() {
   const cat = (label, f) => { const d = sc.d.filter(f); const p = d.length ? d.reduce((s, x) => s + PTS[x.rating], 0) / (d.length * 10) : 0; return `<div class="bar"><span>${label}</span><span class="t"><i style="width:${Math.round(p * 100)}%"></i></span><span class="v">${d.length ? Math.round(p * 100) + '%' : '—'}</span></div>`; };
   $('#debriefSheet').innerHTML = `<p class="kicker">Debrief · ${esc(CASE.title)} · ${S.mode === 'exam' ? 'Exam' : 'Practice'}</p><h2>${esc(t)}</h2><p class="lede">${esc(txt)}</p>
   <div class="row" style="margin-top:14px;gap:18px"><span class="stars" aria-label="${st} of 3 stars">${'★'.repeat(st)}<span class="off">${'★'.repeat(3 - st)}</span></span><span class="chip">Score ${Math.round(sc.pct * 100)}%</span><span class="chip ${({ intact: 'good', documented: 'warn', broken: 'bad' })[S.integrity]}"><i></i>${({ intact: 'Chain intact', documented: 'Error documented', broken: 'Chain broken' })[S.integrity]}</span></div>
-  <h3>By Category</h3><div class="bars">${cat('Procedure', x => x.board === 'image' || x.board === 'preserve')}${cat('Analysis', x => x.board === 'analyze')}${cat('Reasoning', x => x.id === 'R0')}${cat('Reporting', x => x.id === 'R1')}</div>
-  <h3>Your Path</h3><div class="scroll"><table class="tbl path"><thead><tr><th>Lead</th><th>Your first answer</th><th>Rating</th></tr></thead><tbody>${sc.d.map(x => `<tr><td><b>${esc(x.id)}</b> ${esc(x.title)}</td><td>${esc(x.answer)}${x.rating !== 'best' ? `<br><span style="color:var(--ink-3)">Best: ${esc(x.best)}</span>` : ''}${x.attempts > 1 ? `<br><span class="mono">${x.attempts} attempts</span>` : ''}</td><td><span class="pill ${x.rating}">${RLABEL[x.rating]}</span></td></tr>`).join('')}</tbody></table></div>
-  <h3>Reflect</h3><ol class="pbody"><li>Which single step in Image or Preserve would have hurt this case most if you'd skipped it?</li><li>What would you need, beyond this drive, to show how Jordan got Priya's report?</li><li>Which string did you nearly make that the evidence couldn't support?</li></ol>
+  <details class="fold" data-ui="debCat" open><summary><h3>By Category</h3></summary><div class="bars">${cat('Procedure', x => x.board === 'image' || x.board === 'preserve')}${cat('Analysis', x => x.board === 'analyze')}${cat('Reasoning', x => x.id === 'R0')}${cat('Reporting', x => x.id === 'R1')}</div></details>
+  <details class="fold" data-ui="debPath" open><summary><h3>Your Path</h3></summary><div class="scroll"><table class="tbl path"><thead><tr><th>Lead</th><th>Your first answer</th><th>Rating</th></tr></thead><tbody>${sc.d.map(x => `<tr><td><b>${esc(x.id)}</b> ${esc(x.title)}</td><td>${esc(x.answer)}${x.rating !== 'best' ? `<br><span style="color:var(--ink-3)">Best: ${esc(x.best)}</span>` : ''}${x.attempts > 1 ? `<br><span class="mono">${x.attempts} attempts</span>` : ''}</td><td><span class="pill ${x.rating}">${RLABEL[x.rating]}</span></td></tr>`).join('')}</tbody></table></div></details>
+  <details class="fold" data-ui="debReflect" open><summary><h3>Reflect</h3></summary><ol class="pbody"><li>Which single step in Image or Preserve would have hurt this case most if you'd skipped it?</li><li>What would you need, beyond this drive, to show how Jordan got Priya's report?</li><li>Which string did you nearly make that the evidence couldn't support?</li></ol></details>
   <div class="row" style="margin-top:18px"><button class="btn primary" data-act="saveresults">Save results file</button><button class="btn" data-act="copyresults">Copy results</button><button class="btn" data-act="replay">Play again</button><button class="btn" data-act="cases">Back to cases</button><button class="btn" data-act="closeov">Look at the board</button></div><p class="pbody" id="debriefMsg" role="status" style="margin-top:8px"></p><textarea id="resultsOut" class="mono" hidden></textarea>`;
   $('#ovDebrief').hidden = false;
 }
@@ -1151,12 +1162,12 @@ const SLATE = [
 function renderStart() {
   $('#startSheet').innerHTML = `<h1>IPAR</h1><p class="lede">A digital forensics case board. You're the examiner: image the evidence, preserve it, analyze it, and report only what it shows.</p>
   <div class="ipar"><span><b>I</b>mage</span><span><b>P</b>reserve</span><span><b>A</b>nalyze</span><span><b>R</b>eport</span></div>
-  <h3>Cases</h3><div class="cases"><div class="case live"><span class="meta">Level 100 · about ${CASE.minutes} min · FAT12 drive</span><h4>${esc(CASE.title)}</h4><p>Two lab reports share whole sentences. A USB drive may say who had what, and when.</p>${caseButtons()}</div>
-  ${SLATE.map(([t, l, d]) => `<div class="case soon"><span class="meta">Level ${l} · planned</span><h4>${esc(t)}</h4><p>${esc(d)}</p></div>`).join('')}</div>
+  <details class="fold" data-ui="startCases" open><summary><h3>Cases</h3></summary><div class="cases"><div class="case live"><span class="meta">Level 100 · about ${CASE.minutes} min · FAT12 drive</span><h4>${esc(CASE.title)}</h4><p>Two lab reports share whole sentences. A USB drive may say who had what, and when.</p>${caseButtons()}</div>
+  ${SLATE.map(([t, l, d]) => `<div class="case soon"><span class="meta">Level ${l} · planned</span><h4>${esc(t)}</h4><p>${esc(d)}</p></div>`).join('')}</div></details>
   ${storageOK ? '' : `<div class="fb harmful" style="margin-top:12px"><b>This browser isn't keeping your progress.</b> A case takes about ${CASE.minutes} minutes, so finish it in one sitting, or open the app in Safari or Chrome outside private browsing.</div>`}
-  <h3>Mode</h3><div class="modes" role="group" aria-label="Mode"><button data-act="mode" data-id="practice" aria-pressed="${MODE === 'practice'}">Practice</button><button data-act="mode" data-id="exam" aria-pressed="${MODE === 'exam'}">Exam</button></div>
-  <p class="pbody" style="margin-top:8px">${MODE === 'practice' ? 'Hints and feedback after each answer.' : 'No hints. Feedback waits for the debrief.'}</p>
-  <h3>How It Plays</h3><ul class="howto"><li><b>Leads</b>Notes on the board. Answer one to reveal the leads it connects to.</li><li><b>Bench</b>Real tools on real bytes: hashing, hex, directory, signatures, timeline, compare.</li><li><b>Pins and strings</b>Pin what you find, then string evidence to the claims it supports or contradicts.</li><li><b>Integrity</b>A procedure mistake early carries through to the end. Some can be fixed; one can't.</li></ul>
+  <details class="fold" data-ui="startMode" open><summary><h3>Mode</h3></summary><div class="modes" role="group" aria-label="Mode"><button data-act="mode" data-id="practice" aria-pressed="${MODE === 'practice'}">Practice</button><button data-act="mode" data-id="exam" aria-pressed="${MODE === 'exam'}">Exam</button></div>
+  <p class="pbody" style="margin-top:8px">${MODE === 'practice' ? 'Hints and feedback after each answer.' : 'No hints. Feedback waits for the debrief.'}</p></details>
+  <details class="fold" data-ui="startHow" open><summary><h3>How It Plays</h3></summary><ul class="howto"><li><b>Leads</b>Notes on the board. Answer one to reveal the leads it connects to.</li><li><b>Bench</b>Real tools on real bytes: hashing, hex, directory, signatures, timeline, compare.</li><li><b>Pins and strings</b>Pin what you find, then string evidence to the claims it supports or contradicts.</li><li><b>Integrity</b>A procedure mistake early carries through to the end. Some can be fixed; one can't.</li></ul></details>
   <div class="row" style="margin-top:18px"><button class="btn" data-act="about">About, Credits and Learn the Ideas</button></div>
   <p class="fine">IPAR ${APP.version}, ${APP.changes[0][1]}. A demo for the IPAR rebuild. The first IPAR (2014–2017) was built at RIT by Computing Security and Interactive Games &amp; Media with NSF support (DUE-1400567). ${esc(CASE.fiction)}</p>`;
 }
@@ -1172,15 +1183,15 @@ function renderAbout() {
   const theme = document.documentElement.getAttribute('data-theme') || 'system';
   $('#aboutSheet').innerHTML = `<div class="row" style="justify-content:space-between"><div><p class="kicker">IPAR · version ${APP.version} · ${APP.changes[0][1]}</p><h2>About IPAR</h2></div><button class="btn" data-act="closeov">Close</button></div>
   <p class="lede">A digital forensics case board for beginners. You image a drive, prove your copy is faithful, find what it hides, and report only what it shows. It runs in your browser and nothing is uploaded.</p>
-  <h3>About This Version</h3><ul class="versions">${APP.changes.map(([v, d, items]) => `<li><b>${esc(v)} · ${esc(d)}</b><ul>${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></li>`).join('')}</ul>
-  <h3>Credits</h3><ul class="links" style="list-style:disc">
+  <details class="fold" data-ui="about"><summary><h3>About This Version</h3></summary><ul class="versions">${APP.changes.map(([v, d, items]) => `<li><b>${esc(v)} · ${esc(d)}</b><ul>${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></li>`).join('')}</ul></details>
+  <details class="fold" data-ui="credits"><summary><h3>Credits</h3></summary><ul class="links" style="list-style:disc">
     <li>The first IPAR (2014–2017) was designed at RIT by Yin Pan, Sumita Mishra and David Schwartz (Computing Security, and Interactive Games &amp; Media), with Onondaga and Corning Community Colleges and RIT student co-ops, with support from the National Science Foundation (award DUE-1400567).</li>
     <li>This version: designed by David Schwartz, built with Claude (Anthropic), November 2026.</li>
     <li>The case, its people and its drive are fictional and were made for this app. The screenshot inside the drive was drawn with the free DejaVu fonts.</li>
-    <li>The hashing (MD5, SHA-256), the FAT reader and every other part of the code were written for this app.</li></ul>
-  <h3>Learn the Ideas</h3><ul class="links">${LEARN.map(([t, u, d]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>: ${esc(d)}</li>`).join('')}</ul>
-  <h3>On Your Phone</h3><p class="pbody">Open <span class="mono">${esc(APP.home)}</span> in Safari on an iPhone or iPad, or in Chrome on Android. iPhone and iPad: tap Share, then Add to Home Screen. Android: tap Install, or the ⋮ menu and Add to Home screen. On iPhone the Home Screen app keeps its own copy of your progress, separate from Safari.</p>
-  <h3>Your Progress</h3><p class="pbody">${storageOK ? 'Kept in this browser only, under names that start with ipar:. Nothing leaves your device.' : 'This browser isn\'t keeping your progress, so it ends when you close the page.'}</p>
+    <li>The hashing (MD5, SHA-256), the FAT reader and every other part of the code were written for this app.</li></ul></details>
+  <details class="fold" data-ui="learn"><summary><h3>Learn the Ideas</h3></summary><ul class="links">${LEARN.map(([t, u, d]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>: ${esc(d)}</li>`).join('')}</ul></details>
+  <details class="fold" data-ui="phone"><summary><h3>On Your Phone</h3></summary><p class="pbody">Open <span class="mono">${esc(APP.home)}</span> in Safari on an iPhone or iPad, or in Chrome on Android. iPhone and iPad: tap Share, then Add to Home Screen. Android: tap Install, or the ⋮ menu and Add to Home screen. On iPhone the Home Screen app keeps its own copy of your progress, separate from Safari.</p></details>
+  <details class="fold" data-ui="progress" open><summary><h3>Your Progress</h3></summary><p class="pbody">${storageOK ? 'Kept in this browser only, under names that start with ipar:. Nothing leaves your device.' : 'This browser isn\'t keeping your progress, so it ends when you close the page.'}</p></details>
   <div class="row"><button class="btn" data-act="theme">Look: ${theme === 'system' ? 'follows your device' : theme} (change)</button>${savedProgress() ? `<button class="btn" data-act="erase" style="border-color:var(--bad);color:var(--bad)">Erase my saved progress</button>` : ''}</div><p class="pbody" id="aboutMsg" role="status"></p>`;
   $('#ovAbout').hidden = false;
 }
@@ -1318,6 +1329,32 @@ renderStart();
 })();
 </script>
 
+
+<script id="fold-layer">
+/* Fold-up sections (house rule 10). Every <details data-ui="name"> is remembered in this browser under 'ipar:ui';
+   a button inside a heading works without folding its section; a link or help that points into a folded section opens it;
+   reveal(el) opens the folded sections round el. */
+(()=>{
+  const KEY='ipar:ui',ui={};
+  try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&typeof v==='object'&&!Array.isArray(v))for(const k in v)if(/^[\w-]{1,40}$/.test(k))ui[k]=!!v[k]}catch(e){}
+  const restore=d=>{const k=d.dataset.ui;if(k in ui&&d.open!==ui[k])d.open=ui[k]};
+  const scan=r=>{if(r.matches&&r.matches('details[data-ui]'))restore(r);if(r.querySelectorAll)r.querySelectorAll('details[data-ui]').forEach(restore)};
+  scan(document);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)scan(n)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details[data-ui]'))return;const k=d.dataset.ui;if(ui[k]===d.open)return;
+    ui[k]=d.open;try{localStorage.setItem(KEY,JSON.stringify(ui))}catch(err){}},true);
+  const reveal=el=>{for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el};
+  window.reveal=reveal;
+  /* a button in a heading (a ? help button, say) does its own job and doesn't fold the section; if it shows something inside a folded section, the section opens */
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('summary button');if(!b)return;e.preventDefault();
+    setTimeout(()=>{const t=document.getElementById(b.getAttribute('aria-controls')||'');if(t&&!t.hidden)reveal(t)})},true);
+  /* a link to a place in a folded section opens it */
+  const toHash=()=>{const id=decodeURIComponent(location.hash.slice(1));const t=id&&document.getElementById(id);if(t)reveal(t)};
+  addEventListener('hashchange',toHash);document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;
+    const t=document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));if(t)reveal(t)},true);
+  toHash();
+})();
+</script>
 <script id="hh-helper">/* Home Screen helper from HTML App Generator 1.6 */
 (function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
    Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the

@@ -210,6 +210,16 @@ textarea{width:100%;min-height:110px;line-height:1.5}
 .help .ver{color:var(--ink2);font-size:.88rem}
 .help dl{margin:0 0 12px}.help dt{font-weight:600;margin-top:6px}.help dd{margin:2px 0 0;color:var(--ink2);font-size:.92rem}
 
+
+/* ---- fold-up sections (house rule 10): tap a heading to open or close its section; the app remembers each one ---- */
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"";flex:none;width:0;height:0;border-style:solid;border-width:6px 0 6px 9px;border-color:transparent transparent transparent currentColor;opacity:.65;transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold>summary>h2,details.fold>summary>h3{flex:1;min-width:0;margin-top:0;margin-bottom:0}
+details.fold[open]>summary{margin-bottom:8px}
+details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::before{transition:none}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -286,8 +296,9 @@ textarea{width:100%;min-height:110px;line-height:1.5}
    One self-contained file. No accounts, no storage, no tracking.
    ==================================================================== */
 
-const APP = { code: 'TORAH', name: 'Torah Tutor', version: '1.2', date: '2026-11-14', homeUrl: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/' };
+const APP = { code: 'TORAH', name: 'Torah Tutor', version: '1.3', date: '2026-11-24', homeUrl: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/' };
 const CHANGES = [
+  ['1.3', '2026-11-24', 'In How This Works, each part folds up: tap its heading to open or close it, and the app remembers how you left each one. About This Version, Credits, Learn the Ideas and On a Phone or Tablet start closed.'],
   ['1.2', '2026-11-14', 'Now on the Web & Mobile Apps site, so it opens from a link on iPhone and iPad and can go on the Home Screen. Remembers your settings. Bigger buttons. Sound fixes for iPhone and iPad. The screen stays awake while you practice. Teacher setup can open a saved student file.'],
   ['1.1', '2026-11-08', 'The pointer moves left to right across each word, with a setting to change it.'],
   ['1.0', '2026-11-08', 'First version: Leviticus 16:1\u20133 with sing along, one word at a time, build from the end or the start, red light green light, speed, loops and teacher setup.']
@@ -913,7 +924,7 @@ function sheetHelp() {
 <li>Tap the big <b>▶</b>.</li>
 </ol>
 <div class="tip"><b>Build from the end</b> is the secret weapon. You learn the LAST word first. Then the last two. Then the last three. Every time you practice, you end strong, because the ending is the part you know best.</div>
-<h3>Good to Know</h3>
+<details class="fold" data-ui="know" open><summary><h3>Good to Know</h3></summary>
 <ul>
 <li>Tap any word to hear just that word (or hear it slowly, or 3 times).</li>
 <li>🐢 makes it slower. 🐇 makes it faster. The notes stay the same, it just goes slower or faster.</li>
@@ -923,18 +934,23 @@ function sheetHelp() {
 <li>The little colored tag under a word is the <b>trope</b>: the name of the melody that word gets. Same tag, same tune. Once you know the tunes, you can sing any word.</li>
 <li>Nobody learns this all at once. Little pieces. Lots of repeats. That is the whole trick.</li>
 </ul>
+</details>
 <p class="hint">There are secrets in here. Tapping the title a few times would be a good idea. 🥚</p>
 `;
-  const teach = el('h3', { text: 'For the Teacher' });
+  const teach = el('details', { class: 'fold', 'data-ui': 'teach' }); teach.open = true;
+  teach.innerHTML = '<summary><h3>For the Teacher</h3></summary>';
   const tb = el('button', { class: 'btn', text: '⚙ Teacher setup', onClick: () => { closeSheet(); openTeacher(); } });
-  h.append(teach, el('p', { class: 'hint', text: 'Add recordings, paste the words, tap in the timing, then save a file for your student.' }), tb);
+  teach.append(el('p', { class: 'hint', text: 'Add recordings, paste the words, tap in the timing, then save a file for your student.' }), tb);
+  h.append(teach);
   const about = el('div');
-  about.innerHTML = `<h3>On a Phone or Tablet</h3>
+  about.innerHTML = `<details class="fold" data-ui="phone"><summary><h3>On a Phone or Tablet</h3></summary>
 <p>Open <a href="${APP.homeUrl}" target="_blank" rel="noopener">${APP.homeUrl}</a> in Safari (iPhone, iPad) or Chrome (Android, Chromebook). To put it on the Home Screen: tap Share, then Add to Home Screen.</p>
-<h3>About This Version</h3>
+</details>
+<details class="fold" data-ui="about"><summary><h3>About This Version</h3></summary>
 <p class="ver">${APP.name} ${APP.version}, ${APP.date}</p>
 <dl>${CHANGES.map(c => `<dt>${c[0]} (${c[1]})</dt><dd>${c[2]}</dd>`).join('')}</dl>
-<h3>Credits</h3>
+</details>
+<details class="fold" data-ui="credits"><summary><h3>Credits</h3></summary>
 <ul>
 <li>Hebrew text of Leviticus 16:1\u20133 with vowels and trope marks: the Westminster Leningrad Codex, public domain, from <a href="https://tanach.us" target="_blank" rel="noopener">tanach.us</a>.</li>
 <li>Hebrew letters: FreeSerif from <a href="https://www.gnu.org/software/freefont/" target="_blank" rel="noopener">GNU FreeFont</a> (GPL with the font exception), trimmed to Hebrew.</li>
@@ -942,12 +958,14 @@ function sheetHelp() {
 <li>Batman, Godzilla, Spider-Man and Squid Game belong to their owners. They\u2019re only mentioned in jokes; nothing of theirs is used.</li>
 <li>Code: GPL-3.0, part of <a href="https://david-i-schwartz.github.io/web-mobile-apps/" target="_blank" rel="noopener">Web &amp; Mobile Apps</a>.</li>
 </ul>
-<h3>Learn the Ideas</h3>
+</details>
+<details class="fold" data-ui="learn"><summary><h3>Learn the Ideas</h3></summary>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Cantillation" target="_blank" rel="noopener">Cantillation</a>: what trope is and how the marks work.</li>
 <li><a href="https://en.wikipedia.org/wiki/Chaining" target="_blank" rel="noopener">Backward chaining</a>: why learning the end first works (Build from the end).</li>
 <li><a href="https://en.wikipedia.org/wiki/Call_and_response_(music)" target="_blank" rel="noopener">Call and response</a>: hear it, then sing it back (My turn).</li>
-</ul>`;
+</ul>
+</details>`;
   h.append(about);
   sheetBody.append(h);
 }
@@ -1438,6 +1456,32 @@ loadLesson(firstVisible ? firstVisible.i : 0);
 if (!LESSONS.length) setTimeout(() => openSheet('help'), 300);
 })();
 
+</script>
+
+<script id="fold-layer">
+/* Fold-up sections (house rule 10). Every <details data-ui="name"> is remembered in this browser under 'torah:ui';
+   a button inside a heading works without folding its section; a link or help that points into a folded section opens it;
+   reveal(el) opens the folded sections round el. */
+(()=>{
+  const KEY='torah:ui',ui={};
+  try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&typeof v==='object'&&!Array.isArray(v))for(const k in v)if(/^[\w-]{1,40}$/.test(k))ui[k]=!!v[k]}catch(e){}
+  const restore=d=>{const k=d.dataset.ui;if(k in ui&&d.open!==ui[k])d.open=ui[k]};
+  const scan=r=>{if(r.matches&&r.matches('details[data-ui]'))restore(r);if(r.querySelectorAll)r.querySelectorAll('details[data-ui]').forEach(restore)};
+  scan(document);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)scan(n)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details[data-ui]'))return;const k=d.dataset.ui;if(ui[k]===d.open)return;
+    ui[k]=d.open;try{localStorage.setItem(KEY,JSON.stringify(ui))}catch(err){}},true);
+  const reveal=el=>{for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el};
+  window.reveal=reveal;
+  /* a button in a heading (a ? help button, say) does its own job and doesn't fold the section; if it shows something inside a folded section, the section opens */
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('summary button');if(!b)return;e.preventDefault();
+    setTimeout(()=>{const t=document.getElementById(b.getAttribute('aria-controls')||'');if(t&&!t.hidden)reveal(t)})},true);
+  /* a link to a place in a folded section opens it */
+  const toHash=()=>{const id=decodeURIComponent(location.hash.slice(1));const t=id&&document.getElementById(id);if(t)reveal(t)};
+  addEventListener('hashchange',toHash);document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;
+    const t=document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));if(t)reveal(t)},true);
+  toHash();
+})();
 </script>
 <script id="hh-helper">/* Home Screen helper from HTML App Generator 1.6 */
 (function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Civilian's Guide to Milspeak (DV12)</title>
+    <title>The Civilian's Guide to Milspeak (DV13)</title>
     <style>
         :root {
             --bg-primary: #1a1e24;
@@ -58,7 +58,7 @@
         nav a { color: var(--text-primary); text-decoration: none; font-size: 0.85rem; transition: 0.2s; }
         nav a:hover { color: var(--accent-main); padding-left: 5px; }
 
-        section {
+        section, details.msec {
             background-color: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -97,12 +97,27 @@
         a.ext-link { color: var(--accent-alt); text-decoration: underline; }
         
         footer { text-align: center; padding: 4rem; color: var(--text-secondary); border-top: 1px solid var(--border); }
-    </style>
+    
+/* ---- fold-up sections (house rule 10): tap a heading to open or close its section; the app remembers each one ---- */
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"";flex:none;width:0;height:0;border-style:solid;border-width:6px 0 6px 9px;border-color:transparent transparent transparent currentColor;opacity:.65;transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold>summary>h2,details.fold>summary>h3{flex:1;min-width:0;margin-top:0;margin-bottom:0}
+details.fold[open]>summary{margin-bottom:8px}
+details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::before{transition:none}}
+
+        details.msec>summary>h2{margin:0}
+        details.msec[open]>summary{margin-bottom:1rem}
+        /* on a phone the index scrolls with the page instead of covering most of the screen */
+        @media (max-width: 700px) { nav { position: static; } section, details.msec { padding: 1.25rem; } h2 { font-size: 1.4rem; } }
+</style>
 </head>
 <body>
 
     <header>
-        <h1>The Civilian's Guide to Milspeak (DV12)</h1>
+        <h1>The Civilian's Guide to Milspeak (DV13)</h1>
         <p>THE FULL ACCUMULATIVE MASTER: Zero-Loss Restoration of Doctrine, Admin, Operations, Wargaming, Cyber Security, and Critical Infrastructure.</p>
     </header>
 
@@ -128,8 +143,8 @@
             </ul>
         </nav>
 
-        <section id="official">
-            <h2>1. The Official Rulebook: The DoD Terminology Program</h2>
+        <details class="fold msec" id="official" data-ui="official" open>
+            <summary><h2>1. The Official Rulebook: The DoD Terminology Program</h2></summary>
             <p>The U.S. military doesn't just invent acronyms for fun; they are highly regulated. The <strong>Chairman of the Joint Chiefs of Staff (CJCS)</strong> oversees the <a href="https://www.jcs.mil/doctrine/dod-terminology-program/" class="ext-link">DoD Terminology Program</a>.</p>
             
             <div class="jargon-card">
@@ -149,10 +164,10 @@
                 <div class="jargon-def">The fundamental principles that guide the employment of U.S. military forces. Numbered 1 through 6.</div>
                 <div class="jargon-context">"According to JP 4-0 (Joint Logistics), TRANSCOM has the lead on this."</div>
             </div>
-        </section>
+        </details>
 
-        <section id="alphanumeric">
-            <h2>2. Alphanumeric Soup (Staff Codes & Pay Grades)</h2>
+        <details class="fold msec" id="alphanumeric" data-ui="alphanumeric" open>
+            <summary><h2>2. Alphanumeric Soup (Staff Codes & Pay Grades)</h2></summary>
             <p>If you hear someone say, "Take this to the J-3, the O-6 wants it by tomorrow," you are dealing with the military's strict alphanumeric organizational structure.</p>
 
             <h3>The Prefix: Who are we talking about?</h3>
@@ -191,10 +206,10 @@
                 <tr><td><strong>PFC</strong></td><td>Private First Class.</td></tr>
                 <tr><td><strong>RA</strong></td><td>Regular Army. Refers to the professional, full-time force.</td></tr>
             </table>
-        </section>
+        </details>
 
-        <section id="c2">
-            <h2>3. Command & Control (C2) Verbs</h2>
+        <details class="fold msec" id="c2" data-ui="c2" open>
+            <summary><h2>3. Command & Control (C2) Verbs</h2></summary>
             <p>In the civilian world, someone is just "your boss." In the military, <em>how</em> they are your boss dictates what they can legally tell you to do.</p>
 
             <div class="jargon-card">
@@ -224,10 +239,10 @@
                 <div class="jargon-term">SOP (Standard Operating Procedure)</div>
                 <div class="jargon-def">The established rules for how a unit performs specific tasks.</div>
             </div>
-        </section>
+        </details>
 
-        <section id="networks">
-            <h2>4. Servers, Networks & Comms</h2>
+        <details class="fold msec" id="networks" data-ui="networks" open>
+            <summary><h2>4. Servers, Networks & Comms</h2></summary>
             <p>Information is physically separated by classification level. You cannot send an email from one color network to another.</p>
 
             <div class="jargon-card">
@@ -249,10 +264,10 @@
                 <div class="jargon-term">SCIF (Sensitive Compartmented Information Facility)</div>
                 <div class="jargon-def">Pronounced "skiff." A highly secure, soundproofed room or building where classified JWICS information can be viewed or discussed. No cell phones allowed.</div>
             </div>
-        </section>
+        </details>
 
-        <section id="orgs">
-            <h2>5. Organizations & Broad Acronyms</h2>
+        <details class="fold msec" id="orgs" data-ui="orgs" open>
+            <summary><h2>5. Organizations & Broad Acronyms</h2></summary>
             <div class="jargon-card">
                 <div class="jargon-term">CCMD (Combatant Command)</div>
                 <div class="jargon-def">The 11 major operational hubs of the military (e.g., CENTCOM, TRANSCOM, CYBERCOM). They are the warfighters.</div>
@@ -277,10 +292,10 @@
                 <div class="jargon-term">Seabees</div>
                 <div class="jargon-def">Navy Construction Battalions (CBs). The engineers who build bases in combat zones.</div>
             </div>
-        </section>
+        </details>
 
-        <section id="operational">
-            <h2>6. Everyday Operational Slang (The Normie Translations)</h2>
+        <details class="fold msec" id="operational" data-ui="operational" open>
+            <summary><h2>6. Everyday Operational Slang (The Normie Translations)</h2></summary>
             <p>These terms populate military PowerPoint slides, emails, and briefings daily.</p>
             <table>
                 <tr><th>Jargon</th><th>What it actually means</th></tr>
@@ -305,10 +320,10 @@
                 <tr><td><strong>TTX</strong></td><td><em>Table Top Exercise.</em> A seminar-style wargame where commanders talk through a hypothetical crisis.</td></tr>
                 <tr><td><strong>Willy Pete</strong></td><td>White Phosphorous. A chemical used for smoke screens or incendiary effects.</td></tr>
             </table>
-        </section>
+        </details>
 
-        <section id="onesource">
-            <h2>7. The Military OneSource Master Glossary</h2>
+        <details class="fold msec" id="onesource" data-ui="onesource" open>
+            <summary><h2>7. The Military OneSource Master Glossary</h2></summary>
             <p>This section is pulled directly from the Military OneSource Database and combined with Datafortress admin entries.</p>
             <table>
                 <tr><th>Acronym</th><th>Meaning & Details</th></tr>
@@ -357,10 +372,10 @@
                 <tr><td><strong>USO</strong></td><td>United Service Organizations.</td></tr>
                 <tr><td><strong>VA</strong></td><td>Department of Veterans Affairs.</td></tr>
             </table>
-        </section>
+        </details>
 
-        <section id="joint">
-            <h2>8. Joint Force Commands (CCMD Sub-Structure)</h2>
+        <details class="fold msec" id="joint" data-ui="joint" open>
+            <summary><h2>8. Joint Force Commands (CCMD Sub-Structure)</h2></summary>
             <div class="jargon-card">
                 <div class="jargon-term">JTF (Joint Task Force)</div>
                 <div class="jargon-def">A temporary "pop-up" command center created to handle a specific crisis or mission.</div>
@@ -378,10 +393,10 @@
                 <div class="jargon-term">JFLCC (Joint Force Land Component Commander)</div>
                 <div class="jargon-def">Pronounced "jay-flick." The person in charge of all ground assets.</div>
             </div>
-        </section>
+        </details>
 
-        <section id="nato">
-            <h2>9. NATO & Ally-Specific Codes</h2>
+        <details class="fold msec" id="nato" data-ui="nato" open>
+            <summary><h2>9. NATO & Ally-Specific Codes</h2></summary>
             <p>International operations use NATO standards (STANAGs) to ensure Americans, Brits, and French can fight together.</p>
             <div class="jargon-card">
                 <div class="jargon-term">STANAG (Standardization Agreement)</div>
@@ -399,10 +414,10 @@
                 <div class="jargon-term">ACO / ACT</div>
                 <div class="jargon-def">Allied Command Operations (Strategic Command Europe) and Allied Command Transformation.</div>
             </div>
-        </section>
+        </details>
 
-        <section id="radio">
-            <h2>10. Radio/Comms Procedures</h2>
+        <details class="fold msec" id="radio" data-ui="radio" open>
+            <summary><h2>10. Radio/Comms Procedures</h2></summary>
             <p>Voice procedure is designed to provide the fastest, most reliable transfer of information while minimizing misunderstandings.</p>
             <table>
                 <tr><th>Pro-Word</th><th>Meaning</th><th>Protocol Note</th></tr>
@@ -417,10 +432,10 @@
                 <tr><td><strong>Say Again</strong></td><td>Repeat your last transmission.</td><td>Never say "Repeat." "Repeat" is a specific request for more artillery fire.</td></tr>
                 <tr><td><strong>Wilco</strong></td><td>I have received your message, understand it, and <strong>will comply</strong>.</td><td>Never say "Roger Wilco." "Wilco" already includes "Roger."</td></tr>
             </table>
-        </section>
+        </details>
 
-        <section id="service-slang">
-            <h2>11. Service-Specific Lingo & Branch Slang</h2>
+        <details class="fold msec" id="service-slang" data-ui="service-slang" open>
+            <summary><h2>11. Service-Specific Lingo & Branch Slang</h2></summary>
             <p>The specialized dialects of the "Ground Pounders," "Jarheads," and "Chair Force."</p>
 
             <h3>United States Army ("Ground Pounders")</h3>
@@ -453,10 +468,10 @@
             <div class="jargon-card"><div class="jargon-term">Slick</div><div class="jargon-def">A helicopter used for troop transport that does not have external weapon pods.</div></div>
             <div class="jargon-card"><div class="jargon-term">Sortie</div><div class="jargon-def">A single operational flight by one aircraft.</div><div class="jargon-context">"The squadron generated 40 sorties over the target area today."</div></div>
             <div class="jargon-card"><div class="jargon-term">The Head / The Galley</div><div class="jargon-def">The bathroom (Head) and the kitchen (Galley) on a ship.</div><div class="jargon-context">"Go clean the head before the Skipper does an inspection."</div></div>
-        </section>
+        </details>
 
-        <section id="wargame">
-            <h2>12. The Complete Wargame & Gaming Encyclopedia <span class="badge badge-wargame">Expanded</span></h2>
+        <details class="fold msec" id="wargame" data-ui="wargame" open>
+            <summary><h2>12. The Complete Wargame & Gaming Encyclopedia <span class="badge badge-wargame">Expanded</span></h2></summary>
             <p>From professional military adjudication to 160+ gaming terms from the Uswitch Master Glossary.</p>
 
             <h3>Professional Wargaming & Analysis</h3>
@@ -527,10 +542,10 @@
                 <tr><td><strong>Unicorn</strong></td><td>A rare unit with a unique stat line or ability that has no direct equivalent in other factions.</td></tr>
                 <tr><td><strong>XP</strong></td><td>Experience Points.</td></tr>
             </table>
-        </section>
+        </details>
 
-        <section id="cyber">
-            <h2>13. Cyber Security Terminology <span class="badge badge-cyber">NARUC & XM Cyber</span></h2>
+        <details class="fold msec" id="cyber" data-ui="cyber" open>
+            <summary><h2>13. Cyber Security Terminology <span class="badge badge-cyber">NARUC & XM Cyber</span></h2></summary>
             <p>Navigating the "Eighth Domain" of warfare: terminology from the SOC to the SCIF, based on DHS/CISA guidelines.</p>
 
             <div class="jargon-card">
@@ -582,10 +597,10 @@
                 <div class="jargon-term">NCCIC</div>
                 <div class="jargon-def">National Cybersecurity and Communications Integration Center. The cyber defense and incident response center for the Department of Homeland Security (DHS).</div>
             </div>
-        </section>
+        </details>
 
-        <section id="infra">
-            <h2>14. Critical Infrastructure & OT <span class="badge badge-infra">NARUC & XM Cyber</span></h2>
+        <details class="fold msec" id="infra" data-ui="infra" open>
+            <summary><h2>14. Critical Infrastructure & OT <span class="badge badge-infra">NARUC & XM Cyber</span></h2></summary>
             <p>The "Lifeline Functions" of the nation and the operational technology that keeps the physical world running.</p>
 
             <div class="jargon-card">
@@ -637,12 +652,44 @@
                 <div class="jargon-term">All-Hazards & Resilience</div>
                 <div class="jargon-def"><strong>All-Hazards</strong> refers to any threat (hurricane, terror attack, cyber incident) warranting response. <strong>Resilience</strong> is the system's ability to absorb, adapt to, and quickly recover from these disruptions.</div>
             </div>
-        </section>
+        </details>
+
+        <details class="fold msec" id="about" data-ui="about">
+            <summary><h2>About This Version</h2></summary>
+            <p>DV13 (24 Nov 2026): every section folds up. Tap a heading to open or close it, and the guide remembers how you left each one; a link in the index opens its section. On a phone the index scrolls away with the page instead of covering most of the screen.</p>
+            <p>DV12: the full restored master reference.</p>
+        </details>
 
         <footer>
-            <p>The Civilian's Guide to Milspeak (DV12) • Full Restored Master Reference</p>
+            <p>The Civilian's Guide to Milspeak (DV13) • Full Restored Master Reference</p>
         </footer>
 
     </div>
+
+<script id="fold-layer">
+/* Fold-up sections (house rule 10). Every <details data-ui="name"> is remembered in this browser under 'mil:ui';
+   a button inside a heading works without folding its section; a link or help that points into a folded section opens it;
+   reveal(el) opens the folded sections round el. */
+(()=>{
+  const KEY='mil:ui',ui={};
+  try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&typeof v==='object'&&!Array.isArray(v))for(const k in v)if(/^[\w-]{1,40}$/.test(k))ui[k]=!!v[k]}catch(e){}
+  const restore=d=>{const k=d.dataset.ui;if(k in ui&&d.open!==ui[k])d.open=ui[k]};
+  const scan=r=>{if(r.matches&&r.matches('details[data-ui]'))restore(r);if(r.querySelectorAll)r.querySelectorAll('details[data-ui]').forEach(restore)};
+  scan(document);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)scan(n)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details[data-ui]'))return;const k=d.dataset.ui;if(ui[k]===d.open)return;
+    ui[k]=d.open;try{localStorage.setItem(KEY,JSON.stringify(ui))}catch(err){}},true);
+  const reveal=el=>{for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el};
+  window.reveal=reveal;
+  /* a button in a heading (a ? help button, say) does its own job and doesn't fold the section; if it shows something inside a folded section, the section opens */
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('summary button');if(!b)return;e.preventDefault();
+    setTimeout(()=>{const t=document.getElementById(b.getAttribute('aria-controls')||'');if(t&&!t.hidden)reveal(t)})},true);
+  /* a link to a place in a folded section opens it */
+  const toHash=()=>{const id=decodeURIComponent(location.hash.slice(1));const t=id&&document.getElementById(id);if(t)reveal(t)};
+  addEventListener('hashchange',toHash);document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;
+    const t=document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));if(t)reveal(t)},true);
+  toHash();
+})();
+</script>
 </body>
 </html>

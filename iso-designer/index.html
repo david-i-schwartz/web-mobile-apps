@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Iso bead designer</title>
+<title>Iso Bead Designer</title>
 <style>
 :root {
   --paper: #F2EFF8; --ink: #2B2140; --muted: #6A6080; --panel: #FAF8FD;
@@ -77,6 +77,18 @@ select.plain { padding-right: 8px; }
 details summary { cursor: pointer; font-weight: 500; }
 details p { margin: 10px 0 0; max-width: 60ch; }
 :focus-visible { outline: 3px solid var(--q); outline-offset: 2px; }
+
+/* ---- fold-up sections (house rule 10): tap a heading to open or close its section; the app remembers each one ---- */
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"";flex:none;width:0;height:0;border-style:solid;border-width:6px 0 6px 9px;border-color:transparent transparent transparent currentColor;opacity:.65;transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold>summary>h2,details.fold>summary>h3{flex:1;min-width:0;margin-top:0;margin-bottom:0}
+details.fold[open]>summary{margin-bottom:8px}
+details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::before{transition:none}}
+
+.panel details.fold>summary>h2{margin:0}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -136,21 +148,31 @@ details p { margin: 10px 0 0; max-width: 60ch; }
 
 <div class="panel">
   <section>
-    <h2>Bead count</h2>
+    <details class="fold" id="countBox" data-ui="count" open>
+    <summary><h2>Bead Count</h2></summary>
     <div id="stats" class="small"></div>
     <ul class="legend" id="legend"></ul>
+    </details>
   </section>
-  <section class="readout" id="readout">
-    <h2>Tapped bead</h2>
-    <p class="small">Tap any bead to see its coordinates. The small teal dot marks the origin, the back corner of the floor at cube (0, 0, 0).</p>
+  <section class="readout">
+    <details class="fold" id="readout" data-ui="tapped" open>
+    <summary><h2>Tapped Bead</h2></summary>
+    <div id="readoutBody"><p class="small">Tap any bead to see its coordinates. The small teal dot marks the origin, the back corner of the floor at cube (0, 0, 0).</p></div>
+    </details>
   </section>
   <section>
-    <details>
-      <summary>How the coordinates work</summary>
+    <details class="fold" id="howBox" data-ui="how">
+      <summary><h2>How the Coordinates Work</h2></summary>
       <p>A peg is two whole numbers. On a square board, column and row times 5 mm give its position. On this board one column right moves 4.33 mm across and 2.5 mm down, so every second column sits half a peg lower and all three cube edges become straight lines of pegs.</p>
       <p>Charts count from 1 because that’s how you count pegs. The maths uses axial coordinates: <span class="q">q</span> steps along the slanted axis, <span class="r">r</span> steps straight down. Sliding a design is just adding to <span class="q">q</span> or <span class="r">r</span>. The third cube coordinate s = −q − r keeps all three summing to 0.</p>
       <p>A cube at (X, Y, Z) lands at (X − Y, Y − Z). Add 1 to all three and you land in the same place, so an isometric view loses depth. Cubes are drawn far to near in order of X + Y + Z, so nearer faces cover farther ones.</p>
       <p>Each face becomes k × k beads: a bead takes the colour of the triangle just down-right of its peg, so every face gets exactly the same count.</p>
+    </details>
+  </section>
+  <section>
+    <details class="fold" id="aboutBox" data-ui="about">
+      <summary><h2>About This Version</h2></summary>
+      <p>1.0 (24 Nov 2026): the first numbered version. Sections fold up: tap a heading to open or close it, and the app remembers how you left each one. Headings are in Title Case.</p>
     </details>
   </section>
 </div>
@@ -460,12 +482,12 @@ function updateStats() {
 
 // ---------- readout ----------
 function updateReadout() {
-  const el = $('readout');
+  const el = $('readoutBody');
   if (!S.sel) return;
   const k = S.k, { m, n } = S.sel;
   const o = sampleBead(map, k, m, n);
   const p = toBoard(m, n, k);
-  let html = '<h2>Tapped bead</h2>';
+  let html = '';
   if (p.on) {
     const mm = boardMM(p.col, p.row);
     html += `<p class="big">Chart column ${p.col + 1}, row ${p.row + 1}</p>`;
@@ -590,6 +612,32 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => rend
 render();
 })();
 
+</script>
+
+<script id="fold-layer">
+/* Fold-up sections (house rule 10). Every <details data-ui="name"> is remembered in this browser under 'iso:ui';
+   a button inside a heading works without folding its section; a link or help that points into a folded section opens it;
+   reveal(el) opens the folded sections round el. */
+(()=>{
+  const KEY='iso:ui',ui={};
+  try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&typeof v==='object'&&!Array.isArray(v))for(const k in v)if(/^[\w-]{1,40}$/.test(k))ui[k]=!!v[k]}catch(e){}
+  const restore=d=>{const k=d.dataset.ui;if(k in ui&&d.open!==ui[k])d.open=ui[k]};
+  const scan=r=>{if(r.matches&&r.matches('details[data-ui]'))restore(r);if(r.querySelectorAll)r.querySelectorAll('details[data-ui]').forEach(restore)};
+  scan(document);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)scan(n)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details[data-ui]'))return;const k=d.dataset.ui;if(ui[k]===d.open)return;
+    ui[k]=d.open;try{localStorage.setItem(KEY,JSON.stringify(ui))}catch(err){}},true);
+  const reveal=el=>{for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el};
+  window.reveal=reveal;
+  /* a button in a heading (a ? help button, say) does its own job and doesn't fold the section; if it shows something inside a folded section, the section opens */
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('summary button');if(!b)return;e.preventDefault();
+    setTimeout(()=>{const t=document.getElementById(b.getAttribute('aria-controls')||'');if(t&&!t.hidden)reveal(t)})},true);
+  /* a link to a place in a folded section opens it */
+  const toHash=()=>{const id=decodeURIComponent(location.hash.slice(1));const t=id&&document.getElementById(id);if(t)reveal(t)};
+  addEventListener('hashchange',toHash);document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;
+    const t=document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));if(t)reveal(t)},true);
+  toHash();
+})();
 </script>
 <script id="hh-helper">/* Home Screen helper from HTML App Generator 1.6 */
 (function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------

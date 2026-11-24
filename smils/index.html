@@ -148,6 +148,16 @@ footer{color:var(--ink3);font-size:.8rem;text-align:center;margin-top:34px;paddi
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 [hidden]{display:none !important}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+
+/* ---- fold-up sections (house rule 10): tap a heading to open or close its section; the app remembers each one ---- */
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"";flex:none;width:0;height:0;border-style:solid;border-width:6px 0 6px 9px;border-color:transparent transparent transparent currentColor;opacity:.65;transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold>summary>h2,details.fold>summary>h3{flex:1;min-width:0;margin-top:0;margin-bottom:0}
+details.fold[open]>summary{margin-bottom:8px}
+details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::before{transition:none}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -189,7 +199,7 @@ footer{color:var(--ink3);font-size:.8rem;text-align:center;margin-top:34px;paddi
 </main>
 
 <footer>
-  <p>SMILS 1.0 &middot; <span id="nEntries"></span> terms in <span id="nSections"></span> sections &middot; everything stays in your browser.<br>
+  <p>SMILS 1.1 &middot; <span id="nEntries"></span> terms in <span id="nSections"></span> sections &middot; everything stays in your browser.<br>
   All content unclassified, from public sources.</p>
 </footer>
 
@@ -497,7 +507,7 @@ function renderReview(){
     '<button type="button" class="btn" id="copyBtn">Copy as text</button>' +
     '<button type="button" class="btn" id="clearBtn">Clear the list</button>' +
     '</div><p class="msg" id="revMsg"></p>' +
-    '<details><summary>See the list as text</summary><textarea id="revText" readonly aria-label="The review list as text"></textarea></details>';
+    '<details data-ui="listText"><summary>See the list as text</summary><textarea id="revText" readonly aria-label="The review list as text"></textarea></details>';
   v.innerHTML = html;
 
   var drops = v.querySelectorAll('[data-drop]');
@@ -532,7 +542,7 @@ function renderAbout(){
     ' terms across ' + SECTIONS.length + ' sections, from pay grades and unit sizes to radio words, wargaming and cyber. ' +
     'Type a term and SMILS takes you to it. If SMILS doesn’t have it, it offers places to look outside and keeps the term on a list so it can be added later.</p></div>' +
 
-    '<details><summary>How Searching Works</summary>' +
+    '<details data-ui="howSearch"><summary>How Searching Works</summary>' +
     '<ul class="plain">' +
     '<li>An exact match on a term comes first, then terms that start with what you typed, then terms that contain it, then matches in the definitions.</li>' +
     '<li>Tap a result to read the whole entry, then <b>Go to</b> its section to see it in context with the diagrams.</li>' +
@@ -540,21 +550,22 @@ function renderAbout(){
     '<li>SMILS never goes online by itself. The outside links only open when you tap them, in a new tab.</li>' +
     '</ul></details>' +
 
-    '<details><summary>The Review List</summary>' +
+    '<details data-ui="reviewList"><summary>The Review List</summary>' +
     '<ul class="plain">' +
     '<li>A search that finds nothing is added to the <b>Review</b> list, with how many times you looked for it.</li>' +
     '<li>The list is kept in this browser only. Nothing is uploaded.</li>' +
     '<li><b>Save as CSV</b> hands the list to whoever maintains the guide, so missing terms can be written up and added to the next version.</li>' +
     '</ul></details>' +
 
-    '<details><summary>About This Version</summary>' +
+    '<details data-ui="about"><summary>About This Version</summary>' +
     '<ul class="plain">' +
+    '<li><b>1.1 — 24 November 2026.</b> The fold-outs (How Searching Works, About This Version and the rest) stay as you left them.</li>' +
     '<li><b>1.0 — 20 November 2026.</b> First version. ' + ENTRIES.length + ' terms and ' + SECTIONS.length +
     ' sections, carried over from the written guide. Search with ranked results, section browsing with the structure diagrams, ' +
     'outside links when a term is missing, and a review list of terms to add.</li>' +
     '</ul></details>' +
 
-    '<details><summary>Learn the Ideas</summary>' +
+    '<details data-ui="learn"><summary>Learn the Ideas</summary>' +
     '<ul class="plain">' +
     '<li><b>DoD Dictionary of Military and Associated Terms</b> — the official term list, and the reason a term either is or isn’t doctrine.</li>' +
     '<li><b>Joint Publications (the JP series)</b> — numbered on the same 1-to-6 logic as the staff directorates, which is the single most portable idea in the whole vocabulary.</li>' +
@@ -562,14 +573,14 @@ function renderAbout(){
     '<li><b>Operational versus administrative control</b> — the difference that decides what someone can lawfully order you to do.</li>' +
     '</ul></details>' +
 
-    '<details><summary>Credits</summary>' +
+    '<details data-ui="credits"><summary>Credits</summary>' +
     '<ul class="plain">' +
     '<li>Terms and definitions written for this guide from public, unclassified sources: the Department of Defense, the Joint Chiefs of Staff, Military OneSource, the Office of the Director of National Intelligence, CISA, NIST, NATO and the service branches.</li>' +
     '<li>No text, code, fonts or pictures are taken from other apps or sites.</li>' +
     '<li>Built as one HTML file, with nothing loaded from anywhere else.</li>' +
     '</ul></details>' +
 
-    '<details><summary>Your Privacy</summary>' +
+    '<details data-ui="privacy"><summary>Your Privacy</summary>' +
     '<ul class="plain">' +
     '<li>Everything happens in your browser. Nothing you type is uploaded.</li>' +
     '<li>The review list is the only thing SMILS remembers, under the name <span style="font-family:var(--f-mono)">smils:</span> in this browser’s storage.</li>' +
@@ -579,6 +590,32 @@ function renderAbout(){
 
 /* ---------- go ---------- */
 renderFind();
+})();
+</script>
+
+<script id="fold-layer">
+/* Fold-up sections (house rule 10). Every <details data-ui="name"> is remembered in this browser under 'smils:ui';
+   a button inside a heading works without folding its section; a link or help that points into a folded section opens it;
+   reveal(el) opens the folded sections round el. */
+(()=>{
+  const KEY='smils:ui',ui={};
+  try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&typeof v==='object'&&!Array.isArray(v))for(const k in v)if(/^[\w-]{1,40}$/.test(k))ui[k]=!!v[k]}catch(e){}
+  const restore=d=>{const k=d.dataset.ui;if(k in ui&&d.open!==ui[k])d.open=ui[k]};
+  const scan=r=>{if(r.matches&&r.matches('details[data-ui]'))restore(r);if(r.querySelectorAll)r.querySelectorAll('details[data-ui]').forEach(restore)};
+  scan(document);
+  new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)scan(n)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('toggle',e=>{const d=e.target;if(!d.matches||!d.matches('details[data-ui]'))return;const k=d.dataset.ui;if(ui[k]===d.open)return;
+    ui[k]=d.open;try{localStorage.setItem(KEY,JSON.stringify(ui))}catch(err){}},true);
+  const reveal=el=>{for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el};
+  window.reveal=reveal;
+  /* a button in a heading (a ? help button, say) does its own job and doesn't fold the section; if it shows something inside a folded section, the section opens */
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('summary button');if(!b)return;e.preventDefault();
+    setTimeout(()=>{const t=document.getElementById(b.getAttribute('aria-controls')||'');if(t&&!t.hidden)reveal(t)})},true);
+  /* a link to a place in a folded section opens it */
+  const toHash=()=>{const id=decodeURIComponent(location.hash.slice(1));const t=id&&document.getElementById(id);if(t)reveal(t)};
+  addEventListener('hashchange',toHash);document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;
+    const t=document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));if(t)reveal(t)},true);
+  toHash();
 })();
 </script>
 <script id="hh-helper">/* Home Screen helper from HTML App Generator 1.6 */
