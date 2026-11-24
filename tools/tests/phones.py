@@ -43,6 +43,9 @@ with sync_playwright() as p:
     ctx, pg, errs = open_as(br, 'iphone', '')
     hrefs = pg.eval_on_selector_all('.app', 'els => els.map(e => e.getAttribute("href").replace(/\\/$/, ""))')
     check(pg.title() == 'Web & Mobile Apps' and sorted(set(hrefs)) == sorted(FOLDERS), f'front page lists the {len(FOLDERS)} apps')
+    icons = pg.eval_on_selector_all('link[rel~="icon"], link[rel="apple-touch-icon"]', 'els => els.map(e => e.getAttribute("href"))')
+    check(sorted(icons) == ['apple-touch-icon.png', 'icon-192.png', 'icon-512.png'] and all(open(os.path.join(SITE, f), 'rb').read(4) == b'\x89PNG' for f in icons),
+          'the front page has its own Home Screen icon, not an app\'s')
     SECTIONS = [(s if isinstance(s, str) else s.get('name', '')).strip() for s in json.load(open(CFG)).get('sections', [])] if os.path.exists(CFG) else []
     if SECTIONS:
         heads = [h.strip() for h in pg.locator('.sec > h2').all_inner_texts()]
