@@ -43,6 +43,10 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 
 - [`year-planner/`](https://david-i-schwartz.github.io/web-mobile-apps/year-planner/): YRP, RIT Department Year Planner
 
+### Home
+
+- [`shopping-list/`](https://david-i-schwartz.github.io/web-mobile-apps/shopping-list/): SHOP, Shopping List
+
 ## How it works
 
 - `src/` holds the published copy of each app, one HTML file each. `site.json` lists them.

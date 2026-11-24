@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en" class="nojs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2E7D32">
+<meta name="generator" content="HTML App Generator 1.5">
+<title>SHOP: Shopping List</title>
+<script>document.documentElement.classList.remove('nojs')/* scripts run, so the app shows instead of the preview note */</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%232E7D32%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2239%22%20font-family%3D%22system-ui%2Csans-serif%22%20font-size%3D%2218%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%3ESHOP%3C%2Ftext%3E%3C%2Fsvg%3E">
+<script type="application/json" id="app-spec">
+{
+ "code": "SHOP",
+ "name": "Shopping List",
+ "tagline": "A quick shopping list for one phone: add things fast, check them off in the store, and add the usual things back with one tap. Your list stays on this device.",
+ "version": "1.0",
+ "date": "24 Nov 2026",
+ "unit": {
+  "one": "item",
+  "many": "items"
+ },
+ "shape": "circle",
+ "pitch": 0,
+ "accent": "#2E7D32",
+ "accentDark": "",
+ "features": {
+  "board": false,
+  "picture": false,
+  "edit": false,
+  "progress": false,
+  "project": false,
+  "export": false
+ },
+ "grid": {
+  "minW": 4,
+  "maxW": 160,
+  "defW": 48,
+  "defH": 48,
+  "maxCells": 40000
+ },
+ "boards": [],
+ "palette": [
+  {
+   "name": "White",
+   "hex": "#FFFFFF"
+  },
+  {
+   "name": "Light grey",
+   "hex": "#C8CCD2"
+  },
+  {
+   "name": "Dark grey",
+   "hex": "#5E636B"
+  },
+  {
+   "name": "Black",
+   "hex": "#15171B"
+  },
+  {
+   "name": "Red",
+   "hex": "#D7262E"
+  },
+  {
+   "name": "Orange",
+   "hex": "#F07D1A"
+  },
+  {
+   "name": "Yellow",
+   "hex": "#F6CF2A"
+  },
+  {
+   "name": "Lime",
+   "hex": "#9BCB3C"
+  },
+  {
+   "name": "Green",
+   "hex": "#2E9A4B"
+  },
+  {
+   "name": "Teal",
+   "hex": "#138C8C"
+  },
+  {
+   "name": "Light blue",
+   "hex": "#6CB8E6"
+  },
+  {
+   "name": "Blue",
+   "hex": "#2457B8"
+  },
+  {
+   "name": "Purple",
+   "hex": "#6E3FA3"
+  },
+  {
+   "name": "Pink",
+   "hex": "#EE8CB4"
+  },
+  {
+   "name": "Tan",
+   "hex": "#D9B98C"
+  },
+  {
+   "name": "Brown",
+   "hex": "#7A4A2A"
+  }
+ ],
+ "sets": [],
+ "learn": [
+  {
+   "topic": "Working with no signal",
+   "links": [
+    {
+     "title": "Offline and background operation",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation",
+     "source": "MDN"
+    },
+    {
+     "title": "Service Worker API",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API",
+     "source": "MDN"
+    }
+   ]
+  },
+  {
+   "topic": "Keeping your list on the phone",
+   "links": [
+    {
+     "title": "Web Storage API",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API",
+     "source": "MDN"
+    },
+    {
+     "title": "StorageManager.persist()",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/persist",
+     "source": "MDN"
+    }
+   ]
+  },
+  {
+   "topic": "Keeping the screen on",
+   "links": [
+    {
+     "title": "Screen Wake Lock API",
+     "url": "https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API",
+     "source": "MDN"
+    }
+   ]
+  },
+  {
+   "topic": "Big touch targets",
+   "links": [
+    {
+     "title": "Target Size (Enhanced)",
+     "url": "https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced.html",
+     "source": "W3C"
+    }
+   ]
+  }
+ ],
+ "changes": [
+  "First version. Add items one at a time or several at once with commas, check them off (they move to In the Cart), clear checked items, and take back any change with Undo.",
+  "Buy Again keeps the things you’ve added before, most often first, and suggestions appear as you type, so the usual things go back on the list with one tap.",
+  "Big touch targets for one hand, an option to keep the screen on while the list is open, and it opens from the Home Screen with no connection."
+ ],
+ "credits": [
+  "Written for SHOP. No outside code, fonts or pictures.",
+  "The offline helper and Home Screen icons come from the Web & Mobile Apps site builder (HTML App Generator)."
+ ],
+ "homeUrl": "https://david-i-schwartz.github.io/web-mobile-apps/shopping-list/",
+ "oldCodes": [],
+ "key": "shop:",
+ "oldKeys": [],
+ "ext": ".shop.json",
+ "core": "1.3",
+ "generator": "1.5"
+}
+</script>
+<style>
+/* ==== CORE CSS: made by HTML App Generator 1.5 (core 1.3). Upgrade it with the generator rather than editing it here. ==== */
+/* Core stylesheet of HTML App Generator apps. It grew from the stylesheet FIG and BIG share.
+   The app's accent colours come after it, then the app's own styles (APP CSS). */
+
+:root{
+  --bg:#EEF1F5;--panel:#FFFFFF;--ink:#1D2230;--muted:#5B6375;--line:#D5DAE3;--accent:#0E7C7B;--accent-ink:#FFFFFF;--chip:#E3E8EF;--edge:#6F7888;
+  --board:#DCE1E8;--peg:#B4BBC6;--vp:#F5F7FA;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;--board:#2B303B;--peg:#4C5361;--vp:#12151B;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5}
+header{max-width:1180px;margin:0 auto;padding:18px 16px 2px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.1;margin:0 0 4px;letter-spacing:-0.01em;font-weight:800}
+header p{margin:0;color:var(--muted);max-width:62ch}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.wrap{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}.stage{position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px}
+.controls{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+h2{font-size:19px;margin:0 0 8px;line-height:1.25;font-weight:750}
+.pick{position:relative;overflow:hidden}
+.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+h3{font-size:16px;margin:14px 0 4px;font-weight:700}
+.sub{font-size:14px;color:var(--muted);margin:2px 0 0}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:flex;background:var(--chip);border-radius:999px;padding:3px;gap:3px;margin:6px 0}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:7px 12px;border-radius:999px;cursor:pointer;min-height:44px;line-height:1.2}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.toolbar .seg{margin:0}
+.tapwrap{display:flex;align-items:center}
+.zoom{display:flex;align-items:center;gap:6px}
+#cmpRow{margin:10px 2px 0}
+#board .cmp{pointer-events:none}
+.btn,.ib{border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:44px}
+.ib{width:44px;padding:0;font-size:20px;line-height:1}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#vp{position:relative;overflow:auto;max-height:70vh;border-radius:12px;background:var(--vp);outline:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#vp:focus-visible{box-shadow:0 0 0 3px var(--accent)}
+#board{display:block;margin:0 auto;touch-action:manipulation}
+#board .cell{pointer-events:all;cursor:pointer;transition:opacity .15s}
+#board .peg{fill:var(--peg);stroke:transparent;stroke-width:.6;pointer-events:all;cursor:pointer}
+#board .bd{fill:var(--board)}
+#board .cl{stroke:var(--muted);stroke-width:.07;opacity:.75}
+#board .ring{fill:none;stroke:var(--accent);stroke-width:.14;pointer-events:none}
+#board .lbl{fill:var(--ink);stroke:var(--board);stroke-width:.28;paint-order:stroke;font-weight:700;font-size:.9px;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#board .cell{transition:none}}
+#empty{padding:48px 20px;text-align:center;color:var(--muted)}
+#empty p{margin:0 auto 14px;max-width:34ch}
+#hud{display:flex;gap:10px;align-items:flex-start;margin:12px 2px 0;min-height:44px}
+#hudDot{width:26px;height:26px;border-radius:50%;flex:none;margin-top:2px;border:1px solid var(--line)}
+#hudDot.empty{background:transparent!important;border-style:dashed}
+#hudName{font-weight:700;font-size:17px;line-height:1.3}
+#hudWhere{font-size:14px;color:var(--muted)}
+.bar{height:10px;background:var(--chip);border-radius:99px;overflow:hidden;margin:4px 0 6px}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#pct{font-size:15px;color:var(--ink);margin:0 0 10px;font-variant-numeric:tabular-nums}
+#legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:8px}
+.crow{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;font-size:15px;cursor:pointer;min-height:44px;text-align:left}
+.crow[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.crow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .ct{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+.crow.done .ct{color:var(--accent)}
+.dot{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);flex:none}
+.checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:15px}
+.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer}
+input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;align-items:center;gap:10px;margin:6px 0}
+.row label{color:var(--muted);font-size:15px}
+.row output{font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+input[type=range]{width:100%;min-height:28px;accent-color:var(--accent)}
+#cropWrap{display:flex;justify-content:center;margin:8px 0 4px;background:var(--vp);border-radius:12px;padding:8px}
+#cropCv{display:block;touch-action:none;cursor:crosshair;border-radius:4px;max-width:100%}
+.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;vertical-align:middle;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
+.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.q::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+.tip{background:var(--chip);border-radius:10px;padding:8px 12px;margin:4px 0 8px}
+.tip p{margin:0 0 6px}.tip p:last-child{margin:0}
+input[type=color]{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
+input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
+input[type=text],select{width:100%;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:44px}
+details summary{cursor:pointer;font-size:19px;font-weight:750}
+details.mini{margin-top:12px}
+details.mini summary{font-size:16px;font-weight:700;min-height:36px;display:list-item;padding:6px 0}
+details.mini summary span{font-weight:400;font-size:14px;color:var(--muted)}
+textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:8px;resize:vertical}
+#imgMsg,#copyMsg{font-size:14px;color:var(--muted)}
+button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible,select:focus-visible,label.btn:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.warn{margin:8px 0 0;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:14px;max-width:62ch}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sub.gap{margin:6px 0 0}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+.group ul{margin:6px 0 0;padding-left:20px}
+.group li{margin:4px 0}
+.seg.four{flex-wrap:wrap;border-radius:26px}
+.seg.four button{flex:1 1 40%}
+.row.wide{grid-template-columns:7.5em minmax(0,1fr) 3.4em}
+input.zero{--zero:linear-gradient(90deg,var(--line) calc(50% - 1px),var(--muted) calc(50% - 1px),var(--muted) calc(50% + 1px),var(--line) calc(50% + 1px))}
+input.zero::-webkit-slider-runnable-track{background:var(--zero)}
+input.zero::-moz-range-track{background:var(--zero)}
+#bgDot{width:26px;height:26px}
+#cropCv.picking{cursor:copy;outline:3px solid var(--accent);outline-offset:2px}
+#adjReset:disabled{opacity:.5;cursor:default}
+.tip{text-align:left}
+.tip ul{margin:0;padding-left:1.15em}
+.tip li{margin:0 0 6px}
+.tip li:last-child{margin-bottom:0}
+.tip h4{font-size:14px;font-weight:700;color:var(--ink);margin:10px 0 4px}
+.tip h4:first-child{margin-top:0}
+.tip p + ul,.tip ul + p{margin-top:6px}
+.tip a,#learn a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+h2 .q{margin-left:4px}
+details.mini .q{margin-left:4px}
+/* ---- editing ---- */
+.btn:disabled,.ib:disabled{opacity:.45;cursor:default}
+#editBar{margin:0 0 10px}
+.ebar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.ebar .seg{margin:0;flex:1 1 250px}
+.ebar .zoom{margin-left:auto}
+.pc{display:flex;align-items:center;gap:8px;margin:10px 2px 2px;font-size:15px;min-width:0}
+.pc .dot{width:22px;height:22px}
+.pc b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sws{display:flex;flex-wrap:wrap;gap:10px;padding:6px 6px 8px}
+.swb{position:relative;flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--edge);padding:0;cursor:pointer}
+.swb::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.swb[aria-pressed="true"]{box-shadow:0 0 0 2px var(--panel),0 0 0 5px var(--accent)}
+#editMsg{min-height:1.5em;margin:2px 2px 0}
+#board.editing .cell{cursor:crosshair}
+#board.lock{touch-action:none}
+.btn.sm{min-height:36px;padding:4px 12px;font-size:14px}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin:8px 0}
+/* ---- from BIG, made general ---- */
+#board .ov{pointer-events:none}
+#board .stud{fill:rgba(255,255,255,.16);stroke:rgba(0,0,0,.3);stroke-width:.06}
+#board .hole{fill:var(--board)}
+#board .cell{cursor:pointer}
+#board .bnum{fill:var(--muted);font-size:.8px;font-weight:700;pointer-events:none}
+.seg.six{flex-wrap:wrap;border-radius:26px}
+.seg.six button{flex:1 1 30%}
+.lsw[aria-pressed="false"]{opacity:.22;border-style:dashed}
+.lsw[aria-pressed="true"]{box-shadow:none}
+#palSw,#paintSw{max-height:228px;overflow-y:auto}
+#editBar .sws{padding:6px 2px 8px}
+.pasteBox{margin:12px auto 0;max-width:36ch;min-height:48px;padding:10px 14px;border:2px dashed var(--edge);border-radius:12px;color:var(--muted);font-size:14px;text-align:center;caret-color:transparent;outline:none;overflow:hidden;cursor:text;-webkit-user-select:text;user-select:text}
+.pasteBox:empty::before{content:attr(data-ph)}
+.pasteBox:focus{border-color:var(--accent);color:var(--ink)}
+.pasteBox:focus:empty::before{content:"Now paste: long-press here and choose Paste, or press Ctrl+V / \2318 V."}
+.pasteBox img{max-width:100%;max-height:80px}
+#empty .sub{max-width:40ch;margin:8px auto 0}
+.stepper{display:grid;grid-template-columns:7.5em 44px minmax(3em,auto) 44px;gap:8px;align-items:center;margin:6px 0}
+.stepper label{color:var(--muted);font-size:15px}
+.stepper output{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.controls.solo{max-width:760px;margin:0 auto;width:100%}
+.wrap.solo{grid-template-columns:minmax(0,1fr)!important}
+.foot{max-width:1180px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font-size:13px}
+/* ---- when scripts can't run (a phone's file preview): only the header and a note show ---- */
+.nojs-note{display:none}
+.nojs .nojs-note{display:block;max-width:640px;margin:8px auto 24px;padding:16px 18px;border:2px solid var(--accent);border-radius:14px;background:var(--panel);font-size:17px;line-height:1.5}
+.nojs .nojs-note a{color:var(--accent);font-weight:700;word-break:break-all}
+.nojs main,.nojs .foot{display:none}
+#homeHow .hh-lead{margin-top:0}
+/* ---- SHOP's accent colours (from the spec) ---- */
+:root{--accent:#2E7D32;--accent-ink:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#77AB7A;--accent-ink:#131B14}}
+:root[data-theme="dark"]{--accent:#77AB7A;--accent-ink:#131B14}
+/* ==== APP CSS START ==== */
+/* SHOP's own styles. Big rows and buttons for one-handed use in a store. */
+.controls.solo{max-width:640px}
+/* the core's small controls get full 44 px boxes (house rule 6) without changing their look */
+.q{width:44px;height:44px;border:10px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line);margin:-10px -10px -10px -4px}
+details>summary{min-height:44px;box-sizing:border-box;padding-top:8px;padding-bottom:8px}
+.checks label{min-height:44px}
+/* the add bar stays at the top of the screen while the list scrolls */
+.addwrap{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);margin:0 -16px;padding:8px 16px 2px;border-bottom:1px solid transparent}
+.addwrap.stuck{border-bottom-color:var(--line);box-shadow:0 6px 10px -8px rgba(0,0,0,.35)}
+.addbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+#addIn{font-size:18px;min-height:52px;padding:8px 14px;border-radius:12px}
+.btn.big{min-height:52px;font-size:17px;padding:0 22px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+.chips:empty{display:none}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 16px 6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:16px;cursor:pointer;text-align:left;max-width:100%;-webkit-tap-highlight-color:transparent}
+.chip .pl{font-weight:800;color:var(--accent);font-size:18px;line-height:1}
+.chip .ct{overflow-wrap:anywhere}
+.chip.rm{border-style:dashed}
+.chip.rm .pl{color:var(--muted)}
+.status{display:flex;align-items:center;gap:10px;min-height:48px;margin:2px 0 0;font-size:15px;color:var(--muted)}
+.status span{flex:1;min-width:0}
+.status .btn{flex:none}
+.group .items{list-style:none;margin:0;padding:0}
+.items li{display:flex;align-items:stretch;border-top:1px solid var(--line)}
+.items li:first-child{border-top:0}
+.item{flex:1;min-width:0;display:flex;align-items:center;gap:14px;min-height:58px;padding:8px 6px;cursor:pointer;font-size:19px;line-height:1.3;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.item input[type=checkbox]{width:30px;height:30px;flex:none;margin:0}
+.item .t{overflow-wrap:anywhere}
+.item.flash{animation:shopflash 1.2s ease-out}
+@keyframes shopflash{from{background:color-mix(in srgb,var(--accent) 28%,transparent)}to{background:transparent}}
+.cart .item .t{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
+.x{flex:none;width:52px;min-height:58px;border:0;background:transparent;color:var(--muted);font-size:26px;line-height:1;cursor:pointer;border-radius:10px}
+.x:active{background:var(--chip)}
+#emptyMsg{padding:18px 4px 10px;font-size:16px}
+#cartHead{display:flex;align-items:baseline;gap:8px;margin:18px 0 2px;padding-top:12px;border-top:2px solid var(--line)}
+#cartHead .sub{font-weight:400}
+#againMore{margin-top:10px}
+@media (prefers-reduced-motion:reduce){.item.flash{animation:none}}
+/* ==== APP CSS END ==== */
+</style>
+</head>
+<body>
+<div class="nojs-note" id="nojsNote"><p><b>This is only a preview, so SHOP can’t run here.</b></p><p>To use it, open this link in Safari or Chrome: <a href="https://david-i-schwartz.github.io/web-mobile-apps/shopping-list/">https://david-i-schwartz.github.io/web-mobile-apps/shopping-list/</a></p></div>
+<header>
+  <h1 id="appTitle">SHOP: Shopping List</h1>
+  <p id="appTag">A quick shopping list for one phone: add things fast, check them off in the store, and add the usual things back with one tap. Your list stays on this device.</p>
+</header>
+<main class="wrap solo">
+  <div class="controls solo">
+    <p class="warn" id="saveMsg" hidden>This browser isn’t keeping your work between visits.</p>
+    <!-- ==== APP PANELS START ==== -->
+    <section class="group" id="listGroup" aria-labelledby="h-list">
+      <h2 id="h-list">My List <button type="button" class="q" aria-expanded="false" aria-controls="t-list" aria-label="Help: my list">?</button></h2>
+      <div class="sub tip" id="t-list" hidden>
+        <p>Your shopping list. It stays on this phone: nothing is uploaded, and it works with no signal.</p>
+        <ul>
+          <li>Type something and tap <b>Add</b> (or press Enter). Add several at once with commas: <i>milk, eggs, bread</i>.</li>
+          <li>As you type, things you’ve added before show up under the box. Tap one to add it.</li>
+          <li>Tap an item to check it off. It moves to <b>In the Cart</b>. Tap it again to put it back.</li>
+          <li><b>×</b> takes an item off the list. <b>Undo</b> takes back the last change.</li>
+        </ul>
+      </div>
+      <div class="addwrap" id="addWrap">
+        <form class="addbar" id="addForm" autocomplete="off">
+          <input type="text" id="addIn" placeholder="Add an item" aria-label="Item to add" maxlength="300" enterkeyhint="enter" autocapitalize="sentences" spellcheck="true">
+          <button type="submit" class="btn primary big" id="addBtn">Add</button>
+        </form>
+        <div class="chips" id="sugg" role="group" aria-label="Suggestions from Buy Again"></div>
+        <p class="status" id="status"><span id="listMsg"></span><button type="button" class="btn" id="undoBtn" hidden>Undo</button></p>
+      </div>
+      <ul class="items" id="toGet" aria-label="To get"></ul>
+      <p class="sub" id="emptyMsg">Nothing on the list yet. Type something above, or tap a Buy Again item below.</p>
+      <div id="cartBox" hidden>
+        <h3 id="cartHead">In the Cart <span class="sub" id="cartCount"></span></h3>
+        <ul class="items cart" id="inCart" aria-label="In the cart"></ul>
+        <div class="btns"><button type="button" class="btn big" id="clearBtn">Clear checked items</button></div>
+      </div>
+    </section>
+    <section class="group" id="againGroup" aria-labelledby="h-again">
+      <h2 id="h-again">Buy Again <button type="button" class="q" aria-expanded="false" aria-controls="t-again" aria-label="Help: buy again">?</button></h2>
+      <div class="sub tip" id="t-again" hidden>
+        <p>Things you’ve added before, the ones you add most often first. Tap one to put it back on the list. Anything on the list or in the cart isn’t shown here.</p>
+        <p>Typo or something you’ll never buy again? Tap <b>Remove from Buy Again</b>, then tap it.</p>
+      </div>
+      <div class="chips" id="again" role="group" aria-label="Buy Again"></div>
+      <p class="sub" id="againEmpty">Everything you add shows up here afterwards, so next time it’s one tap.</p>
+      <div class="btns" id="againBtns" hidden>
+        <button type="button" class="btn" id="againMore" aria-expanded="false" hidden>Show all</button>
+        <button type="button" class="btn" id="againEdit" aria-pressed="false">Remove from Buy Again</button>
+      </div>
+    </section>
+    <section class="group" aria-labelledby="h-opt">
+      <h2 id="h-opt">Options</h2>
+      <div class="checks"><label><input type="checkbox" data-k="shop.awake"> Keep the screen on while the list is open</label></div>
+      <p class="sub" id="awakeMsg" aria-live="polite"></p>
+    </section>
+<!-- ==== APP PANELS END ==== -->    <section class="group" id="learn">
+      <h2>Learn the Ideas</h2>
+      <ul class="sub" id="learnList"></ul>
+    </section>
+    <details class="group" id="homeBox">
+      <summary>On Your Phone</summary>
+      <div class="sub" id="homeHow"></div>
+    </details>
+    <details class="group">
+      <summary>About This Version <span class="sub" id="aboutWhen"></span></summary>
+      <ul class="sub" id="aboutList"></ul>
+    </details>
+    <details class="group">
+      <summary>Credits</summary>
+      <ul class="sub" id="creditList"></ul>
+    </details>
+  </div>
+</main>
+<p class="foot">SHOP 1.0, made with HTML App Generator 1.5. One file, no server: everything stays in this browser.</p>
+<div id="sr" class="sr" aria-live="polite"></div>
+<script>
+/* SHOP: Shopping List 1.0. Made with HTML App Generator 1.5 (core 1.3).
+   The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
+(()=>{
+'use strict';
+const HAS={"board":false,"picture":false,"edit":false,"progress":false,"project":false,"export":false};
+/* ---------- base: helpers, storage, settings, controls and files. Every app has this part. ---------- */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const plural=(n,one,many)=>n.toLocaleString()+' '+(n===1?one:(many||one+'s'));
+const txt=(id,t)=>{const e=$(id);if(e&&e.textContent!==t)e.textContent=t};
+const signed=v=>v>0?'+'+v:v<0?'−'+(-v):'0';
+const hashStr=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return(h>>>0).toString(36)};
+
+/* The app spec: name, version, colours, sizes and words, written by the generator. The page reads it at start-up. */
+const SPEC=JSON.parse($('app-spec').textContent);
+const VERSION=SPEC.version,KEY=SPEC.key;
+
+/* ---------- storage: localStorage when it works, memory when it doesn't ---------- */
+const mem={},unsaved=new Set();
+const store={
+  get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
+  set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok},
+  del(k){delete mem[k];unsaved.delete(k);try{localStorage.removeItem(k)}catch(e){}}
+};
+/* An app that was renamed moves what this browser saved under its old names (SPEC.oldKeys). */
+try{for(const ok of SPEC.oldKeys||[]){const old=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(ok))old.push(k)}
+  for(const k of old){const n=KEY+k.slice(ok.length);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}
+
+/* ---------- hooks: the app's own code (APP CODE) can set any of these ---------- */
+const APP={
+  unit:{one:SPEC.unit.one,many:SPEC.unit.many},
+  palette:SPEC.palette.map((c,i)=>({name:c.name,hex:c.hex.toUpperCase(),code:c.code||'',i})),
+  describe:null,     /* (x, y, colourIndex) => {name, where}: what the readout says about a tapped cell */
+  cellSvg:null,      /* (cell) => SVG markup for one cell; cell has i, x, y, cx, cy, c, hex */
+  cellPaint:null,    /* (g, cell, u) => draws one cell on a canvas for Save picture; u is pixels per cell */
+  lists:[],          /* more lists under Export: {id, label, ext, make: () => text} */
+  onPattern:null,    /* (pattern) => after every rebuild */
+  onSync:null,       /* () => keep the app's own controls in step with the settings */
+  onRefresh:null,    /* () => after every redraw of the cell states */
+  projectOut:null,   /* () => extra data to keep in project files */
+  projectIn:null,    /* (data) => read that data back (tidy it first: files can be old or hand-made) */
+  onStart:null       /* () => once, when the page has loaded */
+};
+const PAL_BY=new Map(APP.palette.map(c=>[c.name,c]));
+const units=n=>plural(n,APP.unit.one,APP.unit.many);   /* "3 beads", "1 bead" */
+const HOOK={load:[],start:[],sync:[],refresh:[],compose:[],after:[],resize:[]};
+
+/* ---------- settings: defaults, allowed choices and number limits, gathered from each part and from the app ---------- */
+const DEF={tap:'inspect',ui:{}},CHOICES={tap:['inspect']},LIMITS={},TIDY=[];
+function addSettings(def,choices,limits,tidyFn){
+  (function deep(d,s){for(const k in s){if(s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k])){if(!d[k]||typeof d[k]!=='object')d[k]={};deep(d[k],s[k])}else d[k]=s[k]}})(DEF,def||{});
+  for(const k in choices||{})CHOICES[k]=[...new Set([...(CHOICES[k]||[]),...choices[k]])];
+  Object.assign(LIMITS,limits||{});if(tidyFn)TIDY.push(tidyFn);
+}
+const getIn=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const setIn=(o,p,v)=>{const ks=p.split('.'),l=ks.pop();ks.reduce((a,k)=>a[k],o)[l]=v};
+function merge(d,s){
+  if(d===null)return null;   /* null defaults are read back by that part's own tidy step */
+  if(Array.isArray(d))return Array.isArray(s)?s.slice(0,500):d.slice();
+  if(typeof d==='object'){const o={};for(const k in d)o[k]=merge(d[k],s&&typeof s==='object'&&!Array.isArray(s)?s[k]:undefined);return o}
+  return typeof s===typeof d&&(typeof s!=='number'||Number.isFinite(s))?s:d;
+}
+/* tidy: anything read from storage or a file becomes valid settings */
+function tidy(s){
+  if(!s||typeof s!=='object')s={};
+  const o=merge(DEF,s);
+  for(const p in CHOICES)if(!CHOICES[p].includes(getIn(o,p)))setIn(o,p,getIn(DEF,p));
+  for(const p in LIMITS){const[a,b,f]=LIMITS[p],v=Number(getIn(o,p)),d=getIn(DEF,p);setIn(o,p,clamp(Number.isFinite(v)?(f?v:Math.round(v)):d,a,b))}
+  const ui={};if(s.ui&&typeof s.ui==='object')for(const k in s.ui)if(/^\w{1,30}$/.test(k))ui[k]=!!s.ui[k];o.ui=ui;
+  for(const f of TIDY)f(o,s);
+  return o;
+}
+let st=null;
+const saveSettings=()=>store.set(KEY+'settings',st);
+
+/* one-off messages for screen readers */
+function say(t){const e=$('sr');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=t},60)}
+
+/* ---------- controls ----------
+   .seg buttons with data-k (a setting path) and data-v (its value), checkboxes with data-k, and sliders set up with slider().
+   watch(test, fn) says what happens after a setting changes; anything unclaimed rebuilds. */
+const WATCH=[];
+function watch(test,fn){WATCH.push([test,fn])}
+function changed(k){for(const[t,f]of WATCH)if(typeof t==='function'?t(k):t.test(k)){f(k);return}rebuild()}
+function asValue(k,v){const d=getIn(DEF,k);return typeof d==='number'?Number(v):typeof d==='boolean'?v==='true':v}
+document.querySelectorAll('.seg button[data-k]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.k;setIn(st,k,asValue(k,b.dataset.v));changed(k)}));
+document.querySelectorAll('input[type=checkbox][data-k]').forEach(c=>c.addEventListener('change',()=>{setIn(st,c.dataset.k,c.checked);changed(c.dataset.k)}));
+const OUT={},FMT={};
+function readout(id,v){const t=(FMT[id]||String)(v),o=$(OUT[id]||id+'Out');if(o&&o.textContent!==t)o.textContent=t;const e=$(id);if(e)e.setAttribute('aria-valuetext',t)}
+function put(id,v){const e=$(id);if(!e)return;e.value=v;readout(id,v)}
+/* fmt: value to text; commit: once when the drag ends; live: on every step of the drag */
+function slider(id,fmt,commit,live){FMT[id]=fmt;const e=$(id);if(!e)return;e.addEventListener('input',()=>{if(live)live(+e.value);readout(id,+e.value)});e.addEventListener('change',()=>commit(+e.value))}
+/* a slider tied straight to a setting */
+function bindSlider(id,key,fmt){slider(id,fmt||String,v=>{setIn(st,key,v);changed(key)});HOOK.sync.push(()=>put(id,getIn(st,key)))}
+function fillBox(id,html){const b=$(id);if(b&&b.dataset.h!==html){b.innerHTML=html;b.dataset.h=html}}
+/* a button that needs a second tap within 3 seconds, for things that can't be undone */
+function twoTap(id,again,fn){const b=$(id);if(!b)return;const label=b.textContent;let armed=0;
+  b.addEventListener('click',()=>{if(!armed){b.textContent=again;armed=setTimeout(()=>{armed=0;b.textContent=label},3000);return}
+    clearTimeout(armed);armed=0;b.textContent=label;fn()})}
+
+/* the three steps every change goes through: rebuild (remake what's shown), sync (controls), refresh (cell states) */
+let rebuild=()=>{saveSettings();sync();refresh()};
+function sync(){
+  document.querySelectorAll('.seg button[data-k]').forEach(b=>b.setAttribute('aria-pressed',String(String(getIn(st,b.dataset.k))===b.dataset.v)));
+  document.querySelectorAll('input[type=checkbox][data-k]').forEach(c=>{c.checked=!!getIn(st,c.dataset.k)});
+  for(const f of HOOK.sync)f();
+  if(APP.onSync)APP.onSync();
+}
+function refresh(){for(const f of HOOK.refresh)f();if(APP.onRefresh)APP.onRefresh()}
+
+/* ---------- files ---------- */
+/* hand a file to the person: through the host's save box where there is one, otherwise as an ordinary download. True if it went. */
+async function saveFile(name,blob,msg){
+  let dl=null;
+  try{if(window.claude&&typeof window.claude.use==='function')dl=await window.claude.use('downloads')}catch(e){}
+  if(dl){
+    try{await dl.save({filename:name,data:blob});msg.textContent='Saved '+name+'.';return true}
+    catch(e){msg.textContent=e&&e.code==='declined'?'Save cancelled.':'Saving isn’t available here. Open the page in your browser instead.';return false}
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);msg.textContent='Downloaded '+name+'.';return true;
+}
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+const fileBase=()=>{const n=$('projName');return slug(n&&n.value.trim()||'')||slug(SPEC.code+' '+SPEC.unit.one+'s')||'app'};
+/* a CSV cell: quoted when needed, and never read as a formula by a spreadsheet */
+const csv=v=>{let s=String(v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+
+/* ---------- the parts of the page written from the spec: header, Learn the ideas, About, Credits ---------- */
+function specText(){
+  document.title=SPEC.code+': '+SPEC.name;txt('appTitle',SPEC.code+': '+SPEC.name);txt('appTag',SPEC.tagline);
+  const L=$('learnList');if(L)L.innerHTML=(SPEC.learn||[]).map(t=>`<li><b>${esc(t.topic)}</b>: `+t.links.map(l=>
+    `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.title)}</a>`+(l.source?` (${esc(l.source)})`:'')).join(', ')+'.</li>').join('');
+  const lg=$('learn');if(lg)lg.hidden=!(SPEC.learn||[]).length;
+  txt('aboutWhen',SPEC.version+' · '+SPEC.date);
+  const A=$('aboutList');if(A)A.innerHTML=(SPEC.changes||[]).map(c=>`<li>${esc(c)}</li>`).join('');
+  const C=$('creditList');if(C)C.innerHTML=(SPEC.credits||[]).concat(CREDITS).map(c=>`<li>${esc(c)}</li>`).join('');
+}
+const CREDITS=[];   /* each part adds the credits it needs */
+
+/* ---------- start-up ---------- */
+function start(){
+  st=tidy(store.get(KEY+'settings'));
+  for(const f of HOOK.load)f();
+  specText();
+  /* a help tip can have more than one ? button: they open and close it together */
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden;t.hidden=!open;
+    document.querySelectorAll('.q[aria-controls="'+id+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
+  document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
+    d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
+  for(const f of HOOK.start)f();
+  if(APP.onStart)APP.onStart();
+  rebuild();
+  homeHint({code:SPEC.code,name:SPEC.name,url:SPEC.homeUrl||'',key:KEY,mount:$('homeHow')});
+}
+
+/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
+   Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
+   Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the
+   buttons. On a phone it shows once as a card at the bottom until it's dismissed; the steps also go in `mount` if given.
+   Self-contained, so it can also be added to apps the generator didn't make (FIG, BIG): homeHint({code, name, url, key, mount}). */
+function homeHint(cfg){
+  const d=document,ua=navigator.userAgent||'',code=String(cfg.code||'this app'),name=String(cfg.name||code);
+  const e=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),ios=ipad||/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+  let standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches}catch(x){}
+  let framed=false;try{framed=window.self!==window.top}catch(x){framed=true}
+  const web=/^https?:$/.test(location.protocol);
+  const inApp=/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|Pinterest|; wv\)/.test(ua)||(ios&&!/Safari\//.test(ua));
+  const iosOther=/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const where=standalone?'installed':!web?'file':framed?'framed':ios?(inApp?'ios-app':'ios'):android?(inApp?'android-app':'android'):'computer';
+  const url=cfg.url||(web&&!framed?location.href.split('#')[0]:'');
+  const key=(cfg.key||code.toLowerCase()+':')+'homeHint';
+  /* pictures of the buttons to tap (drawn here, not taken from any system) */
+  const svg=p=>`<span class="hh-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
+  const I={share:svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:svg('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+    plus:svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:svg('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
+    compass:svg('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>')};
+  let prompt=null;
+  function steps(){
+    if(where==='ios')return{lead:'It opens like an app, with its own icon.',list:[
+      `Tap ${I.share} <b>Share</b>${iosOther?' (in the address bar or the '+I.dots+' menu)':ipad?' (top right)':''}.`+(iosOther?'':` No Share button? Tap ${I.dots} first.`),
+      `Tap ${I.plus} <b>Add to Home Screen</b>.`,'Tap <b>Add</b>.'],note:'Best done before you start: the Home Screen app keeps its own copy of your work.'};
+    if(where==='ios-app')return{lead:'This page is open inside another app, which can’t add it to your Home Screen.',list:[
+      `Tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b>. (Or copy the link and paste it into Safari.)`,
+      `In Safari, tap ${I.share} <b>Share</b>, then ${I.plus} <b>Add to Home Screen</b>.`],copy:true};
+    if(where==='android')return{lead:'It opens like an app, with its own icon.',list:prompt?[`Tap <b>Install ${e(code)}</b> below.`]:[
+      `Tap ${I.kebab} (top right).`,'Tap <b>Add to Home screen</b> or <b>Install app</b>.','Tap <b>Install</b> or <b>Add</b>.']};
+    if(where==='android-app')return{lead:'This page is open inside another app, which can’t add it to your Home screen.',list:[
+      `Tap ${I.kebab} and choose <b>Open in Chrome</b> (or your browser).`,`Then tap ${I.kebab} again and <b>Add to Home screen</b>.`],copy:true};
+    if(where==='installed')return{lead:`${e(code)} is on your Home Screen. Open it from there any time.`,list:[]};
+    if(where==='file')return{lead:`You opened ${e(code)} as a file. It works here, but a phone can’t run a file like this.`+
+      (url?` On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a> instead and follow the steps it shows.`:' To use it on a phone, it needs a web address.'),list:[],copy:!!url};
+    return{lead:url?`On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a>, and it shows the two or three taps that put ${e(code)} on the Home Screen. On a computer, bookmark it.`:
+      `To put ${e(code)} on a phone, open its web address there.`,list:[],copy:!!url};
+  }
+  function html(withTitle){
+    const s=steps();
+    return(withTitle?`<div class="hh-t"><span>Put ${e(code)} on your Home Screen</span><button type="button" class="hh-x" aria-label="Close">×</button></div>`:'')+
+      `<p class="hh-lead">${s.lead}</p>`+(s.list.length?`<ol class="hh-steps">${s.list.map(l=>`<li>${l}</li>`).join('')}</ol>`:'')+(s.note?`<p class="hh-note">${s.note}</p>`:'')+
+      `<div class="hh-btns">${prompt?`<button type="button" class="hh-b hh-go" data-hh="install">Install ${e(code)}</button>`:''}${s.copy&&url?'<button type="button" class="hh-b" data-hh="copy">Copy link</button>':''}${withTitle?'<button type="button" class="hh-b" data-hh="later">Not now</button>':''}<span class="hh-msg" aria-live="polite"></span></div>`;
+  }
+  if(!d.getElementById('hh-style')){const st=d.createElement('style');st.id='hh-style';st.textContent=
+`#hh{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9999;max-width:520px;margin:0 auto;background:var(--panel,#fff);color:var(--ink,#1b1f24);border:1px solid var(--edge,#c3c9d2);border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.28);padding:12px 14px 10px;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+#hh .hh-t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.hh-lead{margin:4px 0}.hh-steps{margin:6px 0;padding-left:1.4em}.hh-steps li{margin:5px 0}
+.hh-i{display:inline-flex;vertical-align:-5px;width:24px;height:24px;align-items:center;justify-content:center;border-radius:7px;background:var(--chip,#e9edf2);color:var(--accent,#0E7C7B);margin:0 1px}.hh-i svg{width:18px;height:18px}
+.hh-note,.hh-msg{color:var(--muted,#5b6470);font-size:13px;margin:4px 0}.hh-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.hh-b{min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--edge,#c3c9d2);background:var(--chip,#e9edf2);color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.hh-go{background:var(--accent,#0E7C7B);color:var(--accent-ink,#fff);border-color:transparent}
+#hh .hh-x{min-width:44px;min-height:44px;border:0;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
+@media (prefers-color-scheme:dark){#hh{background:var(--panel,#1d2229);color:var(--ink,#e8ebef);border-color:var(--edge,#3a424d)}.hh-i,.hh-b{background:var(--chip,#2a313a)}}`;
+    d.head.appendChild(st)}
+  const phone=where==='ios'||where==='ios-app'||where==='android'||where==='android-app';
+  let later=0;try{later=+localStorage.getItem(key)||0}catch(x){}
+  let card=null;
+  function wire(box){box.addEventListener('click',async ev=>{
+    const b=ev.target.closest('[data-hh],.hh-x');if(!b)return;const m=box.querySelector('.hh-msg'),act=b.dataset.hh||'later';
+    if(act==='install'&&prompt){prompt.prompt();try{const r=await prompt.userChoice;if(r&&r.outcome==='accepted')hide()}catch(x){}prompt=null;draw()}
+    else if(act==='copy'){try{await navigator.clipboard.writeText(url);if(m)m.textContent='Link copied.'}catch(x){if(m)m.textContent=url}}
+    else if(act==='later'){try{localStorage.setItem(key,String(Date.now()))}catch(x){}hide()}
+  })}
+  function hide(){if(card){card.remove();card=null}}
+  function draw(){
+    if(cfg.mount){cfg.mount.innerHTML=html(false);if(!cfg.mount.dataset.hh){cfg.mount.dataset.hh='1';wire(cfg.mount)}}
+    if(card)card.innerHTML=html(true);
+  }
+  if(phone&&Date.now()-later>30*864e5){card=d.createElement('div');card.id='hh';card.setAttribute('role','dialog');card.setAttribute('aria-label','Put '+code+' on your Home Screen');d.body.appendChild(card);wire(card)}
+  window.addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();prompt=ev;draw()});
+  window.addEventListener('appinstalled',()=>{hide()});
+  draw();
+  return where;
+}
+
+/* ==== APP CODE START ==== */
+/* SHOP's own code: the list, Buy Again, Undo and the screen-on option.
+   Everything is kept in this browser under shop:list (and the core's shop:settings). Nothing is sent anywhere.
+   Stored as {v:1, items:[{id, t, done, at, doneAt}], hist:[{t, n, last}]}: t is the text, n how many times it was added. */
+addSettings({shop:{awake:false}});
+const DKEY=KEY+'list',MAX_ITEMS=500,MAX_HIST=300,TEXT_MAX=80,AGAIN_SHOW=30,UNDO_MAX=30;
+const clean=s=>String(s==null?'':s).replace(/[\u0000-\u001f\u007f-\u009f]/g,' ').replace(/\s+/g,' ').trim().slice(0,TEXT_MAX).trim();
+const norm=s=>clean(s).toLocaleLowerCase();
+const when=v=>{const n=Math.round(Number(v));return Number.isFinite(n)&&n>0&&n<8.64e15?n:0};
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+let idN=0;
+const newId=()=>(Date.now().toString(36)+(idN++).toString(36)).slice(-12);
+
+/* ---------- data: read and tidied, whatever is in storage (house rule 8) ---------- */
+let D={items:[],hist:new Map()};
+function tidyData(o){
+  const out={items:[],hist:new Map()};
+  if(!o||typeof o!=='object')return out;
+  const seen=new Set(),ids=new Set();
+  for(const it of Array.isArray(o.items)?o.items.slice(0,MAX_ITEMS):[]){
+    if(!it||typeof it!=='object')continue;
+    const t=clean(it.t),k=norm(t);if(!t||seen.has(k))continue;seen.add(k);
+    let id=typeof it.id==='string'&&/^[a-z0-9]{1,16}$/.test(it.id)?it.id:newId();while(ids.has(id))id=newId();ids.add(id);
+    const done=it.done===true;
+    out.items.push({id,t,done,at:when(it.at),doneAt:done?when(it.doneAt):0});
+  }
+  for(const e of Array.isArray(o.hist)?o.hist.slice(0,MAX_HIST*2):[]){
+    if(!e||typeof e!=='object')continue;
+    const t=clean(e.t),k=norm(t);if(!t||out.hist.has(k))continue;
+    const n=Math.round(Number(e.n));
+    out.hist.set(k,{t,n:Number.isFinite(n)?clamp(n,1,9999):1,last:when(e.last)});
+  }
+  trimHist(out.hist);
+  return out;
+}
+const dataOut=()=>({v:1,items:D.items,hist:[...D.hist.values()]});
+const save=()=>store.set(DKEY,dataOut());
+function trimHist(h){
+  if(h.size<=MAX_HIST)return;
+  const drop=[...h.entries()].sort((a,b)=>a[1].n-b[1].n||a[1].last-b[1].last).slice(0,h.size-MAX_HIST);
+  for(const[k]of drop)h.delete(k);
+}
+function bump(t){const k=norm(t),e=D.hist.get(k)||{t,n:0,last:0};e.t=t;e.n=Math.min(9999,e.n+1);e.last=Date.now();D.hist.set(k,e);trimHist(D.hist)}
+function unbump(t){const k=norm(t),e=D.hist.get(k);if(!e)return;e.n--;if(e.n<=0)D.hist.delete(k)}
+const byId=id=>D.items.find(i=>i.id===id);
+const byText=t=>{const k=norm(t);return D.items.find(i=>norm(i.t)===k)};
+
+/* ---------- every change: keep a copy for Undo, change, save, redraw, say what happened ---------- */
+const undoStack=[];
+function act(fn){
+  const before=JSON.stringify(dataOut());
+  const r=fn();if(!r)return;
+  if(r.changed){undoStack.push({data:before,msg:r.msg});if(undoStack.length>UNDO_MAX)undoStack.shift();save()}
+  render();status(r.msg);
+  if(r.flash)flash(r.flash);
+}
+function status(msg){txt('listMsg',msg);say(msg)}
+function undo(){
+  const u=undoStack.pop();if(!u)return;
+  try{D=tidyData(JSON.parse(u.data))}catch(e){return}
+  save();render();status('Undone: '+u.msg.charAt(0).toLowerCase()+u.msg.slice(1));
+  if(!undoStack.length)$('addIn').focus({preventScroll:true});
+}
+
+/* ---------- what the buttons do ---------- */
+function addText(raw){
+  const parts=String(raw||'').split(/[,;\n]+/).map(clean).filter(Boolean);
+  if(!parts.length){status('Type something to add first.');return false}
+  act(()=>{
+    let added=[],back=[],already=[],full=0;
+    for(const t of parts){
+      const it=byText(t);
+      if(it&&!it.done){if(!already.includes(it))already.push(it);continue}
+      if(it){it.done=false;it.doneAt=0;it.at=Date.now();bump(t);back.push(it);continue}
+      if(D.items.length>=MAX_ITEMS){full++;continue}
+      const n={id:newId(),t,done:false,at:Date.now(),doneAt:0};D.items.push(n);bump(t);added.push(n);
+    }
+    const bits=[],one=added.length+back.length+already.length===1;
+    if(added.length)bits.push(one||added.length===1?'Added '+added.map(i=>i.t).join(', ')+'.':'Added '+plural(added.length,'item')+'.');
+    if(back.length)bits.push((back.length===1?'Put '+back[0].t:'Put '+plural(back.length,'item'))+' back on the list.');
+    if(already.length)bits.push(already.length===1?cap(already[0].t)+' is already on the list.':plural(already.length,'item')+' were already on the list.');
+    if(full)bits.push('The list is full ('+MAX_ITEMS+' items), so '+plural(full,'item')+(full===1?' wasn’t':' weren’t')+' added.');
+    return{changed:added.length+back.length>0,msg:bits.join(' '),flash:already.length===1&&!added.length&&!back.length?already[0].id:null};
+  });
+  return true;
+}
+function toggle(id,done){
+  act(()=>{const it=byId(id);if(!it||it.done===done)return null;
+    it.done=done;it.doneAt=done?Date.now():0;
+    return{changed:true,msg:done?'Checked off '+it.t+'.':'Put '+it.t+' back on the list.'}});
+}
+function removeItem(id){
+  act(()=>{const it=byId(id);if(!it)return null;
+    D.items=D.items.filter(i=>i!==it);if(!it.done)unbump(it.t);
+    return{changed:true,msg:'Took '+it.t+' off the list.'}});
+}
+function clearChecked(){
+  act(()=>{const n=D.items.filter(i=>i.done).length;if(!n)return null;
+    D.items=D.items.filter(i=>!i.done);
+    return{changed:true,msg:'Cleared '+plural(n,'checked item')+'.'}});
+}
+function histRemove(k){
+  act(()=>{const e=D.hist.get(k);if(!e)return null;D.hist.delete(k);
+    return{changed:true,msg:'Removed '+e.t+' from Buy Again.'}});
+}
+
+/* ---------- drawing ---------- */
+let editing=false,showAll=false;
+const row=i=>`<li data-id="${i.id}"><label class="item" for="c-${i.id}"><input type="checkbox" id="c-${i.id}"${i.done?' checked':''}><span class="t">${esc(i.t)}</span></label>`+
+  `<button type="button" class="x" data-x="${i.id}" aria-label="Take ${esc(i.t)} off the list">×</button></li>`;
+/* Buy Again leaves out anything on the list or in the cart: it comes back once the cart is cleared */
+const onList=()=>new Set(D.items.map(i=>norm(i.t)));
+const againList=()=>{const on=onList();return[...D.hist.entries()].filter(([k])=>!on.has(k)).sort((a,b)=>b[1].n-a[1].n||b[1].last-a[1].last)};
+const chip=(k,e,rm)=>`<button type="button" class="chip${rm?' rm':''}" data-h="${esc(k)}" aria-label="${rm?'Remove '+esc(e.t)+' from Buy Again':'Add '+esc(e.t)}"><span class="pl" aria-hidden="true">${rm?'×':'+'}</span><span class="ct">${esc(e.t)}</span></button>`;
+function render(){
+  const a=document.activeElement,focusId=a&&a.id&&/^c-/.test(a.id)?a.id:null;
+  const get=D.items.filter(i=>!i.done).sort((x,y)=>y.at-x.at),cart=D.items.filter(i=>i.done).sort((x,y)=>y.doneAt-x.doneAt);
+  $('toGet').innerHTML=get.map(row).join('');
+  $('inCart').innerHTML=cart.map(row).join('');
+  const em=$('emptyMsg');em.hidden=get.length>0;
+  em.textContent=cart.length?'Everything is in the cart.':'Nothing on the list yet. Type something above, or tap a Buy Again item below.';
+  $('cartBox').hidden=!cart.length;txt('cartCount','('+cart.length.toLocaleString()+')');
+  txt('clearBtn',cart.length===1?'Clear the checked item':'Clear '+cart.length.toLocaleString()+' checked items');
+  $('undoBtn').hidden=!undoStack.length;
+  renderAgain();renderSugg();
+  if(focusId&&$(focusId))$(focusId).focus({preventScroll:true});
+}
+function renderAgain(){
+  const L=againList();if(!L.length)editing=false;
+  const show=showAll?L:L.slice(0,AGAIN_SHOW);
+  $('again').innerHTML=show.map(([k,e])=>chip(k,e,editing)).join('');
+  const em=$('againEmpty');em.hidden=L.length>0;
+  em.textContent=D.hist.size?'Everything in Buy Again is on the list or in the cart.':'Everything you add shows up here afterwards, so next time it’s one tap.';
+  $('againBtns').hidden=!L.length;
+  const more=$('againMore');more.hidden=L.length<=AGAIN_SHOW;txt('againMore',showAll?'Show fewer':'Show all ('+L.length.toLocaleString()+')');more.setAttribute('aria-expanded',String(showAll));
+  const ed=$('againEdit');ed.setAttribute('aria-pressed',String(editing));txt('againEdit',editing?'Done removing':'Remove from Buy Again');
+}
+/* suggestions under the box: Buy Again items that match what's being typed (after the last comma) */
+function renderSugg(){
+  const v=$('addIn').value,q=norm(v.split(/[,;]/).pop());let L=[];
+  if(q){const all=againList();L=all.filter(([k])=>k.startsWith(q)).concat(all.filter(([k])=>!k.startsWith(q)&&k.includes(q))).slice(0,6)}
+  $('sugg').innerHTML=L.map(([k,e])=>chip(k,e,false)).join('');
+}
+function flash(id){
+  const li=document.querySelector('#toGet li[data-id="'+id+'"]');if(!li)return;
+  const it=li.querySelector('.item');it.classList.remove('flash');void it.offsetWidth;it.classList.add('flash');
+  li.scrollIntoView({block:'nearest'});setTimeout(()=>it.classList.remove('flash'),1300);
+}
+
+/* ---------- controls ---------- */
+const addIn=$('addIn');
+$('addForm').addEventListener('submit',e=>{e.preventDefault();if(addText(addIn.value))addIn.value='';renderSugg()});
+addIn.addEventListener('input',renderSugg);
+for(const id of['toGet','inCart']){
+  $(id).addEventListener('change',e=>{const c=e.target;if(c&&c.type==='checkbox'&&/^c-/.test(c.id))toggle(c.id.slice(2),c.checked)});
+  $(id).addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(!b)return;
+    const li=b.closest('li'),next=li&&(li.nextElementSibling||li.previousElementSibling),nid=next&&next.dataset.id;
+    removeItem(b.dataset.x);
+    const f=nid&&$('c-'+nid);(f||addIn).focus({preventScroll:true});
+  });
+}
+$('clearBtn').addEventListener('click',()=>{clearChecked();addIn.focus({preventScroll:true})});
+$('undoBtn').addEventListener('click',undo);
+/* tapping a suggestion keeps the keyboard up: the box doesn't lose focus */
+const sg=$('sugg');
+for(const ev of['pointerdown','mousedown'])sg.addEventListener(ev,e=>{if(e.target.closest('.chip'))e.preventDefault()});
+sg.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const h=D.hist.get(b.dataset.h);if(!h)return;
+  const segs=addIn.value.split(/[,;]/);segs.pop();
+  addText(h.t);addIn.value=segs.length?segs.join(',').trim()+', ':'';renderSugg();addIn.focus({preventScroll:true});
+});
+$('again').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const k=b.dataset.h,h=D.hist.get(k);if(!h)return;
+  const chips=[...$('again').querySelectorAll('.chip')],idx=chips.indexOf(b);
+  if(editing)histRemove(k);else addText(h.t);
+  const now=[...$('again').querySelectorAll('.chip')],f=now[idx]||now[idx-1]||$('againEdit');
+  if(f&&!f.closest('[hidden]'))f.focus({preventScroll:true});
+});
+$('againEdit').addEventListener('click',()=>{editing=!editing;renderAgain();say(editing?'Tap an item to remove it from Buy Again.':'Done removing.')});
+$('againMore').addEventListener('click',()=>{showAll=!showAll;renderAgain()});
+/* the add bar gets a shadow once it's stuck to the top of the screen */
+const sentinel=document.createElement('div');sentinel.setAttribute('aria-hidden','true');$('addWrap').before(sentinel);
+const stuck=()=>$('addWrap').classList.toggle('stuck',sentinel.getBoundingClientRect().top<0);
+addEventListener('scroll',stuck,{passive:true});
+
+/* ---------- keep the screen on (Screen Wake Lock), only while the setting is on and SHOP is showing ---------- */
+let lock=null;
+async function wake(){
+  if(!st.shop.awake){if(lock){const l=lock;lock=null;try{await l.release()}catch(e){}}txt('awakeMsg','');return}
+  if(!('wakeLock' in navigator)){txt('awakeMsg','This browser can’t keep the screen on. Your phone’s display settings can make it stay on longer.');return}
+  if(document.visibilityState!=='visible')return;
+  try{if(!lock||lock.released)lock=await navigator.wakeLock.request('screen');txt('awakeMsg','The screen stays on while SHOP is open.')}
+  catch(e){lock=null;txt('awakeMsg','The phone won’t keep the screen on right now (battery saver can stop it). It tries again next time you open SHOP.')}
+}
+watch(k=>k==='shop.awake',()=>{saveSettings();sync();wake()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&st&&st.shop.awake)wake()});
+
+/* another window (Chrome and the Home Screen app share the list on Android) changed the list: show the new one */
+addEventListener('storage',e=>{if(e.key!==DKEY)return;let o=null;try{o=JSON.parse(e.newValue)}catch(x){}
+  D=tidyData(o);undoStack.length=0;render();status('The list was changed in another window.')});
+
+/* ask the browser to keep the list even when the phone is short of space (Home Screen app only; Chrome decides without asking) */
+function keepStorage(){
+  try{const home=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+    if(home&&navigator.storage&&navigator.storage.persist)navigator.storage.persisted().then(p=>p||navigator.storage.persist()).catch(()=>{})}catch(e){}
+}
+
+APP.onStart=()=>{D=tidyData(store.get(DKEY));render();wake();keepStorage()};
+/* ==== APP CODE END ==== */
+
+start();
+})();
+</script>
+</body>
+</html>

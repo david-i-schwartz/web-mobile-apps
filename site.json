@@ -28,6 +28,10 @@
     {
       "name": "Administration",
       "blurb": "Planning tools for running an academic department."
+    },
+    {
+      "name": "Home",
+      "blurb": "Everyday tools for around the house."
     }
   ],
   "apps": [
@@ -170,6 +174,12 @@
       "file": "src/jam.html",
       "folder": "jam",
       "section": "Music"
+    },
+    {
+      "file": "src/shopping-list.html",
+      "folder": "shopping-list",
+      "code": "SHOP",
+      "section": "Home"
     }
   ],
   "readme": [
