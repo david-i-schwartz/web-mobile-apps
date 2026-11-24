@@ -219,12 +219,46 @@ details.mini .q{margin-left:4px}
 .strow{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px}
 .strow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .strow .btns{margin-top:6px}
+/* ---- 1.6 print and build ---- */
+.group>details>summary{min-height:44px;padding:7px 0}
+input[type=number]{width:100%;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:44px}
+input[type=number]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#sizeOut{margin:8px 0 0;font-size:15px}
+#prPrev{display:grid;gap:10px;margin-top:10px}
+#prPrev .sheet{background:#FFF;border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#prPrev svg{display:block;width:100%;height:auto}
+#cntList{max-height:420px;overflow-y:auto;margin-top:6px}
+.cgrp{border-top:1px solid var(--line);padding:8px 0}
+.cgrp:first-child{border-top:0}
+.cchips{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:4px;font-size:14px}
+.cchip{display:inline-flex;align-items:center;gap:6px}
+.dot.mk{display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.dot.mk svg{display:block;width:100%;height:100%}
+#legend .dot.mk{width:22px;height:22px}
+#shopList h4{font-size:15px;margin:12px 0 2px}
+#shopList .otab tfoot td{font-weight:700;border-bottom:0}
+.buy{display:inline-block;padding:10px 6px;margin:-10px 0;color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.shopTot{margin:10px 0 0}
+#board .gd,#board .mk{pointer-events:none}
+#board .gdl{fill:var(--muted);font-size:.42px;font-weight:700}
+#board .gdx{fill:none;stroke:var(--accent);stroke-width:.08;opacity:.85}
+#board .gdxl{fill:var(--accent);font-size:.46px;font-weight:800}
+#printOut{display:none}
+@media print{
+  body.printing{background:#FFF!important;margin:0;padding:0}
+  body.printing>*:not(#printOut){display:none!important}
+  body.printing>#printOut{display:block!important}
+  #printOut .sheet{break-after:page;page-break-after:always}
+  #printOut .sheet:last-child{break-after:auto;page-break-after:auto}
+  #printOut svg{display:block}
+  #printOut,#printOut *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>FIG: Fusebead Image Generator</h1>
-  <p>Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand, design one on an empty board, and keep several patterns.</p>
+  <p>Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand, design one on an empty board, keep several patterns, and print a chart for each board, at true size if you like.</p>
   <p id="saveMsg" class="warn" role="status" hidden>This browser can’t save right now (its storage is full or switched off). You can keep working, but changes made from now on won’t be remembered after you close the page.</p>
 </header>
 <main class="wrap">
@@ -268,6 +302,8 @@ details.mini .q{margin-left:4px}
         <li><b>Compare</b>, under the board, slides your picture over the pattern from the left, so you can check the match. It only changes the view.</li>
         <li><b>Trace</b> shows your picture faintly over the whole board, so you can place beads over it by hand. It only changes the view.</li>
         <li><b>Tiled view</b> shows nine copies of the pattern edge to edge, so you can see whether its edges meet. It only changes the view.</li>
+        <li><b>Row and column guides</b> number the lines of pegs along the board’s edges and draw a line through the bead you tap, so you can count to it. It only changes the view.</li>
+        <li><b>Bead marks</b> put a letter or symbol on every bead, the same ones as on the printed pages, so similar colours are easy to tell apart. It only changes the view.</li>
       </ul>
         </div>
     <div id="editBar" hidden>
@@ -335,7 +371,7 @@ details.mini .q{margin-left:4px}
     </div>
     <div class="row" id="cmpRow" hidden><label for="cmp">Compare</label><input type="range" id="cmp" min="0" max="100" step="5" value="0"><output id="cmpOut"></output></div>
     <div class="row" id="trRow" hidden><label for="trace">Trace</label><input type="range" id="trace" min="0" max="80" step="10" value="0"><output id="traceOut"></output></div>
-    <div class="checks" id="viewChecks" hidden><label><input type="checkbox" id="tileCk"> Tiled view</label></div>
+    <div class="checks" id="viewChecks" hidden><label><input type="checkbox" id="tileCk"> Tiled view</label><label><input type="checkbox" id="guideCk"> Row and column guides</label><label><input type="checkbox" id="markCk"> Bead marks</label></div>
     <div id="tileBox" hidden>
       <canvas id="tileCv" width="600" height="300" role="img" aria-label="Nine copies of the pattern, edge to edge"></canvas>
       <p class="sub" id="tileMsg" aria-live="polite"></p>
@@ -749,7 +785,12 @@ details.mini .q{margin-left:4px}
         </details>
         <details class="mini" id="orderBox" hidden>
           <summary>Shopping List <span id="orderSum"></span></summary>
+          <div class="seg" role="group" aria-label="Shopping list layout">
+            <button type="button" data-k="pr.shop" data-v="list">All colours</button>
+            <button type="button" data-k="pr.shop" data-v="shop">By shop</button>
+          </div>
           <div id="orderList"></div>
+          <div id="shopList" hidden></div>
         </details>
         </div>
       </div>
@@ -785,6 +826,79 @@ details.mini .q{margin-left:4px}
     </div>
 
     <div class="group">
+      <details id="printBox">
+        <summary>Print and Build</summary>
+        <p class="sub">Pages to build from: one for each board, at true size if you like, with a mark on every bead. <button type="button" class="q" aria-expanded="false" aria-controls="t-print" aria-label="Help: print and build">?</button></p>
+        <div class="sub tip" id="t-print" hidden>
+          <h4>Pages</h4>
+          <ul>
+            <li><b>Print</b> opens your browser’s print box with a page for each board and its colour key. Choose Save as PDF there to keep a copy or to send it to a print shop.</li>
+            <li><b>Fit to page</b> draws each board as big as the page allows. <b>Exact size</b> draws the pegs at their true spacing, so you can slide the page under a clear pegboard. Print it at 100% (Actual size) and measure the check bar: it should be 100 mm.</li>
+            <li>At exact size, a board too big for the paper is split into parts, with the row and column numbers along every cut edge.</li>
+            <li><b>Letters</b> or <b>Symbols</b> put a mark on every bead, listed in the colour key. <b>Black and white</b> prints the marks without colour, which saves ink.</li>
+            <li><b>Mirror</b> flips the chart left to right, for building face down or building the back of a piece. The numbers stay readable.</li>
+            <li><b>Save pages as a file</b> keeps the pages as a web page you can open and print later, for example on a phone or tablet that won’t print from here.</li>
+          </ul>
+          <h4>Peg Spacing and Size</h4>
+          <ul>
+            <li>Peg spacing is the distance from the centre of one peg to the centre of the next. Midi boards are usually 5 mm apart and mini boards 2.6 mm.</li>
+            <li>To measure your own board, measure from the first peg’s centre to the 11th in a straight line, divide by 10, choose <b>My board</b> and type it in. Square, hex and iso boards each keep their own spacing.</li>
+            <li>The finished size is the pegs times the spacing, before ironing. Ironed pieces come out a little smaller.</li>
+          </ul>
+          <h4>Counts and Shopping</h4>
+          <ul>
+            <li><b>Counts</b> lists the beads of each colour on each board or in each chunk, so you can sort out one board’s beads at a time. Export has them as CSV too.</li>
+            <li><b>By shop</b>, in the Shopping List, groups what to buy by the Shop column of your bead sheet and adds up its Price column, taken as the price of one bag of 1,000. A Link column gives each colour a Buy link.</li>
+          </ul>
+          <h4>Learn More</h4>
+          <ul>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/length" target="_blank" rel="noopener noreferrer">CSS length units</a>, MDN: how a web page sets true sizes in millimetres and inches, and why printing at 100% matters.</li>
+            <li><a href="https://en.wikipedia.org/wiki/Reflection_(mathematics)" target="_blank" rel="noopener noreferrer">Reflection (mathematics)</a>, Wikipedia: the mirror behind the mirrored chart.</li>
+          </ul>
+        </div>
+        <h3>Peg Spacing</h3>
+        <div class="seg" id="pegSeg" role="group" aria-label="Peg spacing">
+          <button type="button" data-k="pr.peg.square" data-v="midi">Midi 5 mm</button>
+          <button type="button" data-k="pr.peg.square" data-v="mini">Mini 2.6 mm</button>
+          <button type="button" data-k="pr.peg.square" data-v="own">My board</button>
+        </div>
+        <div class="row" id="mmRow" hidden><label for="pegMm">Measured</label><input type="number" id="pegMm" min="1" max="30" step="0.01" inputmode="decimal" aria-describedby="pegNote"><span>mm</span></div>
+        <p class="sub" id="pegNote"></p>
+        <p id="sizeOut"></p>
+        <h3>Pages</h3>
+        <div class="seg" role="group" aria-label="Paper">
+          <button type="button" data-k="pr.paper" data-v="letter">Letter</button>
+          <button type="button" data-k="pr.paper" data-v="a4">A4</button>
+        </div>
+        <div class="seg" role="group" aria-label="Scale">
+          <button type="button" data-k="pr.scale" data-v="fit">Fit to page</button>
+          <button type="button" data-k="pr.scale" data-v="exact">Exact size</button>
+        </div>
+        <div class="seg" role="group" aria-label="Marks on the beads">
+          <button type="button" data-k="pr.mark" data-v="none">No marks</button>
+          <button type="button" data-k="pr.mark" data-v="letters">Letters</button>
+          <button type="button" data-k="pr.mark" data-v="symbols">Symbols</button>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" id="prBw"> Black and white</label>
+          <label><input type="checkbox" id="prMirror"> Mirror for building face down</label>
+          <label><input type="checkbox" id="prGuides"> Row and column numbers</label>
+          <label><input type="checkbox" id="prCover"> Cover page with totals</label>
+        </div>
+        <p class="sub" id="prInfo" aria-live="polite"></p>
+        <div class="btns"><button type="button" class="btn primary" id="prPrint">Print</button><button type="button" class="btn" id="prSave">Save pages as a file</button></div>
+        <p class="sub" id="prMsg" aria-live="polite"></p>
+        <div id="prPrev" role="group" aria-label="The first pages"></div>
+        <h3>Counts</h3>
+        <div class="seg" role="group" aria-label="Count beads by">
+          <button type="button" data-k="pr.count" data-v="board">Per board</button>
+          <button type="button" data-k="pr.count" data-v="chunk">Per chunk</button>
+        </div>
+        <div id="cntList"></div>
+      </details>
+    </div>
+
+    <div class="group">
       <details id="projBox">
         <summary>Save and Open</summary>
         <h3>Pattern Name</h3>
@@ -815,6 +929,9 @@ details.mini .q{margin-left:4px}
             <option value="beads">Bead list (CSV)</option>
             <option value="counts">Colour counts (CSV)</option>
             <option value="order">Shopping list (CSV)</option>
+            <option value="shop">Shopping list by shop (CSV)</option>
+            <option value="bycount">Counts per board (CSV)</option>
+            <option value="chunkcount">Counts per chunk (CSV)</option>
           </select>
         </div>
         <h3>Images <button type="button" class="q" aria-expanded="false" aria-controls="t-png" aria-label="Help: images">?</button></h3>
@@ -842,20 +959,22 @@ details.mini .q{margin-left:4px}
           <li><b>Filling and connected patches</b>: <a href="https://en.wikipedia.org/wiki/Flood_fill" target="_blank" rel="noopener noreferrer">Flood fill</a> (Wikipedia).</li>
           <li><b>Drawing lines on a grid</b>: <a href="https://www.redblobgames.com/grids/line-drawing/" target="_blank" rel="noopener noreferrer">Line drawing on a grid</a> (Red Blob Games), <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm" target="_blank" rel="noopener noreferrer">Bresenham’s line algorithm</a> and the <a href="https://en.wikipedia.org/wiki/Midpoint_circle_algorithm" target="_blank" rel="noopener noreferrer">midpoint circle algorithm</a> (Wikipedia). FIG’s Line and Ring tools use these ideas.</li>
           <li><b>Symmetry and tiling</b>: <a href="https://en.wikipedia.org/wiki/Dihedral_group" target="_blank" rel="noopener noreferrer">Dihedral group</a> and <a href="https://en.wikipedia.org/wiki/Tessellation" target="_blank" rel="noopener noreferrer">Tessellation</a> (Wikipedia), behind Symmetry and Tiled view.</li>
+          <li><b>Scale and mirror images</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/length" target="_blank" rel="noopener noreferrer">CSS length units</a> (MDN), on how a page sets true sizes in millimetres and inches, and <a href="https://en.wikipedia.org/wiki/Reflection_(mathematics)" target="_blank" rel="noopener noreferrer">Reflection (mathematics)</a> (Wikipedia), behind the mirrored chart.</li>
         </ul>
       </details>
       <details class="mini" id="about">
-        <summary>About This Version <span>1.5 · 17 Nov 2026</span></summary>
+        <summary>About This Version <span>1.6 · 24 Nov 2026</span></summary>
         <ul class="sub">
-          <li>1.5, editing power tools, for designing from scratch. Nothing changes until you use them.</li>
-          <li>Start with an empty board, and Trace your picture faintly over it.</li>
-          <li>Symmetry: 2 or 4 ways on square boards, 3 or 6 ways on hex and iso.</li>
-          <li>Line, Box and Ring, which follow each board’s own directions.</li>
-          <li>Select part of the pattern, then copy it as a stamp, move it or erase it. Stamps can be turned, flipped and saved.</li>
-          <li>Text typed onto the board, and a cube stamp for hex and iso boards.</li>
-          <li>Lighter and Darker step a bead along the real beads in your palette.</li>
-          <li>Tiled view shows nine copies of the pattern, to check whether its edges meet.</li>
+          <li>1.6, print and build (release 1.3 on the roadmap). Nothing changes on the board until you use it, and every pattern is the same as in 1.5.</li>
+          <li>Print and Build, under Progress: a page for each board with its colour key, fitted to the page or at exact size with a check bar, ready to print or save as a PDF.</li>
+          <li>A letter or symbol on every bead, a black-and-white chart, row and column numbers, a mirrored chart for building face down, and an optional cover page.</li>
+          <li>Peg spacing for square, hex and iso boards (midi, mini or your own measurement), and the finished size in millimetres and inches.</li>
+          <li>Counts of each colour per board and per chunk, also as CSV.</li>
+          <li>The shopping list by shop, with Buy links and a cost total, from Shop, Price and Link columns in your bead sheet.</li>
+          <li>Under the board: row and column guides with a line through the tapped bead, and bead marks.</li>
+          <li>The Save and Open, Export and Print and Build headings are taller, so they are easier to tap.</li>
           <li>Still to come from the plan: more than one pattern layer.</li>
+          <li>1.5 (17 Nov 2026), editing power tools for designing from scratch: an empty board to Trace your picture on, Symmetry, Line, Box and Ring, Select with copy, move and erase, stamps you can turn, flip and save, text, a cube stamp for hex and iso boards, Lighter and Darker, and a tiled view.</li>
           <li>1.4.2, picture input like BIG: paste boxes under the board’s Choose image button and in the Pattern panel (for viewers that block file pickers), messages under the button, and one picture button at a time.</li>
           <li>1.4.1, ideas from BIG: the help by the board comes in three parts (Bead Placement, Sizing and Views), there’s a ? beside the zoom buttons too, and every section heading is in Title Case.</li>
           <li>Edit, beside Inspect and Mark placed: paint, erase, fill and pick on every board, with undo and redo.</li>
@@ -874,6 +993,7 @@ details.mini .q{margin-left:4px}
           <li>Published methods used: the Oklab colour space by Björn Ottosson (public domain); Floyd–Steinberg and Atkinson error diffusion; ordered (Bayer) dithering; CIE76 and CIEDE2000 colour difference (Sharma, Wu and Dalal, 2005); flood fill, for Fill and for background removal.</li>
           <li>The editing tools, the project file format and the pattern library (1.4) are FIG’s own. Nothing was borrowed for them.</li>
           <li>The 1.5 tools are FIG’s own code too. Line and Ring on square boards follow two published methods, Bresenham’s line algorithm and the midpoint circle algorithm. Lines on hex and iso boards step evenly between the two pegs and round to the nearest peg, as Amit Patel describes at Red Blob Games. Text uses this device’s own lettering; no font is included.</li>
+          <li>The 1.6 print pages, guides and bead symbols are FIG’s own code as well. The 24 symbols are drawn here, no font or icon set is included, and printing uses the browser’s own Print and Save as PDF, with no PDF library.</li>
           <li>Feature ideas came from looking at other bead, pixel-art and voxel tools. The FIG feature roadmap names each one.</li>
           <li>Help links point to other people’s tutorials. Nothing from them is copied here.</li>
         </ul>
@@ -882,6 +1002,7 @@ details.mini .q{margin-left:4px}
   </section>
   <div id="sr" class="sr" role="status" aria-live="polite"></div>
 </main>
+<div id="printOut" aria-hidden="true"></div>
 
 <script>
 (function(){
@@ -927,8 +1048,11 @@ const PAL=[
   ['Green','#2C9A48'],['Light blue','#4AA6E0'],['Dark blue','#25409A'],['Purple','#6E43A3'],
   ['Pink','#EE86B4'],['Brown','#6E4428'],['Tan','#D6B38A'],['Peach','#F1C9A5']
 ].map(([name,hex])=>({name,hex,on:true}));
-const DEF={source:'image',tap:'inspect',fade:true,labels:false,iso:null,ui:{order:true,legend:true,adj:false,clean:false,swap:false,slide:false,proj:true,stamp:false},
+const DEF={source:'image',tap:'inspect',fade:true,labels:false,iso:null,ui:{order:true,legend:true,adj:false,clean:false,swap:false,slide:false,proj:true,stamp:false,print:false},
   keepEdits:true,ed:{tool:'paint',step:'1',lock:false,paint:null,sym:'off',solid:false},
+  guides:false,marks:false,   /* added in 1.6: the guides and bead marks over the board, and the print and build choices below */
+  pr:{paper:'letter',scale:'fit',mark:'letters',bw:false,mirror:false,guides:true,cover:false,count:'board',shop:'list',
+    peg:{square:'midi',hexb:'midi',iso:'midi'},mm:{square:5,hexb:5,iso:5}},
   blank:false,tile:false,trace:0,   /* added in 1.5: an empty board to design on, the tiled view, and how strongly the picture shows over the board */   /* added in 1.4: editing preferences. None of them changes a pattern by itself. */
   lat:{fit:'fit',side:16,orient:'point',cols:48,rows:38,stagger:'cols',scale:100},
   img:{width:58,sampling:'average',palette:PAL,snap:true,cols:2,rows:2,fit:'fit',full:true,
@@ -946,7 +1070,9 @@ function merge(d,s){
    range, falls back to a safe value, so damaged or edited storage cannot break the page. */
 const CHOICES={source:['image','hexb','iso'],tap:['inspect','mark','edit'],'ed.tool':['paint','erase','fill','pick','line','box','ring','select','stamp','lighter','darker'],'ed.sym':['off','a','b'],'ed.step':['1','5'],'lat.fit':['fit','fill'],'lat.orient':['point','flat'],'lat.stagger':['cols','rows'],
   'img.sampling':['average','nearest','dominant','median'],'img.fit':['fit','fill'],'img.palSrc':['basic','catalog','scheme'],'img.dither':['none','fs','atk','ordered'],
-  'img.metric':['rgb','lab','de2000','oklab'],'img.schMap':['tone','colour'],'img.scheme':SCHEMES.map(d=>d.id),'img.outline':['none','in','out']};
+  'img.metric':['rgb','lab','de2000','oklab'],'img.schMap':['tone','colour'],'img.scheme':SCHEMES.map(d=>d.id),'img.outline':['none','in','out'],
+  'pr.paper':['letter','a4'],'pr.scale':['fit','exact'],'pr.mark':['none','letters','symbols'],'pr.count':['board','chunk'],'pr.shop':['list','shop'],
+  'pr.peg.square':['midi','mini','own'],'pr.peg.hexb':['midi','mini','own'],'pr.peg.iso':['midi','mini','own']};
 const LIMITS={'trace':[0,80],'lat.side':[5,30],'lat.cols':[8,80],'lat.rows':[8,80],'lat.scale':[30,100],'img.width':[1,MAX_W],'img.cols':[1,MAX_BOARDS],'img.rows':[1,MAX_BOARDS],
   'img.bgTol':[5,120],'img.maxColors':[4,ALL_COLOURS],'img.ditherAmt':[10,100],'img.rare':[0,50],'img.schN':[2,12],
   'img.adjB':[-100,100],'img.adjC':[-100,100],'img.adjS':[-100,100],'img.adjH':[-180,180],'img.adjW':[-100,100],'img.specks':[0,10],'img.smooth':[0,3]};
@@ -966,6 +1092,7 @@ function tidy(o){
   {const p=o.img.bgPt,ok=o.img.bgCol&&p&&typeof p==='object'&&[p.x,p.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1);o.img.bgPt=ok?{x:p.x,y:p.y}:null}
   {const p=o.ed.paint,ok=p&&typeof p==='object'&&typeof p.name==='string'&&p.name&&typeof p.hex==='string'&&HEX6.test(p.hex);
    o.ed.paint=ok?{name:p.name.slice(0,MAX_NAME),hex:p.hex,code:typeof p.code==='string'?p.code.slice(0,MAX_CODE):''}:null}
+  for(const k of['square','hexb','iso']){const v=o.pr.mm[k];o.pr.mm[k]=Number.isFinite(v)?clamp(Math.round(v*100)/100,1,30):5}   /* 1.6: a peg spacing in mm, to 0.01 */
   return o;
 }
 let st=tidy(merge(DEF,store.get('fl:settings')));
@@ -1299,8 +1426,228 @@ function tileMoves(kind,ext){
 }
 /* ---------- end of the 1.5 helpers ---------- */
 
+/* ---------- print helpers added in 1.6 ----------
+   Plain functions that never touch the page: bead marks, guide lines, counts, sizes, shops and the print sheets.
+   A print sheet is one SVG whose units are millimetres, so a sheet printed at 100% comes out at its true size. */
+const PEG_MM={midi:5,mini:2.6},PAPER={letter:[215.9,279.4],a4:[210,297]},SHEET_MARGIN=10,MM_IN=25.4,MARK_MIN=2.4;   /* MARK_MIN: smallest peg spacing on paper, in mm, that still gets marks */
+const MARK_ABC='ABCDEFGHJKLMNPRSTUVWXYZ';   /* I, O and Q are left out: too like 1, 0 and O */
+const xesc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n3=n=>String(Math.round(n*1000)/1000),mm1=n=>String(Math.round(n*10)/10),mm2=n=>String(Math.round(n*100)/100);
+const minus=n=>n<0?'−'+(-n):String(n);
+const cut=(s,n)=>s.length>n?s.slice(0,Math.max(1,n-1))+'…':s;
+/* MARKS. Colour number i gets letter(s) A, B ... Z, then AA, AB ..., or symbol i. */
+function markLetter(i){const n=MARK_ABC.length;return i<n?MARK_ABC[i]:MARK_ABC[(Math.floor(i/n)-1)%n]+MARK_ABC[i%n]}
+const STAR=(()=>{const p=[];for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,r=k%2?0.15:0.37;p.push(n3(r*Math.cos(a))+' '+n3(r*Math.sin(a)))}return'M'+p.join('L')+'Z'})();
+const HEXP=r=>'M'+[0,1,2,3,4,5].map(k=>n3(r*Math.cos(k*Math.PI/3))+' '+n3(r*Math.sin(k*Math.PI/3))).join('L')+'Z';
+/* FIG's own 24 symbols, each drawn inside a circle of radius 0.5 around (0, 0) in colour c. No font or icon set is used. */
+const SYMS=[
+  c=>`<circle r=".3" fill="${c}"/>`,
+  c=>`<circle r=".26" fill="none" stroke="${c}" stroke-width=".12"/>`,
+  c=>`<rect x="-.27" y="-.27" width=".54" height=".54" fill="${c}"/>`,
+  c=>`<rect x="-.24" y="-.24" width=".48" height=".48" fill="none" stroke="${c}" stroke-width=".12"/>`,
+  c=>`<path d="M0-.34L.32.25H-.32Z" fill="${c}"/>`,
+  c=>`<path d="M0-.27L.25.2H-.25Z" fill="none" stroke="${c}" stroke-width=".11" stroke-linejoin="round"/>`,
+  c=>`<path d="M0 .34L.32-.25H-.32Z" fill="${c}"/>`,
+  c=>`<path d="M0-.37L.33 0 0 .37-.33 0Z" fill="${c}"/>`,
+  c=>`<path d="M0-.31L.27 0 0 .31-.27 0Z" fill="none" stroke="${c}" stroke-width=".11" stroke-linejoin="round"/>`,
+  c=>`<path d="M-.31 0H.31M0-.31V.31" stroke="${c}" stroke-width=".14"/>`,
+  c=>`<path d="M-.23-.23L.23.23M.23-.23L-.23.23" stroke="${c}" stroke-width=".14"/>`,
+  c=>`<path d="${STAR}" fill="${c}"/>`,
+  c=>`<rect x="-.32" y="-.08" width=".64" height=".16" fill="${c}"/>`,
+  c=>`<rect x="-.08" y="-.32" width=".16" height=".64" fill="${c}"/>`,
+  c=>`<path d="M0-.27A.27.27 0 0 0 0 .27Z" fill="${c}"/><circle r=".27" fill="none" stroke="${c}" stroke-width=".08"/>`,
+  c=>`<circle r=".27" fill="none" stroke="${c}" stroke-width=".08"/><circle r=".1" fill="${c}"/>`,
+  c=>`<path d="${HEXP(0.32)}" fill="${c}"/>`,
+  c=>`<path d="${HEXP(0.28)}" fill="none" stroke="${c}" stroke-width=".1" stroke-linejoin="round"/>`,
+  c=>`<circle cy="-.16" r=".11" fill="${c}"/><circle cy=".16" r=".11" fill="${c}"/>`,
+  c=>`<circle cx="-.17" cy=".12" r=".1" fill="${c}"/><circle cx=".17" cy=".12" r=".1" fill="${c}"/><circle cy="-.17" r=".1" fill="${c}"/>`,
+  c=>`<path d="M-.28.14L0-.16.28.14" fill="none" stroke="${c}" stroke-width=".13" stroke-linejoin="round" stroke-linecap="round"/>`,
+  c=>`<rect x="-.24" y="-.24" width=".48" height=".48" fill="none" stroke="${c}" stroke-width=".09"/><path d="M-.24.24L.24-.24" stroke="${c}" stroke-width=".09"/>`,
+  c=>`<path d="M-.27-.28H.27L-.27.28H.27Z" fill="${c}"/>`,
+  c=>`<path d="M0-.32V.32M-.28-.16L.28.16M.28-.16L-.28.16" stroke="${c}" stroke-width=".1" stroke-linecap="round"/>`,
+];
+/* one bead's mark, centred on (x, y) and `size` across, in colour c: letter(s) i, or symbol i; past the last symbol, letters from A again */
+function markSVG(type,i,x,y,size,c){
+  const at=`<g transform="translate(${n3(x)} ${n3(y)})">`;
+  if(type==='symbols'&&i<SYMS.length)return at+`<g transform="scale(${n3(size)})">${SYMS[i](c)}</g></g>`;
+  const t=markLetter(type==='symbols'?i-SYMS.length:i),f=size*(t.length>1?0.56:0.78);
+  return at+`<text y="${n3(f*0.36)}" font-size="${n3(f)}" font-weight="700" text-anchor="middle" fill="${c}">${t}</text></g>`;
+}
+/* black or white, whichever reads better on a bead of colour hex */
+function inkOn(hex){const v=parseInt(hex.slice(1),16),r=v>>16&255,g=v>>8&255,b=v&255;return(r*299+g*587+b*114)/1000>=150?'#111111':'#FFFFFF'}
+/* GUIDE LINES. pegs: [{ x, y, g, n }]: g names the lines the peg is on (column and row on square and iso boards; q, r and s on
+   hex boards) and n is the number printed for each. axes: per family, 'y' to order a line's pegs top to bottom, 'x' left to
+   right, 'xy' for a straight line at any slope. Returns one Map per family: line -> { n, pegs in order, dir: unit vector along it }. */
+function guideLines(pegs,axes){
+  const fams=axes.map(()=>new Map());
+  for(const p of pegs)fams.forEach((m,f)=>{const k=p.g[f];let l=m.get(k);if(!l){l={n:p.n[f],pegs:[]};m.set(k,l)}l.pegs.push(p)});
+  const by={y:(a,b)=>a.y-b.y||a.x-b.x,x:(a,b)=>a.x-b.x||a.y-b.y,xy:(a,b)=>Math.abs(a.x-b.x)>1e-6?a.x-b.x:a.y-b.y};
+  fams.forEach((m,f)=>{for(const l of m.values()){l.pegs.sort(by[axes[f]]);const a=l.pegs[0],b=l.pegs[l.pegs.length-1];
+    let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d<1e-9){dx=axes[f]==='x'?1:0;dy=axes[f]==='x'?0:1;d=1}l.dir=[dx/d,dy/d]}});
+  return fams;
+}
+/* the lowest and highest line numbers in a family; guides number every fifth line and the two end lines */
+function lineSpan(m){let lo=Infinity,hi=-Infinity;for(const l of m.values()){if(l.n<lo)lo=l.n;if(l.n>hi)hi=l.n}return[lo,hi]}
+const keyLine=(n,lo,hi)=>n%5===0||n===lo||n===hi;
+/* COUNTS. groupOf(peg) names a peg's group (a board or a chunk). Returns [{ key, first peg, m: Map colour -> beads }] in first-seen order. */
+function countBy(pegs,groupOf){
+  const out=new Map();
+  for(const p of pegs){if(!p.c)continue;const k=groupOf(p);let g=out.get(k);if(!g){g={key:k,first:p,m:new Map()};out.set(k,g)}g.m.set(p.c,(g.m.get(p.c)||0)+1)}
+  return[...out.values()];
+}
+/* SIZE. The width and height of a set of peg centres [[x, y], ...], in peg spacings, with one bead's width added. */
+function spanOf(pts){
+  if(!pts.length)return{w:0,h:0};
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;for(const[x,y]of pts){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  return{w:x1-x0+1,h:y1-y0+1};
+}
+/* SHOPS. A price from a sheet cell (a number, or text such as "$4.99" or "4,99 €"), or null; a web address, or ''. */
+function readPrice(v){
+  if(typeof v==='number')return Number.isFinite(v)&&v>=0&&v<1e6?{p:v,cur:''}:null;
+  const t=String(v==null?'':v).trim();if(!t)return null;
+  const cur=(t.match(/[$€£¥₹]/)||[''])[0];
+  let s=t.replace(/[^\d.,]/g,'');
+  if(/^\d+,\d{1,2}$/.test(s))s=s.replace(',','.');else s=s.replace(/,/g,'');
+  if(!/^\d*\.?\d+$/.test(s))return null;
+  const p=parseFloat(s);return Number.isFinite(p)&&p<1e6?{p,cur}:null;
+}
+function readUrl(v){const t=String(v==null?'':v).trim();return/^https?:\/\/[^\s"'<>\\]{1,500}$/i.test(t)?t:''}
+const money=(v,cur)=>(cur||'')+v.toFixed(2);
+/* rows: [{ name, hex, code, need, bags }] to buy; info(row) gives { shop, price, cur, url } or null. Shops come in name order, the
+   rows with no shop last; each shop adds up the cost of its rows that have a price. */
+function byShop(rows,info){
+  const m=new Map();
+  for(const r of rows){const i=info(r)||{},s=i.shop||'';let g=m.get(s);if(!g){g={shop:s,rows:[],cost:0,priced:0,cur:''};m.set(s,g)}
+    const p=Number.isFinite(i.price)?i.price:null;g.rows.push({...r,price:p,cur:i.cur||'',url:i.url||'',cost:p===null?null:p*r.bags});
+    if(p!==null){g.cost+=p*r.bags;g.priced++;if(!g.cur)g.cur=i.cur||''}}
+  return[...m.values()].sort((a,b)=>!a.shop?1:!b.shop?-1:a.shop.localeCompare(b.shop));
+}
+/* PRINT SHEETS. D, the pattern, measured in peg spacings:
+     { title, fams: line names ('Column', 'Row' or 'q', 'r', 's'), axes (as guideLines takes them),
+       colours: [{ id, name, hex, code }] (a colour's place in this list is its mark),
+       boards: [{ name, info, pegs: [{ x, y, c, g, n }], frame: [x0, y0, x1, y1], poly: hex outline [[x, y], ...] or null }],
+       cover: null or { sub, lines: [text], pegs: [{ x, y, c }], frame, rects: [{ x0, y0, x1, y1, name }], shops: [text] } }
+   O, the choices: { paper ('letter', 'a4'), exact, mm (peg spacing), measured, std ('midi', 'mini'), mark ('none', 'letters',
+     'symbols'), bw, mirror, guides, version }.
+   Returns { pages: [{ name, svg }], orient, w, h (mm inside the margins), low (the smallest peg spacing on paper), marks }.
+   Each board gets one page with its colour key. At exact size a board too tall for its key goes on one page and the key on the
+   next; a board too big for the page is split into equal parts, followed by its key. Paper turns sideways when that needs fewer
+   pages or, fitted to the page, draws the boards bigger. */
+function sheetPages(D,O){
+  const mark=O.bw&&O.mark==='none'?'letters':O.mark,HEAD=15,FOOT=7,BAR=O.exact?18:0,GM=O.guides?8:3,GAP=3,ROW=5.6,COLW=62;
+  const cidx=new Map(D.colours.map((c,i)=>[c.id,i])),cby=new Map(D.colours.map(c=>[c.id,c])),hex=D.fams.length===3;
+  const legH=(n,w)=>n?7+Math.ceil(n/Math.max(1,Math.floor(w/COLW)))*ROW:0;
+  const boxOf=f=>({x0:f[0],y0:f[1],x1:f[2],y1:f[3],w:f[2]-f[0],h:f[3]-f[1]});
+  const counts=pegs=>{const m=new Map();for(const p of pegs)if(p.c)m.set(p.c,(m.get(p.c)||0)+1);return m};
+  /* a peg belongs to the part its centre is in; the last parts across and down also take the pegs on their far edge */
+  const inP=(p,part,q)=>q.x>=part.x0-1e-6&&q.y>=part.y0-1e-6&&(q.x<part.x1-1e-6||part.x1>=p.B.x1-1e-6)&&(q.y<part.y1-1e-6||part.y1>=p.B.y1-1e-6);
+  function plan(cw,ch){
+    const out=[];let low=Infinity;
+    for(const b of D.boards){
+      const B=boxOf(b.frame),cnt=counts(b.pegs),lh=legH(cnt.size,cw),aw=cw-2*GM,ah=ch-HEAD-FOOT-BAR-2*GM-GAP;
+      if(!O.exact){const s=Math.min(aw/B.w,(ah-lh)/B.h,12);low=Math.min(low,s);out.push({b,B,s,cnt,parts:[B],own:false});continue}
+      const s=O.mm;low=Math.min(low,s);
+      if(B.w*s<=aw+1e-6&&B.h*s<=ah-lh+1e-6)out.push({b,B,s,cnt,parts:[B],own:false});
+      else if(B.w*s<=aw+1e-6&&B.h*s<=ah+1e-6)out.push({b,B,s,cnt,parts:[B],own:true});
+      else{const nx=Math.ceil(B.w*s/aw-1e-9),ny=Math.ceil(B.h*s/ah-1e-9),pw=B.w/nx,ph=B.h/ny,parts=[];
+        for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)parts.push({x0:B.x0+i*pw,y0:B.y0+j*ph,x1:B.x0+(i+1)*pw,y1:B.y0+(j+1)*ph,w:pw,h:ph,i,j});
+        out.push({b,B,s,cnt,parts,own:true})}
+    }
+    return{out,low,n:(D.cover?1:0)+out.reduce((a,p)=>a+p.parts.length+(p.own?1:0),0)};
+  }
+  const[PW,PH]=PAPER[O.paper]||PAPER.letter;
+  const tries=[[PW,PH,'portrait'],[PH,PW,'landscape']].map(([w,h,o])=>{const cw=w-2*SHEET_MARGIN-0.6,ch=h-2*SHEET_MARGIN-0.6;return{cw,ch,o,...plan(cw,ch)}});
+  const[pt,ls]=tries,best=ls.n<pt.n||(ls.n===pt.n&&!O.exact&&ls.low>pt.low*1.08)?ls:pt;
+  const{cw,ch}=best,N=best.n,pages=[];let pn=0,marks=false;
+  const T=(x,y,size,t,extra)=>`<text x="${n3(x)}" y="${n3(y)}" font-size="${size}"${extra?' '+extra:''}>${xesc(t)}</text>`;
+  const open=()=>`<svg xmlns="http://www.w3.org/2000/svg" width="${n3(cw)}mm" height="${n3(ch)}mm" viewBox="0 0 ${n3(cw)} ${n3(ch)}" font-family="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">`;
+  const head=(t,sub)=>T(0,5.2,4.4,cut(t,Math.floor((cw-22)/2.4)),'font-weight="700" fill="#111"')+T(cw,5.2,3,`Page ${pn} of ${N}`,'text-anchor="end" fill="#444"')
+    +T(0,11,2.9,cut(sub,Math.floor(cw/1.55)),'fill="#444"');
+  const scaleNote=s=>O.exact?`True size at 100% scale: ${mm2(O.mm)} mm between peg centres${O.measured?', your measurement':`, the usual ${O.std} spacing (not measured yet)`}.`
+    :`Not true size: 1 peg spacing is ${mm1(s)} mm here. Choose Exact size to print at true size.`;
+  const foot=t=>T(0,ch-1.6,2.5,t,'fill="#555"')+T(cw,ch-1.6,2.5,'FIG '+O.version,'text-anchor="end" fill="#888"');
+  function bar(){
+    const y=ch-FOOT-BAR+5.5;let s=`<rect x="0" y="${n3(y)}" width="100" height="3" fill="#FFF" stroke="#111" stroke-width=".3"/>`;
+    for(let k=0;k<=100;k+=10)s+=`<line x1="${k}" y1="${n3(y)}" x2="${k}" y2="${n3(y-(k%50?1.2:2.2))}" stroke="#111" stroke-width=".25"/>`;
+    s+=T(0,y-2.8,2.4,'0','fill="#111"')+T(50,y-2.8,2.4,'50','text-anchor="middle" fill="#111"')+T(100,y-2.8,2.4,'100 mm','text-anchor="middle" fill="#111"');
+    for(let k=1;k<=3;k++){const x=k*MM_IN;s+=`<line x1="${n3(x)}" y1="${n3(y+3)}" x2="${n3(x)}" y2="${n3(y+4.6)}" stroke="#111" stroke-width=".25"/>`+T(x,y+7,2.2,k+' in','text-anchor="middle" fill="#333"')}
+    const k=[10,5,2].find(k=>110+k*O.mm<=cw-2);
+    if(k){const x0=110,L=k*O.mm,yy=y+1.5;s+=`<line x1="${x0}" y1="${n3(yy)}" x2="${n3(x0+L)}" y2="${n3(yy)}" stroke="#111" stroke-width=".25"/>`;
+      for(let i=0;i<=k;i++)s+=`<circle cx="${n3(x0+i*O.mm)}" cy="${n3(yy)}" r=".55" fill="#111"/>`;
+      s+=T(x0,y-2.8,2.4,`${k} peg spacings = ${mm2(L)} mm`,'fill="#111"')}
+    return s+T(0,y+11,2.4,'Check before you build: the bar is 100 mm long. If it isn’t, print again at 100% (Actual size), not Fit to page.','fill="#333"');
+  }
+  function legend(cnt,x,y,w,title){
+    const items=D.colours.filter(c=>cnt.has(c.id)),cols=Math.max(1,Math.floor(w/COLW)),cwid=w/cols,rows=Math.ceil(items.length/cols);
+    let g=T(x,y+3.4,3.1,title,'font-weight="700" fill="#111"');
+    items.forEach((c,k)=>{const x0=x+Math.floor(k/rows)*cwid,cy=y+7+(k%rows)*ROW+ROW/2-0.6,i=cidx.get(c.id);
+      g+=`<circle cx="${n3(x0+2.4)}" cy="${n3(cy)}" r="2.1" fill="${O.bw?'#FFFFFF':c.hex}" stroke="${O.bw?'#111111':'#5A6270'}" stroke-width=".2"/>`;
+      if(mark!=='none')g+=markSVG(mark,i,x0+2.4,cy,2.9,O.bw?'#111111':inkOn(c.hex));
+      g+=T(x0+6,cy+1,2.8,cut(c.name+(c.code?' · '+c.code:''),Math.max(4,Math.floor((cwid-17)/1.55))),'fill="#111"')
+        +T(x0+cwid-2,cy+1,2.8,String(cnt.get(c.id)),'text-anchor="end" font-weight="700" fill="#111"')});
+    return g;
+  }
+  /* one board, or one part of it, with its top left at (ox, oy) on the page */
+  function chart(p,part,ox,oy,id){
+    const b=p.b,s=p.s,mx=O.mirror,X=x=>ox+(mx?part.x1-x:x-part.x0)*s,Y=y=>oy+(y-part.y0)*s;
+    const inPart=q=>inP(p,part,q);
+    const lines=p.lines||(p.lines=guideLines(b.pegs,D.axes)),showMarks=mark!=='none'&&s>=MARK_MIN;if(showMarks)marks=true;
+    let g=`<defs><clipPath id="${id}"><rect x="${n3(ox)}" y="${n3(oy)}" width="${n3(part.w*s)}" height="${n3(part.h*s)}"/></clipPath></defs><g clip-path="url(#${id})">`;
+    const fill=O.bw?'none':'#F1F3F6';
+    if(b.poly)g+=`<polygon points="${b.poly.map(([x,y])=>n3(X(x))+','+n3(Y(y))).join(' ')}" fill="${fill}" stroke="#8D96A3" stroke-width=".3"/>`;
+    else{const xa=X(b.frame[0]),xb=X(b.frame[2]);g+=`<rect x="${n3(Math.min(xa,xb))}" y="${n3(Y(b.frame[1]))}" width="${n3(Math.abs(xb-xa))}" height="${n3((b.frame[3]-b.frame[1])*s)}" rx="${n3(Math.min(2,s*0.4))}" fill="${fill}" stroke="#8D96A3" stroke-width=".3"/>`}
+    if(O.guides)lines.forEach(m=>{for(const l of m.values()){if(l.n%5)continue;const P=l.pegs,a=P[0],z=P[P.length-1],[dx,dy]=l.dir;
+      g+=`<polyline points="${[[a.x-dx*0.5,a.y-dy*0.5],...P.map(q=>[q.x,q.y]),[z.x+dx*0.5,z.y+dy*0.5]].map(([x,y])=>n3(X(x))+','+n3(Y(y))).join(' ')}" fill="none" stroke="${l.n%10?'#C3C9D2':'#8D96A3'}" stroke-width="${l.n%10?.25:.4}"/>`}});
+    g+='</g>';
+    if(part!==p.B)g+=`<rect x="${n3(ox)}" y="${n3(oy)}" width="${n3(part.w*s)}" height="${n3(part.h*s)}" fill="none" stroke="#8D96A3" stroke-width=".25" stroke-dasharray="1.2 1"/>`;
+    for(const q of b.pegs){if(!inPart(q))continue;const cx=X(q.x),cy=Y(q.y);
+      if(!q.c){g+=`<circle cx="${n3(cx)}" cy="${n3(cy)}" r="${n3(Math.max(0.25,0.1*s))}" fill="#B6BDC7"/>`;continue}
+      const c=cby.get(q.c);
+      g+=`<circle cx="${n3(cx)}" cy="${n3(cy)}" r="${n3(0.45*s)}" fill="${O.bw?'#FFFFFF':c.hex}" stroke="${O.bw?'#111111':'#5A6270'}" stroke-width="${O.bw?'.22':'.12'}"/>`;
+      if(showMarks)g+=markSVG(mark,cidx.get(q.c),cx,cy,0.62*s,O.bw?'#111111':inkOn(c.hex));
+    }
+    if(O.guides){const fs=Math.min(2.6,Math.max(1.6,s*0.5)),every=!hex&&s>=4.2,d=0.5*s+fs*0.9;
+      lines.forEach((m,f)=>{const[lo,hi]=lineSpan(m);for(const l of m.values()){
+        if(!(every||keyLine(l.n,lo,hi)))continue;const P=l.pegs.filter(inPart);if(!P.length)continue;
+        const lab=hex?D.fams[f]+minus(l.n):String(l.n),bold=l.n%5===0?' font-weight="700"':'';
+        for(const[e,sg]of[[P[0],-1],[P[P.length-1],1]]){const dx=l.dir[0]*sg*(mx?-1:1),dy=l.dir[1]*sg;
+          g+=T(X(e.x)+dx*d,Y(e.y)+dy*d+fs*0.36,n3(fs),lab,'text-anchor="middle" fill="#333"'+bold)}}});
+    }
+    return g;
+  }
+  const total=cnt=>{let t=0;for(const v of cnt.values())t+=v;return t};
+  const sizeOf=B=>`${Math.round(B.w*O.mm)} × ${Math.round(B.h*O.mm)} mm`;
+  if(D.cover){
+    const c=D.cover;pn++;let g=open()+head(D.title,c.sub),y=HEAD+2;
+    for(const l of c.lines){g+=T(0,y+3,3,cut(l,Math.floor(cw/1.62)),'fill="#111"');y+=5}
+    const all=counts(c.pegs),lh=legH(all.size,cw),room=Math.max(40,Math.min(ch*0.5,ch-y-lh-FOOT-12-(c.shops.length?c.shops.length*4.6+8:0)));
+    const B=boxOf(c.frame),s=Math.min(cw/B.w,room/B.h),ox=(cw-B.w*s)/2,oy=y+3,X=x=>ox+(O.mirror?B.x1-x:x-B.x0)*s,Y=v=>oy+(v-B.y0)*s;
+    for(const r of c.rects){const xa=X(r.x0),xb=X(r.x1);g+=`<rect x="${n3(Math.min(xa,xb))}" y="${n3(Y(r.y0))}" width="${n3(Math.abs(xb-xa))}" height="${n3((r.y1-r.y0)*s)}" fill="${O.bw?'none':'#F1F3F6'}" stroke="#8D96A3" stroke-width=".3"/>`}
+    for(const q of c.pegs)if(q.c){const k=cby.get(q.c);g+=`<rect x="${n3(X(q.x)-s*0.45)}" y="${n3(Y(q.y)-s*0.45)}" width="${n3(s*0.9)}" height="${n3(s*0.9)}" fill="${O.bw?'#555555':k.hex}"/>`}
+    for(const r of c.rects)g+=T((X(r.x0)+X(r.x1))/2,Y(r.y0)+4,3,r.name,'text-anchor="middle" font-weight="700" fill="#111" stroke="#FFF" stroke-width=".6" paint-order="stroke"');
+    y=oy+B.h*s+GAP+2;g+=legend(all,0,y,cw,`All colours: ${total(all)} beads`);y+=lh+3;
+    for(const l of c.shops){g+=T(0,y+3,2.8,cut(l,Math.floor(cw/1.5)),l.startsWith('  ')?'fill="#333"':'font-weight="700" fill="#111"');y+=4.6;if(y>ch-FOOT-4)break}
+    pages.push({name:'Cover',svg:g+foot('')+'</svg>'});
+  }
+  for(const p of best.out){
+    const b=p.b,many=p.parts.length>1,info=`${b.info} · ${sizeOf(p.B)} at ${mm2(O.mm)} mm a peg`+(O.mirror?' · Mirrored for building face down':'');
+    p.parts.forEach((part,k)=>{
+      pn++;const ox=GM+(cw-2*GM-part.w*p.s)/2,oy=HEAD+GM;
+      let range='';if(many&&!hex){const R=D.fams.map((nm,f)=>{let lo=Infinity,hi=-Infinity;for(const q of b.pegs)if(inP(p,part,q)){lo=Math.min(lo,q.n[f]);hi=Math.max(hi,q.n[f])}return`${nm.toLowerCase()}s ${lo}–${hi}`});range=' ('+R.join(', ')+')'}
+      let g=open()+head(D.title+' · '+b.name,(many?`Part ${k+1} of ${p.parts.length}${range} · `:'')+info)+chart(p,part,ox,oy,'cp'+pn);
+      if(!p.own)g+=legend(p.cnt,0,oy+part.h*p.s+GM+GAP,cw,`Colours on ${b.name}: ${total(p.cnt)} beads`);
+      if(O.exact)g+=bar();
+      pages.push({name:b.name+(many?', part '+(k+1):''),svg:g+foot(scaleNote(p.s))+'</svg>'});
+    });
+    if(p.own){pn++;pages.push({name:b.name+', colours',svg:open()+head(D.title+' · '+b.name,'The colour key for '+b.name+(many?`, all ${p.parts.length} parts`:''))
+      +legend(p.cnt,0,HEAD+2,cw,`Colours on ${b.name}: ${total(p.cnt)} beads`)+foot('')+'</svg>'})}
+  }
+  return{pages,orient:best.o,w:cw,h:ch,low:best.low,marks};
+}
+/* ---------- end of the 1.6 helpers ---------- */
+
 /* the edits themselves: one set per board type, kept in this browser, plus the undo history for this visit */
-const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.5',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
+const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.6',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
 const freshEdits=()=>({square:newEdits(),hexb:newEdits(),iso:newEdits()}),freshHist=()=>({square:{undo:[],redo:[]},hexb:{undo:[],redo:[]},iso:{undo:[],redo:[]}});
 let ED=freshEdits(),HIST=freshHist(),E=ED.square,conv=null,savedClean=false;
 /* 1.5: the first tap of a two-tap tool, the selection, the current stamp, the saved stamps, and whether the tiled view needs redrawing */
@@ -1484,6 +1831,11 @@ function cleanInv(v){
     const hex=typeof r.hex==='string'&&HEX6.test(r.hex)?r.hex:null;
     rows.push({brand:(typeof r.brand==='string'&&r.brand?r.brand:'Sheet').slice(0,MAX_BRAND),name:r.name.slice(0,MAX_NAME),hex,
       code:typeof r.code==='string'?r.code.slice(0,MAX_CODE):'',bags:Number.isFinite(r.bags)&&r.bags>0?r.bags:0,special:!hex||!!r.special});
+    /* 1.6: where to buy it, kept only when the sheet says */
+    const row=rows[rows.length-1];
+    if(typeof r.shop==='string'&&r.shop.trim())row.shop=r.shop.trim().slice(0,MAX_BRAND);
+    if(Number.isFinite(r.price)&&r.price>=0&&r.price<1e6){row.price=r.price;if(typeof r.cur==='string'&&/^[$\u20ac\u00a3\u00a5\u20b9]$/.test(r.cur))row.cur=r.cur}
+    {const u=readUrl(r.url);if(u)row.url=u}
   }
   return{file:(typeof v.file==='string'&&v.file?v.file:'bead sheet').slice(0,MAX_NAME),rows};
 }
@@ -1535,6 +1887,11 @@ function parseBook(book){
     const ci={hex:find(/^hex/),name:find(/^(colou?r|name|colou?r name)$/),fam:find(/famil/),code:find(/item|code|sku/),own:find(/owned|on hand|have|quantity|qty/),brand:find(/^brand$/)};
     if(ci.name<0)ci.name=find(/colou?r|name/);
     if(ci.name<0)continue;
+    /* 1.6: where to buy each bead, for the shopping list by shop. Columns the lines above already use are skipped. */
+    const taken=new Set(Object.values(ci).filter(i=>i>=0)),free=re=>H.findIndex((h,i)=>!taken.has(i)&&re.test(h));
+    const si=free(/^(shop|store|seller|vendor|retailer|supplier|sold by|where to buy)/);if(si>=0)taken.add(si);
+    const pi=free(/price|cost/);if(pi>=0)taken.add(pi);
+    const ui=free(/^(link|url|web|buy|product (link|url|page))/);
     for(let i=hr+1;i<a.length&&rows.length<MAX_ROWS;i++){
       const r=a[i],nm=String(cell(r,ci.name)).trim();if(!nm)continue;
       const m=String(cell(r,ci.hex)).trim().match(/^#?([0-9a-f]{6})$/i),fam=String(cell(r,ci.fam)).trim(),brand=String(cell(r,ci.brand)).trim();
@@ -1542,6 +1899,8 @@ function parseBook(book){
       if(ci.own>=0){const v=cell(r,ci.own);if(typeof v==='number')bags=v;else{const t=String(v).trim();bags=/^(y|yes|x|✓|✔|own|owned)$/i.test(t)?1:(parseFloat(t)||0)}}
       rows.push({brand:brand||sn,name:nm,hex:m?'#'+m[1].toUpperCase():null,
         code:String(cell(r,ci.code)).trim(),bags:Math.max(0,bags),special:!m||/transluc|transpar|glow|mix|stripe/i.test(fam)});
+      const row=rows[rows.length-1],pr=pi>=0?readPrice(cell(r,pi)):null,url=ui>=0?readUrl(cell(r,ui)):'';
+      if(si>=0&&String(cell(r,si)).trim())row.shop=String(cell(r,si)).trim();if(pr){row.price=pr.p;if(pr.cur)row.cur=pr.cur}if(url)row.url=url;
     }
   }
   return rows;
@@ -1922,6 +2281,7 @@ function render(){
   svg.appendChild(g);
   const lg=el('g',{id:'lblG'});
   pattern.labels.forEach(l=>{const t=el('text',{x:l.x,y:l.y,class:'lbl','text-anchor':l.mid?'middle':'start'},lg);t.textContent=l.t});
+  guideDraw();markDraw();   /* 1.6: views over the board, when asked for */
   ring=el('circle',{r:0.56,class:'ring',cx:0,cy:0,style:'display:none'});
   cmpDraw();
 }
@@ -1987,11 +2347,12 @@ function styles(){
     let o=1;
     if((st.iso&&st.iso!==s.c)||(focus&&s.ch!==focus))o=0.1;
     else if(st.fade&&prog.has(s.k))o=0.25;
-    s.el.style.opacity=o;
+    s.el.style.opacity=o;if(s.mk)s.mk.style.opacity=o;
   }
   const s=pattern.sites[sel];
   if(ring){if(s){ring.setAttribute('cx',f3(s.x));ring.setAttribute('cy',f3(s.y));ring.style.display=''}else ring.style.display='none'}
   const lg=$('lblG');if(lg)lg.style.display=st.labels?'':'none';
+  crossDraw();
 }
 function progress(){
   const cnt={};let tot=0,done=0;
@@ -1999,7 +2360,7 @@ function progress(){
   $('barFill').style.width=tot?(100*done/tot)+'%':'0';
   $('pct').textContent=pattern?`${done} of ${tot} beads placed`+(tot?` (${Math.round(100*done/tot)}%)`:''):'No pattern yet';
   $('legend').innerHTML=pattern?pattern.order.filter(c=>cnt[c]).map(c=>{const k=pattern.colors[c],n=cnt[c];
-    return `<button type="button" class="crow${n.d===n.n?' done':''}" data-c="${c}" aria-pressed="${st.iso===c}"><span class="dot" style="background:${esc(k.hex)}"></span><span class="nm">${esc(k.name)}</span><span class="ct">${n.d}/${n.n}</span></button>`}).join(''):'';
+    return `<button type="button" class="crow${n.d===n.n?' done':''}" data-c="${c}" aria-pressed="${st.iso===c}"><span class="dot${st.marks?' mk':''}" style="background:${esc(k.hex)}">${dotMark(c)}</span><span class="nm">${esc(k.name)}</span><span class="ct">${n.d}/${n.n}</span></button>`}).join(''):'';
   $('isoBtns').hidden=!st.iso;
   {const nc=Object.keys(cnt).length,one=pattern&&st.iso&&pattern.colors[st.iso];
    $('legendSum').textContent=pattern?`(${nc}${one?', showing only '+one.name:''})`:''}
@@ -2120,7 +2481,7 @@ document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',(
   if(b.dataset.k==='img.fit'){if(b.dataset.v==='fill')toFill();else st.img.crop=clone(st.img.free)}
   if(b.dataset.k==='source'||b.dataset.k.startsWith('lat.'))cropForMode();
   saveSettings();
-  if(b.dataset.k==='tap'||b.dataset.k.startsWith('ed.'))sync();else rebuild();   /* the tap mode and the edit tool only change what a tap does */
+  if(b.dataset.k==='tap'||b.dataset.k.startsWith('ed.'))sync();else if(b.dataset.k.startsWith('pr.')){sync();printChanged()}else rebuild();   /* the tap mode and the edit tool only change what a tap does */
 }));
 function cropForMode(){if(!srcImg)return;if(isFill()){if(st.source==='image')toFill();else lockCrop()}else st.img.crop=clone(st.img.free)}
 function palUI(){
@@ -2158,6 +2519,7 @@ $('resetSettings').addEventListener('click',()=>{
   palUI();saveSettings();rebuild();
 });
 function sync(){
+  pegKeys();
   document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',String(getP(b.dataset.k))===b.dataset.v));
   $('pngPixels').hidden=st.source!=='image';
   $('emptyMsg').textContent='Choose an image (PNG, JPG or WebP) to turn it into a bead pattern on '+
@@ -2168,6 +2530,7 @@ function sync(){
   $('cmpRow').hidden=!(pattern&&srcUrl);put('cmp',cmp);
   $('trRow').hidden=!(pattern&&srcUrl);put('trace',st.trace);$('viewChecks').hidden=!pattern;$('tileCk').checked=st.tile;
   $('fade').checked=st.fade;$('labels').checked=st.labels;
+  printSync();
 }
 /* ---------- image steps: crop, boards, fit/fill, background ---------- */
 function latSync(){
@@ -2374,6 +2737,7 @@ function orderRows(){
     .sort((a,b)=>b.need-a.need);
 }
 function orderUI(){
+  printDirty();   /* 1.6: the pattern may have changed, so the print pages and counts are made again */
   const box=$('orderBox'),show=realBeads()&&!!pattern;box.hidden=!show;if(!show)return;
   const buy=orderRows();
   $('orderList').innerHTML=buy.length
@@ -2382,6 +2746,7 @@ function orderUI(){
     :`<p class="sub">You have enough of every colour this pattern uses.</p>`;
   const nb=buy.reduce((a,r)=>a+r.bags,0);
   $('orderSum').textContent=buy.length?`(${nb} bag${nb===1?'':'s'}, ${buy.length} colour${buy.length===1?'':'s'})`:'(nothing to buy)';
+  shopUI(buy);
 }
 function invSync(){
   const src=st.img.palSrc;
@@ -2552,7 +2917,7 @@ function resetCmp(){const g=$('cmpG'),t=$('trG');if(g){g.remove();$('cmpDefs').r
 function editDone(changed){
   for(const i of changed)prog.delete(pattern.sites[i].k);
   if(st.iso&&!pattern.colors[st.iso])st.iso=null;
-  progMove();saveEdits();savedClean=false;resetCmp();
+  progMove();saveEdits();savedClean=false;resetCmp();markDraw();
   saveSettings();sync();refresh();orderUI();
 }
 /* show what an undo step changed: most steps only recolour pegs; a dropped colour or a new board size re-makes the pattern */
@@ -3054,7 +3419,7 @@ const patName=()=>$('libName').value.trim().slice(0,60);
 function boardText(){const d=frameDims();return pattern.kind==='square'?`${d[0]} × ${d[1]} square board${d[0]*d[1]>1?'s':''}`:pattern.kind==='hexb'?`hex board, ${d[0]} per side`:`${d[0]} × ${d[1]} iso board`}
 function makeProject(name){
   const set=clone(st),snap=snapPattern(pattern.kind,pattern.sites,pattern.colors),d=frameDims();
-  delete set.ui;delete set.tap;delete set.ed;delete set.keepEdits;delete set.tile;delete set.trace;set.iso=null;   /* view and editing preferences stay with the browser */
+  delete set.ui;delete set.tap;delete set.ed;delete set.keepEdits;delete set.tile;delete set.trace;delete set.pr;delete set.guides;delete set.marks;set.iso=null;   /* view and editing preferences stay with the browser */
   snap.board=pattern.kind==='square'?{type:'square',boardsAcross:d[0],boardsDown:d[1],pegsPerBoard:BOARD}
     :pattern.kind==='hexb'?{type:'hex',pegsPerSide:d[0],orientation:st.lat.orient}:{type:'iso',columns:d[0],rows:d[1],offsetEverySecond:st.lat.stagger==='cols'?'column':'row'};
   return{format:'fig-project',version:1,app:'FIG '+VERSION,saved:new Date().toISOString(),name,settings:set,picture:srcUrl||null,
@@ -3070,7 +3435,7 @@ async function saveProject(){
 function openProject(text){
   const msg=$('projMsg');let p;
   try{p=readProject(text)}catch(e){msg.textContent=PROJ_ERR[e&&e.message]||PROJ_ERR.notfig;say(msg.textContent);return}
-  const mine={tap:st.tap,ui:st.ui,ed:st.ed,keepEdits:st.keepEdits,fade:st.fade,labels:st.labels,tile:st.tile,trace:st.trace};
+  const mine={tap:st.tap,ui:st.ui,ed:st.ed,keepEdits:st.keepEdits,fade:st.fade,labels:st.labels,tile:st.tile,trace:st.trace,pr:st.pr,guides:st.guides,marks:st.marks};
   st=Object.assign(tidy(merge(DEF,p.settings)),mine);st.iso=null;
   let extra='';
   if(p.sheet){const v=cleanInv(p.sheet);if(v&&v.rows.length){if(inv&&JSON.stringify(inv)!==JSON.stringify(v))extra=' It brought its own bead sheet, which replaced the one loaded here.';inv=v;store.set('fl:inv',inv)}}
@@ -3296,6 +3661,7 @@ function exportText(){
     if(!buy.length)return realBeads()?'You have enough of every colour this pattern uses.':'Use Catalog, or a Scheme with real beads, with an imported bead sheet to get a shopping list.';
     return 'section,colour,item,beads,bags_to_buy\n'+buy.map(r=>['buy',q(r.name),q(r.code||''),r.need,r.bags].join(',')).join('\n');
   }
+  {const k=$('expKind').value;if(k==='shop'||k==='bycount'||k==='chunkcount')return printExport(k,q)}   /* 1.6 */
   if($('expKind').value==='counts'){
     const cnt={};pattern.sites.forEach(s=>{if(!s.c)return;const c=cnt[s.c]=cnt[s.c]||{n:0,d:0};c.n++;if(prog.has(s.k))c.d++});
     return 'colour,hex,needed,placed\n'+pattern.order.filter(c=>cnt[c]).map(c=>[q(pattern.colors[c].name),pattern.colors[c].hex,cnt[c].n,cnt[c].d].join(',')).join('\n');
@@ -3314,8 +3680,235 @@ $('copy').addEventListener('click',async()=>{
   catch(e){$('expText').select();$('copyMsg').textContent='Copying isn’t available here. The text is selected, so copy it manually.'}
 });
 
+/* ---------- print and build (1.6) ----------
+   Nothing here changes a pattern. The print pages, counts and shop list are made from the pattern on screen when they are
+   asked for; the guides and bead marks are views laid over the board. */
+const pegKind=()=>KIND[st.source];
+const pegMM=(k=pegKind())=>st.pr.peg[k]==='own'?st.pr.mm[k]:PEG_MM[st.pr.peg[k]];
+const BOARD_WORD={square:'square boards',hexb:'hex boards',iso:'iso boards'};
+/* the peg spacing buttons set the spacing of the board type in use */
+function pegKeys(){const k='pr.peg.'+pegKind();document.querySelectorAll('#pegSeg button').forEach(b=>b.dataset.k=k)}
+/* a colour's number in the mark list: its place among the colours this pattern uses */
+function markIndex(){
+  const key=pattern.order.join(',');
+  if(pattern.mkKey!==key){pattern.mk=new Map(pattern.order.map((c,i)=>[c,i]));pattern.mkKey=key}
+  return pattern.mk;
+}
+const markType=()=>st.pr.mark==='symbols'?'symbols':'letters';
+/* the mark of colour c, as a small picture for the colour lists; empty while marks are off */
+function dotMark(c){
+  if(!st.marks||!pattern)return'';const i=markIndex().get(c),k=pattern.colors[c];if(i===undefined||!k)return'';
+  return`<svg viewBox="-.5 -.5 1 1" aria-hidden="true">${markSVG(markType(),i,0,0,0.82,inkOn(k.hex))}</svg>`;
+}
+function printSync(){
+  const k=pegKind(),own=st.pr.peg[k]==='own';
+  $('mmRow').hidden=!own;if(document.activeElement!==$('pegMm'))$('pegMm').value=st.pr.mm[k];
+  $('prBw').checked=st.pr.bw;$('prMirror').checked=st.pr.mirror;$('prGuides').checked=st.pr.guides;$('prCover').checked=st.pr.cover;
+  $('guideCk').checked=st.guides;$('markCk').checked=st.marks;
+}
+/* ---------- the board: row and column guides, and bead marks ---------- */
+const gKey=s=>pattern.kind==='square'?{g:[s.bc*1000+s.lx,s.br*1000+s.ly],n:[s.lx+1,s.ly+1]}
+  :pattern.kind==='hexb'?{g:[s.q,s.r,-s.q-s.r],n:[s.q,s.r,-s.q-s.r]}:{g:[s.col,s.row],n:[s.col+1,s.row+1]};
+const gAxes=()=>pattern.kind==='hexb'?['xy','xy','xy']:['y','x'];
+const gLabel=(f,n)=>pattern.kind==='hexb'?'qrs'[f]+minus(n):String(n);
+let gLines=null;
+function guideDraw(){
+  const svg=$('board');let g=$('gdG');if(g)g.remove();gLines=null;
+  if(!pattern||!st.guides)return;
+  gLines=guideLines(pattern.sites.map((s,i)=>({x:s.x,y:s.y,i,...gKey(s)})),gAxes());
+  let out='';
+  gLines.forEach((m,f)=>{const[lo,hi]=lineSpan(m);for(const l of m.values()){if(!keyLine(l.n,lo,hi))continue;const P=l.pegs;
+    for(const[e,sg]of[[P[0],-1],[P[P.length-1],1]])out+=`<text class="gdl" x="${f3(e.x+l.dir[0]*sg*0.66)}" y="${f3(e.y+l.dir[1]*sg*0.66+0.15)}" text-anchor="middle">${gLabel(f,l.n)}</text>`}});
+  g=document.createElementNS(NS,'g');g.setAttribute('id','gdG');g.setAttribute('class','gd');g.innerHTML=out+'<g id="gdX"></g>';
+  const before=$('lblG');before?svg.insertBefore(g,before):svg.appendChild(g);
+}
+/* the crosshair: the lines through the tapped peg, with their numbers at both ends */
+function crossDraw(){
+  const x=$('gdX');if(!x)return;const s=pattern&&pattern.sites[sel];
+  if(!s||!gLines){if(x.firstChild)x.textContent='';return}
+  const k=gKey(s);let out='';
+  gLines.forEach((m,f)=>{const l=m.get(k.g[f]);if(!l)return;const P=l.pegs,a=P[0],z=P[P.length-1],[dx,dy]=l.dir;
+    out+=`<polyline class="gdx" points="${[[a.x-dx*0.45,a.y-dy*0.45],...P.map(q=>[q.x,q.y]),[z.x+dx*0.45,z.y+dy*0.45]].map(p=>f3(p[0])+','+f3(p[1])).join(' ')}"/>`;
+    for(const[e,sg]of[[a,-1],[z,1]])out+=`<text class="gdxl" x="${f3(e.x+dx*sg*0.66)}" y="${f3(e.y+dy*sg*0.66+0.16)}" text-anchor="middle">${gLabel(f,l.n)}</text>`});
+  x.innerHTML=out;
+}
+/* bead marks over the board: a disc of the bead's colour with its letter or symbol, faded with the bead */
+function markDraw(){
+  const svg=$('board');let g=$('mkG');if(g)g.remove();
+  if(!pattern)return;for(const s of pattern.sites)s.mk=null;if(!st.marks)return;
+  const mi=markIndex(),type=markType(),list=[];let out='';
+  for(const s of pattern.sites){if(!s.c)continue;const k=pattern.colors[s.c];list.push(s);
+    out+=`<g transform="translate(${f3(s.x)} ${f3(s.y)})"><circle r=".29" fill="${k.hex}"/>${markSVG(type,mi.get(s.c),0,0,0.56,inkOn(k.hex))}</g>`}
+  g=document.createElementNS(NS,'g');g.setAttribute('id','mkG');g.setAttribute('class','mk');g.innerHTML=out;
+  const before=$('gdG')||$('lblG');before?svg.insertBefore(g,before):svg.appendChild(g);
+  [...g.children].forEach((e,j)=>{list[j].mk=e});
+  styles();
+}
+$('guideCk').addEventListener('change',e=>{st.guides=e.target.checked;saveSettings();guideDraw();crossDraw()});
+$('markCk').addEventListener('change',e=>{st.marks=e.target.checked;saveSettings();markDraw();refresh()});
+/* ---------- peg spacing and the finished size ---------- */
+function sizeUI(){
+  const k=pegKind(),mm=pegMM(k),own=st.pr.peg[k]==='own';
+  txt('pegNote',own?`Your ${BOARD_WORD[k]}: ${mm} mm between peg centres.`
+    :`${mm} mm between peg centres, the usual ${st.pr.peg[k]} spacing. Not measured yet: choose My board and type in your own board’s spacing for exact prints.`);
+  if(!pattern){txt('sizeOut','');return}
+  const sq=pattern.kind==='square',all=[],pts=[];
+  for(const s of pattern.sites){const p=sq?[s.gx,s.gy]:[s.x,s.y];all.push(p);if(s.c)pts.push(p)}
+  const f=b=>`${Math.round(b.w*mm)} × ${Math.round(b.h*mm)} mm (${(b.w*mm/MM_IN).toFixed(1)} × ${(b.h*mm/MM_IN).toFixed(1)} in)`,b=spanOf(pts),a=spanOf(all);
+  const what=sq?(pattern.nbx*pattern.nby>1?`The ${pattern.nbx} × ${pattern.nby} boards`:'The board'):'The board';
+  txt('sizeOut',(pts.length?`Finished size: ${f(b)}`+(sq?`, ${b.w} beads across and ${b.h} down`:'')+`. ${what}: ${f(a)}.`:`No beads yet. ${what}: ${f(a)}.`)+' Ironed pieces come out a little smaller.');
+}
+$('pegMm').addEventListener('change',e=>{const v=parseFloat(String(e.target.value).replace(',','.')),k=pegKind();
+  if(Number.isFinite(v))st.pr.mm[k]=clamp(Math.round(v*100)/100,1,30);e.target.value=st.pr.mm[k];saveSettings();printDirty()});
+/* ---------- counts per board and per chunk ---------- */
+function countGroups(by){
+  const k=pattern.kind,sq=k==='square',num=s=>String(s).replace(/^w/,'').split('.').map(Number);
+  const G=countBy(pattern.sites,by==='board'?s=>sq?s.br*100+s.bc:0:s=>s.ch);
+  const order=g=>{if(by==='board')return[g.key];const p=num(g.key);return sq?[p[1],p[0],p[3],p[2]]:k==='iso'?[p[1],p[0]]:p};
+  G.sort((a,b)=>{const x=order(a),y=order(b);for(let i=0;i<x.length;i++)if(x[i]!==y[i])return x[i]-y[i];return 0});
+  const ord=new Map(pattern.order.map((c,i)=>[c,i]));
+  return G.map(g=>{const s=g.first;
+    const name=by==='board'?(sq?'Board '+(s.bc+1)+'-'+(s.br+1):k==='hexb'?'Hex board':'Iso board'):(pattern.chunks[s.ch]?pattern.chunks[s.ch].label:String(s.ch));
+    let n=0;for(const v of g.m.values())n+=v;
+    return{name,n,cols:[...g.m].sort((a,b)=>(ord.get(a[0])??1e9)-(ord.get(b[0])??1e9))}});
+}
+function countsUI(){
+  const box=$('cntList');if(!pattern){box.innerHTML='';return}
+  const G=countGroups(st.pr.count);
+  box.innerHTML=G.length?G.map(g=>`<div class="cgrp"><b>${esc(g.name)}</b> <span class="sub">${plural(g.n,'bead')}, ${plural(g.cols.length,'colour')}</span><div class="cchips">${g.cols.map(([c,n])=>{const k=pattern.colors[c];
+    return`<span class="cchip"><span class="dot${st.marks?' mk':''}" style="background:${esc(k.hex)}">${dotMark(c)}</span>${esc(k.name)} <b>${n}</b></span>`}).join('')}</div></div>`).join('')
+    :'<p class="sub">No beads yet.</p>';
+}
+/* ---------- shopping by shop ---------- */
+let shopMap=null,shopInv=null;
+function shopInfoFor(r){
+  if(!inv)return null;
+  if(shopInv!==inv){shopInv=inv;shopMap=new Map();
+    for(const x of inv.rows){if(!x.hex)continue;const i={shop:x.shop||'',price:Number.isFinite(x.price)?x.price:null,cur:x.cur||'',url:x.url||''};
+      for(const nm of[x.name,x.brand+' '+x.name])shopMap.set(colKey({hex:x.hex,name:nm,code:x.code}),i)}}
+  return shopMap.get(colKey({hex:r.hex,name:r.name,code:r.code||''}))||null;
+}
+function shopUI(buy){
+  const on=st.pr.shop==='shop',box=$('shopList');$('orderList').hidden=on;box.hidden=!on;if(!on)return;
+  if(!buy.length){box.innerHTML='<p class="sub">You have enough of every colour this pattern uses.</p>';return}
+  const G=byShop(buy,shopInfoFor),any=G.some(g=>g.shop||g.priced);let tot=0,cur='',missing=0;
+  const html=G.map(g=>{tot+=g.cost;cur=cur||g.cur;missing+=g.rows.length-g.priced;
+    return`<h4>${esc(g.shop||'No Shop Given')}</h4><table class="otab"><thead><tr><th>Colour</th><th class="n">Bags</th><th class="n">Cost</th></tr></thead><tbody>${g.rows.map(r=>
+      `<tr><td><span class="dot" style="background:${esc(r.hex)}"></span>${esc(r.name)}${r.code?` <span class="code">${esc(r.code)}</span>`:''}${r.url?` <a class="buy" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer" aria-label="Buy ${esc(r.name)}${g.shop?' at '+esc(g.shop):''} (opens in a new tab)">Buy</a>`:''}</td><td class="n">${r.bags}</td><td class="n">${r.cost===null?'–':esc(money(r.cost,r.cur))}</td></tr>`).join('')}</tbody>${g.priced?`<tfoot><tr><td>Subtotal</td><td></td><td class="n">${esc(money(g.cost,g.cur))}</td></tr></tfoot>`:''}</table>`}).join('');
+  box.innerHTML=(any?'':'<p class="sub">Your bead sheet has no Shop or Price column yet. Add them to group this list by shop and add up the cost.</p>')+html
+    +(tot?`<p class="shopTot"><b>Total: ${esc(money(tot,cur))}</b>${missing?` <span class="sub">(${plural(missing,'colour')} without a price)</span>`:''}</p>`:'');
+}
+/* ---------- the print pages ---------- */
+function printOpts(){const k=pegKind(),p=st.pr;return{paper:p.paper,exact:p.scale==='exact',mm:pegMM(k),measured:p.peg[k]==='own',std:p.peg[k],mark:p.mark,bw:p.bw,mirror:p.mirror,guides:p.guides,version:VERSION}}
+/* the pattern on screen, board by board, in peg spacings */
+function printData(){
+  const k=pattern.kind,sq=k==='square',hx=k==='hexb',sites=pattern.sites,boards=[],skipped=[];
+  const colours=pattern.order.map(id=>{const c=pattern.colors[id];return{id,name:c.name,hex:c.hex,code:c.code||''}});
+  const beadsIn=pegs=>pegs.reduce((a,p)=>a+(p.c?1:0),0);
+  if(sq){
+    const by=new Map();
+    for(const s of sites){const key=s.br*100+s.bc;let b=by.get(key);
+      if(!b){b={name:'Board '+(s.bc+1)+'-'+(s.br+1),pegs:[],frame:[-0.5,-0.5,BOARD-0.5,BOARD-0.5],poly:null};by.set(key,b)}
+      b.pegs.push({x:s.lx,y:s.ly,c:s.c,g:[s.lx+1,s.ly+1],n:[s.lx+1,s.ly+1]})}
+    for(const key of[...by.keys()].sort((a,b)=>a-b))boards.push(by.get(key));
+  }else{
+    const pegs=sites.map(s=>{const n=hx?[s.q,s.r,-s.q-s.r]:[s.col+1,s.row+1];return{x:s.x,y:s.y,c:s.c,g:n,n}});
+    let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const p of pegs){x0=Math.min(x0,p.x);y0=Math.min(y0,p.y);x1=Math.max(x1,p.x);y1=Math.max(y1,p.y)}
+    let poly=null,frame=[x0-0.6,y0-0.6,x1+0.6,y1+0.6];
+    if(hx){   /* the hexagon around the pegs, from the centre peg and one step along q and along r */
+      const at=(q,r)=>sites.find(s=>s.q===q&&s.r===r),o=at(0,0),a=at(1,0),b=at(0,1);
+      if(o&&a&&b){let B=0;for(const s of sites)B=Math.max(B,Math.abs(s.q),Math.abs(s.r),Math.abs(s.q+s.r));const c=B+0.62;
+        poly=[[c,0],[0,c],[-c,c],[-c,0],[0,-c],[c,-c]].map(([q,r])=>[o.x+q*(a.x-o.x)+r*(b.x-o.x),o.y+q*(a.y-o.y)+r*(b.y-o.y)]);
+        frame=[Math.min(...poly.map(p=>p[0])),Math.min(...poly.map(p=>p[1])),Math.max(...poly.map(p=>p[0])),Math.max(...poly.map(p=>p[1]))]}}
+    boards.push({name:hx?'Hex board':'Iso board',pegs,frame,poly});
+  }
+  const d=frameDims();
+  for(const b of boards)b.info=(sq?`${BOARD} × ${BOARD} pegs`:hx?`${d[0]} pegs a side`:`${d[0]} × ${d[1]} pegs`)+` · ${plural(beadsIn(b.pegs),'bead')}`;
+  const keep=boards.filter(b=>{const n=beadsIn(b.pegs);if(!n)skipped.push(b.name);return n>0});
+  let cover=null;
+  if(st.pr.cover){
+    const pegs=sites.map(s=>({x:sq?s.gx:s.x,y:sq?s.gy:s.y,c:s.c})),sp=spanOf(pegs.filter(p=>p.c).map(p=>[p.x,p.y])),mm=pegMM();
+    let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const p of pegs){x0=Math.min(x0,p.x);y0=Math.min(y0,p.y);x1=Math.max(x1,p.x);y1=Math.max(y1,p.y)}
+    const rects=sq?boards.map((b,i)=>{const s=sites.find(t=>'Board '+(t.bc+1)+'-'+(t.br+1)===b.name);return{x0:s.bc*BOARD-0.5,y0:s.br*BOARD-0.5,x1:(s.bc+1)*BOARD-0.5,y1:(s.br+1)*BOARD-0.5,name:b.name.replace('Board ','')}})
+      :[{x0:x0-0.6,y0:y0-0.6,x1:x1+0.6,y1:y1+0.6,name:''}];
+    const buy=orderRows(),shops=[];
+    if(buy.length){for(const g of byShop(buy,shopInfoFor)){shops.push((g.shop||'No shop given')+(g.priced?`: ${money(g.cost,g.cur)}`:''));
+      for(const r of g.rows)shops.push(`  ${r.name}${r.code?' ('+r.code+')':''}: ${plural(r.bags,'bag')}${r.cost===null?'':', '+money(r.cost,r.cur)}`)}}
+    cover={sub:`${boardText()} · ${plural(beadsIn(pegs),'bead')} · ${plural(colours.length,'colour')}`,
+      lines:[`Finished size: ${Math.round(sp.w*mm)} × ${Math.round(sp.h*mm)} mm (${(sp.w*mm/MM_IN).toFixed(1)} × ${(sp.h*mm/MM_IN).toFixed(1)} in) at ${mm} mm between peg centres, before ironing.`,
+        `${plural(keep.length,'board page')} follow${keep.length===1?'s':''}`+(skipped.length?`; ${skipped.join(', ')} ${skipped.length>1?'have':'has'} no beads`:'')+'.'],
+      pegs,frame:[x0-0.6,y0-0.6,x1+0.6,y1+0.6],rects,shops:shops.length?['To buy, by shop',...shops]:[]};
+  }
+  return{title:patName()||'FIG pattern',fams:hx?['q','r','s']:['Column','Row'],axes:hx?['xy','xy','xy']:['y','x'],colours,boards:keep,skipped,cover};
+}
+let prCache=null,prTimer=0;
+function sheets(){if(!prCache){const D=printData();prCache={...sheetPages(D,printOpts()),skipped:D.skipped}}return prCache}
+/* the pattern or a print choice changed: the pages are made again when next needed */
+function printDirty(){
+  prCache=null;$('printOut').textContent='';document.body.classList.remove('printing');
+  if(!$('printBox').open)return;
+  sizeUI();countsUI();clearTimeout(prTimer);prTimer=setTimeout(printPreview,EXPORT_DELAY);
+}
+function printChanged(){markDraw();refresh();orderUI()}
+const PREVIEW_PAGES=3;
+function printPreview(){
+  const box=$('prPrev');
+  if(!pattern){box.textContent='';txt('prInfo','Make a pattern first.');$('prPrint').disabled=$('prSave').disabled=true;return}
+  const R=sheets(),n=R.pages.length;$('prPrint').disabled=$('prSave').disabled=!n;
+  if(!n){box.textContent='';txt('prInfo','Nothing to print yet: the board has no beads.');return}
+  const paper=st.pr.paper==='a4'?'A4':'Letter';
+  let info=`${plural(n,'page')} on ${paper} paper, ${R.orient}.`;
+  if(R.skipped.length)info+=` ${R.skipped.join(', ')} ${R.skipped.length>1?'have':'has'} no beads, so no page.`;
+  if(st.pr.scale==='fit')info+=` Not true size: the smallest board is drawn at ${mm1(R.low)} mm a peg.`;
+  if(st.pr.mark!=='none'&&R.low<MARK_MIN)info+=' Beads too small to mark clearly are left without marks.';
+  if(st.pr.bw&&st.pr.mark==='none')info+=' Black and white uses letters, since the colours won’t show.';
+  txt('prInfo',info);
+  box.innerHTML=R.pages.slice(0,PREVIEW_PAGES).map((p,i)=>`<div class="sheet" role="img" aria-label="Page ${i+1}: ${esc(p.name)}">${p.svg}</div>`).join('')
+    +(n>PREVIEW_PAGES?`<p class="sub">And ${plural(n-PREVIEW_PAGES,'more page')}.</p>`:'');
+}
+function doPrint(){
+  const msg=$('prMsg');if(!pattern){msg.textContent='Make a pattern first.';return}
+  const R=sheets();if(!R.pages.length){msg.textContent='Nothing to print yet: the board has no beads.';return}
+  $('printOut').innerHTML=R.pages.map(p=>`<div class="sheet">${p.svg}</div>`).join('');
+  let css=$('prPageCss');if(!css){css=document.createElement('style');css.id='prPageCss';document.head.appendChild(css)}
+  css.textContent=`@media print{@page{size:${st.pr.paper==='a4'?'A4':'letter'} ${R.orient};margin:${SHEET_MARGIN}mm}}`;
+  document.body.classList.add('printing');
+  msg.textContent=`The print box opens with ${plural(R.pages.length,'page')}. Choose Save as PDF there to keep a copy.`+(st.pr.scale==='exact'?' For true size, set the scale to 100% (Actual size).':'');
+  say(msg.textContent);
+  try{window.print()}catch(e){msg.textContent='Printing isn’t available here. Use Save pages as a file, then open and print that file.'}
+}
+async function savePages(){
+  const msg=$('prMsg');if(!pattern){msg.textContent='Make a pattern first.';return}
+  const R=sheets();if(!R.pages.length){msg.textContent='Nothing to print yet: the board has no beads.';return}
+  const title=patName()||'FIG pattern',paper=st.pr.paper==='a4'?'A4':'letter',W=f3(R.w);
+  const doc=`<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}: pages to print</title><style>`
+    +`@page{size:${paper} ${R.orient};margin:${SHEET_MARGIN}mm}body{margin:0;background:#E4E7EB;color:#111;font-family:system-ui,-apple-system,sans-serif}`
+    +`.sheet{width:${W}mm;margin:16px auto;padding:${SHEET_MARGIN}mm;background:#FFF;box-sizing:content-box}.sheet svg{display:block}p{margin:16px auto;max-width:${W}mm;padding:0 12px;font-size:15px;line-height:1.45}`
+    +`@media screen and (max-width:900px){.sheet{width:auto;margin:12px;padding:3%}.sheet svg{width:100%;height:auto}}`
+    +`@media print{body{background:#FFF}p{display:none}.sheet{width:auto;margin:0;padding:0;break-after:page}.sheet:last-child{break-after:auto}}</style></head><body>`
+    +`<p>${esc(title)}: ${plural(R.pages.length,'page')} from FIG ${VERSION}. Print this page from your browser`+(st.pr.scale==='exact'?' at 100% (Actual size), and check the 100 mm bar before you build':'')+'.</p>'
+    +R.pages.map(p=>`<div class="sheet">${p.svg}</div>`).join('')+'</body></html>';
+  const file=(title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'fig-pattern')+'-print.html';
+  await saveFile(file,new Blob([doc],{type:'text/html'}),msg);
+}
+$('prPrint').addEventListener('click',doPrint);
+$('prSave').addEventListener('click',savePages);
+[['prBw','bw'],['prMirror','mirror'],['prGuides','guides'],['prCover','cover']].forEach(([id,k])=>$(id).addEventListener('change',e=>{st.pr[k]=e.target.checked;saveSettings();printDirty()}));
+$('printBox').addEventListener('toggle',()=>{if($('printBox').open)printDirty()});
+/* the new lists for Export */
+function printExport(kind,q){
+  if(kind==='shop'){
+    const buy=orderRows();
+    if(!buy.length)return realBeads()?'You have enough of every colour this pattern uses.':'Use Catalog, or a Scheme with real beads, with an imported bead sheet to get a shopping list.';
+    return'shop,colour,item,beads,bags_to_buy,price_per_bag,cost,link\n'+byShop(buy,shopInfoFor).flatMap(g=>g.rows.map(r=>
+      [q(g.shop),q(r.name),q(r.code||''),r.need,r.bags,r.price===null?'':r.price.toFixed(2),r.cost===null?'':r.cost.toFixed(2),q(r.url)].join(','))).join('\n');
+  }
+  const by=kind==='bycount'?'board':'chunk';
+  return by+',colour,item,hex,beads\n'+countGroups(by).flatMap(g=>g.cols.map(([c,n])=>{const k=pattern.colors[c];return[q(g.name),q(k.name),q(k.code||''),k.hex,n].join(',')})).join('\n');
+}
+
 /* ---------- start ---------- */
-[['orderBox','order'],['legendBox','legend'],['adjBox','adj'],['cleanBox','clean'],['swapBox','swap'],['slideBox','slide'],['projBox','proj'],['stampBox','stamp']].forEach(([id,k])=>{const d=$(id);d.open=st.ui[k]!==false;
+[['orderBox','order'],['legendBox','legend'],['adjBox','adj'],['cleanBox','clean'],['swapBox','swap'],['slideBox','slide'],['projBox','proj'],['stampBox','stamp'],['printBox','print']].forEach(([id,k])=>{const d=$(id);d.open=st.ui[k]!==false;
   d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
 palUI();
 const storedImg=store.get('fl:img');
