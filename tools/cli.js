@@ -44,6 +44,8 @@ function site(cfg,dir,out){
   const groups=W.groupApps(cfg.sections,apps);
   for(const g of groups)if(g.id==='more-apps')console.error(`Note: ${g.apps.map(x=>x.folder).join(', ')} ${g.apps.length===1?'has':'have'} no "section" from the "sections" list in site.json, so ${g.apps.length===1?'it goes':'they go'} under More Apps.`);
   fs.writeFileSync(path.join(out,'index.html'),W.siteIndex({title:cfg.title||'Apps',tagline:cfg.tagline||'',accent:cfg.accent||'#3D4FB5',foot:cfg.foot||'',sections:cfg.sections},apps,files));
+  /* the front page's own Home Screen icons, so it doesn't use the first app's */
+  for(const ic of W.SITE_ICONS)fs.writeFileSync(path.join(out,ic.name),W.pngFrom(W.siteIconPixels(ic.size,cfg.accent||'#3D4FB5'),ic.size,b=>zlib.deflateSync(b,{level:9})));
   fs.writeFileSync(path.join(out,'.nojekyll'),'');
   /* the README's app list follows site.json: a line "__APPS__" becomes one line per app, under a heading per section if there are sections */
   const line=x=>`- [\`${x.folder}/\`](${base?base+x.folder+'/':x.folder+'/'}): ${x.code}, ${x.name}`;

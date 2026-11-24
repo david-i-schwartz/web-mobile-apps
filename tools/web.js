@@ -1,6 +1,7 @@
 /* Web folders: what an app needs to live at a web address and go on a phone's Home Screen.
    webFolder(html, info) -> {files: {name: text}, icons: [{name, size}]}   index.html, manifest.webmanifest, sw.js (+ icons to draw)
    iconPixels(size, code, accent) -> RGBA pixels of a bead-letter icon      (Node turns them into PNG with pngFrom; the page uses a canvas)
+   siteIconPixels(size, accent) -> RGBA pixels of the front page's icon: a 3 x 3 grid of beads (SITE_ICONS lists the files)
    siteIndex(site, apps) -> the front page listing the apps (grouped under headings when site.sections is set)
    groupApps(sections, apps) -> [{name, id, blurb, apps}] for those headings
    zip(files) -> a .zip (stored, not compressed) of [{name, data: Uint8Array}]
@@ -25,18 +26,29 @@ const FONT={A:'01110100011000111111100011000110001',B:'1111010001100011111010001
   Y:'10001100010101000100001000010000100',Z:'11111000010001000100010001000011111','0':'01110100011001110101110011000101110','1':'00100011000010000100001000010001110',
   '2':'01110100010000100010001000100011111','3':'11111000100010000010000011000101110','4':'00010001100101010010111110001000010','5':'11111100001111000001000011000101110',
   '6':'00110010001000011110100011000101110','7':'11111000010001000100010000100001000','8':'01110100011000101110100011000101110','9':'01110100011000101111000010001001100'};
-function iconPixels(size,code,accent){
-  const px=new Uint8ClampedArray(size*size*4),bg=rgbOf(accent),ink=rgbOf(inkFor(accent));
+function iconBase(size,accent){
+  const px=new Uint8ClampedArray(size*size*4),bg=rgbOf(accent);
   for(let i=0;i<size*size;i++){px[i*4]=bg[0];px[i*4+1]=bg[1];px[i*4+2]=bg[2];px[i*4+3]=255}
+  return px;
+}
+function bead(px,size,ink,cx,cy,R,H){   /* a bead: a disc with a hole, with soft edges */
+  for(let y=Math.max(0,Math.floor(cy-R-1));y<=Math.min(size-1,Math.ceil(cy+R+1));y++)for(let x=Math.max(0,Math.floor(cx-R-1));x<=Math.min(size-1,Math.ceil(cx+R+1));x++){
+    const d=Math.hypot(x+0.5-cx,y+0.5-cy),a=Math.max(0,Math.min(1,R+0.5-d))-Math.max(0,Math.min(1,H+0.5-d));if(a<=0)continue;
+    const k=(y*size+x)*4;for(let c=0;c<3;c++)px[k+c]=Math.round(px[k+c]*(1-a)+ink[c]*a)}
+}
+function iconPixels(size,code,accent){
+  const px=iconBase(size,accent),ink=rgbOf(inkFor(accent));
   const chars=String(code).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4).split('').filter(c=>FONT[c]);
   if(!chars.length)return px;
   const cols=chars.length*6-1,cell=Math.min(size*0.74/cols,size*0.56/7),ox=(size-cols*cell)/2,oy=(size-7*cell)/2,R=0.47*cell,H=0.15*cell;
-  const dot=(cx,cy)=>{   /* a bead: a disc with a hole, with soft edges */
-    for(let y=Math.max(0,Math.floor(cy-R-1));y<=Math.min(size-1,Math.ceil(cy+R+1));y++)for(let x=Math.max(0,Math.floor(cx-R-1));x<=Math.min(size-1,Math.ceil(cx+R+1));x++){
-      const d=Math.hypot(x+0.5-cx,y+0.5-cy),a=Math.max(0,Math.min(1,R+0.5-d))-Math.max(0,Math.min(1,H+0.5-d));if(a<=0)continue;
-      const k=(y*size+x)*4;for(let c=0;c<3;c++)px[k+c]=Math.round(px[k+c]*(1-a)+ink[c]*a)}
-  };
-  chars.forEach((ch,i)=>{const f=FONT[ch];for(let r=0;r<7;r++)for(let c=0;c<5;c++)if(f[r*5+c]==='1')dot(ox+(i*6+c+0.5)*cell,oy+(r+0.5)*cell)});
+  chars.forEach((ch,i)=>{const f=FONT[ch];for(let r=0;r<7;r++)for(let c=0;c<5;c++)if(f[r*5+c]==='1')bead(px,size,ink,ox+(i*6+c+0.5)*cell,oy+(r+0.5)*cell,R,H)});
+  return px;
+}
+/* the front page's own icon, so it doesn't borrow an app's: nine beads in a 3 x 3 grid (the usual "apps" sign) on the
+   site's accent colour. It stays inside the middle 80% circle, so Android can crop it to any shape. */
+function siteIconPixels(size,accent){
+  const px=iconBase(size,accent),ink=rgbOf(inkFor(accent)),step=0.2*size,R=0.075*size,H=0.024*size;
+  for(let r=-1;r<=1;r++)for(let c=-1;c<=1;c++)bead(px,size,ink,size/2+c*step,size/2+r*step,R,H);
   return px;
 }
 /* ---------- PNG and ZIP, small and dependency-free (PNG compression comes from Node's zlib, passed in) ---------- */
@@ -198,7 +210,9 @@ ${cardsOf(g.apps)}
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="${esc(site.accent)}">
 <title>${esc(site.title)}</title>
-<link rel="icon" href="${esc(apps[0]?apps[0].folder+'/icon-192.png':'')}">
+<link rel="icon" href="icon-192.png" sizes="192x192">
+<link rel="icon" href="icon-512.png" sizes="512x512">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 ${css.trim()}
 :root{--accent:${site.accent};--accent-ink:${inkFor(site.accent)}}
@@ -260,7 +274,8 @@ ${listing}
 `;
 }
 
-const api={iconPixels,pngFrom,zip,crc32,webFolder,siteIndex,groupApps,infoOf,inkFor,HOME_JS_NAME};
+const SITE_ICONS=[{name:'icon-192.png',size:192},{name:'icon-512.png',size:512},{name:'apple-touch-icon.png',size:180}];
+const api={iconPixels,siteIconPixels,SITE_ICONS,pngFrom,zip,crc32,webFolder,siteIndex,groupApps,infoOf,inkFor,HOME_JS_NAME};
 root.AppWeb=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
