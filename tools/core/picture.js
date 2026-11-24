@@ -427,7 +427,7 @@ emptyWhy=()=>srcImg||st.blank?'':'Choose a picture to turn it into '+APP.unit.ma
 
 /* ---------- loading a picture ---------- */
 /* picture messages go to the Picture section and, while no picture is loaded, under the big Choose image button */
-function picSay(m){txt('imgMsg',m);const e=$('empty');txt('emptyNote',e&&!e.hidden?m:'');say(m)}
+function picSay(m){txt('imgMsg',m);const e=$('empty'),onGrid=!!e&&!e.hidden;txt('emptyNote',onGrid?m:'');if(m&&!onGrid)reveal($('imgMsg'));say(m)}
 function loadImage(url,fresh,seq=++loadSeq){
   const im=new Image();
   im.onload=()=>{

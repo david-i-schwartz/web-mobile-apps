@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#C2410C">
-<meta name="generator" content="HTML App Generator 1.5">
+<meta name="generator" content="HTML App Generator 1.6">
 <title>JAM: Jam Cutter</title>
 <script>document.documentElement.classList.remove('nojs')/* scripts run, so the app shows instead of the preview note */</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23C2410C%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2242%22%20font-family%3D%22system-ui%2Csans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%3EJAM%3C%2Ftext%3E%3C%2Fsvg%3E">
@@ -13,8 +13,8 @@
  "code": "JAM",
  "name": "Jam Cutter",
  "tagline": "Finds where the band is playing in a practice recording, cuts each take into MP3s, and lets you name, keep or toss them. Everything stays on this device.",
- "version": "1.1",
- "date": "22 Nov 2026",
+ "version": "1.2",
+ "date": "24 Nov 2026",
  "unit": {
   "one": "cell",
   "many": "cells"
@@ -214,6 +214,7 @@
   }
  ],
  "changes": [
+  "1.2: sections fold up. Tap a heading to open or close its section, and JAM remembers how you left each one; Review opens by itself when a cut is ready. The ? buttons and small buttons are 44 px targets in the shared core now.",
   "Opens Recorder’s zip (the recording and its transcript together) as well as the .m4a, and reads a download’s name (Nov_20_at_7-15_PM) as the recording’s date.",
   "Transcripts, as an option: kept with the cuts and shown in Review. Text copied from recorder.google.com has times, so pasting it shows what was said beside each clip.",
   "Plainer steps for downloading from recorder.google.com and for working without Google Drive for desktop.",
@@ -231,12 +232,12 @@
  "key": "jam:",
  "oldKeys": [],
  "ext": ".jam.json",
- "core": "1.3",
- "generator": "1.5"
+ "core": "1.4",
+ "generator": "1.6"
 }
 </script>
 <style>
-/* ==== CORE CSS: made by HTML App Generator 1.5 (core 1.3). Upgrade it with the generator rather than editing it here. ==== */
+/* ==== CORE CSS: made by HTML App Generator 1.6 (core 1.4). Upgrade it with the generator rather than editing it here. ==== */
 /* Core stylesheet of HTML App Generator apps. It grew from the stylesheet FIG and BIG share.
    The app's accent colours come after it, then the app's own styles (APP CSS). */
 
@@ -263,8 +264,8 @@ header p{margin:0;color:var(--muted);max-width:62ch}
 .controls{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 .group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
 h2{font-size:19px;margin:0 0 8px;line-height:1.25;font-weight:750}
-.pick{position:relative;overflow:hidden}
-.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+.pick{position:relative;overflow:hidden;display:inline-flex;align-items:center}
+.pick input[type=file]{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);opacity:0;cursor:pointer;font-size:100px}
 h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .sub{font-size:14px;color:var(--muted);margin:2px 0 0}
 .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
@@ -309,7 +310,7 @@ h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .crow.done .ct{color:var(--accent)}
 .dot{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);flex:none}
 .checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:15px}
-.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer}
+.checks label{display:flex;gap:8px;align-items:center;min-height:44px;cursor:pointer}
 input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
 .row{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;align-items:center;gap:10px;margin:6px 0}
 .row label{color:var(--muted);font-size:15px}
@@ -317,9 +318,10 @@ input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
 input[type=range]{width:100%;min-height:28px;accent-color:var(--accent)}
 #cropWrap{display:flex;justify-content:center;margin:8px 0 4px;background:var(--vp);border-radius:12px;padding:8px}
 #cropCv{display:block;touch-action:none;cursor:crosshair;border-radius:4px;max-width:100%}
-.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;vertical-align:middle;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
-.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.q::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+/* the ? help button: a 24 px circle inside a 44 px touch target (house rule 6); the transparent border is the extra target */
+.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px -4px;vertical-align:middle;border-radius:50%;border:10px solid transparent;background:var(--chip);background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
+.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
+.q:focus-visible{outline-offset:-8px}
 .tip{background:var(--chip);border-radius:10px;padding:8px 12px;margin:4px 0 8px}
 .tip p{margin:0 0 6px}.tip p:last-child{margin:0}
 input[type=color]{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden}
@@ -329,7 +331,7 @@ input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
 input[type=text],select{width:100%;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:44px}
 details summary{cursor:pointer;font-size:19px;font-weight:750}
 details.mini{margin-top:12px}
-details.mini summary{font-size:16px;font-weight:700;min-height:36px;display:list-item;padding:6px 0}
+details.mini summary{font-size:16px;font-weight:700;min-height:44px;display:list-item;padding:10px 0;line-height:24px}
 details.mini summary span{font-weight:400;font-size:14px;color:var(--muted)}
 textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:8px;resize:vertical}
 #imgMsg,#copyMsg{font-size:14px;color:var(--muted)}
@@ -357,8 +359,7 @@ input.zero::-moz-range-track{background:var(--zero)}
 .tip h4:first-child{margin-top:0}
 .tip p + ul,.tip ul + p{margin-top:6px}
 .tip a,#learn a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-h2 .q{margin-left:4px}
-details.mini .q{margin-left:4px}
+h2 .q,h3 .q,details.mini .q{margin:-10px -10px -10px -6px}
 /* ---- editing ---- */
 .btn:disabled,.ib:disabled{opacity:.45;cursor:default}
 #editBar{margin:0 0 10px}
@@ -375,7 +376,7 @@ details.mini .q{margin-left:4px}
 #editMsg{min-height:1.5em;margin:2px 2px 0}
 #board.editing .cell{cursor:crosshair}
 #board.lock{touch-action:none}
-.btn.sm{min-height:36px;padding:4px 12px;font-size:14px}
+.btn.sm{min-height:44px;padding:4px 12px;font-size:14px}
 .frow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin:8px 0}
 /* ---- from BIG, made general ---- */
 #board .ov{pointer-events:none}
@@ -407,6 +408,15 @@ details.mini .q{margin-left:4px}
 .nojs .nojs-note a{color:var(--accent);font-weight:700;word-break:break-all}
 .nojs main,.nojs .foot{display:none}
 #homeHow .hh-lead{margin-top:0}
+/* ---- fold-up sections (core 1.4, house rule 10). Every section with a heading is <details class="group" data-ui="…">
+   with its <h2> inside the <summary>: tap the heading to fold or unfold it, and the app remembers each one (st.ui).
+   Reference sections (Learn the Ideas, On Your Phone, About This Version, Credits) start closed; the rest start open. ---- */
+details.group>summary{min-height:44px;margin:-10px 0;padding:10px 0;line-height:24px;list-style-position:inside}
+details.group[open]>summary{margin-bottom:-2px}
+details.group>summary h2{display:inline;margin:0;line-height:inherit}
+details.group>summary .sub{font-weight:400}
+details.group>summary::marker{color:var(--muted)}
+details.group>summary::-webkit-details-marker{color:var(--muted)}
 /* ---- JAM's accent colours (from the spec) ---- */
 :root{--accent:#C2410C;--accent-ink:#FFFFFF}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#D78461;--accent-ink:#221510}}
@@ -447,14 +457,8 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:13px;
 @media (max-width:520px){.clip.part{margin-left:8px}#strip{height:84px}.frow{grid-template-columns:minmax(0,1fr)}}
 .pick.dis{opacity:.5;pointer-events:none}
 #cutMsg:not(:empty){margin-top:10px}
-/* 44 px touch targets (house rule 6) without changing the look: the ? keeps its 24 px circle inside a 44 px hit area */
-.q{width:44px;height:44px;border:10px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line);margin:-10px -10px -10px -4px}
-.q:focus-visible{outline-offset:-8px}
-.btn,.btn.sm,.pick{min-height:44px}
+/* the transcript's fold-outs are 44 px touch targets too (house rule 6); the core 1.4 does the rest */
 details>summary{min-height:44px;box-sizing:border-box;padding-top:8px;padding-bottom:8px}
-.pick{display:inline-flex;align-items:center;box-sizing:border-box}
-.pick input[type=file]{inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}
-h2 .q,h3 .q{margin:-10px -10px -10px -7px}
 .said{font-size:14px;color:var(--muted);margin:4px 0 2px;overflow-wrap:anywhere}
 .said b{color:var(--ink);font-weight:600}
 .at{font:13px ui-monospace,Menlo,Consolas,monospace;color:var(--accent)}
@@ -463,7 +467,6 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
 #txParas p{margin:6px 0;font-size:15px;overflow-wrap:anywhere}
 #txParas{max-height:360px;overflow:auto;padding-right:4px}
 .tx textarea{width:100%;min-height:120px;box-sizing:border-box;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel);color:var(--ink)}
-
 /* ==== APP CSS END ==== */
 </style>
 </head>
@@ -477,8 +480,8 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
   <div class="controls solo">
     <p class="warn" id="saveMsg" hidden>This browser isn’t keeping your work between visits.</p>
     <!-- ==== APP PANELS START ==== -->
-    <section class="group" id="cutBox">
-      <h2>Cut a Practice <button type="button" class="q" aria-controls="tipCut" aria-expanded="false" aria-label="Help: Cut a Practice">?</button></h2>
+    <details class="group" id="cutBox" data-ui="cutSec" open>
+      <summary><h2>Cut a Practice <button type="button" class="q" aria-controls="tipCut" aria-expanded="false" aria-label="Help: Cut a Practice">?</button></h2></summary>
       <div class="tip" id="tipCut" hidden>
         <h4>What This Does</h4>
         <p>JAM listens to a practice recording, finds where the band is playing (not talking or tuning), and cuts each take into its own MP3. Long takes are also cut into parts where the sound changes, such as a new riff or a break.</p>
@@ -522,10 +525,10 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
         <div class="btns"><button type="button" class="btn sm" id="stopBtn">Stop</button></div>
       </div>
       <p class="sub" id="cutMsg" aria-live="polite"></p>
-    </section>
+    </details>
 
-    <section class="group" id="reviewBox" hidden>
-      <h2>Review <button type="button" class="q" aria-controls="tipReview" aria-expanded="false" aria-label="Help: Review">?</button></h2>
+    <details class="group" id="reviewBox" hidden data-ui="reviewSec" open>
+      <summary><h2>Review <button type="button" class="q" aria-controls="tipReview" aria-expanded="false" aria-label="Help: Review">?</button></h2></summary>
       <div class="tip" id="tipReview" hidden>
         <h4>What This Is</h4>
         <p>Listen to each cut, name the keepers, and toss the rest. Nothing changes in your folders until you press Apply.</p>
@@ -564,10 +567,10 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
         <button type="button" class="btn" id="zipBtn" hidden>Save zip</button>
       </div>
       <p class="sub" id="applyMsg" aria-live="polite"></p>
-    </section>
+    </details>
 
     <details class="group" id="advBox" data-ui="adv">
-      <summary>Advanced</summary>
+      <summary><h2>Advanced</h2></summary>
       <p class="sub gap">These are used for the next cut. The defaults are the ones Jam Cutter 1.1 uses.</p>
       <div class="row wide"><label for="sSens">Sensitivity</label><input type="range" id="sSens" min="-12" max="12" step="0.5"><output id="sSensOut"></output></div>
       <p class="sub">Lower catches quieter playing; higher ignores more talking and noodling.</p>
@@ -592,29 +595,28 @@ h2 .q,h3 .q{margin:-10px -10px -10px -7px}
       <div class="checks"><label><input type="checkbox" data-k="jam.moveDone"> After cutting, move the recording to Inbox / Done</label></div>
       <div class="btns"><button type="button" class="btn sm" id="resetAdv">Back to the defaults</button></div>
     </details>
-
-<!-- ==== APP PANELS END ==== -->    <section class="group" id="learn">
-      <h2>Learn the Ideas</h2>
+<!-- ==== APP PANELS END ==== -->    <details class="group" id="learn" data-ui="learnSec">
+      <summary><h2>Learn the Ideas</h2></summary>
       <ul class="sub" id="learnList"></ul>
-    </section>
-    <details class="group" id="homeBox">
-      <summary>On Your Phone</summary>
+    </details>
+    <details class="group" id="homeBox" data-ui="homeSec">
+      <summary><h2>On Your Phone</h2></summary>
       <div class="sub" id="homeHow"></div>
     </details>
-    <details class="group">
-      <summary>About This Version <span class="sub" id="aboutWhen"></span></summary>
+    <details class="group" id="aboutBox" data-ui="aboutSec">
+      <summary><h2>About This Version <span class="sub" id="aboutWhen"></span></h2></summary>
       <ul class="sub" id="aboutList"></ul>
     </details>
-    <details class="group">
-      <summary>Credits</summary>
+    <details class="group" id="creditBox" data-ui="creditSec">
+      <summary><h2>Credits</h2></summary>
       <ul class="sub" id="creditList"></ul>
     </details>
   </div>
 </main>
-<p class="foot">JAM 1.1, made with HTML App Generator 1.5. One file, no server: everything stays in this browser.</p>
+<p class="foot">JAM 1.2, made with HTML App Generator 1.6. One file, no server: everything stays in this browser.</p>
 <div id="sr" class="sr" aria-live="polite"></div>
 <script>
-/* JAM: Jam Cutter 1.1. Made with HTML App Generator 1.5 (core 1.3).
+/* JAM: Jam Cutter 1.2. Made with HTML App Generator 1.6 (core 1.4).
    The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
 (()=>{
 'use strict';
@@ -639,7 +641,7 @@ const mem={},unsaved=new Set();
 const store={
   get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
   set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
-    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok},
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m){const was=m.hidden;m.hidden=!unsaved.size;if(was&&!m.hidden)reveal(m)}return ok},
   del(k){delete mem[k];unsaved.delete(k);try{localStorage.removeItem(k)}catch(e){}}
 };
 /* An app that was renamed moves what this browser saved under its old names (SPEC.oldKeys). */
@@ -692,6 +694,10 @@ function tidy(s){
 }
 let st=null;
 const saveSettings=()=>store.set(KEY+'settings',st);
+
+/* open every folded section round an element, so something the app shows by itself (a message, a warning, a help tip)
+   can be seen. Returns the element. Sections fold up (house rule 10), so APP CODE should call this too. */
+function reveal(el){for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el}
 
 /* one-off messages for screen readers */
 function say(t){const e=$('sr');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=t},60)}
@@ -762,8 +768,10 @@ function start(){
   st=tidy(store.get(KEY+'settings'));
   for(const f of HOOK.load)f();
   specText();
-  /* a help tip can have more than one ? button: they open and close it together */
-  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden;t.hidden=!open;
+  /* a help tip can have more than one ? button: they open and close it together. A ? in a section's heading sits inside
+     its <summary>, so its click stops there: it opens the help (and the section, if folded) without folding the section. */
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',ev=>{if(b.closest('summary')){ev.preventDefault();ev.stopPropagation()}
+    const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden||!!t.closest('details:not([open])');t.hidden=!open;if(open)reveal(t);
     document.querySelectorAll('.q[aria-controls="'+id+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
   document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
     d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
@@ -1869,7 +1877,7 @@ function openReview(rec){
   R=rec;cur=0;
   if(R.mode==='memory'){const d=store.get(draftKey());if(d&&Array.isArray(d.c))d.c.forEach((s,i)=>{const c=R.clips[i];if(c&&s&&s.id===c.id){c.keep=s.k!==false;c.name=str(s.n,80)}})}
   else{const d=store.get(draftKey());if(d&&Array.isArray(d.c))d.c.forEach((s,i)=>{const c=R.clips[i];if(c&&s&&s.id===c.id){c.keep=s.k!==false;c.name=str(s.n,80);c.song=str(s.s,120)}})}
-  $('reviewBox').hidden=false;
+  $('reviewBox').hidden=false;reveal($('reviewBox'));
   R.tx=R.transcript?parseTx(R.transcript):null;txt('txMsg','');
   const playing=R.takes.reduce((a,t)=>a+t.end-t.start,0),parts=R.clips.filter(c=>c.kind==='part').length;
   txt('revMeta',`${R.base}: ${plural(R.takes.length,'take')}${parts?', '+plural(parts,'part'):''} · ${fmtT(playing)} of playing in ${fmtT(R.duration)} · playing level ${R.threshold} dB`+(R.mode==='folder'?' · in '+R.folder:''));
@@ -1963,6 +1971,8 @@ function select(i,scroll){
   if(scroll){const el=$('clip'+cur);if(el)el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
   drawStrip();
 }
+/* Review folds up: the strip has no size while it's folded, so draw it again when it opens */
+$('reviewBox').addEventListener('toggle',()=>{if($('reviewBox').open)drawStrip()});
 function drawStrip(){
   const cv=$('strip');if(!cv||!R||$('reviewBox').hidden)return;
   const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim();
@@ -1989,8 +1999,8 @@ function stripClick(e){
   if(au.readyState>=1)go();else{au.preload='auto';au.addEventListener('loadedmetadata',go,{once:true});au.load()}
 }
 document.addEventListener('keydown',e=>{
-  if(!R||$('reviewBox').hidden||e.ctrlKey||e.metaKey||e.altKey)return;
-  const tg=e.target;if(tg&&(tg.tagName==='INPUT'&&tg.type!=='checkbox'||tg.tagName==='SELECT'||tg.tagName==='TEXTAREA'||tg.tagName==='AUDIO'&&e.key===' '))return;
+  if(!R||$('reviewBox').hidden||!$('reviewBox').open||e.ctrlKey||e.metaKey||e.altKey)return;
+  const tg=e.target;if(tg&&(tg.tagName==='INPUT'&&tg.type!=='checkbox'||tg.tagName==='SELECT'||tg.tagName==='TEXTAREA'||(tg.tagName==='AUDIO'||tg.tagName==='SUMMARY')&&e.key===' '))return;
   const k=e.key.toLowerCase();
   if(k==='j'){select(cur+1,true);say('Clip '+label(R.clips[cur]))}
   else if(k==='k'){select(cur-1,true);say('Clip '+label(R.clips[cur]))}
@@ -2117,7 +2127,6 @@ APP.onStart=()=>{
   }
   if(typeof AudioDecoder==='undefined')txt('cutMsg','This browser reads the whole recording into memory, so very long practices may not fit. Chrome or Edge handles them best.');
 };
-
 /* ==== APP CODE END ==== */
 
 start();

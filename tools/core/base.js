@@ -18,7 +18,7 @@ const mem={},unsaved=new Set();
 const store={
   get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
   set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
-    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok},
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m){const was=m.hidden;m.hidden=!unsaved.size;if(was&&!m.hidden)reveal(m)}return ok},
   del(k){delete mem[k];unsaved.delete(k);try{localStorage.removeItem(k)}catch(e){}}
 };
 /* An app that was renamed moves what this browser saved under its old names (SPEC.oldKeys). */
@@ -71,6 +71,10 @@ function tidy(s){
 }
 let st=null;
 const saveSettings=()=>store.set(KEY+'settings',st);
+
+/* open every folded section round an element, so something the app shows by itself (a message, a warning, a help tip)
+   can be seen. Returns the element. Sections fold up (house rule 10), so APP CODE should call this too. */
+function reveal(el){for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el}
 
 /* one-off messages for screen readers */
 function say(t){const e=$('sr');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=t},60)}
@@ -141,8 +145,10 @@ function start(){
   st=tidy(store.get(KEY+'settings'));
   for(const f of HOOK.load)f();
   specText();
-  /* a help tip can have more than one ? button: they open and close it together */
-  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden;t.hidden=!open;
+  /* a help tip can have more than one ? button: they open and close it together. A ? in a section's heading sits inside
+     its <summary>, so its click stops there: it opens the help (and the section, if folded) without folding the section. */
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',ev=>{if(b.closest('summary')){ev.preventDefault();ev.stopPropagation()}
+    const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden||!!t.closest('details:not([open])');t.hidden=!open;if(open)reveal(t);
     document.querySelectorAll('.q[aria-controls="'+id+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
   document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
     d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});

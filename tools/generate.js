@@ -5,7 +5,7 @@
    brief(spec) -> text                                     the build brief to hand to Claude or another AI with the app */
 (function(root){
 'use strict';
-const GEN_VERSION='1.5.1',CORE_VERSION='1.3';
+const GEN_VERSION='1.6',CORE_VERSION='1.4';
 const MODULES=['base','home','board','picture','edit','progress','project','export'];
 const FEATURES=['board','picture','edit','progress','project','export'];
 const NEEDS_BOARD=['picture','edit','progress','export'];
@@ -112,7 +112,12 @@ const STARTER_CODE=code=>`
      APP.onSync, APP.onRefresh, APP.onStart        keep your controls in step, after each redraw, once at start-up
      APP.projectOut = () => data, APP.projectIn = data => {}   your own data in project files (tidy what you read)
    Your own settings: addSettings({mine:{on:false}}) here, then <input type="checkbox" data-k="mine.on"> in APP PANELS.
-   Helpers: $, esc, clamp, plural, units, txt, say, store (keys start with KEY), saveFile, csv, watch, rebuild, sync, refresh. */
+   Your own sections fold up like the core's (house rule 10): in APP PANELS write each one as
+     <details class="group" id="mySec" data-ui="mySec" open><summary><h2>Title <button type="button" class="q"
+       aria-expanded="false" aria-controls="t-mine" aria-label="Help: title">?</button></h2></summary> … </details>
+   with its own data-ui name (letters and digits), so the app remembers whether it's open. Leave out "open" for a
+   reference section that should start closed. Before showing something in a section that may be folded, call reveal(el).
+   Helpers: $, esc, clamp, plural, units, txt, say, reveal, store (keys start with KEY), saveFile, csv, watch, rebuild, sync, refresh. */
 `;
 
 /* ---------- the app ---------- */
@@ -238,6 +243,7 @@ How the file is laid out:
 - The core parts it uses: ${on.join(', ')||'base only'}. They are shared by every app the generator makes. Don't edit them in this file. If a core change is needed, write it up separately so it can go into the generator for all the apps.
 - The app's own work goes only between the markers: APP CSS (styles), APP STAGE (under the grid), APP PANELS (panels in the side column) and APP CODE (script). The generator keeps these when it upgrades the core.
 - The hooks and helpers are listed in the comment at the top of APP CODE.
+- Every section with a heading folds up (house rule 10). Write each of the app's own sections in APP PANELS as a fold-out, like the core's: <details class="group" data-ui="mySec" open><summary><h2>Title <button type="button" class="q" aria-expanded="false" aria-controls="t-mine" aria-label="Help: title">?</button></h2></summary> … </details>. Give each one its own data-ui name (letters and digits) so the app remembers whether it is open, keep its id if code uses it, and leave out "open" only for reference sections that should start closed. The core keeps a ? in a heading from folding the section. Before the app shows something by itself in a section that may be folded (a message, an error, a section it unhides), call reveal(element) to open it.
 
 House rules (the same ones FIG and BIG follow):
 ${RULES(spec).map(r=>'- '+r).join('\n')}
@@ -251,6 +257,7 @@ function testBrief(specIn){
   const checks=['Opens with no errors in the console, on a phone-sized (390 px) and a desktop-sized window, in light and dark mode.',
     'Makes no network requests and loads nothing from outside: search the file for fetch, XMLHttpRequest, WebSocket, <script src, <link href, @import and url(http. Only the Learn the Ideas links may point to the web.',
     'Every control has a label or aria-label; messages that change are in aria-live areas; focus outlines show; touch targets are at least 44 px.',
+    'Every section with a heading folds up when its heading is tapped (with the mouse, a finger, or Enter or Space on the keyboard) and stays as it was left after a reload. Learn the Ideas, On Your Phone, About This Version and Credits start closed; the rest start open. A ? in a heading opens its help, and its section if folded, without folding the section. Something the app shows by itself, such as an error, opens its section first.',
     'Text from files, storage or the spec is escaped before it goes into the page (esc), and CSV lists guard against spreadsheet formulas (csv).',
     `The core parts match HTML App Generator core ${CORE_VERSION}: the app's own work should only be in the APP CSS, APP STAGE, APP PANELS and APP CODE sections. Flag any edit to the core.`];
   if(F.board)checks.push(`The grid: zoom in, out and Fit; tapping a ${u.one} in Inspect shows its colour and place; the arrow keys move the selection.`+(spec.boards.length?' Adding and removing boards across and down changes the size and the readout.':' The width slider changes the size.'));

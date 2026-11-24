@@ -1,8 +1,8 @@
-<!--part:sizeGroup-->    <section class="group" id="sizeGroup">
-      <h2>Size <button type="button" class="q" aria-expanded="false" aria-controls="t-size" aria-label="Help: size">?</button></h2>
-{{{size}}}    </section>
-<!--part:progress-->    <section class="group" id="progGroup" hidden>
-      <h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2>
+<!--part:sizeGroup-->    <details class="group" id="sizeGroup" data-ui="sizeSec" open>
+      <summary><h2>Size <button type="button" class="q" aria-expanded="false" aria-controls="t-size" aria-label="Help: size">?</button></h2></summary>
+{{{size}}}    </details>
+<!--part:progress-->    <details class="group" id="progGroup" data-ui="progSec" open hidden>
+      <summary><h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2></summary>
       <div class="sub tip" id="t-prog" hidden><p>Choose Mark placed above the grid, then tap {{many}} as you place them. Tap a colour below to show only that colour.</p></div>
       <div class="bar"><span id="barFill"></span></div>
       <p id="pct"></p>
@@ -12,17 +12,17 @@
       </details>
       <div class="checks"><label><input type="checkbox" data-k="fade"> Fade placed {{many}}</label></div>
       <div class="btns"><button type="button" class="btn sm" id="resetProg">Reset progress</button></div>
-    </section>
-<!--part:project-->    <section class="group">
-      <h2>Save and Open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2>
+    </details>
+<!--part:project-->    <details class="group" id="projGroup" data-ui="projSec" open>
+      <summary><h2>Save and Open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2></summary>
       <div class="sub tip" id="t-proj" hidden><p>A project file keeps <!--if:picture-->the picture, <!--/if:picture-->every setting<!--if:edit-->, your edits<!--/if:edit--><!--if:progress--> and your progress<!--/if:progress-->, so your work reopens exactly. It stays on your device: nothing is uploaded.</p></div>
       <div class="frow"><input type="text" id="projName" placeholder="Project name" maxlength="60" aria-label="Project name"></div>
       <div class="btns"><button type="button" class="btn" id="projSave">Save project file</button><label class="btn pick">Open project file<input type="file" id="projIn" accept="{{exts}},.json,application/json"></label></div>
       <p class="sub" id="projMsg" aria-live="polite"></p>
       <p class="sub" id="saveMsg" hidden>This browser isn’t keeping your work between visits. Save a project file to keep it.</p>
-    </section>
-<!--part:export-->    <section class="group">
-      <h2>Export</h2>
+    </details>
+<!--part:export-->    <details class="group" id="expGroup" data-ui="expSec" open>
+      <summary><h2>Export</h2></summary>
       <div class="btns"><button type="button" class="btn" id="pngSave">Save picture</button></div>
       <p class="sub" id="pngMsg" aria-live="polite"></p>
       <details class="mini" id="expDetails"><summary>Lists</summary>
@@ -30,25 +30,25 @@
         <textarea id="expText" readonly aria-label="List text"></textarea>
         <div class="btns"><button type="button" class="btn" id="copyBtn">Copy</button><button type="button" class="btn" id="listSave">Save list file</button><span id="copyMsg" aria-live="polite"></span></div>
       </details>
-    </section>
+    </details>
 <!--part:saveWarn-->    <p class="warn" id="saveMsg" hidden>This browser isn’t keeping your work between visits.</p>
-<!--part:info-->    <section class="group" id="learn">
-      <h2>Learn the Ideas</h2>
+<!--part:info-->    <details class="group" id="learn" data-ui="learnSec">
+      <summary><h2>Learn the Ideas</h2></summary>
       <ul class="sub" id="learnList"></ul>
-    </section>
-    <details class="group" id="homeBox">
-      <summary>On Your Phone</summary>
+    </details>
+    <details class="group" id="homeBox" data-ui="homeSec">
+      <summary><h2>On Your Phone</h2></summary>
       <div class="sub" id="homeHow"></div>
     </details>
-    <details class="group">
-      <summary>About This Version <span class="sub" id="aboutWhen"></span></summary>
+    <details class="group" id="aboutBox" data-ui="aboutSec">
+      <summary><h2>About This Version <span class="sub" id="aboutWhen"></span></h2></summary>
       <ul class="sub" id="aboutList"></ul>
     </details>
-    <details class="group">
-      <summary>Credits</summary>
+    <details class="group" id="creditBox" data-ui="creditSec">
+      <summary><h2>Credits</h2></summary>
       <ul class="sub" id="creditList"></ul>
     </details>
-<!--part:starterPanel-->    <section class="group">
-      <h2>{{name}}</h2>
-      <p class="sub">{{code}}’s own tools go here. This panel sits between the APP PANELS markers, so the generator keeps it when it upgrades the core.</p>
-    </section>
+<!--part:starterPanel-->    <details class="group" id="mainGroup" data-ui="mainSec" open>
+      <summary><h2>{{name}}</h2></summary>
+      <p class="sub">{{code}}’s own tools go here. This panel sits between the APP PANELS markers, so the generator keeps it when it upgrades the core. Like every section with a heading, it folds up: give each of your own sections its own data-ui name so the app remembers whether it’s open.</p>
+    </details>

@@ -1,5 +1,5 @@
-    <section class="group" id="picGroup">
-      <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
+    <details class="group" id="picGroup" data-ui="picSec" open>
+      <summary><h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2></summary>
       <div class="sub tip" id="t-pic" hidden><p>This section turns your picture into {{many}}: each {{one}} takes the colour of the part of the picture it covers, like a pixel. Each step below changes how that happens, and the grid updates as you go. Your picture never leaves this browser.</p></div>
       <div id="picStart"><p class="sub" id="picStartMsg">Choose or paste a picture on the grid to begin.</p><div id="picStartBtns" hidden><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div></div>
       <div id="picBtns" hidden>
@@ -62,4 +62,4 @@
           <p class="sub" id="cleanInfo"></p>
         </details>
       </div>
-    </section>
+    </details>

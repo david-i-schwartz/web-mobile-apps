@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7A3FB0">
-<meta name="generator" content="HTML App Generator 1.5.1">
+<meta name="generator" content="HTML App Generator 1.6">
 <title>TIG: Tile Image Generator</title>
 <script>document.documentElement.classList.remove('nojs')/* scripts run, so the app shows instead of the preview note */</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%237A3FB0%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2242%22%20font-family%3D%22system-ui%2Csans-serif%22%20font-size%3D%2224%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23FFFFFF%22%3ETIG%3C%2Ftext%3E%3C%2Fsvg%3E">
@@ -13,8 +13,8 @@
  "code": "TIG",
  "name": "Tile Image Generator",
  "tagline": "Turn a picture into a tile mosaic on mesh sheets, then follow it tile by tile. Everything stays in this browser.",
- "version": "1.2",
- "date": "14 Nov 2026",
+ "version": "1.3",
+ "date": "24 Nov 2026",
  "unit": {
   "one": "tile",
   "many": "tiles"
@@ -157,6 +157,7 @@
   }
  ],
  "changes": [
+  "1.3: sections fold up. Tap a heading to open or close its section, and TIG remembers how you left each one. Learn the Ideas, On Your Phone, About This Version and Credits start closed. The ? buttons and small buttons are bigger targets for fingers.",
   "1.2: one picture button at a time, and the Compare slider under the grid, with a Views section in the grid help.",
   "1.1: the help by the grid comes in two parts, Tile Placement and Sizing, with a ? beside the zoom buttons too; the Picture help says what the section does; every section heading is in Title Case.",
   "An example app, made to show what HTML App Generator builds."
@@ -169,12 +170,12 @@
  "key": "tig:",
  "oldKeys": [],
  "ext": ".tig.json",
- "core": "1.3",
- "generator": "1.5.1"
+ "core": "1.4",
+ "generator": "1.6"
 }
 </script>
 <style>
-/* ==== CORE CSS: made by HTML App Generator 1.5.1 (core 1.3). Upgrade it with the generator rather than editing it here. ==== */
+/* ==== CORE CSS: made by HTML App Generator 1.6 (core 1.4). Upgrade it with the generator rather than editing it here. ==== */
 /* Core stylesheet of HTML App Generator apps. It grew from the stylesheet FIG and BIG share.
    The app's accent colours come after it, then the app's own styles (APP CSS). */
 
@@ -201,8 +202,8 @@ header p{margin:0;color:var(--muted);max-width:62ch}
 .controls{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 .group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
 h2{font-size:19px;margin:0 0 8px;line-height:1.25;font-weight:750}
-.pick{position:relative;overflow:hidden}
-.pick input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+.pick{position:relative;overflow:hidden;display:inline-flex;align-items:center}
+.pick input[type=file]{position:absolute;inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px);opacity:0;cursor:pointer;font-size:100px}
 h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .sub{font-size:14px;color:var(--muted);margin:2px 0 0}
 .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
@@ -247,7 +248,7 @@ h3{font-size:16px;margin:14px 0 4px;font-weight:700}
 .crow.done .ct{color:var(--accent)}
 .dot{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);flex:none}
 .checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:15px}
-.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer}
+.checks label{display:flex;gap:8px;align-items:center;min-height:44px;cursor:pointer}
 input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
 .row{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2.4em;align-items:center;gap:10px;margin:6px 0}
 .row label{color:var(--muted);font-size:15px}
@@ -255,9 +256,10 @@ input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent)}
 input[type=range]{width:100%;min-height:28px;accent-color:var(--accent)}
 #cropWrap{display:flex;justify-content:center;margin:8px 0 4px;background:var(--vp);border-radius:12px;padding:8px}
 #cropCv{display:block;touch-action:none;cursor:crosshair;border-radius:4px;max-width:100%}
-.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:6px;vertical-align:middle;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
-.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.q::after{content:"";position:absolute;inset:-8px;border-radius:50%}
+/* the ? help button: a 24 px circle inside a 44 px touch target (house rule 6); the transparent border is the extra target */
+.q{position:relative;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px -4px;vertical-align:middle;border-radius:50%;border:10px solid transparent;background:var(--chip);background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted);font:700 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;padding:0}
+.q[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
+.q:focus-visible{outline-offset:-8px}
 .tip{background:var(--chip);border-radius:10px;padding:8px 12px;margin:4px 0 8px}
 .tip p{margin:0 0 6px}.tip p:last-child{margin:0}
 input[type=color]{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;overflow:hidden}
@@ -267,7 +269,7 @@ input[type=color]::-moz-color-swatch{border:0;border-radius:50%}
 input[type=text],select{width:100%;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;min-height:44px}
 details summary{cursor:pointer;font-size:19px;font-weight:750}
 details.mini{margin-top:12px}
-details.mini summary{font-size:16px;font-weight:700;min-height:36px;display:list-item;padding:6px 0}
+details.mini summary{font-size:16px;font-weight:700;min-height:44px;display:list-item;padding:10px 0;line-height:24px}
 details.mini summary span{font-weight:400;font-size:14px;color:var(--muted)}
 textarea{width:100%;height:170px;margin-top:10px;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:8px;resize:vertical}
 #imgMsg,#copyMsg{font-size:14px;color:var(--muted)}
@@ -295,8 +297,7 @@ input.zero::-moz-range-track{background:var(--zero)}
 .tip h4:first-child{margin-top:0}
 .tip p + ul,.tip ul + p{margin-top:6px}
 .tip a,#learn a{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-h2 .q{margin-left:4px}
-details.mini .q{margin-left:4px}
+h2 .q,h3 .q,details.mini .q{margin:-10px -10px -10px -6px}
 /* ---- editing ---- */
 .btn:disabled,.ib:disabled{opacity:.45;cursor:default}
 #editBar{margin:0 0 10px}
@@ -313,7 +314,7 @@ details.mini .q{margin-left:4px}
 #editMsg{min-height:1.5em;margin:2px 2px 0}
 #board.editing .cell{cursor:crosshair}
 #board.lock{touch-action:none}
-.btn.sm{min-height:36px;padding:4px 12px;font-size:14px}
+.btn.sm{min-height:44px;padding:4px 12px;font-size:14px}
 .frow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin:8px 0}
 /* ---- from BIG, made general ---- */
 #board .ov{pointer-events:none}
@@ -345,6 +346,15 @@ details.mini .q{margin-left:4px}
 .nojs .nojs-note a{color:var(--accent);font-weight:700;word-break:break-all}
 .nojs main,.nojs .foot{display:none}
 #homeHow .hh-lead{margin-top:0}
+/* ---- fold-up sections (core 1.4, house rule 10). Every section with a heading is <details class="group" data-ui="…">
+   with its <h2> inside the <summary>: tap the heading to fold or unfold it, and the app remembers each one (st.ui).
+   Reference sections (Learn the Ideas, On Your Phone, About This Version, Credits) start closed; the rest start open. ---- */
+details.group>summary{min-height:44px;margin:-10px 0;padding:10px 0;line-height:24px;list-style-position:inside}
+details.group[open]>summary{margin-bottom:-2px}
+details.group>summary h2{display:inline;margin:0;line-height:inherit}
+details.group>summary .sub{font-weight:400}
+details.group>summary::marker{color:var(--muted)}
+details.group>summary::-webkit-details-marker{color:var(--muted)}
 /* ---- TIG's accent colours (from the spec) ---- */
 :root{--accent:#7A3FB0;--accent-ink:#FFFFFF}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#A982CC;--accent-ink:#1B1521}}
@@ -423,8 +433,8 @@ details.mini .q{margin-left:4px}
 <!-- ==== APP STAGE END ==== -->
   </section>
   <div class="controls">
-    <section class="group" id="picGroup">
-      <h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2>
+    <details class="group" id="picGroup" data-ui="picSec" open>
+      <summary><h2>Picture <button type="button" class="q" aria-expanded="false" aria-controls="t-pic" aria-label="Help: picture">?</button></h2></summary>
       <div class="sub tip" id="t-pic" hidden><p>This section turns your picture into tiles: each tile takes the colour of the part of the picture it covers, like a pixel. Each step below changes how that happens, and the grid updates as you go. Your picture never leaves this browser.</p></div>
       <div id="picStart"><p class="sub" id="picStartMsg">Choose or paste a picture on the grid to begin.</p><div id="picStartBtns" hidden><div class="btns"><label class="btn primary pick">Choose image<input type="file" accept="image/*" class="fileIn"></label></div></div></div>
       <div id="picBtns" hidden>
@@ -492,11 +502,11 @@ details.mini .q{margin-left:4px}
           <p class="sub" id="cleanInfo"></p>
         </details>
       </div>
-    </section>
+    </details>
     <!-- ==== APP PANELS START ==== -->
 
-<!-- ==== APP PANELS END ==== -->    <section class="group" id="progGroup" hidden>
-      <h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2>
+<!-- ==== APP PANELS END ==== -->    <details class="group" id="progGroup" data-ui="progSec" open hidden>
+      <summary><h2>Progress <button type="button" class="q" aria-expanded="false" aria-controls="t-prog" aria-label="Help: progress">?</button></h2></summary>
       <div class="sub tip" id="t-prog" hidden><p>Choose Mark placed above the grid, then tap tiles as you place them. Tap a colour below to show only that colour.</p></div>
       <div class="bar"><span id="barFill"></span></div>
       <p id="pct"></p>
@@ -506,17 +516,17 @@ details.mini .q{margin-left:4px}
       </details>
       <div class="checks"><label><input type="checkbox" data-k="fade"> Fade placed tiles</label></div>
       <div class="btns"><button type="button" class="btn sm" id="resetProg">Reset progress</button></div>
-    </section>
-    <section class="group">
-      <h2>Save and Open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2>
+    </details>
+    <details class="group" id="projGroup" data-ui="projSec" open>
+      <summary><h2>Save and Open <button type="button" class="q" aria-expanded="false" aria-controls="t-proj" aria-label="Help: project files">?</button></h2></summary>
       <div class="sub tip" id="t-proj" hidden><p>A project file keeps the picture, every setting, your edits and your progress, so your work reopens exactly. It stays on your device: nothing is uploaded.</p></div>
       <div class="frow"><input type="text" id="projName" placeholder="Project name" maxlength="60" aria-label="Project name"></div>
       <div class="btns"><button type="button" class="btn" id="projSave">Save project file</button><label class="btn pick">Open project file<input type="file" id="projIn" accept=".tig.json,.json,application/json"></label></div>
       <p class="sub" id="projMsg" aria-live="polite"></p>
       <p class="sub" id="saveMsg" hidden>This browser isn’t keeping your work between visits. Save a project file to keep it.</p>
-    </section>
-    <section class="group">
-      <h2>Export</h2>
+    </details>
+    <details class="group" id="expGroup" data-ui="expSec" open>
+      <summary><h2>Export</h2></summary>
       <div class="btns"><button type="button" class="btn" id="pngSave">Save picture</button></div>
       <p class="sub" id="pngMsg" aria-live="polite"></p>
       <details class="mini" id="expDetails"><summary>Lists</summary>
@@ -524,29 +534,29 @@ details.mini .q{margin-left:4px}
         <textarea id="expText" readonly aria-label="List text"></textarea>
         <div class="btns"><button type="button" class="btn" id="copyBtn">Copy</button><button type="button" class="btn" id="listSave">Save list file</button><span id="copyMsg" aria-live="polite"></span></div>
       </details>
-    </section>
-    <section class="group" id="learn">
-      <h2>Learn the Ideas</h2>
+    </details>
+    <details class="group" id="learn" data-ui="learnSec">
+      <summary><h2>Learn the Ideas</h2></summary>
       <ul class="sub" id="learnList"></ul>
-    </section>
-    <details class="group" id="homeBox">
-      <summary>On Your Phone</summary>
+    </details>
+    <details class="group" id="homeBox" data-ui="homeSec">
+      <summary><h2>On Your Phone</h2></summary>
       <div class="sub" id="homeHow"></div>
     </details>
-    <details class="group">
-      <summary>About This Version <span class="sub" id="aboutWhen"></span></summary>
+    <details class="group" id="aboutBox" data-ui="aboutSec">
+      <summary><h2>About This Version <span class="sub" id="aboutWhen"></span></h2></summary>
       <ul class="sub" id="aboutList"></ul>
     </details>
-    <details class="group">
-      <summary>Credits</summary>
+    <details class="group" id="creditBox" data-ui="creditSec">
+      <summary><h2>Credits</h2></summary>
       <ul class="sub" id="creditList"></ul>
     </details>
   </div>
 </main>
-<p class="foot">TIG 1.2, made with HTML App Generator 1.5.1. One file, no server: everything stays in this browser.</p>
+<p class="foot">TIG 1.3, made with HTML App Generator 1.6. One file, no server: everything stays in this browser.</p>
 <div id="sr" class="sr" aria-live="polite"></div>
 <script>
-/* TIG: Tile Image Generator 1.2. Made with HTML App Generator 1.5.1 (core 1.3).
+/* TIG: Tile Image Generator 1.3. Made with HTML App Generator 1.6 (core 1.4).
    The core parts below are shared by every app the generator makes; the app's own code is between the APP CODE markers. */
 (()=>{
 'use strict';
@@ -571,7 +581,7 @@ const mem={},unsaved=new Set();
 const store={
   get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
   set(k,v){mem[k]=v;let ok=true;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){ok=false}
-    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m)m.hidden=!unsaved.size;return ok},
+    ok?unsaved.delete(k):unsaved.add(k);const m=$('saveMsg');if(m){const was=m.hidden;m.hidden=!unsaved.size;if(was&&!m.hidden)reveal(m)}return ok},
   del(k){delete mem[k];unsaved.delete(k);try{localStorage.removeItem(k)}catch(e){}}
 };
 /* An app that was renamed moves what this browser saved under its old names (SPEC.oldKeys). */
@@ -624,6 +634,10 @@ function tidy(s){
 }
 let st=null;
 const saveSettings=()=>store.set(KEY+'settings',st);
+
+/* open every folded section round an element, so something the app shows by itself (a message, a warning, a help tip)
+   can be seen. Returns the element. Sections fold up (house rule 10), so APP CODE should call this too. */
+function reveal(el){for(let d=el&&el.closest?el.closest('details'):null;d;d=d.parentElement?d.parentElement.closest('details'):null)if(!d.open)d.open=true;return el}
 
 /* one-off messages for screen readers */
 function say(t){const e=$('sr');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=t},60)}
@@ -694,8 +708,10 @@ function start(){
   st=tidy(store.get(KEY+'settings'));
   for(const f of HOOK.load)f();
   specText();
-  /* a help tip can have more than one ? button: they open and close it together */
-  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden;t.hidden=!open;
+  /* a help tip can have more than one ? button: they open and close it together. A ? in a section's heading sits inside
+     its <summary>, so its click stops there: it opens the help (and the section, if folded) without folding the section. */
+  document.querySelectorAll('.q').forEach(b=>b.addEventListener('click',ev=>{if(b.closest('summary')){ev.preventDefault();ev.stopPropagation()}
+    const id=b.getAttribute('aria-controls'),t=$(id);if(!t)return;const open=t.hidden||!!t.closest('details:not([open])');t.hidden=!open;if(open)reveal(t);
     document.querySelectorAll('.q[aria-controls="'+id+'"]').forEach(x=>x.setAttribute('aria-expanded',String(open)))}));
   document.querySelectorAll('details[data-ui]').forEach(d=>{const k=d.dataset.ui;d.open=k in st.ui?st.ui[k]:d.hasAttribute('open');
     d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
@@ -1411,7 +1427,7 @@ emptyWhy=()=>srcImg||st.blank?'':'Choose a picture to turn it into '+APP.unit.ma
 
 /* ---------- loading a picture ---------- */
 /* picture messages go to the Picture section and, while no picture is loaded, under the big Choose image button */
-function picSay(m){txt('imgMsg',m);const e=$('empty');txt('emptyNote',e&&!e.hidden?m:'');say(m)}
+function picSay(m){txt('imgMsg',m);const e=$('empty'),onGrid=!!e&&!e.hidden;txt('emptyNote',onGrid?m:'');if(m&&!onGrid)reveal($('imgMsg'));say(m)}
 function loadImage(url,fresh,seq=++loadSeq){
   const im=new Image();
   im.onload=()=>{
