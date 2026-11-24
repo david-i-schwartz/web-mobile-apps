@@ -243,6 +243,14 @@ input[type=number]:focus-visible{outline:3px solid var(--accent);outline-offset:
 #board .gdl{fill:var(--muted);font-size:.42px;font-weight:700}
 #board .gdx{fill:none;stroke:var(--accent);stroke-width:.08;opacity:.85}
 #board .gdxl{fill:var(--accent);font-size:.46px;font-weight:800}
+/* ---- 1.7 layers ---- */
+#layList{display:grid;gap:6px;margin-top:8px}
+.layrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.laysel{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;border-radius:12px;padding:5px 12px;min-width:0}
+.laysel b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.laysel span{font-size:13px;color:var(--muted)}
+.laysel[aria-pressed="true"]{background:var(--chip);color:var(--ink);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+#layBar{margin:8px 0 0;grid-template-columns:auto minmax(0,1fr)}
 #printOut{display:none}
 @media print{
   body.printing{background:#FFF!important;margin:0;padding:0}
@@ -258,7 +266,7 @@ input[type=number]:focus-visible{outline:3px solid var(--accent);outline-offset:
 <body>
 <header>
   <h1>FIG: Fusebead Image Generator</h1>
-  <p>Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand, design one on an empty board, keep several patterns, and print a chart for each board, at true size if you like.</p>
+  <p>Turn an image into a bead pattern on square, hex or iso pegboards. Isolate a colour, tap beads off as you place them, and work one chunk at a time. Progress is saved in this browser. You can also edit the pattern by hand, in layers if you like, design one on an empty board, keep several patterns, and print a chart for each board, at true size if you like.</p>
   <p id="saveMsg" class="warn" role="status" hidden>This browser can’t save right now (its storage is full or switched off). You can keep working, but changes made from now on won’t be remembered after you close the page.</p>
 </header>
 <main class="wrap">
@@ -326,9 +334,11 @@ input[type=number]:focus-visible{outline:3px solid var(--accent);outline-offset:
         <button type="button" data-k="ed.tool" data-v="lighter">Lighter</button>
         <button type="button" data-k="ed.tool" data-v="darker">Darker</button>
       </div>
+      <div class="row" id="layBar" hidden><label for="layPick">Layer</label><select id="layPick"></select></div>
       <div class="sub tip" id="t-edit" hidden>
         <ul>
           <li>Your edits sit on top of the converted pattern. The picture is still converted underneath, exactly as before.</li>
+          <li><b>Layers</b>: once you add a layer in the Edit panel, every tool works on the layer named beside Layer, above the board. Choose another one there.</li>
           <li><b>Paint</b> puts the paint colour on a peg. With a mouse or pen you can drag to paint a line.</li>
           <li><b>Erase</b> empties a peg.</li>
           <li><b>Fill</b> recolours the whole patch of touching pegs that share one colour. On an empty peg it fills the whole empty area around it.</li>
@@ -426,6 +436,33 @@ input[type=number]:focus-visible{outline:3px solid var(--accent);outline-offset:
         <label><input type="checkbox" id="blankCk"> Empty board: don’t convert the picture</label>
       </div>
       <p class="sub" id="blankMsg"></p>
+      <details class="mini" id="layerBox">
+        <summary>Layers <span id="laySum"></span></summary>
+        <p class="sub">Stack patterns on one board, such as a background and a character, and edit, hide or show each one on its own. <button type="button" class="q" aria-expanded="false" aria-controls="t-layer" aria-label="Help: layers">?</button></p>
+        <div class="sub tip" id="t-layer" hidden>
+          <ul>
+            <li><b>Layer 1</b> is the bottom layer. It holds the converted picture and the edits you made on it.</li>
+            <li><b>Add layer</b> puts an empty layer just above the one you are editing. Tap a layer’s name to edit it: every tool then works on that layer only.</li>
+            <li>Where a layer has a bead, it covers the layers under it. Where it has none, they show through. Erase on a layer takes its bead away, so the one underneath shows.</li>
+            <li><b>Hide</b> takes a layer off the board, out of the counts and the shopping list, and out of printing and export. <b>Show</b> brings it back.</li>
+            <li><b>Move up</b> and <b>Move down</b> change the order. Layer 1 always stays at the bottom.</li>
+            <li><b>Duplicate</b> copies the layer you are editing. On Layer 1 it copies the beads you see there, so you can keep them when you choose another picture.</li>
+            <li><b>Merge down</b> puts the layer’s beads onto the layer under it, as one layer. <b>Delete</b> removes it; Undo brings it back.</li>
+            <li>Slide and Swap work on the layer you are editing. Drop it works on Layer 1, where the picture is converted. Board size and Clear all edits cover every layer.</li>
+            <li>A new picture replaces Layer 1. The other layers stay.</li>
+            <li>Layers are saved in project files and in the library. An older FIG opens such a file with the shown layers joined into one.</li>
+          </ul>
+          <h4>Learn More</h4>
+          <ul>
+            <li><a href="https://en.wikipedia.org/wiki/Layers_(digital_image_editing)" target="_blank" rel="noopener noreferrer">Layers (digital image editing)</a>, Wikipedia: how image editors stack layers.</li>
+          </ul>
+        </div>
+        <div id="layList" role="group" aria-label="Layers, the top one first"></div>
+        <div class="btns"><button type="button" class="btn" id="layAdd">Add layer</button><button type="button" class="btn" id="layDup">Duplicate</button><button type="button" class="btn" id="layMerge">Merge down</button></div>
+        <div class="btns"><button type="button" class="btn" id="layUp">Move up</button><button type="button" class="btn" id="layDown">Move down</button><button type="button" class="btn" id="layDel">Delete</button></div>
+        <div class="frow"><input type="text" id="layNm" maxlength="40" placeholder="New name for this layer" aria-label="New name for the layer you are editing"><button type="button" class="btn" id="layRen">Rename</button></div>
+        <p class="sub" id="layMsg" aria-live="polite"></p>
+      </details>
       <details class="mini" id="swapBox">
         <summary>Swap or Drop a Colour <span id="swapSum"></span></summary>
         <p class="sub">Changes one bead colour everywhere. <button type="button" class="q" aria-expanded="false" aria-controls="t-swap" aria-label="Help: swap or drop a colour">?</button></p>
@@ -960,20 +997,19 @@ input[type=number]:focus-visible{outline:3px solid var(--accent);outline-offset:
           <li><b>Drawing lines on a grid</b>: <a href="https://www.redblobgames.com/grids/line-drawing/" target="_blank" rel="noopener noreferrer">Line drawing on a grid</a> (Red Blob Games), <a href="https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm" target="_blank" rel="noopener noreferrer">Bresenham’s line algorithm</a> and the <a href="https://en.wikipedia.org/wiki/Midpoint_circle_algorithm" target="_blank" rel="noopener noreferrer">midpoint circle algorithm</a> (Wikipedia). FIG’s Line and Ring tools use these ideas.</li>
           <li><b>Symmetry and tiling</b>: <a href="https://en.wikipedia.org/wiki/Dihedral_group" target="_blank" rel="noopener noreferrer">Dihedral group</a> and <a href="https://en.wikipedia.org/wiki/Tessellation" target="_blank" rel="noopener noreferrer">Tessellation</a> (Wikipedia), behind Symmetry and Tiled view.</li>
           <li><b>Scale and mirror images</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/length" target="_blank" rel="noopener noreferrer">CSS length units</a> (MDN), on how a page sets true sizes in millimetres and inches, and <a href="https://en.wikipedia.org/wiki/Reflection_(mathematics)" target="_blank" rel="noopener noreferrer">Reflection (mathematics)</a> (Wikipedia), behind the mirrored chart.</li>
+          <li><b>Layers and stacking order</b>: <a href="https://en.wikipedia.org/wiki/Layers_(digital_image_editing)" target="_blank" rel="noopener noreferrer">Layers (digital image editing)</a> and the <a href="https://en.wikipedia.org/wiki/Painter%27s_algorithm" target="_blank" rel="noopener noreferrer">painter’s algorithm</a> (Wikipedia), behind Layers: on each peg you see the top bead.</li>
         </ul>
       </details>
       <details class="mini" id="about">
-        <summary>About This Version <span>1.6 · 24 Nov 2026</span></summary>
+        <summary>About This Version <span>1.7 · 24 Nov 2026</span></summary>
         <ul class="sub">
-          <li>1.6, print and build (release 1.3 on the roadmap). Nothing changes on the board until you use it, and every pattern is the same as in 1.5.</li>
-          <li>Print and Build, under Progress: a page for each board with its colour key, fitted to the page or at exact size with a check bar, ready to print or save as a PDF.</li>
-          <li>A letter or symbol on every bead, a black-and-white chart, row and column numbers, a mirrored chart for building face down, and an optional cover page.</li>
-          <li>Peg spacing for square, hex and iso boards (midi, mini or your own measurement), and the finished size in millimetres and inches.</li>
-          <li>Counts of each colour per board and per chunk, also as CSV.</li>
-          <li>The shopping list by shop, with Buy links and a cost total, from Shop, Price and Link columns in your bead sheet.</li>
-          <li>Under the board: row and column guides with a line through the tapped bead, and bead marks.</li>
-          <li>The Save and Open, Export and Print and Build headings are taller, so they are easier to tap.</li>
-          <li>Still to come from the plan: more than one pattern layer.</li>
+          <li>1.7, pattern layers: the part of the 1.5 plan that was left out. Nothing changes on the board until you add a layer, and every pattern is the same as in 1.6.</li>
+          <li>Layers, in the Edit panel: up to nine patterns stacked on one board, such as a background and a character. Where a layer has a bead, it covers the layers under it.</li>
+          <li>Each layer is edited, hidden or shown on its own, and can be renamed, moved up or down, duplicated, merged down or deleted. Every tool, Slide and Swap work on the layer you are editing, shown beside Layer above the board.</li>
+          <li>Hidden layers are left out of the counts, the shopping list, printing and export. Inspect says which layer a bead is on.</li>
+          <li>Layers are kept in this browser, in project files and in the library, and Undo covers every layer change. FIG 1.4 to 1.6 open a file with layers, with the shown layers joined into one.</li>
+          <li>A new picture replaces Layer 1 and keeps the other layers.</li>
+          <li>1.6 (24 Nov 2026), print and build: a page for each board with its colour key, exact-size printing with a check bar, a letter or symbol on every bead, row and column guides, a mirrored chart, the finished size, counts per board and per chunk, and the shopping list by shop.</li>
           <li>1.5 (17 Nov 2026), editing power tools for designing from scratch: an empty board to Trace your picture on, Symmetry, Line, Box and Ring, Select with copy, move and erase, stamps you can turn, flip and save, text, a cube stamp for hex and iso boards, Lighter and Darker, and a tiled view.</li>
           <li>1.4.2, picture input like BIG: paste boxes under the board’s Choose image button and in the Pattern panel (for viewers that block file pickers), messages under the button, and one picture button at a time.</li>
           <li>1.4.1, ideas from BIG: the help by the board comes in three parts (Bead Placement, Sizing and Views), there’s a ? beside the zoom buttons too, and every section heading is in Title Case.</li>
@@ -994,6 +1030,7 @@ input[type=number]:focus-visible{outline:3px solid var(--accent);outline-offset:
           <li>The editing tools, the project file format and the pattern library (1.4) are FIG’s own. Nothing was borrowed for them.</li>
           <li>The 1.5 tools are FIG’s own code too. Line and Ring on square boards follow two published methods, Bresenham’s line algorithm and the midpoint circle algorithm. Lines on hex and iso boards step evenly between the two pegs and round to the nearest peg, as Amit Patel describes at Red Blob Games. Text uses this device’s own lettering; no font is included.</li>
           <li>The 1.6 print pages, guides and bead symbols are FIG’s own code as well. The 24 symbols are drawn here, no font or icon set is included, and printing uses the browser’s own Print and Save as PDF, with no PDF library.</li>
+          <li>The 1.7 layers are FIG’s own code too. They stack the way layers do in most image editors: on each peg the top shown layer with a bead wins, the painter’s algorithm at its simplest.</li>
           <li>Feature ideas came from looking at other bead, pixel-art and voxel tools. The FIG feature roadmap names each one.</li>
           <li>Help links point to other people’s tutorials. Nothing from them is copied here.</li>
         </ul>
@@ -1048,8 +1085,8 @@ const PAL=[
   ['Green','#2C9A48'],['Light blue','#4AA6E0'],['Dark blue','#25409A'],['Purple','#6E43A3'],
   ['Pink','#EE86B4'],['Brown','#6E4428'],['Tan','#D6B38A'],['Peach','#F1C9A5']
 ].map(([name,hex])=>({name,hex,on:true}));
-const DEF={source:'image',tap:'inspect',fade:true,labels:false,iso:null,ui:{order:true,legend:true,adj:false,clean:false,swap:false,slide:false,proj:true,stamp:false,print:false},
-  keepEdits:true,ed:{tool:'paint',step:'1',lock:false,paint:null,sym:'off',solid:false},
+const DEF={source:'image',tap:'inspect',fade:true,labels:false,iso:null,ui:{order:true,legend:true,adj:false,clean:false,swap:false,slide:false,proj:true,stamp:false,print:false,layer:false},
+  keepEdits:true,ed:{tool:'paint',step:'1',lock:false,paint:null,sym:'off',solid:false,layer:0},   /* 1.7: ed.layer is the layer being edited, 0 for Layer 1 */
   guides:false,marks:false,   /* added in 1.6: the guides and bead marks over the board, and the print and build choices below */
   pr:{paper:'letter',scale:'fit',mark:'letters',bw:false,mirror:false,guides:true,cover:false,count:'board',shop:'list',
     peg:{square:'midi',hexb:'midi',iso:'midi'},mm:{square:5,hexb:5,iso:5}},
@@ -1073,7 +1110,7 @@ const CHOICES={source:['image','hexb','iso'],tap:['inspect','mark','edit'],'ed.t
   'img.metric':['rgb','lab','de2000','oklab'],'img.schMap':['tone','colour'],'img.scheme':SCHEMES.map(d=>d.id),'img.outline':['none','in','out'],
   'pr.paper':['letter','a4'],'pr.scale':['fit','exact'],'pr.mark':['none','letters','symbols'],'pr.count':['board','chunk'],'pr.shop':['list','shop'],
   'pr.peg.square':['midi','mini','own'],'pr.peg.hexb':['midi','mini','own'],'pr.peg.iso':['midi','mini','own']};
-const LIMITS={'trace':[0,80],'lat.side':[5,30],'lat.cols':[8,80],'lat.rows':[8,80],'lat.scale':[30,100],'img.width':[1,MAX_W],'img.cols':[1,MAX_BOARDS],'img.rows':[1,MAX_BOARDS],
+const LIMITS={'trace':[0,80],'ed.layer':[0,8],'lat.side':[5,30],'lat.cols':[8,80],'lat.rows':[8,80],'lat.scale':[30,100],'img.width':[1,MAX_W],'img.cols':[1,MAX_BOARDS],'img.rows':[1,MAX_BOARDS],
   'img.bgTol':[5,120],'img.maxColors':[4,ALL_COLOURS],'img.ditherAmt':[10,100],'img.rare':[0,50],'img.schN':[2,12],
   'img.adjB':[-100,100],'img.adjC':[-100,100],'img.adjS':[-100,100],'img.adjH':[-180,180],'img.adjW':[-100,100],'img.specks':[0,10],'img.smooth':[0,3]};
 const FULL={x:0,y:0,w:1,h:1};
@@ -1202,8 +1239,11 @@ function outlinePick(pick,n,near,mode,oc){
      drops  pal numbers of colours taken out; the conversion gives their beads to the next-closest colour left.
      dx, dy how far the whole pattern is slid, in lattice steps.
      grow   board size added (or trimmed, if negative) on top of what the settings ask for: boards across and down on square,
-            pegs per side on hex, columns and rows on iso. */
+            pegs per side on hex, columns and rows on iso.
+   1.7 adds three more, each only once it is used, so edits without layers are exactly what 1.6 stored: layers (the pattern
+   layers over this one; see the 1.7 helpers), hide (true when this layer, Layer 1, is hidden) and name (Layer 1's own name). */
 const CELL_KEY=/^-?\d{1,4},-?\d{1,4}$/,MAX_CELLS=40000,MAX_EDIT_PAL=2000,MAX_RULES=200,MAX_SLIDE=240,MAX_SNAP=20000,MAX_PIC=12e6;
+const MAX_LAYERS=8,MAX_LAYER_NAME=40;   /* 1.7: up to 8 layers over Layer 1, so 9 in all, each named in at most 40 characters */
 const STEPS={square:[[1,0],[0,1],[-1,0],[0,-1]],hex:[[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]]};   /* one step to each neighbour */
 function isoUV(stag,col,row){return stag==='cols'?[col,row-Math.floor(col/2)]:[col-Math.floor(row/2),row]}
 function uvOf(kind,stag,s){return kind==='square'?[s.gx,s.gy]:kind==='hexb'?[s.q,s.r]:isoUV(stag,s.col,s.row)}
@@ -1223,7 +1263,7 @@ function xyStep(lat,x,y){
   return[Math.round(u),Math.round(v)];
 }
 const newEdits=()=>({pal:[],cells:{},swaps:[],drops:[],dx:0,dy:0,grow:[0,0]});
-function editsEmpty(E){if(E.swaps.length||E.drops.length||E.dx||E.dy||E.grow[0]||E.grow[1])return false;for(const k in E.cells)return false;return true}
+function editsEmpty(E){if(E.hide||E.layers&&E.layers.length||E.swaps.length||E.drops.length||E.dx||E.dy||E.grow[0]||E.grow[1])return false;for(const k in E.cells)return false;return true}
 const colKey=c=>c.hex+'|'+c.name+'|'+(c.code||'');   /* two colours are the same bead when hex, name and code all agree */
 function palIndex(E,c){const k=colKey(c);let i=E.pal.findIndex(p=>colKey(p)===k);if(i<0){i=E.pal.length;E.pal.push({name:c.name,hex:c.hex,code:c.code||''})}return i}
 /* the pal number a converted bead of colour `key` ends up shown as once the swaps have run in order, or -1 if no swap touches it */
@@ -1239,10 +1279,14 @@ function shownAt(E,u,v,baseAt,keyOf,fold){
 /* One undo step. d.cells = [key, before, after] with null for "not set by hand"; d.swaps, d.drops, d.shift and d.grow are
    [before, after] when that part changed. dir 1 applies the step, dir 0 takes it back. */
 function applyDelta(E,d,dir){
-  for(const c of d.cells){const v=c[1+dir];if(v===null)delete E.cells[c[0]];else E.cells[c[0]]=v}
+  /* 1.7: d.ls = [before, after] for a step that changes the layers as a whole ({ layers, hide, name }; each is copied in, so the
+     step itself is never changed later). d.L names the layer a step's pegs and slide belong to: 1 is the first layer over Layer 1. */
+  if(d.ls){const t=d.ls[dir];if(t.layers.length)E.layers=JSON.parse(JSON.stringify(t.layers));else delete E.layers;if(t.hide)E.hide=true;else delete E.hide;if(t.name)E.name=t.name;else delete E.name}
+  const T=d.L?E.layers&&E.layers[d.L-1]:E;if(!T)return;
+  for(const c of d.cells){const v=c[1+dir];if(v===null)delete T.cells[c[0]];else T.cells[c[0]]=v}
   if(d.swaps)E.swaps=d.swaps[dir].map(r=>r.slice());
   if(d.drops)E.drops=d.drops[dir].slice();
-  if(d.shift){E.dx=d.shift[dir][0];E.dy=d.shift[dir][1]}
+  if(d.shift){T.dx=d.shift[dir][0];T.dy=d.shift[dir][1]}
   if(d.grow)E.grow=d.grow[dir].slice();
 }
 /* Fill: the connected patch of pegs that share peg `start`'s colour. colourOf(i) names a peg's colour and near(i) lists its neighbours. */
@@ -1265,6 +1309,19 @@ function tidyEdits(o){
   if(int(o.dx,-MAX_SLIDE,MAX_SLIDE))E.dx=o.dx;
   if(int(o.dy,-MAX_SLIDE,MAX_SLIDE))E.dy=o.dy;
   if(Array.isArray(o.grow)&&int(o.grow[0],-80,80)&&int(o.grow[1],-80,80))E.grow=[o.grow[0],o.grow[1]];
+  if(Array.isArray(o.layers)){   /* 1.7: the layers over Layer 1, bottom first. A layer's beads are pal numbers + 1; it has no empty pegs, only clear ones. */
+    const L=[];
+    for(const l of o.layers.slice(0,MAX_LAYERS)){
+      if(!l||typeof l!=='object'||Array.isArray(l))continue;
+      const t={name:typeof l.name==='string'&&l.name.trim()?l.name.trim().slice(0,MAX_LAYER_NAME):'Layer '+(L.length+2),hide:l.hide===true,cells:{},
+        dx:int(l.dx,-MAX_SLIDE,MAX_SLIDE)?l.dx:0,dy:int(l.dy,-MAX_SLIDE,MAX_SLIDE)?l.dy:0};
+      if(l.cells&&typeof l.cells==='object'){let m=0;for(const k in l.cells){if(m>=MAX_CELLS)break;const v=l.cells[k];if(CELL_KEY.test(k)&&int(v,1,np)){t.cells[k]=v;m++}}}
+      L.push(t);
+    }
+    if(L.length)E.layers=L;
+  }
+  if(o.hide===true)E.hide=true;
+  if(typeof o.name==='string'&&o.name.trim())E.name=o.name.trim().slice(0,MAX_LAYER_NAME);
   return E;
 }
 /* PROJECT FILES (FIG's own format, version 1): one JSON object.
@@ -1272,12 +1329,14 @@ function tidyEdits(o){
      settings  the pattern settings, as FIG keeps them
      picture   the picture as a PNG data address, or null
      sheet     the bead sheet's rows when the pattern uses real beads, or null
-     edits     { square, hexb, iso }: the edits for each board type, as described above
+     edits     { square, hexb, iso }: the edits for each board type, as described above, with their layers (1.7)
      progress  the pegs ticked as placed
      pattern   the finished pattern: { board, colours: [{ name, hex, code }], beads: [[a, b, colour number], ...] }
                a, b name the peg on its board: across and down from 0 on square boards (all boards as one grid), q and r on
                hex, column and row from 0 on iso.
-   `pattern` is the record of what was on screen. A reader that would convert the picture differently must still show it. */
+   `pattern` is the record of what was on screen. A reader that would convert the picture differently must still show it.
+   1.7 keeps version 1: layers are an extra part of edits. A FIG from before 1.7 leaves them out, finds that its pattern differs
+   from the record, and sets those pegs by hand to match, so it shows the same beads, with the shown layers joined into one. */
 function snapPattern(kind,sites,colors){
   const at=new Map(),colours=[],beads=[];
   for(const s of sites){
@@ -1646,8 +1705,56 @@ function sheetPages(D,O){
 }
 /* ---------- end of the 1.6 helpers ---------- */
 
+/* ---------- layer helpers added in 1.7 ----------
+   Plain functions: data in, data out. Nothing here reads settings or touches the page.
+   LAYERS. Layer 1 is the edits object E itself: the converted picture with its edits, as before. E.layers, when there are any,
+   lists the layers over it, bottom first: { name, hide, cells, dx, dy }. A layer's cells are "u,v" -> pal number + 1 (the pal
+   is E's own, shared by every layer), named on the layer before it is slid by (dx, dy). A peg with no entry is clear: the
+   layers under it show through. So on each peg the top shown layer with a bead wins, the painter's algorithm at its simplest. */
+const NO_LAYERS=Object.freeze([]);
+const layersOf=E=>E.layers||NO_LAYERS;
+/* the pal number of the bead the top shown layer puts on peg (u, v), or -1 if no shown layer over Layer 1 has one there */
+function layerAt(E,u,v){
+  const L=E.layers;if(!L)return -1;
+  for(let i=L.length-1;i>=0;i--){const l=L[i];if(l.hide)continue;const c=l.cells[(u-l.dx)+','+(v-l.dy)];if(c)return c-1}
+  return -1;
+}
+/* which layer gives peg (u, v) its bead: 2 for the first layer over Layer 1 and so on, 1 for Layer 1 when it is shown and
+   has a bead there (hasBase), or 0 */
+function layerOfPeg(E,u,v,hasBase){
+  const L=layersOf(E);
+  for(let i=L.length-1;i>=0;i--){const l=L[i];if(!l.hide&&l.cells[(u-l.dx)+','+(v-l.dy)])return i+2}
+  return !E.hide&&hasBase?1:0;
+}
+/* what peg (u, v) shows with every layer stacked: the top shown layer's bead, or else Layer 1 as shownAt() gives it */
+function shownAll(E,u,v,baseAt,keyOf,fold){
+  const t=layerAt(E,u,v);if(t>=0)return t;
+  return E.hide?null:shownAt(E,u,v,baseAt,keyOf,fold);
+}
+/* the layers as one value, for an undo step that changes them as a whole: added, deleted, moved, merged, hidden, shown, renamed */
+const layState=E=>({layers:JSON.parse(JSON.stringify(E.layers||[])),hide:!!E.hide,name:E.name||''});
+const cellsIn=t=>t.layers.reduce((n,l)=>n+beadsOn(l),0);
+const layName=(E,i)=>i?E.layers[i-1].name:E.name||'Layer 1';   /* i: 0 is Layer 1, 1 the first layer over it */
+const newLayer=name=>({name,hide:false,cells:{},dx:0,dy:0});
+const beadsOn=l=>{let n=0;for(const k in l.cells)n++;return n};
+function namesIn(E){return new Set([layName(E,0)].concat(layersOf(E).map(l=>l.name)))}
+/* the first free name "Layer n", and a name for a copy: "Cat copy", then "Cat copy 2" ... */
+function freeName(E){const used=namesIn(E);let n=2;while(used.has('Layer '+n))n++;return'Layer '+n}
+function copyName(E,nm){const used=namesIn(E),b=(nm+' copy').slice(0,MAX_LAYER_NAME-3);if(!used.has(b))return b;let n=2;while(used.has(b+' '+n))n++;return b+' '+n}
+/* a layer's beads as [u, v, value], where they sit on the board once the layer is slid */
+function layerPegs(l){const o=[];for(const k in l.cells){const[u,v]=k.split(',').map(Number);o.push([u+l.dx,v+l.dy,l.cells[k]])}return o}
+/* the list with the layer at place i moved to place j */
+function moveLayer(L,i,j){const o=L.slice(),[x]=o.splice(i,1);o.splice(j,0,x);return o}
+/* MERGE DOWN onto a layer: top's beads laid over dst's, where they sit on the board; returns dst's new cells */
+function mergeOnto(top,dst){
+  const out={};for(const k in dst.cells)out[k]=dst.cells[k];
+  for(const[u,v,val]of layerPegs(top))out[(u-dst.dx)+','+(v-dst.dy)]=val;
+  return out;
+}
+/* ---------- end of the 1.7 helpers ---------- */
+
 /* the edits themselves: one set per board type, kept in this browser, plus the undo history for this visit */
-const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.6',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
+const KIND={image:'square',hexb:'hexb',iso:'iso'},VERSION='1.7',MAX_UNDO=100,MAX_UNDO_CELLS=400000;
 const freshEdits=()=>({square:newEdits(),hexb:newEdits(),iso:newEdits()}),freshHist=()=>({square:{undo:[],redo:[]},hexb:{undo:[],redo:[]},iso:{undo:[],redo:[]}});
 let ED=freshEdits(),HIST=freshHist(),E=ED.square,conv=null,savedClean=false;
 /* 1.5: the first tap of a two-tap tool, the selection, the current stamp, the saved stamps, and whether the tiled view needs redrawing */
@@ -2379,6 +2486,7 @@ function hud(){
   if(pattern.kind==='hexb')where=`q ${s.q}, r ${s.r}, s ${-s.q-s.r}`+(chunk?` in ${chunk.toLowerCase()}`:'');
   else if(pattern.kind==='iso')where=`column ${s.col+1}, row ${s.row+1}`+(chunk?`, ${chunk.replace('Chunk','chunk')}`:'');
   else where=`${s.lx+1} across, ${s.ly+1} down`+(pattern.multi?` on board ${s.bc+1}-${s.br+1}`:'')+`, chunk ${'ABC'[s.cx]}${s.cy+1}`;
+  if(s.c&&layersOf(E).length){const[u,v]=uvOf(pattern.kind,st.lat.stagger,s),n=layerOfPeg(E,u,v,true);if(n)where+=', on '+layName(E,n-1)}   /* 1.7 */
   txt('hudWhere',where);
   const box=$('chunkBox');
   if(!chunk){box.hidden=true;return}
@@ -2872,7 +2980,7 @@ function recFor(c){
   if(c[0]==='p'){const p=conv.P[+c.slice(1)];return{name:p.name,hex:p.hex,code:p.code||'',bags:p.bags,owned:p.owned}}
   const p=E.pal[+c.slice(1)];return{name:p.name,hex:p.hex,code:p.code,bags:undefined,owned:undefined};
 }
-const idAt=s=>{const[u,v]=uvOf(pattern.kind,st.lat.stagger,s),sh=shownAt(E,u,v,k=>conv.at.get(k),id=>colKey(conv.colors[id]),key=>swapTo(E,key));return sh===null?null:typeof sh==='string'?sh:idFor(sh)};
+const idAt=s=>{const[u,v]=uvOf(pattern.kind,st.lat.stagger,s),sh=shownAll(E,u,v,k=>conv.at.get(k),id=>colKey(conv.colors[id]),key=>swapTo(E,key));return sh===null?null:typeof sh==='string'?sh:idFor(sh)};
 /* where the picture sits once the pattern is slid, for the compare view */
 function setPic(pat){
   if(pat.kind==='square')pat.pic=conv.box?squarePic(pat.nbx,pat.nby,{...conv.box,qx:conv.box.qx+E.dx,qy:conv.box.qy+E.dy}):[];
@@ -2885,7 +2993,7 @@ function recolour(pat){
   const fold=key=>{let t=folds.get(key);if(t===undefined){t=swapTo(E,key);folds.set(key,t)}return t};
   const baseAt=k=>conv.at.get(k),keyOf=id=>colKey(conv.colors[id]);
   pat.sites.forEach((s,i)=>{
-    const[u,v]=uvOf(kind,stag,s),sh=shownAt(E,u,v,baseAt,keyOf,fold),c=sh===null?null:typeof sh==='string'?sh:idFor(sh);
+    const[u,v]=uvOf(kind,stag,s),sh=shownAll(E,u,v,baseAt,keyOf,fold),c=sh===null?null:typeof sh==='string'?sh:idFor(sh);
     if(c!==s.c){s.c=c;changed.push(i)}
     if(c&&!colors[c]){colors[c]=recFor(c);(c[0]==='p'?pIds:eIds).add(+c.slice(1))}
   });
@@ -2929,10 +3037,16 @@ function showEdit(d){
 
 /* ---------- editing (1.4): undo and redo ---------- */
 const hist=()=>HIST[KIND[st.source]],delta=(what,cells=[])=>({what,cells}),note=t=>txt('editMsg',t);
+/* 1.7: the layer being edited (0 is Layer 1), its edits object, an undo step for it, a step that changes the layers as a whole,
+   and " on Cat" for messages once there are layers */
+const layIdx=()=>Math.min(st.ed.layer,layersOf(E).length),actLayer=()=>{const i=layIdx();return i?E.layers[i-1]:null},TGT=()=>actLayer()||E;
+const ldelta=(what,cells=[])=>{const d=delta(what,cells),i=layIdx();if(i)d.L=i;return d};
+const layStep=(d,after)=>{const b=layState(E);d.ls=[b,after];d.n=cellsIn(b)+cellsIn(after);return d};
+const onWhere=()=>{if(!layersOf(E).length)return'';const i=layIdx(),h=i?E.layers[i-1].hide:E.hide;return' on '+layName(E,i)+(h?', which is hidden':'')};
 function pushUndo(d){
   const h=hist();h.undo.push(d);h.redo.length=0;
   let n=0,i=h.undo.length;   /* keep the newest steps: at most MAX_UNDO of them and about MAX_UNDO_CELLS pegs between them */
-  while(i>0&&h.undo.length-i<MAX_UNDO){n+=h.undo[i-1].cells.length;if(n>MAX_UNDO_CELLS&&i<h.undo.length)break;i--}
+  while(i>0&&h.undo.length-i<MAX_UNDO){n+=h.undo[i-1].cells.length+(h.undo[i-1].n||0);if(n>MAX_UNDO_CELLS&&i<h.undo.length)break;i--}
   h.undo.splice(0,i);
 }
 function doOp(d){applyDelta(E,d,1);pushUndo(d);showEdit(d)}
@@ -2942,15 +3056,28 @@ function clearDelta(what){
   const d=delta(what);for(const k in E.cells)d.cells.push([k,E.cells[k],null]);
   if(E.swaps.length)d.swaps=[E.swaps,[]];if(E.drops.length)d.drops=[E.drops,[]];
   if(E.dx||E.dy)d.shift=[[E.dx,E.dy],[0,0]];if(E.grow[0]||E.grow[1])d.grow=[E.grow,[0,0]];
+  if(layersOf(E).length||E.hide)layStep(d,{layers:[],hide:false,name:E.name||''});   /* 1.7: clearing every edit takes the layers too */
   return d;
 }
 
 /* ---------- editing (1.4): paint, erase, fill, pick ---------- */
-const cellKey=s=>{const[u,v]=uvOf(pattern.kind,st.lat.stagger,s);return(u-E.dx)+','+(v-E.dy)};   /* a board peg's name on the pattern */
-const cellOf=k=>E.cells[k]===undefined?null:E.cells[k];
+const baseKey=s=>{const[u,v]=uvOf(pattern.kind,st.lat.stagger,s);return(u-E.dx)+','+(v-E.dy)};   /* a board peg's name on the pattern (Layer 1) */
+const cellKey=s=>{const T=TGT(),[u,v]=uvOf(pattern.kind,st.lat.stagger,s);return(u-T.dx)+','+(v-T.dy)};   /* 1.7: its name on the layer being edited */
+const cellOf=k=>{const C=TGT().cells;return C[k]===undefined?null:C[k]};
+/* 1.7: the colour peg i has on the layer being edited, or null. With no layers it is simply what the board shows. */
+function ownC(i){
+  const s=pattern.sites[i];if(!layersOf(E).length&&!E.hide)return s.c;
+  const[u,v]=uvOf(pattern.kind,st.lat.stagger,s),L=actLayer();
+  if(L){const c=L.cells[(u-L.dx)+','+(v-L.dy)];return c?idFor(c-1):null}
+  const sh=shownAt(E,u,v,k=>conv.at.get(k),id=>colKey(conv.colors[id]),key=>swapTo(E,key));return sh===null?null:typeof sh==='string'?sh:idFor(sh);
+}
+/* a colour by its id, also when no shown peg uses it; ids are p (the palette) or e (a colour the edits name) and a number */
+const colOf=id=>pattern.colors[id]||(/^[pe]\d+$/.test(id||'')&&(id[0]==='p'?conv.P[+id.slice(1)]:E.pal[+id.slice(1)])?recFor(id):null);
+const idSort=(a,b)=>a[0]===b[0]?+a.slice(1)-+b.slice(1):a[0]==='p'?-1:1;
 /* the colour key a pattern peg shows without a hand edit (null = empty), and the value to store so that a hand edit is only kept where it differs */
 function under(k){const b=conv.at.get(k);if(b==null)return null;const key=colKey(conv.colors[b]),t=swapTo(E,key);return t<0?key:colKey(E.pal[t])}
-function normal(k,val){const un=under(k);return val===0?(un===null?null:0):(un===colKey(E.pal[val-1])?null:val)}
+function normal1(k,val){const un=under(k);return val===0?(un===null?null:0):(un===colKey(E.pal[val-1])?null:val)}
+function normal(k,val){return layIdx()?(val===0?null:val):normal1(k,val)}   /* 1.7: on a layer a bead is kept as set, and Erase clears the peg */
 function nearIdx(){
   let m=pattern.byUV;const kind=pattern.kind,stag=st.lat.stagger,steps=STEPS[kind==='square'?'square':'hex'];
   if(!m){m=pattern.byUV=new Map();pattern.sites.forEach((s,i)=>{const[u,v]=uvOf(kind,stag,s);m.set(u+','+v,i)})}
@@ -2975,11 +3102,11 @@ function toolAt(i){
   }
   if(TOOL15[t]){tool15(i,t);return}
   if(t!=='erase'&&!st.ed.paint){refresh();note('Choose a paint colour first.');return}
-  const val=t==='erase'?0:palIndex(E,st.ed.paint)+1,list=t==='fill'?floodPatch(i,j=>pattern.sites[j].c,nearIdx()):symIdx(i),cells=[];
+  const val=t==='erase'?0:palIndex(E,st.ed.paint)+1,list=t==='fill'?floodPatch(i,ownC,nearIdx()):symIdx(i),cells=[],w=onWhere();   /* 1.7: Fill follows the layer being edited */
   for(const j of list){const k=cellKey(pattern.sites[j]),b=cellOf(k),a=normal(k,val);if(a!==b)cells.push([k,b,a])}
-  if(!cells.length){refresh();note(t==='erase'?'That peg is already empty.':'That is already '+st.ed.paint.name+'.');return}
-  doOp(delta(t,cells));
-  note(t==='fill'?'Filled '+plural(cells.length,'peg')+' with '+st.ed.paint.name+'.':t==='erase'?'Erased '+plural(cells.length,'peg')+'.':'Painted '+plural(cells.length,'peg')+' '+st.ed.paint.name+'.');
+  if(!cells.length){refresh();note(t==='erase'?'That peg is already empty'+w+'.':'That is already '+st.ed.paint.name+w+'.');return}
+  doOp(ldelta(t,cells));
+  note(t==='fill'?'Filled '+plural(cells.length,'peg')+' with '+st.ed.paint.name+w+'.':t==='erase'?'Erased '+plural(cells.length,'peg')+w+'.':'Painted '+plural(cells.length,'peg')+' '+st.ed.paint.name+w+'.');
 }
 /* a drag with the mouse or a pen (or a finger, when Drag paints is on) paints or erases every peg it passes */
 let stroke=null,skipClick=false;
@@ -2988,7 +3115,7 @@ function strokeSite(i){for(const j of symIdx(i))strokeOne(j)}   /* 1.5: with sym
 function strokeOne(i){
   const s=pattern.sites[i],k=cellKey(s);if(stroke.seen.has(k))return;stroke.seen.add(k);
   const b=cellOf(k),a=normal(k,stroke.val);if(a===b)return;
-  stroke.cells.push([k,b,a]);if(a===null)delete E.cells[k];else E.cells[k]=a;
+  const C=TGT().cells;stroke.cells.push([k,b,a]);if(a===null)delete C[k];else C[k]=a;
   s.c=idAt(s);if(s.c&&!pattern.colors[s.c])pattern.colors[s.c]=recFor(s.c);
   patchEls([i]);stroke.idx.push(i);
 }
@@ -2999,10 +3126,11 @@ function strokeTo(x,y){
 }
 function endStroke(){
   if(!stroke)return;const s=stroke;stroke=null;
-  if(!s.cells.length){refresh();note(s.val?'That is already '+st.ed.paint.name+'.':'That peg is already empty.');return}
-  pushUndo(delta(s.val?'paint':'erase',s.cells));
+  const w=onWhere();
+  if(!s.cells.length){refresh();note(s.val?'That is already '+st.ed.paint.name+w+'.':'That peg is already empty'+w+'.');return}
+  pushUndo(ldelta(s.val?'paint':'erase',s.cells));
   const ch=recolour(pattern);patchEls(ch);editDone(s.idx.concat(ch));
-  note(s.val?'Painted '+plural(s.cells.length,'peg')+' '+st.ed.paint.name+'.':'Erased '+plural(s.cells.length,'peg')+'.');
+  note(s.val?'Painted '+plural(s.cells.length,'peg')+' '+st.ed.paint.name+w+'.':'Erased '+plural(s.cells.length,'peg')+w+'.');
 }
 $('board').addEventListener('pointerdown',e=>{
   skipClick=false;
@@ -3042,19 +3170,26 @@ document.addEventListener('keydown',e=>{
 
 /* ---------- editing (1.4): swap or drop a colour ---------- */
 function swapColour(){
-  const from=pattern.colors[$('swFrom').value],to=st.ed.paint;
+  const from=colOf($('swFrom').value),to=st.ed.paint;
   if(!from)return;
   if(!to){txt('swMsg','Choose a paint colour first.');return}
   if(colKey(from)===colKey(to)){txt('swMsg',from.name+' is the paint colour. Choose a different paint colour, then swap.');return}
+  if(layIdx()){   /* 1.7: on a layer, Swap recolours that layer's beads; it is not a rule */
+    const L=actLayer(),nm=layName(E,layIdx()),fi=palIndex(E,from),ti=palIndex(E,to),d=ldelta('swap '+from.name+' for '+to.name);
+    for(const k in L.cells)if(L.cells[k]===fi+1)d.cells.push([k,fi+1,ti+1]);
+    if(!d.cells.length){txt('swMsg',nm+' has no '+from.name+' beads.');return}
+    doOp(d);txt('swMsg','Every '+from.name+' bead on '+nm+' is now '+to.name+'.');return;
+  }
   const fi=palIndex(E,from),ti=palIndex(E,to),before=E.swaps,after=before.concat([[fi,ti]]).slice(-MAX_RULES),d=delta('swap '+from.name+' for '+to.name);
   d.swaps=[before,after];
   E.swaps=after;   /* look ahead: with the new rule in place, pegs painted by hand in the old colour take the new one */
   for(const k in E.cells)if(E.cells[k]===fi+1)d.cells.push([k,fi+1,normal(k,ti+1)]);
   E.swaps=before;
-  doOp(d);txt('swMsg','Every '+from.name+' bead is now '+to.name+'.');
+  doOp(d);txt('swMsg','Every '+from.name+' bead'+(layersOf(E).length?' on '+layName(E,0):'')+' is now '+to.name+'.');
 }
 function dropColour(){
-  const c=pattern.colors[$('swFrom').value];if(!c)return;
+  const c=colOf($('swFrom').value);if(!c)return;
+  if(layIdx()){txt('swMsg','Drop it works on '+layName(E,0)+', where the picture is converted. On this layer, use Swap.');return}   /* 1.7 */
   if(pattern.order.length<2){txt('swMsg','A pattern needs at least one colour.');return}
   /* a colour that an earlier swap turns into the dropped one goes with it */
   const gone=new Set([colKey(c)]),drops=E.drops.slice(),add=i=>{if(!drops.includes(i))drops.push(i)};let swaps=E.swaps.slice();
@@ -3064,7 +3199,7 @@ function dropColour(){
   if(swaps.length!==E.swaps.length)d.swaps=[E.swaps,swaps];
   for(const k in E.cells){const v=E.cells[k];if(v&&gone.has(colKey(E.pal[v-1])))d.cells.push([k,v,null])}
   const key=colKey(c);doOp(d);
-  txt('swMsg',Object.values(pattern.colors).some(x=>colKey(x)===key)?c.name+' could not be dropped: the picture has no other colour to give its beads to.':c.name+' is dropped. Its beads went to the closest colours left.');
+  txt('swMsg',(layersOf(E).length||E.hide?pattern.sites.some((s,i)=>{const o=ownC(i);return o&&colKey(colOf(o))===key}):Object.values(pattern.colors).some(x=>colKey(x)===key))?c.name+' could not be dropped: the picture has no other colour to give its beads to.':c.name+' is dropped. Its beads went to the closest colours left.');
 }
 function dropRule(type,i){
   const d=delta(type==='s'?'take back a swap':'bring back a colour'),a=(type==='s'?E.swaps:E.drops).slice();a.splice(i,1);
@@ -3077,18 +3212,20 @@ $('ruleList').addEventListener('click',e=>{const b=e.target.closest('button[data
 
 /* ---------- editing (1.4): slide and resize ---------- */
 function slideTo(nx,ny,what){
-  nx=clamp(nx,-MAX_SLIDE,MAX_SLIDE);ny=clamp(ny,-MAX_SLIDE,MAX_SLIDE);if(nx===E.dx&&ny===E.dy)return;
+  const T=TGT(),li=layIdx();   /* 1.7: Slide moves the layer being edited */
+  nx=clamp(nx,-MAX_SLIDE,MAX_SLIDE);ny=clamp(ny,-MAX_SLIDE,MAX_SLIDE);if(nx===T.dx&&ny===T.dy)return;
   const h=hist(),last=h.undo[h.undo.length-1];
-  if(what==='slide'&&last&&last.what==='slide'&&!h.redo.length){last.shift[1]=[nx,ny];E.dx=nx;E.dy=ny;showEdit(last)}   /* slides in a row undo as one step */
-  else{const d=delta(what);d.shift=[[E.dx,E.dy],[nx,ny]];doOp(d)}
+  if(what==='slide'&&last&&last.what==='slide'&&(last.L||0)===li&&!h.redo.length){last.shift[1]=[nx,ny];T.dx=nx;T.dy=ny;showEdit(last)}   /* slides in a row undo as one step */
+  else{const d=ldelta(what);d.shift=[[T.dx,T.dy],[nx,ny]];doOp(d)}
 }
 /* the slide that puts the pattern's beads in the middle of the board */
 function centreShift(){
   const lat=latNow(),B={u0:1e9,v0:1e9,u1:-1e9,v1:-1e9,x0:1e9,y0:1e9,x1:-1e9,y1:-1e9},F={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9};let has=false;
   const grow=(o,x,y)=>{o.x0=Math.min(o.x0,x);o.x1=Math.max(o.x1,x);o.y0=Math.min(o.y0,y);o.y1=Math.max(o.y1,y)};
   const add=k=>{const[u,v]=k.split(',').map(Number),[x,y]=stepXY(lat,u,v);has=true;grow(B,x,y);B.u0=Math.min(B.u0,u);B.u1=Math.max(B.u1,u);B.v0=Math.min(B.v0,v);B.v1=Math.max(B.v1,v)};
-  conv.at.forEach((c,k)=>{if(E.cells[k]===undefined)add(k)});
-  for(const k in E.cells)if(E.cells[k])add(k);
+  const L=actLayer();   /* 1.7: on a layer, centre that layer's beads */
+  if(L){for(const k in L.cells)add(k)}
+  else{conv.at.forEach((c,k)=>{if(E.cells[k]===undefined)add(k)});for(const k in E.cells)if(E.cells[k])add(k)}
   if(!has)return null;
   if(lat.kind==='square')return[Math.floor((pattern.nbx*BOARD-(B.u1-B.u0+1))/2)-B.u0,Math.floor((pattern.nby*BOARD-(B.v1-B.v0+1))/2)-B.v0];
   for(const s of pattern.sites){const[u,v]=uvOf(lat.kind,lat.stag,s),[x,y]=stepXY(lat,u,v);grow(F,x,y)}
@@ -3102,7 +3239,7 @@ function resize(axis,by){
 $('slidePad').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!pattern)return;
   if(b.id==='slCentre'){const t=centreShift();if(t)slideTo(t[0],t[1],'centre the pattern');return}
-  const[a,c]=b.dataset.sl.split(',').map(Number),n=+st.ed.step;slideTo(E.dx+a*n,E.dy+c*n,'slide');
+  const[a,c]=b.dataset.sl.split(',').map(Number),n=+st.ed.step,T=TGT();slideTo(T.dx+a*n,T.dy+c*n,'slide');
 });
 $('rzRows').addEventListener('click',e=>{const b=e.target.closest('button[data-rz]');if(!b||!pattern)return;const[ax,by]=b.dataset.rz.split(',').map(Number);resize(ax,by)});
 $('edClear').addEventListener('click',()=>{if(pattern&&!editsEmpty(E)){doOp(clearDelta('clear all edits'));note('All edits cleared. Undo brings them back.')}});
@@ -3122,7 +3259,8 @@ let quickList=[],allList=[];
 const swatches=(list,cur)=>list.map((c,i)=>`<button type="button" class="swb" data-sw="${i}" style="background:${esc(c.hex)}" title="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${colKey(c)===cur}"></button>`).join('');
 const dotHtml=c=>`<span class="dot" style="background:${esc(c.hex)}"></span> ${esc(c.name)}`;
 function editParts(){
-  const p=[];let n=0;for(const k in E.cells)n++;
+  const p=[],L=layersOf(E);let n=0;for(const k in E.cells)n++;for(const l of L)n+=beadsOn(l);
+  if(L.length){const h=L.filter(l=>l.hide).length+(E.hide?1:0);p.push(plural(L.length+1,'layer')+(h?' ('+h+' hidden)':''))}else if(E.hide)p.push('Layer 1 hidden');   /* 1.7 */
   if(n)p.push(plural(n,'peg')+' set by hand');
   if(E.swaps.length)p.push(plural(E.swaps.length,'colour swap'));
   if(E.drops.length)p.push(plural(E.drops.length,'colour')+' dropped');
@@ -3145,7 +3283,7 @@ function editSync(){
   $('keepEd').checked=st.keepEdits;$('edLock').checked=st.ed.lock;
   if(!on)return;
   const h=hist(),lat=latNow();
-  powerSync(lat);
+  powerSync(lat);layerSync();
   $('undo').disabled=!h.undo.length;$('redo').disabled=!h.redo.length;$('edClear').disabled=!parts.length;
   txt('edSum',parts.length?'('+parts.join(', ')+')':'(no edits yet)');
   txt('keepMsg',st.keepEdits?'Changing a setting re-makes the pattern and lays your edits back over it, peg for peg.':'Changing a setting re-makes the pattern from the picture alone. Undo brings the edits back.');
@@ -3159,10 +3297,12 @@ function editSync(){
   allList=f?P.filter(c=>(c.name+' '+c.code).toLowerCase().includes(f)):P;fillBox('allSw',swatches(allList,cur),'data-sw');
   txt('swCount',plural(P.length,'colour')+' from '+(st.img.palSrc==='scheme'?'the scheme':st.img.palSrc!=='basic'&&inv?'your bead sheet':'the Basic palette')+(f?', '+allList.length+' shown':'')+'. The row above the board shows the colours already in the pattern.');
   /* swap or drop */
-  const sf=$('swFrom'),keep=sf.value,cnt={};pattern.sites.forEach(s=>{if(s.c)cnt[s.c]=(cnt[s.c]||0)+1});
-  fillBox('swFrom',pattern.order.map(id=>`<option value="${id}">${esc(pattern.colors[id].name)} (${cnt[id]||0})</option>`).join(''));
-  if(pattern.colors[keep])sf.value=keep;
-  $('dropDo').disabled=pattern.order.length<2;$('swDo').disabled=!pattern.order.length;
+  const sf=$('swFrom'),keep=sf.value,cnt={},own=layersOf(E).length||E.hide;   /* 1.7: with layers, the colours on the layer being edited */
+  pattern.sites.forEach((s,i)=>{const c=own?ownC(i):s.c;if(c)cnt[c]=(cnt[c]||0)+1});
+  const ids=own?Object.keys(cnt).sort(idSort):pattern.order;
+  fillBox('swFrom',ids.map(id=>`<option value="${id}">${esc(colOf(id).name)} (${cnt[id]||0})</option>`).join(''));
+  if(own?cnt[keep]:pattern.colors[keep])sf.value=keep;
+  $('dropDo').disabled=pattern.order.length<2||layIdx()>0;$('swDo').disabled=!ids.length;
   const nr=E.swaps.length+E.drops.length;txt('swapSum',nr?'('+plural(nr,'rule')+')':'');
   fillBox('ruleList',E.swaps.map(([a,b],i)=>`<li>${dotHtml(E.pal[a])} is shown as ${dotHtml(E.pal[b])} <button type="button" class="btn sm" data-rule="s${i}">Take back</button></li>`).join('')
     +E.drops.map((j,i)=>`<li>${dotHtml(E.pal[j])} is dropped <button type="button" class="btn sm" data-rule="d${i}">Bring back</button></li>`).join(''),'data-rule');
@@ -3174,8 +3314,9 @@ function editSync(){
       return `<button type="button" class="ib sl" data-sl="${a},${b}" aria-label="Slide ${dirName(x,y)}" style="left:calc(50% + ${f3(Math.cos(ang)*58)}px - 22px);top:calc(50% + ${f3(Math.sin(ang)*58)}px - 22px)"><span style="transform:rotate(${Math.round(ang*180/Math.PI)}deg)">${ARROW}</span></button>`}).join('')
       +`<button type="button" class="ib sl" id="slCentre" aria-label="Centre the pattern on the board" style="left:calc(50% - 22px);top:calc(50% - 22px)">${TARGET}</button>`;
   }
-  const[sx,sy]=stepXY(lat,E.dx,E.dy),far=(v,a,b)=>{const n=Math.round(Math.abs(v)*10)/10;return n?n+' '+(v>0?a:b):''},where=[far(sx,'right','left'),far(sy,'down','up')].filter(Boolean).join(' and ');
-  txt('slideInfo',where?'Slid '+where+', in peg widths, from where the conversion put it.':'The pattern is where the conversion put it.');
+  const T=TGT(),li=layIdx(),[sx,sy]=stepXY(lat,T.dx,T.dy),far=(v,a,b)=>{const n=Math.round(Math.abs(v)*10)/10;return n?n+' '+(v>0?a:b):''},where=[far(sx,'right','left'),far(sy,'down','up')].filter(Boolean).join(' and ');
+  txt('slideInfo',li?(where?layName(E,li)+' is slid '+where+', in peg widths, from where it was drawn. The arrows move this layer only.':layName(E,li)+' is where it was drawn. The arrows move this layer only.')
+    :where?'Slid '+where+', in peg widths, from where the conversion put it.':'The pattern is where the conversion put it.');
   const fd=frameDims(),lim=DIM_LIM[lat.kind],names={square:['Boards across','Boards down'],hexb:['Pegs per side'],iso:['Columns','Rows']}[lat.kind];
   txt('slideSum',where||fd[0]!==conv.dims[0]||fd[1]!==conv.dims[1]?'(changed)':'');
   fillBox('rzRows',names.map((nm,ax)=>`<div class="rz"><span>${nm}</span><button type="button" class="ib" data-rz="${ax},-1" aria-label="${nm}: one fewer"${fd[ax]<=lim[ax][0]?' disabled':''}>−</button><output>${fd[ax]}${fd[ax]!==conv.dims[ax]?' (was '+conv.dims[ax]+')':''}</output><button type="button" class="ib" data-rz="${ax},1" aria-label="${nm}: one more"${fd[ax]>=lim[ax][1]?' disabled':''}>+</button></div>`).join(''),'data-rz');
@@ -3223,7 +3364,7 @@ function putCells(list,what,sym=true){
     const k=cellKey(pattern.sites[i]);if(seen.has(k))continue;seen.add(k);
     const bf=cellOf(k),af=normal(k,val);if(af!==bf)cells.push([k,bf,af]);
   }
-  if(cells.length)doOp(delta(what,cells));
+  if(cells.length)doOp(ldelta(what,cells));
   return cells.length;
 }
 const paintPal=()=>activePal().filter(p=>p.on!==false).map(p=>({name:p.name,hex:p.hex,code:p.code||''}));
@@ -3235,20 +3376,20 @@ function tool15(i,t){
     if(!stamp){refresh();note('No stamp yet. Use Select and Copy as stamp, or make one under Stamps and Text in the Edit panel.');return}
     if(stamp.type!==type){refresh();note('This stamp was made for '+(stamp.type==='square'?'square boards':'hex and iso boards')+', so it doesn’t fit here.');return}
     const idx=stamp.pal.map(p=>palIndex(E,p)+1),n=putCells(stamp.cells.map(c=>[uv[0]+c[0],uv[1]+c[1],idx[c[2]]]),'stamp');
-    if(n)note('Stamped '+plural(n,'peg')+'.');else{refresh();note('Nothing changed: the stamp matches what is already there.')}
+    if(n)note('Stamped '+plural(n,'peg')+onWhere()+'.');else{refresh();note('Nothing changed: the stamp matches what is already there.')}
     return;
   }
   if(t==='lighter'||t==='darker'){
-    if(!s.c){refresh();note('That peg is empty. Tap a bead.');return}
-    const P=paintPal(),labs=P.map(labOf),dir=t==='lighter'?1:-1,was=pattern.colors[s.c].name,cells=[];
+    const o=ownC(i);if(!o){refresh();note('That peg is empty'+onWhere()+'. Tap a bead.');return}   /* 1.7: the bead on the layer being edited */
+    const P=paintPal(),labs=P.map(labOf),dir=t==='lighter'?1:-1,was=colOf(o).name,cells=[];
     for(const j of symIdx(i)){
-      const q=pattern.sites[j];if(!q.c)continue;
-      const n=shadeStep(labs,labOf(pattern.colors[q.c]),dir);if(n<0)continue;
+      const q=pattern.sites[j],oc=ownC(j);if(!oc)continue;
+      const n=shadeStep(labs,labOf(colOf(oc)),dir);if(n<0)continue;
       const k=cellKey(q),bf=cellOf(k),af=normal(k,palIndex(E,P[n])+1);if(af!==bf)cells.push([k,bf,af]);
     }
     if(!cells.length){refresh();note('Your palette has no '+t+' bead than '+was+'.');return}
-    doOp(delta('shade '+t,cells));
-    const now=pattern.sites[i].c;note(was+' is now '+(now?pattern.colors[now].name:'empty')+(cells.length>1?', on '+plural(cells.length,'peg'):'')+'.');
+    doOp(ldelta('shade '+t,cells));
+    const now=ownC(i);note(was+' is now '+(now?colOf(now).name:'empty')+onWhere()+(cells.length>1?', on '+plural(cells.length,'peg'):'')+'.');
     return;
   }
   if(t!=='select'&&!st.ed.paint){refresh();note('Choose a paint colour first.');return}
@@ -3257,19 +3398,19 @@ function tool15(i,t){
   if(t==='select'){
     const m=uvMap(),idx=[];for(const[u,v]of boxCells(a,uv,true)){const j=m.get(u+','+v);if(j!==undefined)idx.push(j)}
     selBox={idx};sync();refresh();
-    note('Selected '+plural(idx.length,'peg')+', '+idx.filter(j=>pattern.sites[j].c).length+' with beads. Choose Copy as stamp, Move or Erase.');
+    note('Selected '+plural(idx.length,'peg')+', '+idx.filter(j=>ownC(j)).length+' with beads'+onWhere()+'. Choose Copy as stamp, Move or Erase.');
     return;
   }
   const val=palIndex(E,st.ed.paint)+1,pts=t==='line'?lineCells(type,a,uv):t==='box'?boxCells(a,uv,st.ed.solid):ringCells(type,a,uv,st.ed.solid);
   const n=putCells(pts.map(p=>[p[0],p[1],val]),t);
-  if(n)note('Drew a '+t+': '+plural(n,'peg')+' in '+st.ed.paint.name+'.');else{sync();refresh();note('Nothing changed: those pegs are already '+st.ed.paint.name+'.')}
+  if(n)note('Drew a '+t+': '+plural(n,'peg')+' in '+st.ed.paint.name+onWhere()+'.');else{sync();refresh();note('Nothing changed: those pegs are already '+st.ed.paint.name+'.')}
 }
 /* the beads inside the selection, as a stamp */
 function clipSel(){
   const pal=[],at=new Map(),cells=[],k=pattern.kind,g=st.lat.stagger;
   for(const i of selBox.idx){
-    const s=pattern.sites[i];if(!s.c)continue;
-    const c=pattern.colors[s.c],key=colKey(c);let n=at.get(key);
+    const s=pattern.sites[i],o=ownC(i);if(!o)continue;   /* 1.7: the beads of the layer being edited */
+    const c=colOf(o),key=colKey(c);let n=at.get(key);
     if(n===undefined){n=pal.length;at.set(key,n);pal.push({name:c.name,hex:c.hex,code:c.code||''})}
     const[u,v]=uvOf(k,g,s);cells.push([u,v,n]);
   }
@@ -3283,8 +3424,8 @@ $('selBtns').addEventListener('click',e=>{
   if(act!=='erase'){stamp=clip;st.ed.tool='stamp'}
   if(act!=='copy'){
     const cells=[];
-    for(const i of selBox.idx){const s=pattern.sites[i];if(!s.c)continue;const k=cellKey(s),bf=cellOf(k),af=normal(k,0);if(af!==bf)cells.push([k,bf,af])}
-    selBox=null;if(cells.length)doOp(delta(act==='move'?'lift the selection':'erase the selection',cells));
+    for(const i of selBox.idx){const s=pattern.sites[i];if(!ownC(i))continue;const k=cellKey(s),bf=cellOf(k),af=normal(k,0);if(af!==bf)cells.push([k,bf,af])}
+    selBox=null;if(cells.length)doOp(ldelta(act==='move'?'lift the selection':'erase the selection',cells));
   }
   selBox=null;saveSettings();sync();refresh();
   note(act==='erase'?'Erased '+plural(n,'bead')+'.':(act==='move'?'Lifted ':'Copied ')+plural(n,'bead')+'. Stamp is on: tap the peg where the middle should go.');
@@ -3412,6 +3553,91 @@ $('cubeBtns').addEventListener('click',e=>{
   useStamp(sp,'Cube ready in '+names.join(', ')+'.'+(names.length<3?' Your palette has too few shades of that colour for three different faces.':''));
 });
 
+/* ---------- pattern layers (1.7) ----------
+   Every change to the layers as a whole (add, duplicate, move, merge, delete, hide, show, rename) is one undo step that keeps
+   the layers before and after it (layStep). The tools reach a layer through cellKey(), cellOf() and normal(), and their undo
+   steps name it (d.L). */
+const laySay=t=>txt('layMsg',t);
+function layerSync(){
+  const L=layersOf(E),cur=layIdx(),n=L.length,rows=[],opts=[];
+  for(let i=n;i>=0;i--){   /* top first, as the layers stack */
+    const nm=layName(E,i),hid=i?L[i-1].hide:!!E.hide,on=i===cur;
+    const info=(i?plural(beadsOn(L[i-1]),'bead'):conv&&conv.at.size?'the picture and its edits':'the bottom layer')+(hid?', hidden':'')+(on?', editing':'');
+    rows.push(`<div class="layrow"><button type="button" class="btn laysel" data-lk="e${i}" aria-pressed="${on}"><b>${esc(nm)}</b><span>${esc(info)}</span></button>`
+      +`<button type="button" class="btn" data-lk="h${i}" aria-label="${hid?'Show':'Hide'} ${esc(nm)}">${hid?'Show':'Hide'}</button></div>`);
+    opts.push(`<option value="${i}">${esc(nm)}${hid?' (hidden)':''}</option>`);
+  }
+  fillBox('layList',rows.join(''),'data-lk');
+  fillBox('layPick',opts.join(''));$('layPick').value=String(cur);$('layBar').hidden=!n;
+  txt('laySum',n?'('+plural(n+1,'layer')+', editing '+layName(E,cur)+')':'');
+  $('layAdd').disabled=$('layDup').disabled=n>=MAX_LAYERS;
+  $('layUp').disabled=!cur||cur===n;$('layDown').disabled=cur<2;$('layMerge').disabled=$('layDel').disabled=!cur;
+}
+/* one undo step that changes the layers as a whole; pick: the layer to edit afterwards */
+function layOp(d,after,msg,pick){
+  layStep(d,after);if(pick!==undefined)st.ed.layer=pick;anchor=null;selBox=null;
+  doOp(d);saveSettings();sync();laySay(msg);
+}
+function pickLayer(i){
+  st.ed.layer=clamp(i,0,layersOf(E).length);anchor=null;selBox=null;saveSettings();sync();
+  const j=layIdx(),h=j?E.layers[j-1].hide:E.hide,t='Editing '+layName(E,j)+(h?', which is hidden. Show it to see your edits.':'.');laySay(t);note(t);
+}
+const full=()=>{if(layersOf(E).length<MAX_LAYERS)return false;laySay('FIG keeps up to '+(MAX_LAYERS+1)+' layers. Merge or delete one first.');return true};
+$('layAdd').addEventListener('click',()=>{
+  if(!pattern||full())return;const a=layState(E),cur=layIdx(),nm=freeName(E);
+  a.layers.splice(cur,0,newLayer(nm));   /* just above the layer being edited */
+  layOp(delta('add '+nm),a,'Added '+nm+' above '+layName(E,cur)+'. You are editing it now.',cur+1);
+});
+$('layDup').addEventListener('click',()=>{
+  if(!pattern||full())return;const a=layState(E),cur=layIdx(),from=layName(E,cur);let l;
+  if(cur)l=JSON.parse(JSON.stringify(E.layers[cur-1]));
+  else{   /* Layer 1: the beads it shows now, so they can be kept when another picture is chosen */
+    l=newLayer('');l.hide=!!E.hide;const kind=pattern.kind,g=st.lat.stagger,baseAt=k=>conv.at.get(k),keyOf=id=>colKey(conv.colors[id]),fold=key=>swapTo(E,key);
+    for(const s of pattern.sites){const[u,v]=uvOf(kind,g,s),sh=shownAt(E,u,v,baseAt,keyOf,fold);if(sh!==null)l.cells[u+','+v]=(typeof sh==='string'?palIndex(E,conv.colors[sh]):sh)+1}
+  }
+  l.name=copyName(E,from);a.layers.splice(cur,0,l);
+  layOp(delta('duplicate '+from),a,'Copied '+from+' to '+l.name+', just above it. You are editing the copy.',cur+1);
+});
+function layMove(by){
+  const cur=layIdx(),to=cur+by;if(!pattern||!cur||to<1||to>layersOf(E).length)return;
+  const a=layState(E),nm=layName(E,cur);a.layers=moveLayer(a.layers,cur-1,to-1);
+  layOp(delta('move '+nm+(by>0?' up':' down')),a,'Moved '+nm+(by>0?' up, over ':' down, under ')+layName(E,to)+'.',to);
+}
+$('layUp').addEventListener('click',()=>layMove(1));
+$('layDown').addEventListener('click',()=>layMove(-1));
+$('layMerge').addEventListener('click',()=>{
+  const cur=layIdx();if(!pattern||!cur)return;
+  const top=E.layers[cur-1],a=layState(E),nm=top.name,dn=layName(E,cur-1),d=delta('merge '+nm+' down');
+  if(cur===1){   /* onto Layer 1: each bead becomes a peg set by hand there */
+    const seen=new Set();
+    for(const[u,v,val]of layerPegs(top)){const k=(u-E.dx)+','+(v-E.dy);if(seen.has(k))continue;seen.add(k);const bf=E.cells[k]===undefined?null:E.cells[k],af=normal1(k,val);if(af!==bf)d.cells.push([k,bf,af])}
+  }else{const t=a.layers[cur-2];t.cells=mergeOnto(top,t)}
+  a.layers.splice(cur-1,1);
+  layOp(d,a,'Merged '+nm+' into '+dn+'.'+(top.hide?' It was hidden, so its beads show now.':''),cur-1);
+});
+$('layDel').addEventListener('click',()=>{
+  const cur=layIdx();if(!pattern||!cur)return;const a=layState(E),nm=layName(E,cur);a.layers.splice(cur-1,1);
+  layOp(delta('delete '+nm),a,'Deleted '+nm+'. Undo brings it back.',cur-1);
+});
+$('layList').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-lk]');if(!b||!pattern)return;const k=b.dataset.lk,i=+k.slice(1);if(!(i>=0&&i<=layersOf(E).length))return;
+  if(k[0]==='e'){pickLayer(i);return}
+  const a=layState(E),nm=layName(E,i),hid=i?a.layers[i-1].hide:a.hide;
+  if(i)a.layers[i-1].hide=!hid;else a.hide=!hid;
+  layOp(delta((hid?'show ':'hide ')+nm),a,hid?nm+' is shown again.':nm+' is hidden. It is left out of the counts, the shopping list, printing and export until you show it.');
+});
+$('layPick').addEventListener('change',e=>pickLayer(+e.target.value||0));
+function layRename(){
+  if(!pattern)return;const nm=$('layNm').value.trim().slice(0,MAX_LAYER_NAME),cur=layIdx(),old=layName(E,cur);
+  if(!nm){laySay('Type a new name first.');return}
+  if(nm===old){laySay('That is already its name.');return}
+  for(let j=0;j<=layersOf(E).length;j++)if(j!==cur&&layName(E,j)===nm){laySay('Another layer is called '+nm+'. Choose a different name.');return}
+  const a=layState(E);if(cur)a.layers[cur-1].name=nm;else a.name=nm;$('layNm').value='';
+  layOp(delta('rename '+old),a,old+' is now called '+nm+'.');
+}
+$('layRen').addEventListener('click',layRename);
+$('layNm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();layRename()}});
+
 /* ---------- project file and library (1.4) ---------- */
 const PROJ_ERR={notfig:'That file is not a FIG project file.',newer:'That project file was made by a newer FIG. Update FIG to open it.',big:'That file is too large to be a FIG project file.'};
 const MAX_PROJ_BYTES=30e6,MAX_LIB=200,THUMB_URL=/^data:image\/png;base64,[A-Za-z0-9+/]+=*$/;
@@ -3454,7 +3680,7 @@ function finishOpen(){
     const want=new Map();for(const[a,b,n]of o.snap.beads)want.set(a+','+b,o.snap.colours[n]);
     for(const s of pattern.sites){
       const w=want.get(s.k),have=s.c?colKey(pattern.colors[s.c]):null;
-      if(have!==(w?colKey(w):null)){E.cells[cellKey(s)]=w?palIndex(E,w)+1:0;fixed++}
+      if(have!==(w?colKey(w):null)){E.cells[baseKey(s)]=w?palIndex(E,w)+1:0;fixed++}
     }
     if(fixed)patchEls(recolour(pattern));
   }
@@ -3553,7 +3779,7 @@ $('libList').addEventListener('click',async e=>{
 function rebuild(why){
   const was=why==='edit'&&pattern?new Map(pattern.sites.map(s=>[s.k,s.c])):null,oldW=pattern?pattern.W:0,oldH=pattern?pattern.H:0;
   if(why==='new'&&!st.blank){   /* edits belong to the picture they were made on; on an empty board the picture is only there to trace, so they stay */
-    if(Object.values(ED).some(e=>!editsEmpty(e)||e.pal.length)){ED=freshEdits();saveEdits()}
+    if(Object.values(ED).some(e=>!editsEmpty(e)||e.pal.length)){const was=ED;ED=freshEdits();for(const k in ED)if(was[k].layers){ED[k].pal=was[k].pal;ED[k].layers=was[k].layers}saveEdits()}   /* 1.7: the new picture replaces Layer 1; the other layers stay */
     HIST=freshHist();savedClean=false;
   }
   E=ED[KIND[st.source]];
@@ -3908,7 +4134,7 @@ function printExport(kind,q){
 }
 
 /* ---------- start ---------- */
-[['orderBox','order'],['legendBox','legend'],['adjBox','adj'],['cleanBox','clean'],['swapBox','swap'],['slideBox','slide'],['projBox','proj'],['stampBox','stamp'],['printBox','print']].forEach(([id,k])=>{const d=$(id);d.open=st.ui[k]!==false;
+[['orderBox','order'],['legendBox','legend'],['adjBox','adj'],['cleanBox','clean'],['swapBox','swap'],['slideBox','slide'],['projBox','proj'],['stampBox','stamp'],['printBox','print'],['layerBox','layer']].forEach(([id,k])=>{const d=$(id);d.open=st.ui[k]!==false;
   d.addEventListener('toggle',()=>{if(st.ui[k]!==d.open){st.ui[k]=d.open;saveSettings()}})});
 palUI();
 const storedImg=store.get('fl:img');
