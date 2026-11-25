@@ -44,18 +44,18 @@ header p { margin: 0 0 16px; color: var(--muted); max-width: 62ch; font-weight: 
 .seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 999px; padding: 3px; background: var(--panel); }
 .seg button {
   font: inherit; font-size: .92rem; border: 0; background: transparent; color: var(--ink);
-  padding: 7px 13px; border-radius: 999px; cursor: pointer; min-height: 38px;
+  padding: 7px 13px; border-radius: 999px; cursor: pointer; min-height: 44px; min-width: 44px;
 }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 500; }
 .swatches { display: inline-flex; gap: 6px; }
-.swatches button { border: 2px solid transparent; background: none; padding: 2px; border-radius: 10px; cursor: pointer; line-height: 0; }
+.swatches button { border: 2px solid transparent; background: none; padding: 2px; border-radius: 10px; cursor: pointer; line-height: 0; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .swatches button[aria-pressed="true"] { border-color: var(--ink); }
 .swatches svg { width: 30px; height: 30px; display: block; }
 .small { font-size: .85rem; color: var(--muted); }
 .row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
 .plain {
   font: inherit; font-size: .92rem; color: var(--ink); background: var(--panel);
-  border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 12px; min-height: 38px; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 12px; min-height: 44px; cursor: pointer;
 }
 select.plain { padding-right: 8px; }
 .stage { background: var(--board); border-radius: 18px; overflow: hidden; position: relative; }
@@ -94,7 +94,7 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
 <body>
 <div class="wrap">
 <header>
-  <h1>Iso bead designer</h1>
+  <h1>Iso Bead Designer</h1>
   <p>Stack cubes, read off a bead chart for the 48 × 38 iso pegboard, and tap any bead to see where its coordinates come from.</p>
 </header>
 
@@ -167,6 +167,7 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
   <section>
     <details class="fold" id="aboutBox" data-ui="about">
       <summary><h2>About This Version</h2></summary>
+      <p>1.1 (24 Nov 2026): every button, colour and list is at least 44 px for fingers. Your design is now saved under a key that starts with iso:, and a design saved by 1.0 carries over. The title is in Title Case.</p>
       <p>1.0 (24 Nov 2026): the first numbered version. Sections fold up: tap a heading to open or close it, and the app remembers how you left each one. Headings are in Title Case.</p>
     </details>
   </section>
@@ -294,12 +295,16 @@ const PRESETS = {
 function setVox(list) { S.vox = new Map(list.map(([x, y, z, m]) => [x + ',' + y + ',' + z, m])); }
 
 // ---------- persistence ----------
+// The design is kept under iso:design: keys start with iso:, the app's short name (house rule 4).
+// 1.0 kept it under isoBeadDesigner.v1; it moves across once, and the old key goes only after its copy is written.
+const SAVE_KEY = 'iso:design', OLD_SAVE_KEY = 'isoBeadDesigner.v1';
+try { const v = localStorage.getItem(OLD_SAVE_KEY); if (v != null) { if (localStorage.getItem(SAVE_KEY) == null) localStorage.setItem(SAVE_KEY, v); localStorage.removeItem(OLD_SAVE_KEY); } } catch (e) {}
 function save() {
-  try { localStorage.setItem('isoBeadDesigner.v1', JSON.stringify({ vox: [...S.vox], mat: S.mat, k: S.k })); } catch (e) {}
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ vox: [...S.vox], mat: S.mat, k: S.k })); } catch (e) {}
 }
 function load() {
   try {
-    const d = JSON.parse(localStorage.getItem('isoBeadDesigner.v1') || 'null');
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
     if (d && Array.isArray(d.vox)) { S.vox = new Map(d.vox); S.mat = d.mat | 0; S.k = [1, 2, 3].includes(d.k) ? d.k : 2; return true; }
   } catch (e) {}
   return false;

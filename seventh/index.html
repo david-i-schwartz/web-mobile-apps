@@ -33,6 +33,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 
 #hud{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:10px 12px;pointer-events:none;transition:opacity 1.2s}
 #hud .pill{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font:600 13px/1.2 var(--sans);white-space:nowrap}
+#hud button.pill{min-height:44px;min-width:44px;padding:6px 14px}
 #hud .spacer{flex:1}
 #weekStrip{display:flex;gap:7px;align-items:center}
 #weekStrip i{display:block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted)}
@@ -75,13 +76,13 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .refrain{font-family:var(--serif);font-size:21px;line-height:1.4}
 .fine{font-size:12px;color:var(--muted)}
 .controls{font-size:14px;color:var(--muted)}
-.btn{appearance:none;border:1px solid transparent;background:var(--accent);color:var(--accent-ink);font:600 15px var(--sans);padding:11px 18px;border-radius:10px;cursor:pointer;margin:6px 4px}
+.btn{appearance:none;border:1px solid transparent;background:var(--accent);color:var(--accent-ink);font:600 15px var(--sans);padding:11px 18px;border-radius:10px;cursor:pointer;margin:6px 4px;min-height:44px}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
 .btn.small{padding:7px 11px;font-size:13px;margin:3px}
 .btn:focus-visible,#menuBtn:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .row{display:flex;flex-wrap:wrap;justify-content:center}
 details{text-align:left;margin:14px auto 4px;max-width:46ch;font-size:14px;line-height:1.5}
-details summary{cursor:pointer;color:var(--accent);font-weight:600;text-align:center;list-style-position:inside}
+details summary{cursor:pointer;color:var(--accent);font-weight:600;text-align:center;list-style-position:inside;padding:12px 0}
 details ul{padding-left:18px;margin:10px 0 0}
 details li{margin:6px 0}
 .art{width:170px;height:auto;display:block;margin:0 auto 4px}
@@ -134,13 +135,19 @@ details li{margin:6px 0}
         <button class="btn ghost" id="restartBtn" hidden>Start over at week 1</button>
       </div>
       <details>
-        <summary>How the mechanic teaches</summary>
+        <summary>How the Mechanic Teaches</summary>
         <ul>
           <li>Every seventh platform is a resting stone. Landing on it slows the world for a breath, but the sun keeps moving. Rest costs time.</li>
           <li>Manna melts by midday, and whatever you carry home measures out to an omer: enough. Extra spoils overnight (Exodus 16).</li>
           <li>On the sixth day twice as much falls, and sunset comes on time whether or not you are home.</li>
           <li>On the seventh day the clock, the count and the week strip disappear. Nothing falls. Standing still makes the garden bloom, and seven stones ask a question when you sit.</li>
           <li>Shabbat ends at three stars, not when you are finished.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>About This Version</summary>
+        <ul>
+          <li>1.0 (24 Nov 2026): the first numbered version. Buttons, the Pause button and these fold-outs are at least 44 px tall, so they are easy to tap on a phone. Your week and sound setting are now saved under keys that start with sev:, and the week you had reached carries over. Headings are in Title Case.</li>
         </ul>
       </details>
       <p class="fine">Prototype. Scripture: JPS 1917 translation (public domain).<span id="creditLine"></span></p>
@@ -182,7 +189,7 @@ details li{margin:6px 0}
         <line x1="89" y1="44" x2="89" y2="37" stroke="#3a2a1a" stroke-width="1.6"/>
         <g class="flame"><path d="M85 8 C93 20 95 28 85 38 C75 28 77 20 85 8Z" fill="#ffad42"/><path d="M85 20 C88.5 26 88.5 31 85 36 C81.5 31 81.5 26 85 20Z" fill="#fff4c8"/></g>
       </svg>
-      <h2>Three stars</h2>
+      <h2>Three Stars</h2>
       <p>Shabbat ends with havdalah, “separation”: wine, sweet spices and a braided candle mark the line between the holy day and the six days of work.</p>
       <button class="btn" id="havBtn">Light the havdalah candle</button>
       <div id="havAfter" hidden>
@@ -254,6 +261,8 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
 };
+/* keys start with sev:, the app's short name (house rule 4). Before 1.0 they were seventh.week and seventh.sound: move them across once, removing an old key only after its copy is written */
+try { for (const k of ['week', 'sound']) { const o = 'seventh.' + k, n = 'sev:' + k, v = localStorage.getItem(o); if (v != null) { if (localStorage.getItem(n) == null) localStorage.setItem(n, v); localStorage.removeItem(o); } } } catch (e) { /* storage unavailable */ }
 
 /* ---------- Canvas ---------- */
 const canvas = $('c'), ctx = canvas.getContext('2d');
@@ -270,9 +279,9 @@ window.addEventListener('resize', resize);
 
 /* ---------- State ---------- */
 const G = {
-  mode: 'title', paused: false, week: store.get('seventh.week', 1), day: 1,
+  mode: 'title', paused: false, week: store.get('sev:week', 1), day: 1,
   t: 0, dayP: 0.04, shabP: 0, timeScale: 1, breath: null, gathered: 0, cam: 0,
-  sound: store.get('seventh.sound', false), seenRest: false, lastSafe: { x: 40, y: 280 }, endWait: 0, ended: false
+  sound: store.get('sev:sound', false), seenRest: false, lastSafe: { x: 40, y: 280 }, endWait: 0, ended: false
 };
 const keys = { left: false, right: false, jump: false, rest: false };
 const player = { x: 40, y: 280, vx: 0, vy: 0, w: 14, h: 30, onGround: false, ground: null, coyote: 0, jumpBuf: 0, facing: 1, sitting: false, anim: 0, fade: 0 };
@@ -949,10 +958,10 @@ function toTitle() {
   refreshTitle(); showOverlay('title');
 }
 $('startBtn').addEventListener('click', () => { audio(); startDay(1); });
-$('restartBtn').addEventListener('click', () => { G.week = 1; store.set('seventh.week', 1); refreshTitle(); startDay(1); });
+$('restartBtn').addEventListener('click', () => { G.week = 1; store.set('sev:week', 1); refreshTitle(); startDay(1); });
 $('menuBtn').addEventListener('click', openMenu);
 $('resumeBtn').addEventListener('click', closeMenu);
-$('soundBtn').addEventListener('click', () => { G.sound = !G.sound; store.set('seventh.sound', G.sound); $('soundBtn').textContent = `Sound: ${G.sound ? 'on' : 'off'}`; if (G.sound) tone(660, 0.4, 0.04); });
+$('soundBtn').addEventListener('click', () => { G.sound = !G.sound; store.set('sev:sound', G.sound); $('soundBtn').textContent = `Sound: ${G.sound ? 'on' : 'off'}`; if (G.sound) tone(660, 0.4, 0.04); });
 $('menuTitleBtn').addEventListener('click', toTitle);
 const jr = $('jumpRow');
 for (let d = 1; d <= 7; d++) {
@@ -968,7 +977,7 @@ $('lightBtn').addEventListener('click', () => {
 $('enterBtn').addEventListener('click', startShabbat);
 $('havBtn').addEventListener('click', () => {
   $('havArt').classList.add('lit'); sfx('candle'); $('havBtn').hidden = true;
-  G.week += 1; store.set('seventh.week', G.week);
+  G.week += 1; store.set('sev:week', G.week);
   $('nextWeekBtn').textContent = `Begin week ${G.week}`;
   setTimeout(() => { $('havAfter').hidden = false; $('nextWeekBtn').focus({ preventScroll: true }); }, 1300);
 });

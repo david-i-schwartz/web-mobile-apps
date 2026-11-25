@@ -221,7 +221,8 @@ textarea{min-height:84px;resize:vertical}
 .versions ul{margin:4px 0 0;padding-left:18px;color:var(--ink-2)}
 .nojs{max-width:34em;margin:40px auto;padding:20px;font:17px/1.5 var(--f-ui);color:var(--ink)}
 .nojs a{color:var(--teal-ink);word-break:break-all}
-@media (pointer:coarse){.btn,.sm,.tool,.tab,.phase,.boardctl button,.modes button{min-height:44px}.sm{padding:6px 12px}.hint button{min-height:44px}}
+/* 44 px targets everywhere (house rule 6), not only on touch screens: some phones and tablets report a fine pointer */
+.btn,.sm,.tool,.tab,.phase,.boardctl button,.modes button{min-height:44px}.sm{padding:6px 12px}.hint button{min-height:44px}.boardctl button{min-width:44px}
 /* narrow */
 @media (max-width:900px){
   .app{height:auto;min-height:100%}
@@ -267,7 +268,7 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
   <main class="stage">
     <section class="boardwrap" aria-label="Case board">
       <div class="boardhead">
-        <h2 id="boardTitle">Image board</h2>
+        <h2 id="boardTitle">Image Board</h2>
         <div class="boardctl">
           <button data-act="zoomIn" aria-label="Zoom in">+</button>
           <button data-act="zoomOut" aria-label="Zoom out">−</button>
@@ -307,8 +308,9 @@ const EVI = Object.fromEntries(CASE.evidence.map(e => [e.id, e]));
 const BOARD = Object.fromEntries(CASE.boards.map(b => [b.id, b]));
 const PTS = { best: 10, acceptable: 5, harmful: 0 };
 const RLABEL = { best: 'Best', acceptable: 'Acceptable', harmful: 'Harmful' };
-const APP = { code: 'IPAR', name: 'IPAR', version: '0.3', date: '2026-11-24', home: 'https://david-i-schwartz.github.io/web-mobile-apps/ipar/',
+const APP = { code: 'IPAR', name: 'IPAR', version: '0.4', date: '2026-11-24', home: 'https://david-i-schwartz.github.io/web-mobile-apps/ipar/',
   changes: [
+    ['0.4', '24 November 2026', ['Buttons are at least 44 px on every screen, not only touch screens, including the board’s zoom, Fit and List buttons and the Practice and Exam switch.', 'Board headings are in Title Case.']],
     ['0.3', '24 November 2026', ['Sections fold up: tap a heading on the start screen, the debrief or About to open or close it, and IPAR remembers how you left each one. About This Version, Credits, Learn the Ideas and On Your Phone start closed.']],
     ['0.2', '14 November 2026', ['On the Web & Mobile Apps site, so it opens on phones and tablets and can go on the Home Screen.',
       'Your place in the case is kept in this browser, so you can stop and pick up where you left off.',
@@ -644,7 +646,7 @@ function renderHeader() {
   ig.className = 'chip ' + map[st][0]; ig.innerHTML = `<i></i>${map[st][1]}`;
   const sc = scoreNow();
   $('#scoreChip').textContent = S.mode === 'exam' ? 'Exam mode' : (sc.count ? `Score ${Math.round(sc.pct * 100)}%` : 'Score —');
-  $('#boardTitle').innerHTML = `${esc(BOARD[S.board].name)} board<small>${S.board === 'report' ? 'tap evidence, then a claim' : 'tap a card to open it'}</small>`;
+  $('#boardTitle').innerHTML = `${esc(BOARD[S.board].name)} Board<small>${S.board === 'report' ? 'tap evidence, then a claim' : 'tap a card to open it'}</small>`;
 }
 function renderTabs() {
   const tabs = [['lead', 'Lead'], ['bench', 'Bench'], ['inbox', 'Inbox'], ['evidence', 'Evidence']];
@@ -680,7 +682,7 @@ function optionsHTML(id) {
 }
 function leadHTML() {
   const id = S.sel;
-  if (!id) return `<p class="kicker">Lead</p><h3 class="ptitle">Pick a card on the board</h3><p class="pbody">Each note is a lead. Answer it to reveal what it connects to.</p>`;
+  if (!id) return `<p class="kicker">Lead</p><h3 class="ptitle">Pick a Card on the Board</h3><p class="pbody">Each note is a lead. Answer it to reveal what it connects to.</p>`;
   if (EVI[id]) return evidenceCardHTML(id);
   const n = NODE[id];
   if (n.kind === 'claim') return claimHTML(id);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Civilian's Guide to Milspeak (DV13)</title>
+    <title>The Civilian's Guide to Milspeak (DV14)</title>
     <style>
         :root {
             --bg-primary: #1a1e24;
@@ -81,6 +81,8 @@
 
         table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
         th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        /* on a phone a wide table scrolls sideways inside its own box instead of pushing the page wider */
+        @media (max-width: 640px) { table { display: block; overflow-x: auto; } th, td { padding: 0.6rem; } }
         th { background-color: var(--bg-primary); color: var(--accent-main); text-transform: uppercase; font-size: 0.8rem; }
         tr:hover { background-color: var(--bg-primary); }
         
@@ -122,7 +124,7 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
 <body>
 
     <header>
-        <h1>The Civilian's Guide to Milspeak (DV13)</h1>
+        <h1>The Civilian's Guide to Milspeak (DV14)</h1>
         <p>THE FULL ACCUMULATIVE MASTER: Zero-Loss Restoration of Doctrine, Admin, Operations, Wargaming, Cyber Security, and Critical Infrastructure.</p>
     </header>
 
@@ -175,7 +177,7 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
             <summary><h2>2. Alphanumeric Soup (Staff Codes & Pay Grades)</h2></summary>
             <p>If you hear someone say, "Take this to the J-3, the O-6 wants it by tomorrow," you are dealing with the military's strict alphanumeric organizational structure.</p>
 
-            <h3>The Prefix: Who are we talking about?</h3>
+            <h3>The Prefix: Who Are We Talking About?</h3>
             <table>
                 <tr><th>Prefix</th><th>Meaning</th><th>Context</th></tr>
                 <tr><td><strong>J</strong></td><td>Joint Staff</td><td>Used at Combatant Commands (like CENTCOM) or the Pentagon where multiple branches work together.</td></tr>
@@ -184,7 +186,7 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
                 <tr><td><strong>A / N</strong></td><td>Air / Navy Staff</td><td>Used strictly within Air Force (A) or Navy (N) specific commands.</td></tr>
             </table>
 
-            <h3>The Number: What is their job?</h3>
+            <h3>The Number: What Is Their Job?</h3>
             <ul>
                 <li><strong>1 (Personnel):</strong> Human resources, troop readiness.</li>
                 <li><strong>2 (Intelligence):</strong> Threat assessment, satellite imagery, targeting. (e.g., The "J-2" is the Intel boss).</li>
@@ -661,12 +663,13 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
 
         <details class="fold msec" id="about" data-ui="about">
             <summary><h2>About This Version</h2></summary>
+            <p>DV14 (24 Nov 2026): on a phone, the wide tables scroll sideways inside their own box, so the page itself no longer scrolls sideways at 380 px. Two headings are now in Title Case.</p>
             <p>DV13 (24 Nov 2026): every section folds up. Tap a heading to open or close it, and the guide remembers how you left each one; a link in the index opens its section. On a phone the index scrolls away with the page instead of covering most of the screen.</p>
             <p>DV12: the full restored master reference.</p>
         </details>
 
         <footer>
-            <p>The Civilian's Guide to Milspeak (DV13) • Full Restored Master Reference</p>
+            <p>The Civilian's Guide to Milspeak (DV14) • Full Restored Master Reference</p>
         </footer>
 
     </div>
