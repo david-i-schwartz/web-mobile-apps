@@ -240,9 +240,9 @@ input[type=url]{width:100%;border:1px solid var(--edge);border-radius:10px;backg
       <div class="btns" style="margin:0"><button type="button" class="btn primary" id="getApp">Download app</button></div>
     </div>
     <p class="sub" id="pvMsg" aria-live="polite"></p>
-    <div id="pvWrap"><iframe id="pv" title="Live preview of the app"></iframe></div>
+    <div id="pvWrap"><iframe id="pv" title="Live preview of the app" sandbox="allow-scripts allow-downloads allow-modals allow-popups allow-popups-to-escape-sandbox"></iframe></div>
     <p class="sub" id="dlMsg" aria-live="polite"></p>
-    <p class="sub">This is the real app, running. Its own Save buttons may not work inside the preview: download the app to use them.</p>
+    <p class="sub">This is the real app, running. The preview doesn’t keep its work, so trying an app here never changes work saved in that app. Its own Save buttons may not work inside the preview: download the app to use them.</p>
   </section>
 
   <div class="controls">
@@ -377,6 +377,7 @@ input[type=url]{width:100%;border:1px solid var(--edge);border-radius:10px;backg
         <li>To add features, put them in the APP sections, by hand or with any AI and the build brief. To fix or improve something every app has, change the core instead, in the generator’s kit.</li>
         <li>Nothing depends on one AI. The apps run in any browser, the briefs are plain text, and the kit runs on Node. Have one AI build and a different one test, using the test brief.</li>
         <li>Every section with a heading folds up, and the app remembers how each was left. Learn the Ideas, On Your Phone, About and Credits start closed. Write an app’s own sections as fold-outs too: the build brief shows how.</li>
+        <li>The preview is sealed off from this page’s storage. On a site where many apps share one web address, trying an app here can’t read or change the work saved in the real app.</li>
         <li>When the core improves, open each app here with Open an app to upgrade and download it again. Its spec and APP sections carry over.</li>
         <li>To use an app on a phone or tablet, put its web folder on a web host. Each app shows the two or three taps that add it to the Home Screen, and says when it’s already there.</li>
         <li>The kit also has a command-line version for Claude Code or any computer with Node: <code>node cli.js new spec.json app.html</code>, and <code>node cli.js upgrade old.html new.html</code>.</li>
@@ -385,6 +386,7 @@ input[type=url]{width:100%;border:1px solid var(--edge);border-radius:10px;backg
     <details class="group" id="genAbout" data-ui="gAbout">
       <summary><h2>About This Version <span class="sub" id="genWhen"></span></h2></summary>
       <ul class="sub">
+        <li>1.6.1 (24 Nov 2026): this page’s saved draft and folds now use keys that start with gen:, like the other apps on the sites, and work saved by earlier versions moves across by itself. The preview is sealed off, so trying an app here no longer writes into that app’s own saved work. Apps are unchanged (core 1.4).</li>
         <li>1.6 (24 Nov 2026): core 1.4. Every section with a heading folds up, in the apps and on this page: tap a heading to open or close it, and each one stays as you left it. Learn the Ideas, On Your Phone, About This Version and Credits start closed. A ? in a heading opens its help without folding the section. The ? buttons, small buttons and fold-out headings are 44 px touch targets now. The build brief asks for an app’s own sections as fold-outs too.</li>
         <li>1.5.1 (24 Nov 2026): a site’s front page has its own Home Screen icon, a 3 × 3 grid of beads on the site’s colour, instead of borrowing the first app’s. Apps are unchanged (core 1.3).</li>
         <li>1.5 (17 Nov 2026): a site’s front page has an Instructions button that opens the steps for putting an app on a Home Screen, for iPhone and iPad, Android and computers, with the visitor’s own device opened first. It replaces the steps that sat at the bottom of the page.</li>
@@ -415,7 +417,7 @@ input[type=url]{width:100%;border:1px solid var(--edge);border-radius:10px;backg
    brief(spec) -> text                                     the build brief to hand to Claude or another AI with the app */
 (function(root){
 'use strict';
-const GEN_VERSION='1.6',CORE_VERSION='1.4';
+const GEN_VERSION='1.6.1',CORE_VERSION='1.4';
 const MODULES=['base','home','board','picture','edit','progress','project','export'];
 const FEATURES=['board','picture','edit','progress','project','export'];
 const NEEDS_BOARD=['picture','edit','progress','export'];
@@ -1008,7 +1010,10 @@ if(typeof module!=='undefined'&&module.exports)module.exports=api;
 const $=id=>document.getElementById(id);
 const txt=(id,t)=>{const e=$(id);if(e&&e.textContent!==t)e.textContent=t};
 const G=window.AppGen,FILES=JSON.parse($('core-files').textContent),EXAMPLE=JSON.parse($('example-spec').textContent);
-const KEY='appgen:';
+/* keys start with gen:, the page's code on the sites (house rule 4). Before 1.6.1 they started with appgen:; saved work moves across once, and an old key goes only after its copy is written */
+const KEY='gen:',OLD_KEY='appgen:';
+try{const old=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(OLD_KEY))old.push(k)}
+  for(const k of old){const n=KEY+k.slice(OLD_KEY.length);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}catch(e){}
 const mem={},unsaved=new Set();
 const store={
   get(k){if(unsaved.has(k))return mem[k];try{const v=localStorage.getItem(k);if(v!=null)return JSON.parse(v)}catch(e){}return k in mem?mem[k]:null},
