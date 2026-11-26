@@ -189,6 +189,15 @@
       "folder": "shopping-list",
       "code": "SHOP",
       "section": "Home"
+    },
+    {
+      "file": "src/turkey.html",
+      "folder": "turkey",
+      "code": "TURKEY",
+      "name": "Turkey Gets Away",
+      "tagline": "Help a turkey called Turkey run across the forest: jump logs, dodge trees, and lay eggs so the hunters slip.",
+      "accent": "#B93C0B",
+      "section": "Games"
     }
   ],
   "readme": [

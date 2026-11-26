@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#3f7d4a">
+<title>Turkey Gets Away</title>
+<!--
+  Turkey Gets Away — v0.2, 2026-11-26
+  Game idea by Evelyn: a turkey called Turkey runs across the forest, away from the hunters.
+  One self-contained file: no outside code, fonts, pictures or sounds. All art is drawn
+  and all sound is made in the browser. Built by Claude with Dave Schwartz. GPL-3.0.
+-->
+<style>
+:root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px);
+--panel:#fffaf0;--ink:#2b1d12;--muted:#6b5a4a;--accent:#b93c0b;--btn:#2b1d12;--btnInk:#fffaf0;--line:rgba(43,29,18,.22);--chip:#f3e6cf;
+--pad:rgba(255,250,240,.94);--padInk:#2b1d12;--padLine:rgba(43,29,18,.45);--eggFill:#fde047;--eggWait:#e7dcc6;--bg:#3f7d4a;
+--font:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root{--panel:#211c17;--ink:#f6ecdd;--muted:#cbb9a5;--accent:#fdba74;--btn:#f6ecdd;--btnInk:#211c17;--line:rgba(246,236,221,.24);--chip:#2e2720;
+--pad:rgba(36,30,25,.94);--padInk:#f6ecdd;--padLine:rgba(246,236,221,.45);--eggFill:#a16207;--eggWait:#3a322a;--bg:#15261c}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+body{position:fixed;inset:0;font:17px/1.45 var(--font);color:var(--ink)}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+@media (prefers-color-scheme:dark){:focus-visible{outline-color:#93c5fd}}
+.hide{visibility:hidden}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0}
+
+#hud{position:fixed;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;gap:10px;max-width:560px;margin:0 auto;
+padding:calc(8px + var(--sat)) calc(10px + var(--sar)) 6px calc(10px + var(--sal))}
+.ib{flex:none;width:48px;height:48px;border-radius:15px;border:2px solid var(--padLine);background:var(--pad);color:var(--padInk);display:grid;place-items:center;padding:0}
+#prog{flex:1;min-width:0}
+#progLbl{margin:0 0 4px;font-weight:800;font-size:15px;line-height:1;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+#bar{height:16px;border-radius:10px;background:rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.85);overflow:hidden}
+#fill{height:100%;width:0;background:linear-gradient(90deg,#fde047,#fb923c);border-radius:8px}
+
+#pad{position:fixed;left:0;right:0;bottom:0;z-index:3;display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;max-width:560px;margin:0 auto;
+padding:8px calc(10px + var(--sar)) calc(10px + var(--sab)) calc(10px + var(--sal));touch-action:none}
+.arrows{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pb{position:relative;overflow:hidden;min-height:64px;min-width:44px;border-radius:18px;border:2px solid var(--padLine);background:var(--pad);color:var(--padInk);
+font-weight:800;font-size:20px;line-height:1;padding:0 6px;display:grid;place-items:center;touch-action:none;box-shadow:0 3px 0 rgba(0,0,0,.28)}
+.pb.sm{min-height:52px;font-size:18px}
+.pb.down{transform:translateY(3px);box-shadow:none;filter:brightness(.9)}
+#bJ{background:#fbbf24;color:#2b1d12;border-color:rgba(43,29,18,.6)}
+#bE .fb{position:absolute;inset:0;transform-origin:left center;transform:scaleX(var(--p,1));background:var(--eggFill)}
+#bE span{position:relative}
+#bE.wait{background:var(--eggWait)}
+#bE.wait span{opacity:.8}
+#bE.hot{animation:hot .45s ease-in-out infinite alternate}
+@keyframes hot{to{transform:scale(1.05);border-color:#dc2626}}
+.pb svg,.ib svg{display:block}
+
+#overlay{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
+padding:calc(12px + var(--sat)) calc(14px + var(--sar)) calc(12px + var(--sab)) calc(14px + var(--sal));pointer-events:none}
+#overlay[hidden]{display:none}
+#overlay.top{align-items:flex-start;padding-top:calc(18px + var(--sat))}
+.panel{pointer-events:auto;background:var(--panel);color:var(--ink);border-radius:22px;width:100%;max-width:460px;max-height:100%;overflow:auto;-webkit-overflow-scrolling:touch;
+touch-action:pan-y;padding:20px 18px 16px;box-shadow:0 22px 60px rgba(0,0,0,.5);outline:none;-webkit-user-select:text;user-select:text}
+h1,h2{margin:0 0 8px;font-weight:900;line-height:1.08;letter-spacing:.01em}
+h1{font-size:clamp(30px,9.5vw,42px);color:var(--accent)}
+h2{font-size:clamp(26px,8vw,34px)}
+p{margin:0 0 12px}
+.lead{font-size:18px}
+.muted{color:var(--muted);font-size:15px}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 12px}
+.b{flex:1 1 140px;min-height:52px;border-radius:16px;border:2px solid var(--btn);background:transparent;color:var(--ink);font-weight:800;font-size:18px;padding:8px 14px}
+.b.go{background:var(--btn);color:var(--btnInk);font-size:21px;min-height:60px}
+details{border-top:1px solid var(--line)}
+summary{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:24px;font-weight:700;color:var(--muted);width:24px;text-align:center}
+details[open]>summary::after{content:"\2212"}
+details>div{padding:0 0 6px}
+ul{margin:0 0 12px;padding-left:22px}
+li{margin:0 0 7px}
+#rot{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:var(--panel);color:var(--ink);padding:24px;text-align:center;font-weight:800;font-size:22px}
+#rot[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){#bE.hot{animation:none;border-color:#dc2626}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="TURKEY">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<canvas id="c" role="img" aria-label="A forest. Turkey runs up the screen and three hunters chase her."></canvas>
+
+<div id="hud" class="hide">
+  <button class="ib" id="bP" aria-label="Pause"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="4" y="3" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="13" y="3" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button>
+  <div id="prog">
+    <p id="progLbl">Forest 1</p>
+    <div id="bar" role="progressbar" aria-label="How far across the forest" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="fill"></div></div>
+  </div>
+</div>
+
+<div id="pad" class="hide">
+  <button class="pb sm" id="bG">Gobble!</button>
+  <button class="pb sm" id="bE"><i class="fb"></i><span id="eggTxt">Lay Egg</span></button>
+  <div class="arrows">
+    <button class="pb" id="bL" aria-label="Go left"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M19 5 8 15l11 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="pb" id="bR" aria-label="Go right"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="m11 5 11 10-11 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <button class="pb" id="bJ">Jump</button>
+</div>
+
+<div id="overlay"><div class="panel" id="panel" tabindex="-1"></div></div>
+<div id="rot" hidden><p>Turn your phone upright to play.</p></div>
+<p id="live" class="sr" aria-live="polite"></p>
+<noscript><p style="position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center">This game needs JavaScript. Open it in a web browser.</p></noscript>
+
+<script>
+(() => {
+'use strict';
+const VERSION = '0.2', DATE = '26 November 2026';
+const EGG_WAIT = 10;            // seconds before Turkey can lay another egg
+const JUMP = 0.62;              // seconds in the air
+const $ = id => document.getElementById(id);
+const cv = $('c'), g = cv.getContext('2d');
+const FONT = 'ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mqDark = matchMedia('(prefers-color-scheme: dark)');
+let dark = mqDark.matches;
+if (mqDark.addEventListener) mqDark.addEventListener('change', e => { dark = e.matches; });
+
+/* ---------- storage (best effort; every key starts with "turkey:") ---------- */
+const store = {
+  ok: true,
+  get(k) { try { return localStorage.getItem('turkey:' + k); } catch (e) { this.ok = false; return null; } },
+  set(k, v) { try { localStorage.setItem('turkey:' + k, String(v)); } catch (e) { this.ok = false; } }
+};
+store.set('v', VERSION);
+let best = parseInt(store.get('best'), 10); if (!(best >= 0 && best < 1000)) best = 0;   // forests crossed
+let soundOn = store.get('sound') !== '0';
+let fold = { how: true, facts: false, about: false, credits: false };
+try { const f = JSON.parse(store.get('fold') || '{}'); for (const k in fold) if (typeof f[k] === 'boolean') fold[k] = f[k]; } catch (e) {}
+
+/* ---------- sound: everything is made here, nothing is loaded ---------- */
+const A = {
+  ctx: null, master: null,
+  init() {
+    try {
+      if (!this.ctx) {
+        const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+        this.ctx = new C(); this.master = this.ctx.createGain(); this.master.gain.value = 0.55; this.master.connect(this.ctx.destination);
+      }
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+    } catch (e) { this.ctx = null; }
+  },
+  tone(f0, f1, dur, type, vol, delay) {
+    if (!soundOn || !this.ctx) return;
+    try {
+      const c = this.ctx, t = c.currentTime + (delay || 0), o = c.createOscillator(), gn = c.createGain();
+      o.type = type || 'sine'; o.frequency.setValueAtTime(f0, t);
+      if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t + dur);
+      gn.gain.setValueAtTime(0.0001, t); gn.gain.linearRampToValueAtTime(vol || 0.3, t + 0.012); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(gn); gn.connect(this.master); o.start(t); o.stop(t + dur + 0.04);
+    } catch (e) {}
+  },
+  noise(dur, vol, freq, delay) {
+    if (!soundOn || !this.ctx) return;
+    try {
+      const c = this.ctx, t = c.currentTime + (delay || 0), n = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      const s = c.createBufferSource(), f = c.createBiquadFilter(), gn = c.createGain();
+      s.buffer = buf; f.type = 'lowpass'; f.frequency.value = freq || 1000; gn.gain.value = vol || 0.3;
+      s.connect(f); f.connect(gn); gn.connect(this.master); s.start(t);
+    } catch (e) {}
+  }
+};
+const sfx = {
+  jump() { A.tone(300, 660, 0.16, 'sine', 0.28); },
+  egg() { A.tone(540, 170, 0.13, 'sine', 0.36); A.tone(900, 620, 0.05, 'triangle', 0.14, 0.1); },
+  slip() { A.tone(980, 170, 0.55, 'sine', 0.3); A.tone(210, 80, 0.25, 'triangle', 0.32, 0.5); A.noise(0.2, 0.22, 700, 0.5); },
+  bonk() { A.tone(170, 70, 0.2, 'triangle', 0.45); A.noise(0.12, 0.25, 500); },
+  gobble() { for (let i = 0; i < 8; i++) { const f = 580 - i * 27 + (i % 2 ? 45 : 0); A.tone(f, f * 0.76, 0.07, 'sawtooth', 0.15, i * 0.085); } },
+  aim() { A.tone(880, 880, 0.07, 'square', 0.09); A.tone(880, 880, 0.07, 'square', 0.09, 0.15); },
+  shot() { A.noise(0.14, 0.4, 900); A.tone(220, 60, 0.12, 'triangle', 0.28); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => A.tone(f, f, 0.24, 'triangle', 0.3, i * 0.13)); },
+  caught() { A.tone(420, 150, 0.6, 'sawtooth', 0.16); },
+  ready() { A.tone(1040, 1040, 0.12, 'sine', 0.16); },
+  step() { A.tone(420, 520, 0.05, 'sine', 0.1); }
+};
+
+/* ---------- layout ---------- */
+let W = 0, H = 0, DPR = 1, S = 1, fieldX = 0, fieldW = 0, laneW = 0, hudB = 60, padT = 500, maxGap = 160, ty = 300, ahead = 300, CATCH = 30;
+const laneX = i => fieldX + laneW * (i + 0.5);
+function layout() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  hudB = $('hud').getBoundingClientRect().bottom || 60;
+  padT = $('pad').getBoundingClientRect().top || H - 150;
+  fieldW = Math.min(W - 28, 440); laneW = fieldW / 3; fieldX = (W - fieldW) / 2;
+  S = clamp(laneW / 117, 0.8, 1.25);
+  maxGap = clamp((padT - hudB) * 0.3, 105, 190);
+  ty = padT - maxGap - 30 * S;
+  ahead = Math.max(120, ty - hudB);
+  CATCH = 30 * S;
+  if (G) { G.x = laneX(G.lane); if (G.state === 'run') tune(); }
+  const tiny = W > H && H < 430;
+  $('rot').hidden = !tiny;
+  if (tiny && G && G.state === 'run') pause();
+}
+
+/* ---------- the game ---------- */
+let G = null;
+G = { state: 'menu', level: 1, t: 0, dist: 0, total: 1, speed: 200, slow: 0, lane: 1, x: 0, jumpT: -1, jbuf: 0, stumT: 0, inv: 0, runT: 0, gobT: 0, autoGob: 9,
+  gap: 300, dGap: 300, hState: 'chase', hT: 0, slipLane: 1, slips: 0, eggCd: 0, eggs: [], obs: [], rowN: 0, nextRow: 0, pel: [], aim: null, shotT: 7,
+  parts: [], texts: [], hintLog: 0, hintTree: 0, endT: 0, readyT: 0, shake: 0, runTime: 42, catchTime: 24, rowGap: [1.2, 1.65], shotGap: [6.5, 9.5], aimTime: 1.05 };
+
+function tune() {                      // how hard this forest is
+  const L = G.level;
+  G.speed = ahead / Math.max(1.05, 1.75 - 0.1 * (L - 1));
+  G.runTime = Math.min(70, 42 + 4 * (L - 1));
+  G.catchTime = Math.max(13, 24 - 1.5 * (L - 1));
+  G.rowGap = [Math.max(0.85, 1.2 - 0.05 * (L - 1)), Math.max(1.15, 1.65 - 0.07 * (L - 1))];
+  G.shotGap = [Math.max(3, 6.5 - 0.6 * (L - 1)), Math.max(4.5, 9.5 - 0.8 * (L - 1))];
+  G.aimTime = Math.max(0.7, 1.05 - 0.05 * (L - 1));
+}
+function start(level) {
+  A.init();
+  Object.assign(G, { state: 'run', level, dist: 0, slow: 0, lane: 1, jumpT: -1, jbuf: 0, stumT: 0, inv: 0, gobT: 0, autoGob: rnd(9, 15),
+    hState: 'chase', hT: 0, slips: 0, eggCd: 0, eggs: [], obs: [], rowN: 0, pel: [], aim: null, parts: [], texts: [], hintLog: 0, hintTree: 0, endT: 0, readyT: 1.5, shake: 0 });
+  layout(); tune();
+  G.x = laneX(1); G.gap = G.dGap = maxGap + 90;
+  G.total = G.speed * G.runTime;
+  G.nextRow = ahead + G.speed * 1.3;
+  G.shotT = rnd(6, 8);
+  showPanel(null);
+  $('progLbl').textContent = 'Forest ' + level;
+  eggShown = ''; updEgg(); setProg(0, true);
+  say('Forest ' + level + '. Ready, go!');
+  sfx.ready();
+}
+const airborne = () => G.jumpT > 0.1 && G.jumpT < 0.9;
+
+function moveLane(d) {
+  if (G.state !== 'run') return;
+  const n = clamp(G.lane + d, 0, 2);
+  if (n !== G.lane) { G.lane = n; sfx.step(); }
+}
+function jump() {
+  if (G.state !== 'run') return;
+  if (G.jumpT >= 0) { G.jbuf = 0.18; return; }
+  G.jumpT = 0; G.jbuf = 0; sfx.jump();
+}
+function gobble() {
+  if (G.state !== 'run' || G.gobT > 0.4) return;
+  G.gobT = 0.95; sfx.gobble();
+}
+function layEgg() {
+  if (G.state !== 'run' || G.eggCd > 0) return;
+  G.eggs.push({ wy: G.dist - 20 * S, x: G.x, splat: false });
+  G.eggCd = EGG_WAIT; sfx.egg();
+  floatText('Plop!', G.x, ty + 34 * S, 18, '#fff');
+  updEgg(); say('Egg laid.');
+}
+function stumble(word) {
+  G.stumT = 0.5; G.inv = 1.2; G.slow = 0.45; G.gap -= maxGap * Math.min(0.24, 0.17 + 0.015 * (G.level - 1)); G.shake = 0.25;
+  sfx.bonk(); feathers(G.x, ty - 10 * S, 9);
+  floatText(word, G.x, ty - 66 * S, 24, '#fff');
+  say('Turkey stumbled. The hunters are closer.');
+}
+function slip(e) {
+  e.splat = true; G.hState = 'slip'; G.hT = 0; G.slips++; G.aim = null;
+  G.slipLane = clamp(Math.round((e.x - fieldX) / laneW - 0.5), 0, 2);
+  sfx.slip();
+  const hy = ty + G.dGap;
+  floatText('Whoa!', laneX(G.slipLane), hy - 70 * S, 26, '#fde047');
+  for (let i = 0; i < 9; i++) G.parts.push({ type: 'star', x: laneX(i % 3) + rnd(-20, 20), y: hy - 30 * S + rnd(-16, 16), vx: rnd(-90, 90), vy: rnd(-190, -60), rot: rnd(0, 6), vr: rnd(-6, 6), life: 0, max: rnd(0.6, 1), size: rnd(6, 10) * S, color: '#fde047', grav: 240 });
+  say('The hunters slipped on the egg!');
+}
+function caught() {
+  G.state = 'caught'; G.endT = 0; G.aim = null; sfx.caught();
+  floatText('Caught!', W / 2, ty - 80 * S, 34, '#fff');
+}
+function won() {
+  G.state = 'won'; G.endT = 0; G.aim = null; G.pel = []; sfx.win();
+  if (G.level > best) { best = G.level; store.set('best', best); }
+  const cols = ['#e07a1f', '#c8451b', '#e9b62a', '#fff', '#f472b6'];
+  for (let i = 0; i < (reduce ? 14 : 46); i++) G.parts.push({ type: 'leaf', x: rnd(0, W), y: rnd(-80, hudB), vx: rnd(-40, 40), vy: rnd(60, 190), rot: rnd(0, 6), vr: rnd(-5, 5), life: 0, max: rnd(1.6, 2.8), size: rnd(6, 10) * S, color: cols[i % cols.length], grav: 30 });
+}
+function feathers(x, y, n) {
+  const cols = ['#8a4b22', '#e6cf9c', '#5a3216'];
+  for (let i = 0; i < n; i++) G.parts.push({ type: 'leaf', x, y, vx: rnd(-130, 130), vy: rnd(-200, -40), rot: rnd(0, 6), vr: rnd(-7, 7), life: 0, max: rnd(0.6, 1.1), size: rnd(5, 8) * S, color: cols[i % 3], grav: 380 });
+}
+function puff(x, y) { G.parts.push({ type: 'puff', x, y, vx: 0, vy: 0, rot: 0, vr: 0, life: 0, max: 0.35, size: 12 * S, color: '#fff', grav: 0 }); }
+function floatText(str, x, y, px, color) { G.texts.push({ str, x: clamp(x, 60, W - 60), y, px: px * Math.max(1, S), color, life: 0, max: 0.95 }); }
+
+function spawnRow() {
+  const wy = G.nextRow, L = G.level, lanes = [0, 1, 2].sort(() => Math.random() - 0.5);
+  const add = (type, lane) => {         // type is the rule (log: jump it, tree: go around it); look is the picture
+    const r = Math.random(), look = type === 'tree' ? (r < 0.32 ? 'rock' : 'tree') : lane < 0 ? (r < 0.45 ? 'creek' : 'log') : (r < 0.38 ? 'mud' : 'log');
+    G.obs.push({ wy, type, look, lane, wide: lane < 0, v: Math.floor(Math.random() * 3), hit: false, cleared: false });
+  };
+  let p;
+  if (L === 1 && G.rowN < 2) { add(G.rowN ? 'tree' : 'log', 1); const o = G.obs[G.obs.length - 1]; o.tip = true; o.look = o.type; }   // the first two come with a tip
+  else {
+    const w = L === 1 ? [3, 3, 2, 2, 1, 0] : L === 2 ? [3, 3, 3, 2, 2, 1] : [2, 3, 3, 2, 3, 2];
+    let r = Math.random() * w.reduce((a, b) => a + b, 0); p = 0;
+    while (r >= w[p] && p < 5) { r -= w[p]; p++; }
+    if (p === 0) add('log', lanes[0]);
+    else if (p === 1) add('tree', lanes[0]);
+    else if (p === 2) { add('tree', lanes[0]); add('tree', lanes[1]); }
+    else if (p === 3) add('log', -1);
+    else if (p === 4) { add('tree', lanes[0]); add('log', lanes[1]); }
+    else { add('tree', lanes[0]); add('tree', lanes[1]); add('log', lanes[2]); }
+  }
+  G.rowN++;
+  G.nextRow += G.speed * rnd(G.rowGap[0], G.rowGap[1]);
+}
+function forcedSoon(pelV) {            // don't shoot when two trees leave Turkey only one lane
+  const tArr = G.aimTime + G.dGap / pelV, a = G.dist + G.speed * (tArr - 0.55), b = G.dist + G.speed * (tArr + 0.55), n = {};
+  for (const o of G.obs) if (o.type === 'tree' && o.wy > a && o.wy < b) { n[o.wy] = (n[o.wy] || 0) + 1; if (n[o.wy] > 1) return true; }
+  return false;
+}
+
+function update(dt) {
+  G.t += dt;
+  for (const p of G.parts) { p.life += dt; p.vy += p.grav * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt; }
+  G.parts = G.parts.filter(p => p.life < p.max);
+  for (const t of G.texts) { t.life += dt; t.y -= 34 * dt; }
+  G.texts = G.texts.filter(t => t.life < t.max);
+  G.shake = Math.max(0, G.shake - dt);
+
+  if (G.state === 'menu') { G.dist += 70 * dt; G.runT += dt * 0.55; G.x += (laneX(1) - G.x) * Math.min(1, dt * 8); return; }
+  if (G.state === 'caught') { G.endT += dt; if (G.endT > 1 && !panelName) showPanel('caught'); return; }
+  if (G.state === 'won') {
+    const sp = G.speed * (G.endT > 1.5 ? 0.45 : 1);
+    G.endT += dt; G.dist += sp * dt; G.runT += dt * 0.8; G.gap += G.speed * 0.8 * dt; G.dGap = G.gap;
+    G.x += (laneX(G.lane) - G.x) * Math.min(1, dt * 16);
+    if (G.jumpT >= 0) { G.jumpT += dt / JUMP; if (G.jumpT >= 1) G.jumpT = -1; }
+    else if (G.endT > 0.5 && !reduce) G.jumpT = 0;             // happy hops
+    if (G.endT > 1.5 && !panelName) showPanel('win');
+    return;
+  }
+  if (G.state !== 'run') return;
+
+  if (G.readyT > 0) G.readyT -= dt;
+  const v = G.speed * (G.slow > 0 ? 0.55 : 1);
+  G.slow = Math.max(0, G.slow - dt);
+  G.dist += v * dt; G.runT += dt * (v / G.speed);
+  G.x += (laneX(G.lane) - G.x) * Math.min(1, dt * 16);
+  if (G.jumpT >= 0) { G.jumpT += dt / JUMP; if (G.jumpT >= 1) { G.jumpT = -1; puff(G.x, ty + 12 * S); } }
+  if (G.jbuf > 0) { G.jbuf -= dt; if (G.jumpT < 0) jump(); }
+  G.stumT = Math.max(0, G.stumT - dt); G.inv = Math.max(0, G.inv - dt); G.gobT = Math.max(0, G.gobT - dt);
+  G.autoGob -= dt; if (G.autoGob <= 0) { gobble(); G.autoGob = rnd(11, 18); }
+  if (G.eggCd > 0) { G.eggCd -= dt; if (G.eggCd <= 0) { G.eggCd = 0; sfx.ready(); say('Egg ready.'); } }
+
+  while (G.nextRow < G.dist + ahead + 260 && G.nextRow < G.total - ahead * 1.15) spawnRow();
+
+  // logs and trees
+  for (const o of G.obs) {
+    if (o.hit) continue;
+    const d = o.wy - G.dist;
+    if (Math.abs(d) < (o.type === 'tree' ? 16 : 14) * S) {
+      const inLane = o.wide || Math.abs(G.x - laneX(o.lane)) < laneW * 0.42;
+      if (!inLane) continue;
+      if (o.type === 'log' && airborne()) o.cleared = true;
+      else if (!o.cleared && G.inv <= 0) {
+        o.hit = true;
+        const wet = o.look === 'mud' || o.look === 'creek';
+        stumble(wet ? 'Splash!' : o.type === 'log' ? 'Tripped!' : 'Bonk!');
+        if (wet) for (let i = 0; i < 10; i++) G.parts.push({ type: 'puff', x: G.x + rnd(-22, 22), y: ty + rnd(-6, 12), vx: rnd(-110, 110), vy: rnd(-230, -90), rot: 0, vr: 0, life: 0, max: rnd(0.4, 0.7), size: rnd(3, 5) * S, color: o.look === 'mud' ? '#7a5632' : '#7cc0f0', grav: 520 });
+      }
+    }
+  }
+  G.obs = G.obs.filter(o => o.wy > G.dist - (H - ty) - 140);
+
+  // eggs
+  const hy = ty + G.dGap;
+  for (const e of G.eggs) {
+    const ey = ty + (G.dist - e.wy);
+    if (!e.splat && G.hState === 'chase' && ey >= hy - 14 * S) slip(e);
+  }
+  G.eggs = G.eggs.filter(e => ty + (G.dist - e.wy) < H + 60);
+
+  // hunters
+  if (G.hState === 'chase') {
+    if (G.gap > maxGap) G.gap -= 70 * dt;
+    else if (G.readyT <= 0) G.gap -= (maxGap / G.catchTime) * dt;
+    if (G.gap <= CATCH) { caught(); return; }
+  } else {
+    G.hT += dt; G.gap += G.speed * (G.hT < 0.55 ? 0.1 : 0.9) * dt;
+    if (G.hT > 2.4) { G.hState = 'chase'; G.hT = 0; G.gap = maxGap + 70; G.dGap = G.gap; }
+  }
+  G.dGap += (G.gap - G.dGap) * Math.min(1, dt * 8);
+
+  // shots: a hunter aims (red !), then a shot flies up that lane
+  const pelV = Math.max(480, G.speed * 2.1);
+  if (G.hState === 'chase' && G.readyT <= 0 && G.gap <= maxGap + 4 && G.dist < G.total - G.speed * 1.6) {
+    if (G.aim) {
+      G.aim.t += dt;
+      if (G.aim.t >= G.aimTime) {
+        G.pel.push({ x: laneX(G.aim.lane), y: ty + G.dGap - 44 * S, dead: false });
+        sfx.shot(); puff(laneX(G.aim.lane) + 13 * S, ty + G.dGap - 48 * S);
+        G.aim = null; G.shotT = rnd(G.shotGap[0], G.shotGap[1]);
+      }
+    } else {
+      G.shotT -= dt;
+      if (G.shotT <= 0) {
+        if (forcedSoon(pelV)) G.shotT = 0.7;
+        else { G.aim = { lane: Math.random() < 0.65 ? G.lane : Math.floor(Math.random() * 3), t: 0 }; sfx.aim(); say('A hunter is aiming. Move over!'); }
+      }
+    }
+  }
+  for (const p of G.pel) {
+    p.y -= pelV * dt;
+    if (!p.dead && Math.abs(p.y - ty) < 16 * S && Math.abs(G.x - p.x) < laneW * 0.4 && !airborne() && G.inv <= 0) { p.dead = true; stumble('Ouch!'); }
+  }
+  G.pel = G.pel.filter(p => p.y > -30 && !p.dead);
+
+  setProg(G.dist / G.total);
+  updEgg();
+  if (G.dist >= G.total) won();
+}
+
+/* ---------- drawing: every picture is made from shapes here ---------- */
+const PAL = {
+  light: { ground: '#74b061', lane: '#84c06f', edge: 'rgba(255,255,255,.4)', leaf: ['#e07a1f', '#c8451b', '#e9b62a', '#a8551c'], trunk: '#6b4423', shadow: 'rgba(20,45,20,.28)', meadow: '#c3e58f',
+    canopy: [['#e58a2b', '#f3ad55'], ['#cf4f25', '#e5744a'], ['#ecc034', '#f7dc72']] },
+  dark: { ground: '#1d3828', lane: '#244431', edge: 'rgba(255,255,255,.16)', leaf: ['#8a4d1a', '#7a2f18', '#8f7320', '#5e3415'], trunk: '#3d2816', shadow: 'rgba(0,0,0,.4)', meadow: '#3d6b3a',
+    canopy: [['#9a5a20', '#b06f2e'], ['#87371f', '#9f4a2e'], ['#9b7e22', '#b29433']] }
+};
+let P = PAL.light;
+function ell(x, y, rx, ry, rot) { g.beginPath(); g.ellipse(x, y, Math.max(0.01, rx), Math.max(0.01, ry), rot || 0, 0, 7); g.fill(); }
+function circ(x, y, r) { g.beginPath(); g.arc(x, y, Math.max(0.01, r), 0, 7); g.fill(); }
+function rr(x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); g.fill(); }
+function ln(x1, y1, x2, y2) { g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); }
+function txt(str, x, y, px, fill, stroke) {
+  g.font = '800 ' + px + 'px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
+  if (stroke) { g.lineWidth = Math.max(3, px * 0.24); g.strokeStyle = stroke; g.lineJoin = 'round'; g.strokeText(str, x, y); }
+  g.fillStyle = fill; g.fillText(str, x, y);
+}
+
+function drawTurkey(x, y, sc, o) {
+  const h = o.h || 0;
+  g.fillStyle = P.shadow; ell(x, y + 15 * sc, (24 - 9 * h) * sc, (8 - 3 * h) * sc);
+  g.save(); g.translate(x, y - h * 48 * sc); const k = sc * (1 + 0.16 * h); g.scale(k, k);
+  if (o.stum > 0) g.rotate(Math.sin(o.stum * 40) * 0.28);
+  if (o.blink) g.globalAlpha = 0.55;
+  const ph = Math.sin(o.run * 20);
+  // legs and feet
+  g.strokeStyle = '#e8892b'; g.lineWidth = 3.2; g.lineCap = 'round';
+  for (const sd of [-1, 1]) {
+    const lx = sd * 7, ly = h > 0 ? 15 : 16 + (sd * ph > 0 ? 4 : -1);
+    ln(lx, 9, lx, ly); ln(lx - 4, ly + 3, lx, ly); ln(lx + 4, ly + 3, lx, ly);
+  }
+  // neck
+  const hx = 4 + (o.gob > 0 ? Math.sin(o.gob * 50) * 2 : 0), hy = -41 + Math.sin(o.run * 10) * 1.5;
+  g.strokeStyle = '#b8402e'; g.lineWidth = 7; ln(0, -20, hx * 0.6, hy + 6);
+  // tail fan
+  const a0 = Math.PI - 0.32, a1 = Math.PI * 2 + 0.32, fan = (r, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(0, -2); g.arc(0, -2, r, a0, a1); g.closePath(); g.fill(); };
+  fan(31 + 3 * h, '#4f2b12'); fan(27 + 3 * h, '#e9d4a3'); fan(22 + 2 * h, '#8f4f24'); fan(13, '#5a3216');
+  g.strokeStyle = 'rgba(60,30,10,.55)'; g.lineWidth = 1.4;
+  for (let i = 0; i <= 8; i++) { const a = a0 + (a1 - a0) * i / 8; ln(Math.cos(a) * 12, -2 + Math.sin(a) * 12, Math.cos(a) * (30 + 3 * h), -2 + Math.sin(a) * (30 + 3 * h)); }
+  // body and wings
+  g.fillStyle = '#6e3b1a'; ell(0, 6, 15, 13);
+  g.fillStyle = '#84481f'; ell(-3, 3, 8, 6);
+  g.fillStyle = '#5a3216';
+  const flap = h > 0 ? 0.9 + Math.sin(o.t * 30) * 0.35 : 0.25;
+  ell(-15 - 4 * h, 4, 6, 11 + 3 * h, flap); ell(15 + 4 * h, 4, 6, 11 + 3 * h, -flap);
+  // head: looking back over her shoulder
+  g.fillStyle = '#d2523f'; circ(hx, hy, 7.6);
+  g.fillStyle = '#f2b233';
+  if (o.gob > 0) { g.beginPath(); g.moveTo(hx + 6, hy - 3); g.lineTo(hx + 15, hy - 5); g.lineTo(hx + 7, hy); g.fill(); g.beginPath(); g.moveTo(hx + 6, hy + 1); g.lineTo(hx + 14, hy + 4); g.lineTo(hx + 6, hy + 4); g.fill(); }
+  else { g.beginPath(); g.moveTo(hx + 6, hy - 3); g.lineTo(hx + 15, hy); g.lineTo(hx + 6, hy + 3); g.fill(); }
+  g.fillStyle = '#e02d2a'; ell(hx + 6, hy + 7, 2.6, 4.6, o.gob > 0 ? Math.sin(o.gob * 60) * 0.5 : 0);
+  g.fillStyle = '#fff'; circ(hx + 2, hy - 2, 3); g.fillStyle = '#1b1208'; circ(hx + 2.8, hy - 1.2, 1.5);
+  g.restore();
+}
+
+function drawHunter(x, y, sc, i, o) {
+  const skin = ['#f1c9a5', '#c68f65', '#8d5a3b'][i], cap = ['#ff7a1a', '#ff5a1f', '#ffa21a'][i];
+  g.fillStyle = P.shadow; ell(x, y + 17 * sc, 20 * sc, 7 * sc);
+  g.save(); g.translate(x, y); g.scale(sc, sc);
+  const ph = o.aim ? 0 : Math.sin(o.run * 16 + i * 2);
+  if (o.slip >= 0) { const a = Math.min(1, o.slip / 0.3); g.translate(0, -6 * a); g.rotate((i === 1 ? -1 : 1) * (a * 1.75 + Math.sin(o.slip * 9) * 0.12)); }
+  else g.translate(0, Math.abs(ph) * -2);
+  // legs and boots
+  g.fillStyle = '#3d4a2a'; rr(-10, 4, 8, 13 + (ph > 0 ? 4 : 0), 3); rr(2, 4, 8, 13 + (ph > 0 ? 0 : 4), 3);
+  g.fillStyle = '#2a1c10'; rr(-11, 15 + (ph > 0 ? 4 : 0), 10, 5, 2); rr(1, 15 + (ph > 0 ? 0 : 4), 10, 5, 2);
+  // the pop gun
+  const gy = o.aim ? -8 : 0;
+  g.fillStyle = '#5b3a1e'; rr(11, -40 + gy, 5, 36, 2);
+  g.fillStyle = '#8f96a0'; g.beginPath(); g.moveTo(7, -49 + gy); g.lineTo(20, -49 + gy); g.lineTo(16.5, -40 + gy); g.lineTo(10.5, -40 + gy); g.closePath(); g.fill();
+  // arms, vest, head, cap
+  g.fillStyle = '#4f6136'; rr(-19, -14, 7, 17, 3); rr(12, -14, 7, 17, 3);
+  g.fillStyle = '#ff8a1f'; rr(-14, -17, 28, 27, 8);
+  g.fillStyle = '#d86a10'; rr(-8, -17, 4, 27, 2); rr(4, -17, 4, 27, 2);
+  g.fillStyle = skin; circ(0, -24, 9.5);
+  g.fillStyle = cap; circ(0, -27, 9.6); rr(-6, -40, 12, 6, 3);
+  g.fillStyle = 'rgba(0,0,0,.25)'; circ(0, -28, 1.9);
+  g.restore();
+  if (o.aim) {                         // warning badge
+    const by = y - 78 * sc, r = 15 * sc * (1 + Math.sin(G.t * 22) * 0.08);
+    g.fillStyle = '#dc2626'; circ(x, by, r); g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.arc(x, by, r, 0, 7); g.stroke();
+    txt('!', x, by + 1, 22 * sc, '#fff');
+  }
+}
+
+function drawTree(x, y, sc, v) {
+  const c = P.canopy[v % 3];
+  g.fillStyle = P.shadow; ell(x, y + 3 * sc, 30 * sc, 9 * sc);
+  g.fillStyle = P.trunk; rr(x - 7 * sc, y - 46 * sc, 14 * sc, 48 * sc, 4 * sc);
+  g.fillStyle = c[0]; circ(x - 20 * sc, y - 52 * sc, 24 * sc); circ(x + 20 * sc, y - 52 * sc, 24 * sc); circ(x, y - 72 * sc, 30 * sc);
+  g.fillStyle = c[1]; circ(x - 9 * sc, y - 80 * sc, 13 * sc); circ(x + 15 * sc, y - 58 * sc, 9 * sc); circ(x - 24 * sc, y - 56 * sc, 8 * sc);
+}
+function drawLog(x, y, w, sc) {
+  const hh = 26 * sc, top = y - hh + 5 * sc;
+  g.fillStyle = P.shadow; ell(x, y + 6 * sc, w / 2, 7 * sc);
+  g.fillStyle = '#8a5a2e'; rr(x - w / 2, top, w, hh, hh / 2);
+  g.fillStyle = '#a06c38'; rr(x - w / 2 + hh * 0.4, top + 3 * sc, w - hh * 1.2, 5 * sc, 3 * sc);
+  g.strokeStyle = '#6a4220'; g.lineWidth = 2 * sc; g.lineCap = 'round';
+  for (let i = 0; i < Math.max(2, Math.round(w / (44 * sc))); i++) { const lx = x - w / 2 + hh * 0.7 + i * 44 * sc; if (lx < x + w / 2 - hh * 1.3) ln(lx, top + hh * 0.62, lx + 16 * sc, top + hh * 0.62); }
+  const ex = x + w / 2 - hh * 0.42, ey = top + hh / 2;
+  g.fillStyle = '#e3bf88'; ell(ex, ey, hh * 0.34, hh * 0.44);
+  g.strokeStyle = '#b78a4f'; g.lineWidth = 1.6 * sc; g.beginPath(); g.ellipse(ex, ey, hh * 0.18, hh * 0.25, 0, 0, 7); g.stroke();
+}
+function drawMud(x, y, w, sc) {
+  g.fillStyle = '#5f4126'; ell(x, y, w / 2, 14 * sc);
+  g.fillStyle = '#84603a'; ell(x - w * 0.05, y - 2 * sc, w * 0.38, 9 * sc);
+  g.fillStyle = 'rgba(255,255,255,.4)'; ell(x - w * 0.18, y - 5 * sc, w * 0.09, 2.2 * sc); ell(x + w * 0.17, y + 1 * sc, w * 0.05, 1.6 * sc);
+  g.fillStyle = '#5f4126'; circ(x + w * 0.44, y - 11 * sc, 3 * sc); circ(x - w * 0.47, y + 9 * sc, 2.4 * sc);
+}
+function drawCreek(y, sc) {             // runs right across the screen
+  const hh = 32 * sc;
+  g.fillStyle = '#2f76b3'; g.fillRect(-30, y - hh / 2 - 2 * sc, W + 60, hh + 4 * sc);
+  g.fillStyle = '#4a9bdc'; g.fillRect(-30, y - hh / 2, W + 60, hh);
+  g.strokeStyle = 'rgba(255,255,255,.65)'; g.lineWidth = 2.4 * sc; g.lineCap = 'round';
+  const step = 64 * sc, drift = reduce ? 0 : (G.t * 26) % step;
+  for (let i = -1; i < W / step + 1; i++) { const rx = i * step + drift, ry = y - 6 * sc + (((i % 2) + 2) % 2) * 11 * sc; ln(rx, ry, rx + 20 * sc, ry); }
+}
+function drawRock(x, y, sc) {
+  g.fillStyle = P.shadow; ell(x, y + 4 * sc, 40 * sc, 10 * sc);
+  g.fillStyle = '#8b9099';
+  g.beginPath(); g.moveTo(x - 38 * sc, y + 3 * sc); g.quadraticCurveTo(x - 44 * sc, y - 34 * sc, x - 16 * sc, y - 54 * sc);
+  g.quadraticCurveTo(x + 8 * sc, y - 72 * sc, x + 28 * sc, y - 46 * sc); g.quadraticCurveTo(x + 46 * sc, y - 22 * sc, x + 38 * sc, y + 3 * sc); g.closePath(); g.fill();
+  g.fillStyle = '#aab0b9';
+  g.beginPath(); g.moveTo(x - 30 * sc, y - 22 * sc); g.quadraticCurveTo(x - 24 * sc, y - 46 * sc, x - 6 * sc, y - 56 * sc); g.quadraticCurveTo(x + 2 * sc, y - 44 * sc, x - 12 * sc, y - 30 * sc); g.closePath(); g.fill();
+  g.strokeStyle = '#666b74'; g.lineWidth = 2.2 * sc; g.lineCap = 'round';
+  ln(x + 8 * sc, y - 36 * sc, x + 18 * sc, y - 20 * sc); ln(x + 18 * sc, y - 20 * sc, x + 12 * sc, y - 8 * sc); ln(x - 18 * sc, y - 10 * sc, x - 8 * sc, y - 4 * sc);
+}
+function drawEgg(e, y, sc) {
+  if (e.splat) {
+    g.fillStyle = 'rgba(255,255,255,.95)'; circ(e.x - 7 * sc, y, 8 * sc); circ(e.x + 6 * sc, y - 3 * sc, 9 * sc); circ(e.x + 2 * sc, y + 5 * sc, 8 * sc);
+    g.fillStyle = '#f6b21b'; circ(e.x, y, 5.5 * sc);
+  } else {
+    g.fillStyle = P.shadow; ell(e.x, y + 4 * sc, 8 * sc, 3 * sc);
+    g.fillStyle = '#fffdf5'; ell(e.x, y - 5 * sc, 7 * sc, 9 * sc);
+    g.strokeStyle = '#cdbfa6'; g.lineWidth = 1.2; g.beginPath(); g.ellipse(e.x, y - 5 * sc, 7 * sc, 9 * sc, 0, 0, 7); g.stroke();
+  }
+}
+
+function draw() {
+  P = dark ? PAL.dark : PAL.light;
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  g.save();
+  if (G.shake > 0 && !reduce) g.translate(rnd(-1, 1) * G.shake * 22, rnd(-1, 1) * G.shake * 22);
+  g.fillStyle = P.ground; g.fillRect(-30, -30, W + 60, H + 60);
+  g.fillStyle = P.lane; g.fillRect(fieldX, -30, fieldW, H + 60);
+  const playing = G.state !== 'menu';
+  const fy = playing ? ty - (G.total - G.dist) : -9999;      // where the forest ends
+  if (fy > -40) { g.fillStyle = P.meadow; g.fillRect(-30, -30, W + 60, fy + 30); }
+  // lane lines
+  g.strokeStyle = P.edge; g.lineWidth = 3; g.setLineDash([14, 22]); g.lineDashOffset = -(G.dist % 36);
+  for (let i = 1; i < 3; i++) ln(fieldX + laneW * i, -30, fieldX + laneW * i, H + 30);
+  g.setLineDash([]);
+  // fallen leaves, so the ground looks like it moves
+  const k0 = Math.floor((G.dist - (H - ty) - 30) / 44), k1 = Math.floor((G.dist + ty + 30) / 44);
+  for (let k = k0; k <= k1; k++) {
+    const lx = hash(k * 3.1) * W, ly = ty - (k * 44 + hash(k * 7.7) * 44 - G.dist);
+    if (ly < fy) { g.fillStyle = ['#fff', '#f9a8d4', '#fde047'][((k % 3) + 3) % 3]; circ(lx, ly, 4.6 * S); g.fillStyle = '#f59e0b'; circ(lx, ly, 1.9 * S); continue; }
+    g.fillStyle = P.leaf[((k % 4) + 4) % 4]; ell(lx, ly, 5.5 * S, 3 * S, hash(k * 1.7) * 6.3);
+  }
+  if (fy > -40) {                       // finish line on the ground
+    g.strokeStyle = '#fff'; g.lineWidth = 6; g.setLineDash([16, 12]); ln(fieldX, fy, fieldX + fieldW, fy); g.setLineDash([]);
+  }
+  // the lane a hunter is aiming up
+  const hy = ty + G.dGap;
+  if (G.aim) {
+    g.fillStyle = 'rgba(220,38,38,' + (0.2 + 0.14 * Math.sin(G.t * 20)) + ')';
+    g.fillRect(fieldX + laneW * G.aim.lane + 4, -30, laneW - 8, hy + 30);
+  }
+  for (const e of G.eggs) drawEgg(e, ty + (G.dist - e.wy), S);
+
+  // everything that stands up, drawn back to front
+  const list = [];
+  const cols = Math.ceil((fieldX + 60) / (88 * S)), GAP = 84;
+  const t0 = Math.floor((G.dist - (H - ty) - 130) / GAP), t1 = Math.floor((G.dist + ty + 30) / GAP);
+  for (let k = t0; k <= t1; k++) for (let c = 0; c < cols; c++) for (let sd = 0; sd < 2; sd++) {
+    const n = k * 13.37 + c * 7.13 + sd * 91.7, off = 46 * S + c * 88 * S + (hash(n) - 0.5) * 28 * S;
+    const x = sd ? fieldX + fieldW + off : fieldX - off, y = ty - (k * GAP + hash(n + 5.5) * GAP - G.dist);
+    if (y < fy + 20) continue;
+    const v = Math.floor(hash(n + 2.2) * 3), sc = S * (0.9 + hash(n + 9.1) * 0.3);
+    list.push({ y, f: () => drawTree(x, y, sc, v) });
+  }
+  for (const o of G.obs) {
+    const y = ty - (o.wy - G.dist); if (y < -60 || y > H + 140) continue;
+    const flat = o.look === 'creek' || o.look === 'mud';
+    const al = playing && !flat && y > ty + 46 * S ? 0.4 : 1;   // once Turkey is past a tall thing, it fades so the hunters stay in view
+    list.push({ y: flat ? y - 20 * S : y, f: () => {
+      g.globalAlpha = al;
+      if (o.look === 'tree') drawTree(laneX(o.lane), y, S, o.v);
+      else if (o.look === 'rock') drawRock(laneX(o.lane), y, S);
+      else if (o.look === 'creek') drawCreek(y, S);
+      else if (o.look === 'mud') drawMud(laneX(o.lane), y, laneW * 0.84, S);
+      else drawLog(o.wide ? fieldX + fieldW / 2 : laneX(o.lane), y, o.wide ? fieldW - 10 : laneW * 0.86, S);
+      g.globalAlpha = 1;
+    } });
+  }
+  if (playing) for (let i = 0; i < 3; i++) {
+    const st = G.hState === 'slip' ? G.hT - 0.1 * Math.abs(i - G.slipLane) : -1, y = hy + (i === 1 ? 0 : 7 * S);
+    list.push({ y, f: () => drawHunter(laneX(i), y, S * 1.05, i, { run: G.state === 'caught' ? 0 : G.t, aim: !!(G.aim && G.aim.lane === i), slip: st >= 0 ? st : -1 }) });
+  }
+  const jh = G.jumpT >= 0 ? Math.sin(Math.PI * G.jumpT) : 0;
+  list.push({ y: ty, f: () => drawTurkey(G.x, ty, S * 1.08, { run: G.runT, h: jh, stum: G.stumT, gob: G.gobT, blink: G.inv > 0 && Math.floor(G.t * 14) % 2 === 0, t: G.t }) });
+  for (const p of G.pel) list.push({ y: p.y, f: () => {
+    g.fillStyle = 'rgba(255,255,255,.5)'; circ(p.x, p.y + 16 * S, 4 * S); circ(p.x, p.y + 28 * S, 2.6 * S);
+    g.fillStyle = '#26221f'; circ(p.x, p.y, 6 * S); g.fillStyle = 'rgba(255,255,255,.7)'; circ(p.x - 2 * S, p.y - 2 * S, 1.8 * S);
+  } });
+  if (fy > -140) list.push({ y: fy, f: () => {                // the SAFE banner
+    const x0 = fieldX - 4, x1 = fieldX + fieldW + 4;
+    g.fillStyle = '#7a4a22'; rr(x0 - 5, fy - 100 * S, 10, 102 * S, 3); rr(x1 - 5, fy - 100 * S, 10, 102 * S, 3);
+    g.fillStyle = '#fff'; rr(x0, fy - 100 * S, x1 - x0, 36 * S, 8);
+    g.strokeStyle = '#c2410c'; g.lineWidth = 3; g.strokeRect(x0 + 4, fy - 96 * S, x1 - x0 - 8, 28 * S);
+    txt('SAFE!', (x0 + x1) / 2, fy - 81 * S, 22 * S, '#c2410c');
+  } });
+  list.sort((a, b) => a.y - b.y);
+  for (const d of list) d.f();
+
+  if (dark) { g.fillStyle = 'rgba(8,16,44,.26)'; g.fillRect(-30, -30, W + 60, H + 60); }
+
+  for (const p of G.parts) {
+    const a = 1 - p.life / p.max; g.globalAlpha = Math.min(1, a * 1.6);
+    g.fillStyle = p.color;
+    if (p.type === 'puff') circ(p.x, p.y, p.size * (0.5 + p.life / p.max));
+    else if (p.type === 'star') { g.save(); g.translate(p.x, p.y); g.rotate(p.rot); g.beginPath(); for (let i = 0; i < 8; i++) { const r = i % 2 ? p.size * 0.42 : p.size, an = i * Math.PI / 4; g.lineTo(Math.cos(an) * r, Math.sin(an) * r); } g.closePath(); g.fill(); g.restore(); }
+    else ell(p.x, p.y, p.size, p.size * 0.45, p.rot);
+  }
+  g.globalAlpha = 1;
+
+  const OUT = 'rgba(30,18,8,.9)';
+  if (G.state === 'run') {
+    if (G.gobT > 0) {                   // speech bubble
+      const bw = 132 * S, bh = 32 * S, bx = clamp(G.x - bw / 2, 6, W - bw - 6), by = ty - (86 + jh * 48) * S - bh;
+      g.fillStyle = '#fff'; rr(bx, by, bw, bh, 12 * S);
+      g.beginPath(); g.moveTo(G.x - 7 * S, by + bh - 1); g.lineTo(G.x + 7 * S, by + bh - 1); g.lineTo(G.x + 2 * S, by + bh + 9 * S); g.closePath(); g.fill();
+      txt('Gobble gobble!', bx + bw / 2, by + bh / 2 + 1, 15 * S, '#7c2d12');
+    }
+    for (const o of G.obs) {            // first-time tips
+      if (G.level !== 1 || o.hit) continue;
+      const y = ty - (o.wy - G.dist);
+      if (y < hudB + 40 || y > ty - 20) continue;
+      if (o.type === 'log' && o.tip) txt('Jump!', laneX(1), y - 42 * S, 22 * S, '#fff', OUT);
+      if (o.type === 'tree' && o.tip) txt('Go around!', laneX(1), y - 118 * S, 22 * S, '#fff', OUT);
+    }
+    if (G.readyT > 0) txt(G.readyT > 0.6 ? 'Ready…' : 'Go!', W / 2, hudB + (ty - hudB) * 0.36, 40 * S, '#fff', OUT);
+    else if (G.hState === 'chase' && G.gap < maxGap * 0.5 && Math.floor(G.t * 3) % 2 === 0) txt(G.eggCd > 0 ? 'They’re close!' : 'Lay an egg!', W / 2, Math.min(hy + 44 * S, padT - 16), 20 * S, '#fff', OUT);
+  }
+  for (const t of G.texts) { g.globalAlpha = Math.min(1, (1 - t.life / t.max) * 2); txt(t.str, t.x, t.y, t.px, t.color, OUT); }
+  g.globalAlpha = 1;
+  g.restore();
+}
+
+/* ---------- screen parts outside the forest ---------- */
+let lastProg = -1;
+function setProg(p, force) {
+  const v = Math.round(clamp(p, 0, 1) * 100);
+  if (v === lastProg && !force) return;
+  lastProg = v; $('fill').style.width = v + '%'; $('bar').setAttribute('aria-valuenow', v);
+}
+let eggShown = '';
+function updEgg() {
+  const b = $('bE'), cd = G.eggCd, lab = cd > 0 ? 'Egg in ' + Math.ceil(cd) : 'Lay Egg';
+  b.style.setProperty('--p', (cd > 0 ? 1 - cd / EGG_WAIT : 1).toFixed(3));
+  if (lab !== eggShown) { eggShown = lab; $('eggTxt').textContent = lab; b.classList.toggle('wait', cd > 0); b.setAttribute('aria-disabled', cd > 0 ? 'true' : 'false'); }
+  b.classList.toggle('hot', G.state === 'run' && cd <= 0 && G.hState === 'chase' && G.gap < maxGap * 0.5);
+}
+function say(m) { const l = $('live'); l.textContent = ''; l.textContent = m; }
+
+let panelName = 'menu';
+const soundLabel = () => 'Sound: ' + (soundOn ? 'On' : 'Off');
+function showPanel(name) {
+  panelName = name;
+  const ov = $('overlay'), pn = $('panel'), on = !!name;
+  ov.hidden = !on; ov.classList.toggle('top', on && name !== 'menu');
+  $('hud').classList.toggle('hide', on); $('pad').classList.toggle('hide', on);
+  if (!on) { pn.innerHTML = ''; return; }
+  const det = (id, title, body) => '<details data-k="' + id + '"' + (fold[id] ? ' open' : '') + '><summary>' + title + '</summary><div>' + body + '</div></details>';
+  let h = '';
+  if (name === 'menu') {
+    h = '<h1 id="pt">Turkey Gets Away</h1><p class="lead">Help Turkey run across the forest. Lay eggs so the hunters slip!</p>'
+      + '<div class="row"><button class="b go" data-a="play">Play</button>' + (best > 0 ? '<button class="b" data-a="cont">Play Forest ' + (best + 1) + '</button>' : '') + '</div>'
+      + (best > 0 ? '<p class="muted">Forests crossed so far: ' + best + '.</p>' : '')
+      + (store.ok ? '' : '<p class="muted">This browser isn’t saving your forests, so the count starts over each time.</p>')
+      + det('how', 'How to Play', '<ul><li><b>Arrows:</b> go side to side. Run around trees and big rocks. When a hunter shows a red <b>!</b>, get out of that lane.</li><li><b>Jump:</b> hop over logs, mud puddles and creeks.</li><li><b>Lay Egg:</b> the hunters step on it and slip! A new egg takes ' + EGG_WAIT + ' seconds.</li><li><b>Gobble:</b> just for fun.</li></ul><p>You can swipe on the forest too: left, right, up to jump, down to lay an egg. A tap jumps.</p><p>With a keyboard: arrow keys to move, Space to jump, E for an egg, G to gobble, P to pause.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
+      + det('facts', 'Turkey Facts', '<ul><li>Wild turkeys can run faster than most people, and they can fly a short way.</li><li>Male turkeys do most of the gobbling, and only hens lay eggs. Turkey does both, because this is her game.</li><li>Raw egg is slippery. It gets between a boot and the ground, so the boot slides and can’t grip.</li></ul>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. More to get past: mud puddles and creeks to jump, and big rocks to run around.</p><p>Version 0.1, ' + DATE + '. The first version: three lanes, logs to jump, trees to run around, hunters who aim, eggs with a ' + EGG_WAIT + '-second timer, and forests that get a little faster each time.</p>')
+      + det('credits', 'Credits', '<p>Game idea by Evelyn. Built by Claude, an AI from Anthropic, with Dave Schwartz.</p><p>Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing comes from another game or site. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
+      + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button></div>';
+  } else if (name === 'win') {
+    h = '<h2 id="pt">Turkey got away!</h2><p class="lead">You crossed Forest ' + G.level + '. The hunters slipped ' + G.slips + (G.slips === 1 ? ' time.' : ' times.') + '</p>'
+      + '<div class="row"><button class="b go" data-a="next">Next Forest</button><button class="b" data-a="menu">Menu</button></div><p class="muted">The next forest is a little faster.</p>';
+  } else if (name === 'caught') {
+    h = '<h2 id="pt">Caught!</h2><p class="lead">The hunters caught up with Turkey. Try again, and remember your eggs!</p>'
+      + '<div class="row"><button class="b go" data-a="again">Try Again</button><button class="b" data-a="menu">Menu</button></div>';
+  } else if (name === 'paused') {
+    h = '<h2 id="pt">Paused</h2><div class="row"><button class="b go" data-a="resume">Keep Playing</button></div>'
+      + '<div class="row"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button><button class="b" data-a="menu">Menu</button></div>';
+  }
+  pn.innerHTML = h; pn.setAttribute('role', 'dialog'); pn.setAttribute('aria-labelledby', 'pt'); pn.scrollTop = 0;
+  const first = pn.querySelector('.go'); if (first) { try { first.focus({ preventScroll: true }); } catch (e) {} }
+}
+$('panel').addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  const a = b.dataset.a;
+  if (a === 'play') start(1);
+  else if (a === 'cont') start(best + 1);
+  else if (a === 'next') start(G.level + 1);
+  else if (a === 'again') start(G.level);
+  else if (a === 'resume') resume();
+  else if (a === 'menu') { G.state = 'menu'; G.obs = []; G.eggs = []; G.pel = []; G.aim = null; G.jumpT = -1; G.stumT = 0; G.inv = 0; G.gobT = 0; G.lane = 1; showPanel('menu'); }
+  else if (a === 'sound') { soundOn = !soundOn; store.set('sound', soundOn ? '1' : '0'); b.textContent = soundLabel(); b.setAttribute('aria-pressed', soundOn); if (soundOn) { A.init(); sfx.ready(); } }
+});
+$('panel').addEventListener('toggle', e => {
+  const k = e.target && e.target.dataset && e.target.dataset.k;
+  if (k && k in fold) { fold[k] = e.target.open; store.set('fold', JSON.stringify(fold)); }
+}, true);
+
+function pause() { if (G.state !== 'run') return; G.state = 'paused'; showPanel('paused'); say('Paused.'); }
+function resume() { if (G.state !== 'paused') return; A.init(); G.state = 'run'; showPanel(null); last = 0; }
+
+/* ---------- controls ---------- */
+function bind(id, fn) {
+  const b = $(id); let lastDown = -1e9;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); lastDown = performance.now(); b.classList.add('down'); fn(); });
+  const up = () => b.classList.remove('down');
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('pointerleave', up);
+  b.addEventListener('click', () => { if (performance.now() - lastDown > 700) fn(); });      // keyboard and switch users
+  b.addEventListener('contextmenu', e => e.preventDefault());
+}
+bind('bL', () => moveLane(-1)); bind('bR', () => moveLane(1)); bind('bJ', jump); bind('bE', layEgg); bind('bG', gobble);
+$('bP').addEventListener('click', pause);
+
+let sw = null;
+cv.addEventListener('pointerdown', e => { if (G.state === 'run') sw = { x: e.clientX, y: e.clientY, done: false, t: performance.now() }; });
+cv.addEventListener('pointermove', e => {
+  if (!sw || sw.done) return;
+  const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+  if (Math.abs(dx) < 22 && Math.abs(dy) < 22) return;
+  sw.done = true;
+  if (Math.abs(dx) > Math.abs(dy)) moveLane(dx > 0 ? 1 : -1); else if (dy < 0) jump(); else layEgg();
+});
+cv.addEventListener('pointerup', () => { if (sw && !sw.done && performance.now() - sw.t < 350) jump(); sw = null; });
+cv.addEventListener('pointercancel', () => { sw = null; });
+cv.addEventListener('contextmenu', e => e.preventDefault());
+
+window.addEventListener('keydown', e => {
+  const k = e.key, onBtn = e.target && e.target.closest && e.target.closest('button,summary,a');
+  if (onBtn && (k === ' ' || k === 'Enter')) return;
+  if (G.state === 'run') {
+    let used = true;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') { if (!e.repeat) moveLane(-1); }
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D') { if (!e.repeat) moveLane(1); }
+    else if (k === 'ArrowUp' || k === 'w' || k === 'W' || k === ' ') { if (!e.repeat) jump(); }
+    else if (k === 'ArrowDown' || k === 's' || k === 'S' || k === 'e' || k === 'E') { if (!e.repeat) layEgg(); }
+    else if (k === 'g' || k === 'G') { if (!e.repeat) gobble(); }
+    else if (k === 'p' || k === 'P' || k === 'Escape') pause();
+    else used = false;
+    if (used) e.preventDefault();
+  } else if (G.state === 'paused' && (k === 'p' || k === 'P' || k === 'Escape')) { resume(); e.preventDefault(); }
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+window.addEventListener('resize', layout);
+window.addEventListener('orientationchange', () => setTimeout(layout, 250));
+// some phones only allow sound after a finished tap
+['pointerup', 'touchend', 'click', 'keydown'].forEach(ev => window.addEventListener(ev, () => { if (A.ctx && A.ctx.state === 'suspended') A.init(); }, { passive: true }));
+
+/* ---------- go ---------- */
+let last = 0;
+function frame(ts) {
+  const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts;
+  if (G.state !== 'paused') update(dt);
+  draw();
+  requestAnimationFrame(frame);
+}
+layout(); G.x = laneX(1);
+showPanel('menu');
+requestAnimationFrame(frame);
+window.__turkey = { G, maxGap: () => maxGap };     // for tests
+})();
+</script>
+<script id="hh-helper">/* Home Screen helper from HTML App Generator 1.6 */
+(function(){/* ---------- home screen: helps people put the app on a phone's Home Screen ----------
+   Works out where the page is running (iPhone or iPad, Android, a computer, inside another app's browser, already on the
+   Home Screen, opened as a file, or inside another page) and shows the two or three taps that apply, with pictures of the
+   buttons. On a phone it shows once as a card at the bottom until it's dismissed; the steps also go in `mount` if given.
+   Self-contained, so it can also be added to apps the generator didn't make (FIG, BIG): homeHint({code, name, url, key, mount}). */
+function homeHint(cfg){
+  const d=document,ua=navigator.userAgent||'',code=String(cfg.code||'this app'),name=String(cfg.name||code);
+  const e=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),ios=ipad||/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+  let standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches}catch(x){}
+  let framed=false;try{framed=window.self!==window.top}catch(x){framed=true}
+  const web=/^https?:$/.test(location.protocol);
+  const inApp=/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|Pinterest|; wv\)/.test(ua)||(ios&&!/Safari\//.test(ua));
+  const iosOther=/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const where=standalone?'installed':!web?'file':framed?'framed':ios?(inApp?'ios-app':'ios'):android?(inApp?'android-app':'android'):'computer';
+  const url=cfg.url||(web&&!framed?location.href.split('#')[0]:'');
+  const key=(cfg.key||code.toLowerCase()+':')+'homeHint';
+  /* pictures of the buttons to tap (drawn here, not taken from any system) */
+  const svg=p=>`<span class="hh-i" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
+  const I={share:svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:svg('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
+    plus:svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:svg('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
+    compass:svg('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>')};
+  let prompt=null;
+  function steps(){
+    if(where==='ios')return{lead:'It opens like an app, with its own icon.',list:[
+      `Tap ${I.share} <b>Share</b>${iosOther?' (in the address bar or the '+I.dots+' menu)':ipad?' (top right)':''}.`+(iosOther?'':` No Share button? Tap ${I.dots} first.`),
+      `Tap ${I.plus} <b>Add to Home Screen</b>.`,'Tap <b>Add</b>.'],note:'Best done before you start: the Home Screen app keeps its own copy of your work.'};
+    if(where==='ios-app')return{lead:'This page is open inside another app, which can’t add it to your Home Screen.',list:[
+      `Tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b>. (Or copy the link and paste it into Safari.)`,
+      `In Safari, tap ${I.share} <b>Share</b>, then ${I.plus} <b>Add to Home Screen</b>.`],copy:true};
+    if(where==='android')return{lead:'It opens like an app, with its own icon.',list:prompt?[`Tap <b>Install ${e(code)}</b> below.`]:[
+      `Tap ${I.kebab} (top right).`,'Tap <b>Add to Home screen</b> or <b>Install app</b>.','Tap <b>Install</b> or <b>Add</b>.']};
+    if(where==='android-app')return{lead:'This page is open inside another app, which can’t add it to your Home screen.',list:[
+      `Tap ${I.kebab} and choose <b>Open in Chrome</b> (or your browser).`,`Then tap ${I.kebab} again and <b>Add to Home screen</b>.`],copy:true};
+    if(where==='installed')return{lead:`${e(code)} is on your Home Screen. Open it from there any time.`,list:[]};
+    if(where==='file')return{lead:`You opened ${e(code)} as a file. It works here, but a phone can’t run a file like this.`+
+      (url?` On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a> instead and follow the steps it shows.`:' To use it on a phone, it needs a web address.'),list:[],copy:!!url};
+    return{lead:url?`On a phone or tablet, open <a href="${e(url)}" target="_blank" rel="noopener">${e(url)}</a>, and it shows the two or three taps that put ${e(code)} on the Home Screen. On a computer, bookmark it.`:
+      `To put ${e(code)} on a phone, open its web address there.`,list:[],copy:!!url};
+  }
+  function html(withTitle){
+    const s=steps();
+    return(withTitle?`<div class="hh-t"><span>Put ${e(code)} on your Home Screen</span><button type="button" class="hh-x" aria-label="Close">×</button></div>`:'')+
+      `<p class="hh-lead">${s.lead}</p>`+(s.list.length?`<ol class="hh-steps">${s.list.map(l=>`<li>${l}</li>`).join('')}</ol>`:'')+(s.note?`<p class="hh-note">${s.note}</p>`:'')+
+      `<div class="hh-btns">${prompt?`<button type="button" class="hh-b hh-go" data-hh="install">Install ${e(code)}</button>`:''}${s.copy&&url?'<button type="button" class="hh-b" data-hh="copy">Copy link</button>':''}${withTitle?'<button type="button" class="hh-b" data-hh="later">Not now</button>':''}<span class="hh-msg" aria-live="polite"></span></div>`;
+  }
+  if(!d.getElementById('hh-style')){const st=d.createElement('style');st.id='hh-style';st.textContent=
+`#hh{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:9999;max-width:520px;margin:0 auto;background:var(--panel,#fff);color:var(--ink,#1b1f24);border:1px solid var(--edge,#c3c9d2);border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.28);padding:12px 14px 10px;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+#hh .hh-t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.hh-lead{margin:4px 0}.hh-steps{margin:6px 0;padding-left:1.4em}.hh-steps li{margin:5px 0}
+.hh-i{display:inline-flex;vertical-align:-5px;width:24px;height:24px;align-items:center;justify-content:center;border-radius:7px;background:var(--chip,#e9edf2);color:var(--accent,#0E7C7B);margin:0 1px}.hh-i svg{width:18px;height:18px}
+.hh-note,.hh-msg{color:var(--muted,#5b6470);font-size:13px;margin:4px 0}.hh-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.hh-b{min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--edge,#c3c9d2);background:var(--chip,#e9edf2);color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.hh-go{background:var(--accent,#0E7C7B);color:var(--accent-ink,#fff);border-color:transparent}
+#hh .hh-x{min-width:44px;min-height:44px;border:0;background:transparent;color:inherit;font-size:24px;line-height:1;cursor:pointer}
+@media (prefers-color-scheme:dark){#hh{background:var(--panel,#1d2229);color:var(--ink,#e8ebef);border-color:var(--edge,#3a424d)}.hh-i,.hh-b{background:var(--chip,#2a313a)}}`;
+    d.head.appendChild(st)}
+  const phone=where==='ios'||where==='ios-app'||where==='android'||where==='android-app';
+  let later=0;try{later=+localStorage.getItem(key)||0}catch(x){}
+  let card=null;
+  function wire(box){box.addEventListener('click',async ev=>{
+    const b=ev.target.closest('[data-hh],.hh-x');if(!b)return;const m=box.querySelector('.hh-msg'),act=b.dataset.hh||'later';
+    if(act==='install'&&prompt){prompt.prompt();try{const r=await prompt.userChoice;if(r&&r.outcome==='accepted')hide()}catch(x){}prompt=null;draw()}
+    else if(act==='copy'){try{await navigator.clipboard.writeText(url);if(m)m.textContent='Link copied.'}catch(x){if(m)m.textContent=url}}
+    else if(act==='later'){try{localStorage.setItem(key,String(Date.now()))}catch(x){}hide()}
+  })}
+  function hide(){if(card){card.remove();card=null}}
+  function draw(){
+    if(cfg.mount){cfg.mount.innerHTML=html(false);if(!cfg.mount.dataset.hh){cfg.mount.dataset.hh='1';wire(cfg.mount)}}
+    if(card)card.innerHTML=html(true);
+  }
+  if(phone&&Date.now()-later>30*864e5){card=d.createElement('div');card.id='hh';card.setAttribute('role','dialog');card.setAttribute('aria-label','Put '+code+' on your Home Screen');d.body.appendChild(card);wire(card)}
+  window.addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();prompt=ev;draw()});
+  window.addEventListener('appinstalled',()=>{hide()});
+  draw();
+  return where;
+}
+
+homeHint({code:"TURKEY",name:"Turkey Gets Away",url:"https://david-i-schwartz.github.io/web-mobile-apps/turkey/",key:"turkey:"});})();
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});</script>
+</body>
+</html>
