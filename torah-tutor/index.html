@@ -172,6 +172,12 @@ textarea{width:100%;min-height:110px;line-height:1.5}
 .card h2 .n{width:26px;height:26px;border-radius:50%;background:var(--blue);color:var(--onBlue);display:inline-grid;place-items:center;font-size:.85rem;flex:0 0 auto}
 .card p{margin:0 0 10px;color:var(--ink2);font-size:.92rem}
 .card label{display:block;font-size:.85rem;color:var(--ink2);margin:8px 0 4px}
+.orline{display:flex;align-items:center;gap:10px;color:var(--ink2);font-size:.85rem;margin:12px 0 2px}
+.orline::before,.orline::after{content:"";flex:1;border-top:1px solid var(--line)}
+.dbxIn{min-height:64px;font-size:16px;word-break:break-all}
+.dbxHelp{background:var(--bg);border-radius:12px;padding:10px 12px;margin:10px 0 0}
+.dbxHelp ol{margin:6px 0 0;padding-left:22px}.dbxHelp li{margin:0 0 8px}
+.dbxHelp a.btn{text-decoration:none;color:var(--ink)}
 .card input[type=text],.card input[type=number]{width:100%}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--paper);font-weight:600;margin:4px 6px 4px 0}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--onBlue)}
@@ -296,8 +302,9 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
    One self-contained file. No accounts, no storage, no tracking.
    ==================================================================== */
 
-const APP = { code: 'TORAH', name: 'Torah Tutor', version: '1.3', date: '2026-11-24', homeUrl: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/' };
+const APP = { code: 'TORAH', name: 'Torah Tutor', version: '1.4', date: '2026-11-25', homeUrl: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/' };
 const CHANGES = [
+  ['1.4', '2026-11-25', 'Teacher setup can get a recording from a Dropbox link: paste the link and tap Get it from Dropbox. Several links (one per verse) are joined in the order you paste them. If Dropbox won\u2019t hand a file over, the app shows how to download it and pick it instead.'],
   ['1.3', '2026-11-24', 'In How This Works, each part folds up: tap its heading to open or close it, and the app remembers how you left each one. About This Version, Credits, Learn the Ideas and On a Phone or Tablet start closed.'],
   ['1.2', '2026-11-14', 'Now on the Web & Mobile Apps site, so it opens from a link on iPhone and iPad and can go on the Home Screen. Remembers your settings. Bigger buttons. Sound fixes for iPhone and iPad. The screen stays awake while you practice. Teacher setup can open a saved student file.'],
   ['1.1', '2026-11-08', 'The pointer moves left to right across each word, with a setting to change it.'],
@@ -940,7 +947,7 @@ function sheetHelp() {
   const teach = el('details', { class: 'fold', 'data-ui': 'teach' }); teach.open = true;
   teach.innerHTML = '<summary><h3>For the Teacher</h3></summary>';
   const tb = el('button', { class: 'btn', text: '⚙ Teacher setup', onClick: () => { closeSheet(); openTeacher(); } });
-  teach.append(el('p', { class: 'hint', text: 'Add recordings, paste the words, tap in the timing, then save a file for your student.' }), tb);
+  teach.append(el('p', { class: 'hint', text: 'Add recordings (from this device or a Dropbox link), paste the words, tap in the timing, then save a file for your student.' }), tb);
   h.append(teach);
   const about = el('div');
   about.innerHTML = `<details class="fold" data-ui="phone"><summary><h3>On a Phone or Tablet</h3></summary>
@@ -953,6 +960,7 @@ function sheetHelp() {
 <details class="fold" data-ui="credits"><summary><h3>Credits</h3></summary>
 <ul>
 <li>Hebrew text of Leviticus 16:1\u20133 with vowels and trope marks: the Westminster Leningrad Codex, public domain, from <a href="https://tanach.us" target="_blank" rel="noopener">tanach.us</a>.</li>
+<li>Dropbox links: Torah Tutor asks Dropbox\u2019s file server (dl.dropboxusercontent.com) for a recording only when you tap Get it from Dropbox in Teacher setup, and sends nothing. Dropbox is a trademark of Dropbox, Inc.; this app isn\u2019t connected with it.</li>
 <li>Hebrew letters: FreeSerif from <a href="https://www.gnu.org/software/freefont/" target="_blank" rel="noopener">GNU FreeFont</a> (GPL with the font exception), trimmed to Hebrew.</li>
 <li>Recordings: the teacher\u2019s own. Sounds (transliteration) and word timing made for this app.</li>
 <li>Batman, Godzilla, Spider-Man and Squid Game belong to their owners. They\u2019re only mentioned in jokes; nothing of theirs is used.</li>
@@ -962,6 +970,7 @@ function sheetHelp() {
 <details class="fold" data-ui="learn"><summary><h3>Learn the Ideas</h3></summary>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Cantillation" target="_blank" rel="noopener">Cantillation</a>: what trope is and how the marks work.</li>
+<li><a href="https://help.dropbox.com/share/create-and-view-links" target="_blank" rel="noopener">Sharing a Dropbox link</a>: how to get the link to paste in Teacher setup.</li>
 <li><a href="https://en.wikipedia.org/wiki/Chaining" target="_blank" rel="noopener">Backward chaining</a>: why learning the end first works (Build from the end).</li>
 <li><a href="https://en.wikipedia.org/wiki/Call_and_response_(music)" target="_blank" rel="noopener">Call and response</a>: hear it, then sing it back (My turn).</li>
 </ul>
@@ -1049,7 +1058,7 @@ async function ensureEnv(L0) {
     L._env = env; L._envRate = rate; L._dur = ab.duration;
     try { ctx.close(); } catch (e) {}
     return L;
-  } catch (e) { console.warn('decode failed', e); return null; } finally { L._envBusy = false; }
+  } catch (e) { L._envFailed = true; console.warn('decode failed', e); return null; } finally { L._envBusy = false; }
 }
 function wavBlob(ab) {
   const ch = ab.getChannelData(0); const n = ch.length; const buf = new ArrayBuffer(44 + n * 2); const dv = new DataView(buf);
@@ -1071,19 +1080,127 @@ async function joinFiles(files) {
   return wavBlob(out);
 }
 async function onFiles(input) {
-  const files = Array.from(input.files || []); if (!files.length) return;
-  const L = tl();
+  const files = Array.from(input.files || []); input.value = ''; if (!files.length) return;
   files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  T.dbxHelp = null;
+  await loadRecording(files);
+}
+// Files picked on the device are joined in name order; files from Dropbox links in the order they were pasted.
+async function loadRecording(files) {
+  const L = tl();
   T.msgRec = 'Loading…'; renderTeacher();
   try {
     let file = files[0];
     if (files.length > 1) { T.msgRec = `Joining ${files.length} recordings (this can take a few seconds)…`; renderTeacher(); file = await joinFiles(files); file.name = 'joined.wav'; }
-    delete L.audioRef; L._file = file; L.audio = null; L.audioFallback = null; L._goodSrc = null; L.audioName = files.length > 1 ? files.map(f => f.name).join(' + ') : file.name; L._env = null; L._dur = null;
+    delete L.audioRef; L._file = file; L.audio = null; L.audioFallback = null; L._goodSrc = null; L._envFailed = false; L.audioName = files.length > 1 ? files.map(f => f.name).join(' + ') : file.name; L._env = null; L._dur = null;
     objUrls.delete(L.id + ':file'); objUrls.delete(L.id);
     for (const w of L.words) { w.s = null; w.e = null; }
     T.msgRec = ''; renderTeacher();
-    await ensureEnv(L); renderTeacher();
+    await ensureEnv(L);
+    for (let k = 0; L._envBusy && k < 600; k++) await new Promise(r => setTimeout(r, 50));
+    if (L._envFailed) T.msgRec = 'That file didn\u2019t open as sound here, so it may not play. Try an MP3 or M4A.';
+    renderTeacher();
   } catch (e) { T.msgRec = 'That file could not be read. Try an MP3 or M4A.'; renderTeacher(); }
+}
+/* ---------------- recordings from Dropbox links ----------------
+   Only when the teacher taps Get it from Dropbox: the app asks Dropbox's file server (dl.dropboxusercontent.com) for each
+   pasted file and sends nothing else. Dropbox's own pages don't let other sites read files, but that server does, for now.
+   If it ever stops, the app shows how to download the file and pick it with Choose recording instead. */
+const DBX_HOST = 'dl.dropboxusercontent.com';
+const DBX_MAX = 80 * 1048576;
+const AUDIO_EXT = /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac|caf|aif|aiff|mp4|webm|3gp)$/i;
+function dropboxDirect(raw) {
+  let u; try { u = new URL(String(raw).trim().replace(/[)\]>.,;'"]+$/, '')); } catch (e) { return { raw, err: 'notlink' }; }
+  const host = u.hostname.toLowerCase();
+  if (!/(^|\.)dropbox\.com$|(^|\.)dropboxusercontent\.com$/.test(host)) return { raw, err: 'notdropbox' };
+  if (/^\/(scl\/fo|sh)\//.test(u.pathname)) return { raw, err: 'folder' };
+  if (!/^\/(scl\/fi|s)\/[^/]+\/[^/]+/.test(u.pathname)) return { raw, err: 'notfile' };
+  u.protocol = 'https:'; u.hostname = DBX_HOST; u.port = ''; u.hash = '';
+  u.searchParams.delete('raw'); u.searchParams.delete('preview'); u.searchParams.set('dl', '1');
+  let name = u.pathname.split('/').pop() || 'recording';
+  try { name = decodeURIComponent(name); } catch (e) {}
+  return { raw, url: u.href, name: name.slice(0, 120) };
+}
+function dropboxLinks(text) { return (String(text || '').match(/https?:\/\/[^\s<>"']+/gi) || []).map(dropboxDirect); }
+function looksLikeAudio(head, type, name) {
+  const s = String.fromCharCode.apply(null, Array.from(head.slice(0, 16)));
+  if (/^ID3|^RIFF|^OggS|^fLaC|^FORM|^caff/.test(s) || s.slice(4, 8) === 'ftyp' || s.slice(4, 8) === 'moov') return true;
+  if (head[0] === 0xFF && (head[1] & 0xE0) === 0xE0) return true;
+  if (head[0] === 0x1A && head[1] === 0x45 && head[2] === 0xDF && head[3] === 0xA3) return true;
+  if (/^(audio|video)\//.test(type)) return true;
+  // Dropbox usually says only "octet-stream"; then the file name decides. Any other stated type (PDF, picture, text) is not sound.
+  return (!type || /^(application|binary)\/octet-stream$/.test(type)) && AUDIO_EXT.test(name);
+}
+async function fetchDropbox(item, i, n, say) {
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 120000);
+  const tag = n > 1 ? ` (${i + 1} of ${n})` : '';
+  try {
+    say(`Getting ${item.name} from Dropbox${tag}…`);
+    const r = await fetch(item.url, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store', signal: ctl.signal });
+    if (!r.ok) { const e = new Error('status ' + r.status); e.code = (r.status === 404 || r.status === 410) ? 'gone' : (r.status === 403 || r.status === 401 ? 'private' : 'status'); throw e; }
+    const total = +(r.headers.get('content-length') || 0);
+    if (total > DBX_MAX) { const e = new Error('big'); e.code = 'big'; throw e; }
+    let blob;
+    if (r.body && r.body.getReader) {
+      const rd = r.body.getReader(); const parts = []; let got = 0, last = 0;
+      for (;;) {
+        const { done, value } = await rd.read(); if (done) break;
+        parts.push(value); got += value.length;
+        if (got > DBX_MAX) { try { rd.cancel(); } catch (e) {} const e = new Error('big'); e.code = 'big'; throw e; }
+        const now = performance.now();
+        if (now - last > 250) { last = now; say(`Getting ${item.name} from Dropbox${tag}: ${total ? Math.round(got / total * 100) + '%' : (got / 1048576).toFixed(1) + ' MB'}`); }
+      }
+      blob = new Blob(parts);
+    } else blob = await r.blob();
+    const type = (r.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+    const head = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
+    if (!blob.size || /^text\/html/.test(type) || String.fromCharCode.apply(null, Array.from(head)).trim().toLowerCase().startsWith('<')) { const e = new Error('page'); e.code = 'page'; throw e; }
+    if (!looksLikeAudio(head, type, item.name)) { const e = new Error('notaudio'); e.code = 'notaudio'; throw e; }
+    const ext = (item.name.match(/\.([a-z0-9]+)$/i) || [])[1] || '';
+    const fileType = /^audio\//.test(type) ? type : ({ mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', wav: 'audio/wav', ogg: 'audio/ogg', opus: 'audio/ogg', flac: 'audio/flac', mp4: 'audio/mp4', webm: 'audio/webm' })[ext.toLowerCase()] || 'audio/mpeg';
+    return new File([blob], item.name, { type: fileType });
+  } catch (e) {
+    if (e && e.name === 'AbortError') { const x = new Error('slow'); x.code = 'slow'; throw x; }
+    if (e && !e.code) e.code = navigator.onLine === false ? 'offline' : 'blocked';
+    throw e;
+  } finally { clearTimeout(timer); }
+}
+async function getFromDropbox() {
+  const box = $('#dbxIn'); if (box) T.dbxText = box.value;
+  const items = dropboxLinks(T.dbxText);
+  const say = t => { T.msgRec = t; const m = $('#recMsg'); if (m) m.textContent = t; };
+  T.dbxHelp = null;
+  if (!items.length) { T.msgRec = 'Paste a Dropbox link first. In Dropbox, tap Share, then Copy link.'; renderTeacher(); return; }
+  const bad = items.find(x => x.err);
+  if (bad) {
+    T.msgRec = ({ folder: 'That\u2019s a link to a folder. Share each recording on its own and paste those links, one per line.',
+      notdropbox: 'Only Dropbox links work here. For a file on this device, use Choose recording.',
+      notfile: 'That Dropbox link doesn\u2019t point to a file. In Dropbox, tap Share on the recording itself, then Copy link.',
+      notlink: 'That doesn\u2019t look like a link. In Dropbox, tap Share, then Copy link, and paste it here.' })[bad.err];
+    renderTeacher(); return;
+  }
+  if (T.dbxBusy) return;
+  T.dbxBusy = true; renderTeacher();
+  const files = [];
+  try {
+    for (let i = 0; i < items.length; i++) files.push(await fetchDropbox(items[i], i, items.length, say));
+  } catch (e) {
+    T.dbxBusy = false;
+    const code = e && e.code;
+    if (code === 'blocked' || code === 'slow') { T.dbxHelp = items; T.msgRec = code === 'slow' ? 'Dropbox is taking too long.' : 'Dropbox wouldn\u2019t hand the file to the app.'; }
+    else T.msgRec = ({ gone: 'Dropbox says that file isn\u2019t there any more. Ask for a new link.',
+      private: 'That link is private. In Dropbox, set the link to \u201canyone with the link\u201d, then copy it again.',
+      big: 'That file is over 80 MB, too big for the app. A shorter recording or an MP3 works better.',
+      page: 'Dropbox sent a web page instead of the recording. Check that the link is to the file and that anyone with the link can view it.',
+      notaudio: 'That link isn\u2019t a recording. Torah Tutor needs an audio file such as an MP3 or M4A.',
+      offline: 'This device is offline. Connect to the internet, then tap Get it from Dropbox again.',
+      status: 'Dropbox had a problem sending the file. Try again in a minute.' })[code] || 'That file couldn\u2019t be read. Try an MP3 or M4A.';
+    renderTeacher(); return;
+  }
+  T.dbxBusy = false;
+  await loadRecording(files);
+  const L = tl();
+  if (L._file && files.length && !L._envFailed) { T.dbxText = ''; T.msgRec = `✓ Got ${files.length === 1 ? files[0].name : files.length + ' recordings'} from Dropbox.`; renderTeacher(); }
 }
 function useHebrew(text) {
   const L = tl(); const words = parseHebrew(text);
@@ -1214,14 +1331,29 @@ function renderTeacher() {
   c2.append(el('p', { text: 'Pick one audio file. If you have one file per verse, pick them all at once and they get joined in name order.' }));
   const fin = el('input', { type: 'file', accept: 'audio/*,.mp3,.m4a,.wav,.aac,.ogg', multiple: true, id: 'recFile', style: 'display:none', onChange: e => onFiles(e.target) });
   c2.append(fin, el('button', { class: 'btn primary', text: '📂 Choose recording', onClick: () => fin.click() }));
+  c2.append(el('div', { class: 'orline', text: 'or' }));
+  const dbx = el('textarea', { id: 'dbxIn', class: 'dbxIn', rows: 2, inputmode: 'url', autocapitalize: 'off', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://www.dropbox.com/scl/fi/\u2026', onInput: e => { T.dbxText = e.target.value; } });
+  dbx.value = T.dbxText || '';
+  c2.append(el('label', { for: 'dbxIn', text: 'Paste a Dropbox link (one per line if each verse is its own file)' }), dbx);
+  c2.append(el('button', { class: 'btn primary', text: T.dbxBusy ? '\u2601 Getting it\u2026' : '\u2601 Get it from Dropbox', disabled: T.dbxBusy || null, onClick: getFromDropbox }));
+  c2.append(el('p', { class: 'hint', text: 'Tapping this asks Dropbox (dl.dropboxusercontent.com) for those files and nothing else. Torah Tutor sends nothing to Dropbox or anywhere.' }));
+  c2.append(el('p', { id: 'recMsg', class: T.msgRec && T.msgRec.startsWith('✓') ? 'ok' : (T.dbxHelp ? 'warn' : 'hint'), role: 'status', 'aria-live': 'polite', text: T.msgRec || '' }));
+  if (T.dbxHelp && T.dbxHelp.length) {
+    const help = el('div', { class: 'dbxHelp' }, el('b', { text: 'Do it in two steps instead:' }));
+    const ol = el('ol');
+    const li1 = el('li', {}, T.dbxHelp.length === 1 ? 'Download it: ' : 'Download each one: ');
+    T.dbxHelp.forEach((x, k) => li1.append(el('a', { class: 'btn small', href: x.url, target: '_blank', rel: 'noopener noreferrer', download: x.name, text: '\u2b07 ' + (T.dbxHelp.length > 1 ? (k + 1) + '. ' : '') + x.name })));
+    li1.append(el('div', { class: 'hint', text: 'On an iPhone or iPad, tap Download when Safari asks; it goes to Files \u203a Downloads. On a computer it goes to Downloads.' }));
+    ol.append(li1, el('li', { text: 'Come back to this tab, tap Choose recording and pick the file (or all of them at once).' }));
+    help.append(ol); c2.append(help);
+  }
   const owner = audioOwner(L);
   if (owner && (owner._file || owner.audio)) {
     const d = owner._dur || (aud.getAttribute('src') === audioSrcFor(L) && isFinite(aud.duration) ? aud.duration : null);
     c2.append(el('p', { class: 'ok', text: `✓ ${L.audioRef ? 'Uses the recording from "' + ((owner.short || owner.title) || 'another lesson') + '"' : (owner.audioName || 'Recording loaded')}${d ? ' (' + fmtT(d) + ')' : ''}` }));
     c2.append(el('button', { class: 'btn small', text: '▶ Listen', onClick: () => tPlayRange(0, 1e9) }), el('button', { class: 'btn small', text: '■ Stop', onClick: tStopPlay }));
-    if (!owner._env && !owner._envBusy) ensureEnv(L).then(() => { if (!teacher.hidden) renderTeacher(); });
+    if (!owner._env && !owner._envBusy && !owner._envFailed) ensureEnv(L).then(() => { if (!teacher.hidden) renderTeacher(); });
   } else c2.append(el('p', { class: 'warn', text: 'No recording yet.' }));
-  if (T.msgRec) c2.append(el('p', { class: 'hint', text: T.msgRec }));
   tWrap.append(c2);
   // 3 words
   const c3 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '3' }), isEn ? 'The words (English)' : 'The Hebrew'));
