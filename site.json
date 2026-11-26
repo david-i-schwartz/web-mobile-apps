@@ -95,8 +95,17 @@
       "folder": "torah-tutor",
       "code": "TORAH",
       "name": "Torah Tutor",
-      "tagline": "Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part.",
+      "tagline": "Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part. Lessons come from Torah Tutor Teacher.",
       "accent": "#2B4C9B",
+      "section": "Teaching"
+    },
+    {
+      "file": "src/torah-teacher.html",
+      "folder": "torah-teacher",
+      "code": "TTEACH",
+      "name": "Torah Tutor Teacher",
+      "tagline": "Make Torah Tutor lessons: add a recording, paste the Hebrew, tap in the timing, and send the lesson to your student.",
+      "accent": "#6B3FA0",
       "section": "Teaching"
     },
     {

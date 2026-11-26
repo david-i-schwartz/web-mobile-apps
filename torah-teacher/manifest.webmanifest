@@ -1,0 +1,28 @@
+{
+  "name": "TTEACH: Torah Tutor Teacher",
+  "short_name": "TTEACH",
+  "description": "Make Torah Tutor lessons: add a recording, paste the Hebrew, tap in the timing, and send the lesson to your student.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F5F8",
+  "theme_color": "#6B3FA0",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

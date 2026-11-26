@@ -226,6 +226,11 @@ details.fold>summary>h2,details.fold>summary>h3{flex:1;min-width:0;margin-top:0;
 details.fold[open]>summary{margin-bottom:8px}
 details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset:2px;border-radius:6px}
 @media (prefers-reduced-motion:reduce){details.fold>summary::before{transition:none}}
+.lrow{display:flex;gap:8px;align-items:center}.lrow .opt{flex:1;min-width:0;margin:0 0 8px}.lrow .btn{margin:0 0 8px}
+.tHeadBtns{display:flex;gap:8px;align-items:center}.tHead button.tHelp{min-width:44px;padding:0;font-size:1.1rem}
+.sheetBack{z-index:41}.sheet{z-index:42}.toast{z-index:43}
+.btn.danger{background:var(--paper)}
+details>*{box-sizing:border-box}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -302,8 +307,15 @@ details.fold>summary:focus-visible{outline:3px solid currentColor;outline-offset
    One self-contained file. No accounts, no storage, no tracking.
    ==================================================================== */
 
-const APP = { code: 'TORAH', name: 'Torah Tutor', version: '1.4', date: '2026-11-25', homeUrl: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/' };
-const CHANGES = [
+const ROLE = 'student';   // 'student': Torah Tutor (practice) / 'teacher': Torah Tutor Teacher (makes lessons). Set when the two files are built.
+const APP = ROLE === 'teacher'
+  ? { code: 'TTEACH', name: 'Torah Tutor Teacher', version: '1.0', date: '2026-11-25', homeUrl: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-teacher/', pair: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/' }
+  : { code: 'TORAH', name: 'Torah Tutor', version: '2.0', date: '2026-11-25', homeUrl: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/', pair: 'https://david-i-schwartz.github.io/web-mobile-apps/torah-teacher/' };
+const KP = APP.code.toLowerCase() + ':';   // this app's storage prefix (house rule 4)
+const CHANGES = ROLE === 'teacher' ? [
+  ['1.0', '2026-11-25', 'First version, made from Torah Tutor 1.4’s Teacher setup. Lessons are saved on this device as you work. A finished lesson goes to the student as one small lesson file (Send, Save, or Put it in Torah Tutor on this device), and he adds it with 📚 Lessons in Torah Tutor 2.0. Opens lesson files and the student files that Torah Tutor 1.2 to 1.4 saved.']
+] : [
+  ['2.0', '2026-11-25', 'Practice only. Lessons now come from the new Torah Tutor Teacher: tap 📚, then Choose a lesson file (or paste its Dropbox link). Lessons you add stay on this device, and Remove takes one off. Sending a fixed lesson again replaces the old one. Teacher setup moved to Torah Tutor Teacher.'],
   ['1.4', '2026-11-25', 'Teacher setup can get a recording from a Dropbox link: paste the link and tap Get it from Dropbox. Several links (one per verse) are joined in the order you paste them. If Dropbox won\u2019t hand a file over, the app shows how to download it and pick it instead.'],
   ['1.3', '2026-11-24', 'In How This Works, each part folds up: tap its heading to open or close it, and the app remembers how you left each one. About This Version, Credits, Learn the Ideas and On a Phone or Tablet start closed.'],
   ['1.2', '2026-11-14', 'Now on the Web & Mobile Apps site, so it opens from a link on iPhone and iPad and can go on the Home Screen. Remembers your settings. Bigger buttons. Sound fixes for iPhone and iPad. The screen stays awake while you practice. Teacher setup can open a saved student file.'],
@@ -768,7 +780,7 @@ function renderWords() {
   const ltr = L.dir === 'ltr' || !S.show.he;
   wordsBox.dir = ltr ? 'ltr' : 'rtl'; wordsBox.classList.toggle('ltr', ltr);
   if (!L.words.length) {
-    wordsBox.append(el('div', { class: 'empty' }, el('b', { text: LESSONS.length ? 'This lesson is empty.' : 'No lessons yet.' }), 'Teacher: tap ? then "Teacher setup" to add a recording and the words.'));
+    wordsBox.append(el('div', { class: 'empty' }, el('b', { text: LESSONS.length ? 'This lesson is empty.' : 'No lessons yet.' }), ROLE === 'teacher' ? 'Tap \u270e to make a lesson.' : 'Tap \ud83d\udcda to add a lesson.'));
     yad.classList.remove('show'); return;
   }
   const rg = partRange();
@@ -832,6 +844,9 @@ $('#btnWhat').addEventListener('click', () => openSheet('what'));
 $('#btnHow').addEventListener('click', () => openSheet('how'));
 $('#btnDisplay').addEventListener('click', () => openSheet('display'));
 $('#btnHelp').addEventListener('click', () => openSheet('help'));
+const btnLessons = el('button', { id: 'btnLessons', class: 'iconBtn', 'aria-label': ROLE === 'teacher' ? 'Edit lessons' : 'Lessons', text: ROLE === 'teacher' ? '\u270e' : '\ud83d\udcda' });
+btnLessons.addEventListener('click', () => { if (ROLE === 'teacher') openTeacher(); else openSheet('lessons'); });
+$('.topBtns').prepend(btnLessons);
 let titleTaps = 0, titleT;
 $('#titleBtn').addEventListener('click', () => {
   titleTaps++; clearTimeout(titleT); titleT = setTimeout(() => { titleTaps = 0; }, 1500);
@@ -853,14 +868,16 @@ sheetBack.addEventListener('click', closeSheet); $('#sheetClose').addEventListen
 function closeSheet() { S.sheet = null; sheet.hidden = true; sheetBack.hidden = true; savePrefs(); }
 function openSheet(kind, arg) {
   S.sheet = kind; sheetBody.innerHTML = ''; sheet.hidden = false; sheetBack.hidden = false; sheetBody.scrollTop = 0;
-  ({ what: sheetWhat, how: sheetHow, display: sheetDisplay, help: sheetHelp, word: sheetWord, secret: sheetSecret })[kind](arg);
+  ({ what: sheetWhat, how: sheetHow, display: sheetDisplay, help: sheetHelp, word: sheetWord, secret: sheetSecret, lessons: sheetLessons })[kind](arg);
 }
 function seg(options, value, onPick) {
   const box = el('div', { class: 'seg' });
   for (const [v, label] of options) box.append(el('button', { class: String(v) === String(value) ? 'on' : '', text: label, onClick: () => { onPick(v); $$('button', box).forEach(b => b.classList.toggle('on', b.textContent === label)); } }));
   return box;
 }
-function row(label, sub, control) { return el('div', { class: 'row' }, el('div', { class: 'lbl' }, label, sub ? el('small', { text: sub }) : null), control); }
+function row(label, sub, control) {
+  if (control && control.getAttribute && control.getAttribute('role') === 'switch' && !control.getAttribute('aria-label') && typeof label === 'string') control.setAttribute('aria-label', label);
+  return el('div', { class: 'row' }, el('div', { class: 'lbl' }, label, sub ? el('small', { text: sub }) : null), control); }
 function sw(on, onToggle) { const b = el('button', { class: 'switch' + (on ? ' on' : ''), role: 'switch', 'aria-checked': on ? 'true' : 'false' }); b.addEventListener('click', () => { const now = !b.classList.contains('on'); b.classList.toggle('on', now); b.setAttribute('aria-checked', String(now)); onToggle(now); }); return b; }
 
 function sheetWhat() {
@@ -923,7 +940,7 @@ function sheetDisplay() {
 function sheetHelp() {
   sheetTitle.textContent = 'How This Works';
   const h = el('div', { class: 'help' });
-  h.innerHTML = `
+  h.innerHTML = ROLE === 'teacher' ? TEACHER_HELP : `
 <p><b>Three taps and you're practicing:</b></p>
 <ol>
 <li><b>What to practice</b> — the whole thing, one verse, or a part you pick.</li>
@@ -944,11 +961,13 @@ function sheetHelp() {
 </details>
 <p class="hint">There are secrets in here. Tapping the title a few times would be a good idea. 🥚</p>
 `;
-  const teach = el('details', { class: 'fold', 'data-ui': 'teach' }); teach.open = true;
-  teach.innerHTML = '<summary><h3>For the Teacher</h3></summary>';
-  const tb = el('button', { class: 'btn', text: '⚙ Teacher setup', onClick: () => { closeSheet(); openTeacher(); } });
-  teach.append(el('p', { class: 'hint', text: 'Add recordings (from this device or a Dropbox link), paste the words, tap in the timing, then save a file for your student.' }), tb);
-  h.append(teach);
+  if (ROLE !== 'teacher') {
+    const teach = el('details', { class: 'fold', 'data-ui': 'newlessons' }); teach.open = true;
+    teach.innerHTML = '<summary><h3>New Lessons</h3></summary>';
+    const p = el('p', { class: 'hint' }, 'Your teacher makes lessons in ', el('a', { href: APP.pair, target: '_blank', rel: 'noopener', text: 'Torah Tutor Teacher' }), ' and sends you a lesson file. Tap \ud83d\udcda, then Choose a lesson file (or paste its Dropbox link). Lessons you add stay on this device.');
+    teach.append(p, el('button', { class: 'btn', text: '\ud83d\udcda Lessons', onClick: () => openSheet('lessons') }));
+    h.append(teach);
+  }
   const about = el('div');
   about.innerHTML = `<details class="fold" data-ui="phone"><summary><h3>On a Phone or Tablet</h3></summary>
 <p>Open <a href="${APP.homeUrl}" target="_blank" rel="noopener">${APP.homeUrl}</a> in Safari (iPhone, iPad) or Chrome (Android, Chromebook). To put it on the Home Screen: tap Share, then Add to Home Screen.</p>
@@ -959,8 +978,9 @@ function sheetHelp() {
 </details>
 <details class="fold" data-ui="credits"><summary><h3>Credits</h3></summary>
 <ul>
-<li>Hebrew text of Leviticus 16:1\u20133 with vowels and trope marks: the Westminster Leningrad Codex, public domain, from <a href="https://tanach.us" target="_blank" rel="noopener">tanach.us</a>.</li>
-<li>Dropbox links: Torah Tutor asks Dropbox\u2019s file server (dl.dropboxusercontent.com) for a recording only when you tap Get it from Dropbox in Teacher setup, and sends nothing. Dropbox is a trademark of Dropbox, Inc.; this app isn\u2019t connected with it.</li>
+${ROLE === 'teacher' ? '' : '<li>Hebrew text of Leviticus 16:1\u20133 with vowels and trope marks: the Westminster Leningrad Codex, public domain, from <a href="https://tanach.us" target="_blank" rel="noopener">tanach.us</a>.</li>'}
+<li>Dropbox links: ${APP.name} asks Dropbox\u2019s file server (dl.dropboxusercontent.com) for a file only when you tap Get it from Dropbox, and sends nothing. Dropbox is a trademark of Dropbox, Inc.; this app isn\u2019t connected with it.</li>
+<li>${ROLE === 'teacher' ? 'Torah Tutor, the student\u2019s app' : 'Torah Tutor Teacher, where lessons are made'}: <a href="${APP.pair}" target="_blank" rel="noopener">${APP.pair}</a>.</li>
 <li>Hebrew letters: FreeSerif from <a href="https://www.gnu.org/software/freefont/" target="_blank" rel="noopener">GNU FreeFont</a> (GPL with the font exception), trimmed to Hebrew.</li>
 <li>Recordings: the teacher\u2019s own. Sounds (transliteration) and word timing made for this app.</li>
 <li>Batman, Godzilla, Spider-Man and Squid Game belong to their owners. They\u2019re only mentioned in jokes; nothing of theirs is used.</li>
@@ -970,7 +990,7 @@ function sheetHelp() {
 <details class="fold" data-ui="learn"><summary><h3>Learn the Ideas</h3></summary>
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Cantillation" target="_blank" rel="noopener">Cantillation</a>: what trope is and how the marks work.</li>
-<li><a href="https://help.dropbox.com/share/create-and-view-links" target="_blank" rel="noopener">Sharing a Dropbox link</a>: how to get the link to paste in Teacher setup.</li>
+<li><a href="https://help.dropbox.com/share/create-and-view-links" target="_blank" rel="noopener">Sharing a Dropbox link</a>: how to get the link to paste here.</li>
 <li><a href="https://en.wikipedia.org/wiki/Chaining" target="_blank" rel="noopener">Backward chaining</a>: why learning the end first works (Build from the end).</li>
 <li><a href="https://en.wikipedia.org/wiki/Call_and_response_(music)" target="_blank" rel="noopener">Call and response</a>: hear it, then sing it back (My turn).</li>
 </ul>
@@ -1015,13 +1035,28 @@ function sheetSecret() {
    TEACHER SETUP
    ==================================================================== */
 const teacher = $('#teacher'), tWrap = $('#tWrap');
-const T = { lesson: 0, sel: -1, msgHe: '', msgTr: '', msgRec: '' };
+const T = { lesson: 0, sel: -1, msgHe: '', msgTr: '', msgRec: '', msgTap: '', msgSend: '', msgOpen: '' };
+['input', 'change', 'click'].forEach(ev => tWrap.addEventListener(ev, () => saveDraftSoon()));
 const tap = { on: false, start: 0, taps: [], speed: 1 };
 function openTeacher() { stopRun(false); T.lesson = S.lesson; T.sel = -1; teacher.hidden = false; renderTeacher(); window.scrollTo(0, 0); }
 function closeTeacher() { stopTapping(false); teacher.hidden = true; loadLesson(T.lesson); }
 function tl() { return LESSONS[T.lesson]; }
-function newLesson() { const L = { id: 'l' + Date.now().toString(36), title: 'New lesson', short: 'Lesson ' + (LESSONS.length + 1), verseStart: 1, verseWord: 'Verse', dir: 'rtl', audio: null, words: [] }; LESSONS.push(L); T.lesson = LESSONS.length - 1; T.sel = -1; renderTeacher(); }
-function deleteLesson() { if (!confirm('Delete this lesson? (Nothing is saved until you download the file, so you can always start over.)')) return; LESSONS.splice(T.lesson, 1); T.lesson = Math.max(0, T.lesson - 1); if (S.lesson >= LESSONS.length) S.lesson = 0; renderTeacher(); }
+function newId() { return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function newLesson() {
+  stopTapping(false);
+  const L = tidyLesson({ id: newId(), title: 'New lesson', short: 'Lesson ' + (LESSONS.length + 1) }); L._made = new Date().toISOString();
+  LESSONS.push(L); T.lesson = LESSONS.length - 1; T.sel = -1; T.msgHe = T.msgTr = T.msgRec = T.msgTap = T.msgSend = T.msgOpen = ''; T.dbxText = ''; T.dbxHelp = null;
+  renderTeacher(); saveDrafts();
+}
+async function deleteLesson() {
+  const L = tl(); if (!L) return;
+  if (!confirm(`Delete “${L.title || 'this lesson'}” from this device? Lesson files you already sent or saved aren’t affected.`)) return;
+  L._deleted = true; stopTapping(false);
+  try { await dbDel(DB_TEACHER, L.id); } catch (e) {}
+  const i = LESSONS.indexOf(L); if (i >= 0) LESSONS.splice(i, 1); objUrls.delete(L.id); objUrls.delete(L.id + ':file');
+  T.lesson = clamp(T.lesson, 0, Math.max(0, LESSONS.length - 1)); S.lesson = T.lesson; T.sel = -1; T.msgSend = '';
+  T.msgOpen = `Deleted ${L.title || 'the lesson'}.`; renderTeacher();
+}
 function tMedia() { const L = tl(); const src = audioSrcFor(L); if (!src) return null; if (aud.getAttribute('src') !== src) { aud.src = src; aud.load(); } return aud; }
 let tPlayStop = null;
 function tPlayRange(s, e) {
@@ -1131,7 +1166,7 @@ function looksLikeAudio(head, type, name) {
   // Dropbox usually says only "octet-stream"; then the file name decides. Any other stated type (PDF, picture, text) is not sound.
   return (!type || /^(application|binary)\/octet-stream$/.test(type)) && AUDIO_EXT.test(name);
 }
-async function fetchDropbox(item, i, n, say) {
+async function fetchDropbox(item, i, n, say, expect) {
   const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 120000);
   const tag = n > 1 ? ` (${i + 1} of ${n})` : '';
   try {
@@ -1153,6 +1188,7 @@ async function fetchDropbox(item, i, n, say) {
       blob = new Blob(parts);
     } else blob = await r.blob();
     const type = (r.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+    if (expect === 'lesson') return new File([blob], item.name, { type: type || 'application/json' });
     const head = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
     if (!blob.size || /^text\/html/.test(type) || String.fromCharCode.apply(null, Array.from(head)).trim().toLowerCase().startsWith('<')) { const e = new Error('page'); e.code = 'page'; throw e; }
     if (!looksLikeAudio(head, type, item.name)) { const e = new Error('notaudio'); e.code = 'notaudio'; throw e; }
@@ -1304,27 +1340,31 @@ function shiftAll(d) { const L = tl(); for (const w of L.words) { if (w.s != nul
 function renderTeacher() {
   const L = tl();
   tWrap.innerHTML = '';
-  const head = el('div', { class: 'tHead' }, el('h1', { text: '⚙ Teacher setup' }), el('button', { text: '← Back to practice', onClick: closeTeacher }));
+  const head = el('div', { class: 'tHead' }, el('h1', { text: APP.name }), el('div', { class: 'tHeadBtns' },
+    el('button', { class: 'tHelp', 'aria-label': 'Help', text: '?', onClick: () => openSheet('help') }),
+    el('button', { text: '\u25b6 Try it out', disabled: (!L || !L.words.length) || null, onClick: closeTeacher })));
   tWrap.append(head);
-  // lesson picker
+  // your lessons
   const picker = el('div', { class: 'card' });
-  picker.append(el('h2', {}, 'Which lesson?'));
+  picker.append(el('h2', {}, 'Your Lessons'));
   const list = el('div', { class: 'lessonList' });
-  LESSONS.forEach((x, i) => list.append(el('button', { class: i === T.lesson ? 'on' : '', text: (x.secret ? '🥚 ' : '') + (x.short || x.title || 'Lesson'), onClick: () => { stopTapping(false); T.lesson = i; T.sel = -1; T.msgHe = T.msgTr = T.msgRec = T.msgTap = ''; renderTeacher(); } })));
-  list.append(el('button', { text: '＋ Add a new lesson', onClick: newLesson }));
+  LESSONS.forEach((x, i) => list.append(el('button', { class: i === T.lesson ? 'on' : '', text: (x.secret ? '🥚 ' : '') + (x.short || x.title || 'Lesson'), onClick: () => { stopTapping(false); T.lesson = i; T.sel = -1; T.msgHe = T.msgTr = T.msgRec = T.msgTap = T.msgSend = T.msgOpen = ''; T.dbxHelp = null; renderTeacher(); } })));
+  list.append(el('button', { text: '＋ New lesson', onClick: newLesson }));
   picker.append(list);
-  const openIn = el('input', { type: 'file', accept: '.html,.htm,text/html', style: 'display:none', onChange: e => openStudentFile(e.target) });
-  picker.append(openIn, el('div', { style: 'margin-top:8px' }, el('button', { class: 'btn small', text: '📂 Open a saved student file', onClick: () => openIn.click() })));
+  const openIn = el('input', { type: 'file', accept: '.json,application/json,.html,text/html', multiple: true, style: 'display:none', onChange: e => teacherOpenFile(e.target) });
+  picker.append(openIn, el('div', { style: 'margin-top:8px' }, el('button', { class: 'btn small', text: '📂 Open a lesson file', onClick: () => openIn.click() })));
   if (T.msgOpen) picker.append(el('p', { class: T.msgOpen.startsWith('✓') ? 'ok' : 'warn', text: T.msgOpen }));
+  picker.append(el('p', { id: 'draftMsg', class: 'hint', role: 'status', 'aria-live': 'polite' }));
   tWrap.append(picker);
-  if (!L) { tWrap.append(el('p', { class: 'hint', text: 'Add a lesson to begin.' })); return; }
+  if (!L) { tWrap.append(el('div', { class: 'card' }, el('p', { text: 'No lessons yet. Tap \uff0b New lesson to make one, or Open a lesson file someone sent you.' }))); showDraftState(); return; }
   const isEn = L.dir === 'ltr';
   // 1 name
   const c1 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '1' }), 'Name it'));
-  c1.append(el('label', { text: 'Full name (shown at the top)' }), el('input', { type: 'text', value: L.title || '', onInput: e => { L.title = e.target.value; } }));
-  c1.append(el('label', { text: 'Short name (for the tab)' }), el('input', { type: 'text', value: L.short || '', onInput: e => { L.short = e.target.value; } }));
-  c1.append(el('label', { text: 'Number of the first verse (so "Verse 1" can say "Verse 7", for example)' }), el('input', { type: 'number', min: 1, value: L.verseStart || 1, onInput: e => { L.verseStart = Math.max(1, parseInt(e.target.value) || 1); } }));
-  c1.append(el('label', { text: 'Secret lesson? (hidden until the student finds the secret menu)' }), sw(!!L.secret, on => { L.secret = on; }));
+  c1.append(el('label', { for: 'lnTitle', text: 'Lesson name' }), el('input', { type: 'text', id: 'lnTitle', value: L.title || '', onInput: e => { L.title = e.target.value; } }));
+  c1.append(el('label', { for: 'lnShort', text: 'Short name (for the tab)' }), el('input', { type: 'text', id: 'lnShort', value: L.short || '', onInput: e => { L.short = e.target.value; } }));
+  c1.append(el('label', { for: 'lnVerse', text: 'Number of the first verse (so "Verse 1" can say "Verse 7", for example)' }), el('input', { type: 'number', id: 'lnVerse', min: 1, value: L.verseStart || 1, onInput: e => { L.verseStart = Math.max(1, parseInt(e.target.value) || 1); } }));
+  const secretSw = sw(!!L.secret, on => { L.secret = on; saveDraftSoon(); }); secretSw.setAttribute('aria-label', 'Secret lesson');
+  c1.append(el('label', { text: 'Secret lesson? (hidden until the student finds the secret menu)' }), secretSw);
   tWrap.append(c1);
   // 2 recording
   const c2 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '2' }), 'The recording'));
@@ -1359,13 +1399,13 @@ function renderTeacher() {
   const c3 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '3' }), isEn ? 'The words (English)' : 'The Hebrew'));
   if (!isEn) {
     c3.append(el('p', { text: 'Paste the Hebrew with vowels AND trope marks. Easiest source: sefaria.org. Open the verses, make sure the Hebrew shows vowels and cantillation, select, copy, paste here. Verse numbers and {פ} markers are ignored.' }));
-    const ta = el('textarea', { dir: 'rtl', lang: 'he', placeholder: 'וַיְדַבֵּ֤ר יְהוָה֙ אֶל־מֹשֶׁ֔ה…', style: 'font-size:1.2rem' });
+    const ta = el('textarea', { dir: 'rtl', lang: 'he', 'aria-label': 'Hebrew text', placeholder: 'וַיְדַבֵּ֤ר יְהוָה֙ אֶל־מֹשֶׁ֔ה…', style: 'font-size:1.2rem' });
     ta.value = L.words.map(w => w.he).join(' ');
     c3.append(ta, el('button', { class: 'btn primary', text: 'Use this Hebrew', onClick: () => useHebrew(ta.value) }));
     c3.append(el('button', { class: 'btn small', text: 'English words instead (for a silly lesson)', onClick: () => { L.dir = 'ltr'; renderTeacher(); } }));
   } else {
     c3.append(el('p', { text: 'One phrase per line. Put the trope name in [brackets]. A line with --- starts a new part.' }));
-    const ta = el('textarea', { placeholder: 'Fill a pot [Mapach]\nwith water [Pashta]\n---\nNow sit down [T\u2019vir]' });
+    const ta = el('textarea', { 'aria-label': 'Words, one phrase per line', placeholder: 'Fill a pot [Mapach]\nwith water [Pashta]\n---\nNow sit down [T\u2019vir]' });
     ta.value = L.words.map((w, i) => (i > 0 && w.v !== L.words[i - 1].v ? '---\n' : '') + w.he + (w.tp ? ' [' + w.tp + ']' : '')).join('\n');
     c3.append(ta, el('button', { class: 'btn primary', text: 'Use these words', onClick: () => useEnglish(ta.value) }));
     c3.append(el('button', { class: 'btn small', text: 'Hebrew instead', onClick: () => { L.dir = 'rtl'; renderTeacher(); } }));
@@ -1376,7 +1416,7 @@ function renderTeacher() {
   // 4 sounds
   const c4 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '4' }), 'The sounds (transliteration)'));
   c4.append(el('p', { text: 'Optional. One chunk per word, separated by spaces, in the same order as the words. Use hyphens inside a word if you like (b\u2019-rei-SHEET). Capital letters show the strong syllable.' }));
-  const ta4 = el('textarea', { placeholder: 'vai-da-BER a-do-NAI el-mo-SHEH …' }); ta4.value = L.words.map(w => w.tr || '').join(' ').trim();
+  const ta4 = el('textarea', { 'aria-label': 'Sounds (transliteration)', placeholder: 'vai-da-BER a-do-NAI el-mo-SHEH …' }); ta4.value = L.words.map(w => w.tr || '').join(' ').trim();
   c4.append(ta4, el('button', { class: 'btn primary', text: 'Use these sounds', onClick: () => useSounds(ta4.value) }));
   if (T.msgTr) c4.append(el('p', { class: T.msgTr.startsWith('✓') ? 'ok' : 'warn', text: T.msgTr }));
   tWrap.append(c4);
@@ -1393,21 +1433,25 @@ function renderTeacher() {
   c6.append(el('div', { id: 'fixer' }), el('div', { id: 'wordList', class: 'wlist' }));
   c6.append(el('div', { style: 'margin-top:8px' }, el('button', { class: 'btn small', text: 'Shift ALL words a bit earlier', onClick: () => shiftAll(-0.05) }), el('button', { class: 'btn small', text: 'Shift ALL a bit later', onClick: () => shiftAll(0.05) }), el('button', { class: 'btn small', text: '▶ Try it in the practice screen', onClick: closeTeacher })));
   tWrap.append(c6);
-  // 7 note
+  // 7 extras
   const c7 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '7' }), 'Little extras'));
-  c7.append(el('label', { text: 'Title at the very top of the app' }), el('input', { type: 'text', value: DATA.title || '', onInput: e => { DATA.title = e.target.value; } }));
-  c7.append(el('label', { text: 'A note for your student (shows above the words)' }), el('textarea', { style: 'min-height:70px', value: DATA.note || '', onInput: e => { DATA.note = e.target.value; } }));
+  c7.append(el('label', { for: 'noteIn', text: 'A note for the student (shows above the words)' }), el('textarea', { id: 'noteIn', style: 'min-height:70px', value: L.note || '', onInput: e => { L.note = e.target.value; } }));
   c7.append(el('label', { text: 'Danger zone' }), el('button', { class: 'btn danger small', text: 'Delete this lesson', onClick: deleteLesson }));
   tWrap.append(c7);
-  // 8 save
-  const c8 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '8' }), 'Save the student\u2019s file'));
-  c8.append(el('p', { text: 'This makes ONE file with everything inside (recordings, words, timing). Nothing is saved until you do this.' }));
-  const fname = el('input', { type: 'text', value: (DATA.fileName || 'Torah-Tutor.html') });
-  c8.append(el('label', { text: 'File name' }), fname);
-  c8.append(el('button', { class: 'btn primary', text: '⬇ Download the student\u2019s file', onClick: () => exportStudentFile(fname.value) }));
-  c8.append(el('p', { class: 'hint', text: 'On a computer, double-click the file and it opens in the browser. iPhones and iPads can\u2019t run a file, so for them the file goes on the Web & Mobile Apps site (it replaces src/torah-tutor.html there). The student\u2019s link stays the same.' }));
-  c8.append(el('p', { id: 'saveMsg', class: 'hint' }));
+  // 8 send
+  const c8 = el('div', { class: 'card' }, el('h2', {}, el('span', { class: 'n', text: '8' }), 'Send It to the Student'));
+  c8.append(el('p', { text: 'The lesson goes to the student as one small lesson file, with the recording, words and timing inside. In Torah Tutor he taps 📚, then Choose a lesson file (or pastes its Dropbox link). Sending it again after a fix replaces his copy.' }));
+  if (canShareFiles()) {
+    c8.append(el('button', { class: 'btn primary', text: '📤 Send the lesson file', onClick: sendLesson }));
+    c8.append(el('p', { class: 'hint', text: 'Then pick Messages, AirDrop, Mail or Dropbox.' }));
+  }
+  c8.append(el('button', { class: 'btn' + (canShareFiles() ? '' : ' primary'), text: '⬇ Save the lesson file', onClick: saveLessonFile }));
+  c8.append(el('p', { class: 'hint', text: 'Saves it in Files › Downloads (or Downloads on a computer), to attach or put in Dropbox.' }));
+  c8.append(el('button', { class: 'btn', text: '📥 Put it in Torah Tutor on this device', onClick: putInStudent }), el('a', { class: 'btn', href: APP.pair, target: '_blank', rel: 'noopener', text: 'Open Torah Tutor' }));
+  c8.append(el('p', { class: 'hint', text: 'For when he practices on this same device, in this same browser. On an iPhone or iPad, Torah Tutor on the Home Screen keeps its own lessons, so send him the file instead.' }));
+  c8.append(el('p', { id: 'sendMsg', class: T.msgSend.startsWith('✓') ? 'ok' : 'hint', role: 'status', 'aria-live': 'polite', text: T.msgSend }));
   tWrap.append(c8);
+  showDraftState(); warmLessonFile(); saveDraftSoon();
   renderTapPanel(); renderWordList(); renderFixer();
 }
 function renderTapPanel() {
@@ -1441,11 +1485,12 @@ function renderWordList() {
   });
 }
 function renderFixer() {
+  saveDraftSoon();
   const f = $('#fixer'); if (!f) return; const L = tl(); f.innerHTML = '';
   const i = T.sel; const w = L.words[i]; if (!w) return;
   const box = el('div', { class: 'fixer' });
   box.append(el('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:8px' }, el('div', { style: 'font-weight:600', text: `Word ${i + 1}: ${w.tr || w.he}` }), el('div', { class: 'hint', text: w.s == null ? 'not timed' : `${fmtT(w.s)} → ${fmtT(w.e)}` })));
-  const cv = el('canvas'); box.append(cv);
+  const cv = el('canvas', { role: 'img', 'aria-label': 'Sound picture of this word' }); box.append(cv);
   const nud = (label, which) => el('div', { class: 'nudge' }, el('span', { text: label }), el('button', { class: 'btn small', text: '◀◀ earlier', onClick: () => nudge(i, which, -0.15) }), el('button', { class: 'btn small', text: '◀ a hair', onClick: () => nudge(i, which, -0.04) }), el('button', { class: 'btn small', text: 'a hair ▶', onClick: () => nudge(i, which, 0.04) }), el('button', { class: 'btn small', text: 'later ▶▶', onClick: () => nudge(i, which, 0.15) }));
   if (w.s != null) {
     box.append(nud('Start', 's'), nud('End', 'e'));
@@ -1542,14 +1587,349 @@ async function openStudentFile(input) {
     renderTeacher();
   } catch (e) { T.msgOpen = 'That file couldn\u2019t be read.'; renderTeacher(); }
 }
-window.addEventListener('beforeunload', e => { if (LESSONS.some(L => L._file)) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => {
+  if (ROLE !== 'teacher') return;
+  const unsaved = LESSONS.some(L => !L._deleted && L._savedSig !== lessonSig(L));
+  if (unsaved) saveDrafts();
+  if (unsaved && !draftsOk) { e.preventDefault(); e.returnValue = ''; }
+});
+window.addEventListener('pagehide', () => { if (ROLE === 'teacher') saveDrafts(); });
+document.addEventListener('visibilitychange', () => { if (ROLE === 'teacher' && document.visibilityState === 'hidden') saveDrafts(); });
+
+/* ---------------- lessons kept on this device, and lesson files ----------------
+   Torah Tutor keeps the lessons it was given in IndexedDB "torah:lessons". Torah Tutor Teacher keeps its work in
+   "tteach:drafts" and, only when asked (Put it in Torah Tutor on this device), copies a finished lesson into
+   "torah:lessons" so Torah Tutor in the same browser has it. A lesson file is JSON:
+   {kind: "torah-tutor-lesson", v: 1, lessons: [...]}, each lesson with its recording inside as a data: URL. */
+const LESSON_KIND = 'torah-tutor-lesson';
+const DB_STUDENT = ['torah:lessons', 'lessons'], DB_TEACHER = ['tteach:drafts', 'drafts'];
+const BUILTIN_IDS = new Set(LESSONS.map(L => L.id));
+const STUDENT_BUILTINS = new Set(['lev16', 'mac']);
+let dbOk = !!window.indexedDB, draftsOk = true;
+function dbOpen(spec) {
+  return new Promise((res, rej) => {
+    let r; try { r = indexedDB.open(spec[0], 1); } catch (e) { rej(e); return; }
+    r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains(spec[1])) db.createObjectStore(spec[1], { keyPath: 'id' }); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error || new Error('open')); r.onblocked = () => rej(new Error('blocked'));
+  });
+}
+async function dbDo(spec, mode, fn) {
+  const db = await dbOpen(spec);
+  try {
+    return await new Promise((res, rej) => {
+      const tx = db.transaction(spec[1], mode); let out; const r = fn(tx.objectStore(spec[1]));
+      if (r) r.onsuccess = () => { out = r.result; };
+      tx.oncomplete = () => res(out); tx.onerror = () => rej(tx.error || new Error('tx')); tx.onabort = () => rej(tx.error || new Error('abort'));
+    });
+  } finally { db.close(); }
+}
+const dbAll = spec => dbDo(spec, 'readonly', st => st.getAll());
+const dbPut = (spec, rec) => dbDo(spec, 'readwrite', st => st.put(rec));
+const dbDel = (spec, id) => dbDo(spec, 'readwrite', st => st.delete(id));
+function askToKeep() { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {} }
+function hashStr(s) { let x = 5381; for (let i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) | 0; return (x >>> 0).toString(36); }
+function safeId(L, taken) {
+  let id = typeof L.id === 'string' && /^[\w-]{1,80}$/.test(L.id) ? L.id : '';
+  if (!id || taken.has(id)) id = 'imp-' + (id || 'lesson') + '-' + hashStr((L.title || '') + '|' + L.words.map(w => w.he).join(' '));
+  return id;
+}
+// Only a recording carried inside the lesson is kept: an address elsewhere would make the app reach out to the network.
+function cleanAudio(L) { for (const k of ['audio', 'audioFallback']) if (L[k] && !/^data:(audio|video)\/|^data:application\/octet-stream/i.test(L[k])) delete L[k]; return L; }
+async function lessonAudioUrl(L0) {
+  const L = audioOwner(L0) || L0;
+  if (L._file) { if (L._fileUrlFor !== L._file) { L._fileUrl = await fileToDataURL(L._file); L._fileUrlFor = L._file; } return L._fileUrl; }
+  for (const u of [L.audio, L.audioFallback]) if (typeof u === 'string' && /^data:/.test(u)) return u;
+  if (L.audio) { try { const r = await fetch(L.audio); if (r.ok) return await fileToDataURL(await r.blob()); } catch (e) {} }
+  return null;
+}
+async function packLesson(L) {
+  const out = { id: L.id, title: L.title, short: L.short, verseStart: L.verseStart, verseWord: L.verseWord, dir: L.dir, secret: !!L.secret, note: L.note || '',
+    audioName: L.audioName || '', audio: null, words: L.words.map(w => ({ he: w.he, tr: w.tr || '', tp: w.tp || '', v: w.v, s: w.s, e: w.e })) };
+  out.audio = await lessonAudioUrl(L);   // the words were copied first, so they match the moment saving began
+  return out;
+}
+function lessonSig(L) {
+  const o = audioOwner(L) || L;
+  return JSON.stringify([L.title, L.short, L.verseStart, L.verseWord, L.dir, !!L.secret, L.note || '', L.audioName || '', L.words,
+    o._file ? [o._file.name, o._file.size, o._file.lastModified] : String(o.audio || '').length]);
+}
+function lessonFileName(L) { return ((L.short || L.title || 'lesson').normalize('NFKD').replace(/[^\w.-]+/g, '-').replace(/-+/g, '-').replace(/^[-.]+|[-.]+$/g, '').slice(0, 60) || 'lesson') + '.torah.json'; }
+function lessonFile(packed) {
+  return new File([JSON.stringify({ kind: LESSON_KIND, v: 1, app: APP.name + ' ' + APP.version, saved: new Date().toISOString().slice(0, 10), lessons: packed })], lessonFileName(packed[0]), { type: 'application/json' });
+}
+// Reads a lesson file, or a student file saved by Torah Tutor 1.2 to 1.4 (old work keeps opening, rule 8).
+function readLessonText(text) {
+  const t = String(text || '').replace(/^﻿/, '').trim(); let d = null;
+  if (t.startsWith('{')) {
+    try { d = JSON.parse(t); } catch (e) { return { err: 'bad' }; }
+    if (!d || d.kind !== LESSON_KIND || !Array.isArray(d.lessons)) return { err: 'notlesson' };
+  } else {
+    const open = '<script id="lessonData" type="application/json">'; const a = t.indexOf(open); const b = a < 0 ? -1 : t.indexOf('</' + 'script>', a);
+    if (a < 0 || b < 0) return { err: t.startsWith('<') ? 'page' : 'notlesson' };
+    try { d = JSON.parse(t.slice(a + open.length, b)); } catch (e) { return { err: 'bad' }; }
+  }
+  const raw = tidyData(d).lessons;
+  // a lesson that borrows another's recording (the secret Mac & Cheese one does) gets its own copy, so each stands alone
+  for (const L of raw) if (L.audioRef) { const o = raw.find(x => x.id === L.audioRef); if (o && o.audio) { L.audio = o.audio; delete L.audioRef; } }
+  const lessons = raw.map(cleanAudio).filter(L => L.words.length || L.audio);
+  return lessons.length ? { lessons } : { err: 'empty' };
+}
+const LESSON_ERR = { bad: 'That file is damaged, so it can’t be read.', notlesson: 'That file isn’t a Torah Tutor lesson. Lesson files end in .torah.json.',
+  page: 'That’s a web page, not a Torah Tutor lesson.', empty: 'That lesson file has no lessons in it.' };
+const DBX_ERR = { gone: 'Dropbox says that file isn’t there any more. Ask for a new link.',
+  private: 'That link is private. In Dropbox, set the link to “anyone with the link”, then copy it again.',
+  big: 'That file is over 80 MB, too big for the app.', offline: 'This device is offline. Connect to the internet, then tap Get it from Dropbox again.',
+  status: 'Dropbox had a problem sending the file. Try again in a minute.' };
+
+/* ---- Torah Tutor: lessons added on this device (📚) ---- */
+const LT = { dbxText: '', msg: '', warn: false, help: null, busy: false };
+function lsay(t, warn) { LT.msg = t; LT.warn = !!warn; }
+async function loadAddedLessons() {
+  if (!dbOk) return;
+  let recs; try { recs = await dbAll(DB_STUDENT); } catch (e) { dbOk = false; return; }
+  recs.sort((a, b) => String(a.added).localeCompare(String(b.added)));
+  for (const r of recs) {
+    if (!r || typeof r.id !== 'string' || BUILTIN_IDS.has(r.id)) continue;
+    const L = cleanAudio(tidyLesson(r.lesson)); L.id = r.id; L._rid = r.id; L._added = r.added;
+    if (L.words.length || L.audio) LESSONS.push(L);
+  }
+  if (recs.length) { renderTabs(); if (S.sheet === 'lessons') refreshLessonsSheet(); }
+}
+function refreshLessonsSheet() { if (S.sheet === 'lessons') { const y = sheetBody.scrollTop; openSheet('lessons'); sheetBody.scrollTop = y; } }
+function sheetLessons() {
+  sheetTitle.textContent = 'Lessons';
+  const wrap = el('div');
+  visibleLessons().forEach(({ L, i }) => {
+    const r = el('div', { class: 'lrow' });
+    r.append(el('button', { class: 'opt' + (i === S.lesson ? ' on' : ''), onClick: () => { closeSheet(); loadLesson(i); } },
+      el('b', { text: (L.secret ? '🥚 ' : '') + (L.title || L.short || 'Lesson') }),
+      el('span', { text: `${L.words.length} words, ${L._rid ? 'added on this device' : 'built in'}` })));
+    if (L._rid) r.append(el('button', { class: 'btn small danger', text: 'Remove', 'aria-label': 'Remove ' + (L.title || 'this lesson'), onClick: () => removeLesson(L._rid) }));
+    wrap.append(r);
+  });
+  const add = el('details', { class: 'fold', 'data-ui': 'addlesson' }); add.open = true;
+  add.append(el('summary', {}, el('h3', { text: 'Add a Lesson' })));
+  add.append(el('p', { class: 'hint', text: 'Your teacher makes lessons in Torah Tutor Teacher and sends you a lesson file. Its name ends in .torah.json.' }));
+  const fin = el('input', { type: 'file', id: 'lessonFile', accept: '.json,application/json,.html,text/html', multiple: true, style: 'display:none', onChange: e => onLessonFiles(e.target) });
+  add.append(fin, el('button', { class: 'btn primary', text: '📂 Choose a lesson file', onClick: () => fin.click() }));
+  add.append(el('div', { class: 'orline', text: 'or' }));
+  const box = el('textarea', { id: 'lessonDbx', class: 'dbxIn', rows: 2, inputmode: 'url', autocapitalize: 'off', autocomplete: 'off', spellcheck: 'false', placeholder: 'https://www.dropbox.com/scl/fi/…', onInput: e => { LT.dbxText = e.target.value; } });
+  box.value = LT.dbxText;
+  add.append(el('label', { for: 'lessonDbx', text: 'Paste a Dropbox link to a lesson file' }), box);
+  add.append(el('button', { class: 'btn primary', text: LT.busy ? '☁ Getting it…' : '☁ Get it from Dropbox', disabled: LT.busy || null, onClick: getLessonFromDropbox }));
+  add.append(el('p', { class: 'hint', text: 'Tapping this asks Dropbox (dl.dropboxusercontent.com) for that file and nothing else. Torah Tutor sends nothing to Dropbox or anywhere.' }));
+  add.append(el('p', { id: 'lessonMsg', class: LT.msg.startsWith('✓') ? 'ok' : (LT.warn ? 'warn' : 'hint'), role: 'status', 'aria-live': 'polite', text: LT.msg }));
+  if (LT.help && LT.help.length) {
+    const help = el('div', { class: 'dbxHelp' }, el('b', { text: 'Do it in two steps instead:' }));
+    const ol = el('ol'); const li1 = el('li', {}, 'Download it: ');
+    LT.help.forEach(x => li1.append(el('a', { class: 'btn small', href: x.url, target: '_blank', rel: 'noopener noreferrer', download: x.name, text: '⬇ ' + x.name })));
+    li1.append(el('div', { class: 'hint', text: 'On an iPhone or iPad, tap Download when Safari asks; it goes to Files › Downloads.' }));
+    ol.append(li1, el('li', { text: 'Come back here, tap Choose a lesson file and pick it.' }));
+    help.append(ol); add.append(help);
+  }
+  if (!dbOk) add.append(el('p', { class: 'warn', text: 'This browser isn’t keeping added lessons, so they’ll be gone next time. A private window does that.' }));
+  wrap.append(add);
+  sheetBody.append(wrap);
+}
+async function onLessonFiles(input) {
+  const files = Array.from(input.files || []); input.value = ''; if (!files.length) return;
+  LT.help = null; lsay('Reading…'); refreshLessonsSheet();
+  const got = []; let err = '';
+  for (const f of files) {
+    if (f.size > DBX_MAX) { err = `${f.name} is over 80 MB, too big for a lesson.`; continue; }
+    let res; try { res = readLessonText(await f.text()); } catch (e) { res = { err: 'bad' }; }
+    if (res.err) err = (files.length > 1 ? f.name + ': ' : '') + LESSON_ERR[res.err]; else got.push(...res.lessons);
+  }
+  if (!got.length) { lsay(err || 'Nothing was added.', true); refreshLessonsSheet(); return; }
+  await addLessons(got, err);
+}
+async function addLessons(list, extra) {
+  const now = new Date().toISOString(); const names = []; let updated = 0, secret = 0, kept = true; let first = null;
+  for (const L of list) {
+    cleanAudio(L);
+    const id = safeId(L, BUILTIN_IDS); const old = LESSONS.findIndex(x => x._rid === id);
+    L.id = id; L._rid = id; L._added = old >= 0 ? LESSONS[old]._added : now; delete L.audioRef;
+    try { if (dbOk) await dbPut(DB_STUDENT, { id, added: L._added, lesson: await packLesson(L) }); else kept = false; } catch (e) { kept = false; dbOk = false; }
+    objUrls.delete(id); objUrls.delete(id + ':file');
+    if (old >= 0) { LESSONS[old] = L; updated++; } else LESSONS.push(L);
+    names.push(L.title || L.short || 'a lesson'); if (L.secret) secret++; if (!first) first = L;
+  }
+  askToKeep();
+  LT.warn = false; LT.msg = `✓ ${updated === list.length ? 'Updated' : 'Added'} ${names.join(', ')}.` + (secret && !S.secret ? ' It’s a secret lesson: find the secret menu to see it.' : '')
+    + (kept ? '' : ' This browser isn’t keeping it, so it’ll be gone next time.') + (extra ? ' ' + extra : '');
+  const idx = LESSONS.indexOf(first);
+  if (first && (!first.secret || S.secret)) loadLesson(idx); else renderTabs();
+  refreshLessonsSheet();
+}
+async function removeLesson(rid) {
+  const i = LESSONS.findIndex(x => x._rid === rid); if (i < 0) return;
+  const L = LESSONS[i];
+  if (!confirm(`Remove “${L.title || 'this lesson'}” from this device? Your teacher can send it again.`)) return;
+  try { await dbDel(DB_STUDENT, rid); } catch (e) {}
+  const wasCur = S.lesson === i; LESSONS.splice(i, 1); objUrls.delete(L.id); objUrls.delete(L.id + ':file');
+  if (S.lesson > i) S.lesson--;
+  if (wasCur) { const v = visibleLessons()[0]; loadLesson(v ? v.i : 0); } else renderTabs();
+  lsay(`Removed ${L.title || 'the lesson'}.`); LT.help = null; refreshLessonsSheet();
+}
+async function getLessonFromDropbox() {
+  const box = $('#lessonDbx'); if (box) LT.dbxText = box.value;
+  const items = dropboxLinks(LT.dbxText); LT.help = null;
+  const say = t => { lsay(t); const m = $('#lessonMsg'); if (m) { m.textContent = t; m.className = 'hint'; } };
+  if (!items.length) { lsay('Paste a Dropbox link first. In Dropbox, tap Share on the lesson file, then Copy link.', true); refreshLessonsSheet(); return; }
+  const bad = items.find(x => x.err);
+  if (bad) {
+    LT.warn = true; LT.msg = ({ folder: 'That’s a link to a folder. Share the lesson file itself and paste that link.',
+      notdropbox: 'Only Dropbox links work here. For a file on this device, use Choose a lesson file.',
+      notfile: 'That Dropbox link doesn’t point to a file. In Dropbox, tap Share on the lesson file itself, then Copy link.',
+      notlink: 'That doesn’t look like a link. In Dropbox, tap Share, then Copy link, and paste it here.' })[bad.err];
+    refreshLessonsSheet(); return;
+  }
+  if (LT.busy) return;
+  LT.busy = true; refreshLessonsSheet();
+  const got = [];
+  try {
+    for (let i = 0; i < items.length; i++) {
+      const f = await fetchDropbox(items[i], i, items.length, say, 'lesson');
+      const res = readLessonText(await f.text());
+      if (res.err) { const e = new Error(res.err); e.code = 'lesson:' + res.err; throw e; }
+      got.push(...res.lessons);
+    }
+  } catch (e) {
+    LT.busy = false; LT.warn = true; const code = (e && e.code) || '';
+    if (code === 'blocked' || code === 'slow') { LT.help = items; LT.msg = code === 'slow' ? 'Dropbox is taking too long.' : 'Dropbox wouldn’t hand the file to the app.'; }
+    else if (code === 'lesson:page') LT.msg = 'Dropbox sent a web page instead of the lesson. Check that the link is to the file and that anyone with the link can view it.';
+    else if (code.startsWith('lesson:')) LT.msg = LESSON_ERR[code.slice(7)];
+    else LT.msg = DBX_ERR[code] || 'That file couldn’t be read.';
+    refreshLessonsSheet(); return;
+  }
+  LT.busy = false; LT.dbxText = '';
+  await addLessons(got);
+}
+
+/* ---- Torah Tutor Teacher: work saved on this device as you go, and sending a lesson ---- */
+function saveDraftSoon() { if (ROLE !== 'teacher') return; clearTimeout(saveDraftSoon.t); saveDraftSoon.t = setTimeout(saveDrafts, 600); }
+let saving = null;
+async function saveDrafts() {
+  if (ROLE !== 'teacher') return;
+  if (saving) { saving.again = true; return; }
+  saving = { again: false };
+  try {
+    for (const L of LESSONS.slice()) {
+      if (L._deleted) continue;
+      const sig = lessonSig(L); if (L._savedSig === sig) continue;
+      try {
+        const packed = await packLesson(L); L._made = L._made || new Date().toISOString();
+        await dbPut(DB_TEACHER, { id: L.id, made: L._made, saved: new Date().toISOString(), lesson: packed });
+        if (L._deleted) { try { await dbDel(DB_TEACHER, L.id); } catch (e) {} continue; }
+        L._savedSig = sig; L._packed = { sig, packed }; draftsOk = true; askToKeep();
+      } catch (e) { draftsOk = false; }
+    }
+  } finally { const again = saving.again; saving = null; showDraftState(); if (again) saveDraftSoon(); }
+}
+function showDraftState() {
+  const m = $('#draftMsg'); if (!m) return;
+  if (!draftsOk) { m.textContent = 'This browser isn’t keeping lessons. Save the lesson file (step 8) before you leave.'; m.className = 'warn'; }
+  else if (LESSONS.some(L => !L._deleted && L._savedSig !== lessonSig(L))) { m.textContent = 'Saving…'; m.className = 'hint'; }
+  else if (LESSONS.length) { m.textContent = '✓ Saved on this device as you work.'; m.className = 'ok'; }
+  else { m.textContent = ''; m.className = 'hint'; }
+}
+async function loadDrafts() {
+  let recs = [];
+  try { recs = await dbAll(DB_TEACHER); } catch (e) { draftsOk = false; dbOk = false; }
+  recs.sort((a, b) => String(a.made || a.saved).localeCompare(String(b.made || b.saved)));
+  for (const r of recs) {
+    if (!r || typeof r.id !== 'string') continue;
+    const L = cleanAudio(tidyLesson(r.lesson)); L.id = r.id; L._made = r.made; L._savedSig = lessonSig(L);
+    LESSONS.push(L);
+  }
+}
+async function teacherOpenFile(input) {
+  const files = Array.from(input.files || []); input.value = ''; if (!files.length) return;
+  const got = []; let err = '';
+  for (const f of files) {
+    let res; try { res = readLessonText(await f.text()); } catch (e) { res = { err: 'bad' }; }
+    if (res.err) err = (files.length > 1 ? f.name + ': ' : '') + LESSON_ERR[res.err]; else got.push(...res.lessons);
+  }
+  stopTapping(false);
+  for (const L of got) {
+    if (typeof L.id !== 'string' || !/^[\w-]{1,80}$/.test(L.id)) L.id = newId();
+    const i = LESSONS.findIndex(x => x.id === L.id);
+    if (i >= 0) {
+      if (confirm(`Replace your lesson “${LESSONS[i].title || 'Lesson'}” with the one in this file?`)) { L._made = LESSONS[i]._made; LESSONS[i] = L; objUrls.delete(L.id); objUrls.delete(L.id + ':file'); continue; }
+      L.id = newId();
+    }
+    L._made = new Date().toISOString(); LESSONS.push(L);
+  }
+  if (got.length) T.lesson = LESSONS.indexOf(got[0]);
+  T.msgOpen = got.length ? `✓ Opened ${got.map(L => L.title || 'a lesson').join(', ')}.` + (err ? ' ' + err : '') : (err || 'Nothing was opened.');
+  T.sel = -1; T.msgSend = ''; renderTeacher(); saveDrafts();
+}
+function canShareFiles() { try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [new File(['{}'], 'x.json', { type: 'application/json' })] })); } catch (e) { return false; } }
+async function currentLessonFile() {
+  const L = tl(); const sig = lessonSig(L);
+  if (!L._packed || L._packed.sig !== sig) L._packed = { sig, packed: await packLesson(L) };
+  return lessonFile([L._packed.packed]);
+}
+// Packs the lesson ahead of time, so tapping Send can open the share sheet straight away (iPhones allow that only right after a tap).
+function warmLessonFile() { const L = tl(); if (L && L.words.length && hasAudio(L) && (!L._packed || L._packed.sig !== lessonSig(L))) currentLessonFile().catch(() => {}); }
+function sendSay(t, ok) { T.msgSend = t; const m = $('#sendMsg'); if (m) { m.textContent = t; m.className = ok ? 'ok' : 'hint'; } }
+function sendReady() {
+  const L = tl();
+  if (!L || !L.words.length) { sendSay('Add the words first (step 3).'); return false; }
+  if (!hasAudio(L)) { sendSay('Add the recording first (step 2).'); return false; }
+  return true;
+}
+function untimedNote(L) { const n = L.words.filter(w => w.s == null).length; return n ? ` ${n} word${n === 1 ? ' has' : 's have'} no timing yet (step 5).` : ''; }
+async function sendLesson() {
+  if (!sendReady()) return;
+  let f; try { f = await currentLessonFile(); } catch (e) { sendSay('The lesson couldn’t be packed. Try Save the lesson file.'); return; }
+  try { await navigator.share({ files: [f] }); sendSay(`✓ Sent ${f.name}.` + untimedNote(tl()), true); }
+  catch (e) { sendSay(e && e.name === 'AbortError' ? 'Not sent.' : (e && e.name === 'NotAllowedError' ? 'Tap Send the lesson file once more.' : 'This device couldn’t send it. Use Save the lesson file instead.')); }
+}
+async function saveLessonFile() {
+  if (!sendReady()) return;
+  let f; try { f = await currentLessonFile(); } catch (e) { sendSay('The lesson couldn’t be packed.'); return; }
+  const m = $('#sendMsg'); const ok = await saveFile(f.name, f, m);
+  if (ok) sendSay((m ? m.textContent : 'Saved.') + untimedNote(tl()), true);
+}
+async function putInStudent() {
+  if (!sendReady()) return;
+  try {
+    const L = tl(); await currentLessonFile(); const packed = Object.assign({}, L._packed.packed);
+    packed.id = safeId(packed, STUDENT_BUILTINS);
+    await dbPut(DB_STUDENT, { id: packed.id, added: new Date().toISOString(), lesson: packed }); askToKeep();
+    sendSay(`✓ ${packed.title || 'The lesson'} is in Torah Tutor on this device. Open Torah Tutor in this browser to find its tab.` + untimedNote(L), true);
+  } catch (e) { sendSay('This browser wouldn’t take it. Send or save the lesson file instead.'); }
+}
+const TEACHER_HELP = `
+<p><b>Make a lesson in eight steps</b>, then send it to your student:</p>
+<ol>
+<li><b>Name it.</b></li>
+<li><b>Add the recording</b>: a file on this device, or a Dropbox link.</li>
+<li><b>Paste the Hebrew</b>, with vowels and trope marks (Sefaria has it).</li>
+<li><b>Add the sounds</b> (English letters). You can skip this.</li>
+<li><b>Tap along</b> as it plays, to mark where each word starts.</li>
+<li><b>Check and fix</b> any word that starts too early or too late.</li>
+<li><b>Little extras</b>: a note for the student.</li>
+<li><b>Send it</b>: the lesson goes to him as one small file.</li>
+</ol>
+<div class="tip">Everything is saved on this device as you work. To get a lesson onto the student’s phone or tablet, send him the lesson file: by Messages, AirDrop, Mail or Dropbox.</div>
+<details class="fold" data-ui="know" open><summary><h3>Good to Know</h3></summary>
+<ul>
+<li><b>▶ Try it out</b> shows the lesson the way the student sees it. Tap <b>✎</b> to come back.</li>
+<li>The student uses <a href="${APP.pair}" target="_blank" rel="noopener">Torah Tutor</a>. To add your lesson he taps <b>📚</b>, then <b>Choose a lesson file</b> (or pastes its Dropbox link).</li>
+<li>Fixed something? Send the lesson again. His copy is replaced, not doubled.</li>
+<li>On an iPhone or iPad, put this app on the Home Screen and use it from there. Safari can clear what websites keep if you haven’t opened them for a while; Home Screen apps keep it.</li>
+<li>On an iPhone or iPad, each app on the Home Screen keeps its own things, apart from Safari. If he uses Torah Tutor from the Home Screen, send him the file even when it’s the same device.</li>
+</ul>
+</details>`;
 
 /* ---------------- debug hook (harmless) ---------------- */
-window.__torahTutor = { S, R, LESSONS, DATA, buildPlan, parseHebrew, tropeOf, displayHe, startPlan, startFromSettings, pauseToggle, stopRun, loadLesson, setPart, openSheet, closeSheet, renderAll, normalizeTimes, get media() { return media; } };
+window.__torahTutor = { ROLE, APP, T, LT, dbAll, DB_STUDENT, DB_TEACHER, readLessonText, saveDrafts, lessonSig, S, R, LESSONS, DATA, buildPlan, parseHebrew, tropeOf, displayHe, startPlan, startFromSettings, pauseToggle, stopRun, loadLesson, setPart, openSheet, closeSheet, renderAll, normalizeTimes, get media() { return media; } };
 
 /* ---------------- settings kept on this device (keys start with "torah:") ---------------- */
 var storageOk = true;
-const PREFS = 'torah:prefs';
+const PREFS = KP + 'prefs';
 function applyTheme() { if (S.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', S.theme); }
 function savePrefs() {
   try { localStorage.setItem(PREFS, JSON.stringify({ v: 1, show: S.show, speed: S.speed, mode: S.mode, opts: S.opts, theme: S.theme, secret: S.secret })); storageOk = true; }
@@ -1557,7 +1937,7 @@ function savePrefs() {
 }
 function loadPrefs() {
   let p = null;
-  try { localStorage.setItem('torah:check', '1'); localStorage.removeItem('torah:check'); p = JSON.parse(localStorage.getItem(PREFS) || 'null'); }
+  try { localStorage.setItem(KP + 'check', '1'); localStorage.removeItem(KP + 'check'); p = JSON.parse(localStorage.getItem(PREFS) || 'null'); }
   catch (e) { storageOk = false; return; }
   if (!p || typeof p !== 'object') return;
   const pick = (v, ok, d) => ok.includes(v) ? v : d;
@@ -1583,9 +1963,15 @@ window.addEventListener('pagehide', savePrefs);
 
 /* ---------------- boot ---------------- */
 loadPrefs(); applyTheme();
-const firstVisible = visibleLessons()[0];
-loadLesson(firstVisible ? firstVisible.i : 0);
-if (!LESSONS.length) setTimeout(() => openSheet('help'), 300);
+if (ROLE === 'teacher') {
+  loadLesson(0);
+  loadDrafts().then(() => { if (LESSONS.length) loadLesson(0); openTeacher(); });
+} else {
+  const firstVisible = visibleLessons()[0];
+  loadLesson(firstVisible ? firstVisible.i : 0);
+  loadAddedLessons();
+  if (!LESSONS.length) setTimeout(() => openSheet('help'), 300);
+}
 })();
 
 </script>

@@ -1,7 +1,7 @@
 {
   "name": "TORAH: Torah Tutor",
   "short_name": "TORAH",
-  "description": "Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part.",
+  "description": "Karaoke-style Torah trope practice: sing along, one word at a time, build from the end, slow it down, loop any part. Lessons come from Torah Tutor Teacher.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

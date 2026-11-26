@@ -37,6 +37,7 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 ### Teaching
 
 - [`torah-tutor/`](https://david-i-schwartz.github.io/web-mobile-apps/torah-tutor/): TORAH, Torah Tutor
+- [`torah-teacher/`](https://david-i-schwartz.github.io/web-mobile-apps/torah-teacher/): TTEACH, Torah Tutor Teacher
 - [`ipar/`](https://david-i-schwartz.github.io/web-mobile-apps/ipar/): IPAR, Image, Preserve, Analyze, Report
 
 ### Administration
