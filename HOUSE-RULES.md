@@ -1,6 +1,8 @@
-# House rules for single-file HTML apps
+# House rules
 
-These are the rules for FIG, BIG and every app made with HTML App Generator. Any AI assistant (Claude, ChatGPT, Gemini, Qwen or another) and any person working on these apps should follow them. Nothing here depends on one AI.
+These are the rules for FIG, BIG, every app made with HTML App Generator, and CIG. Any AI assistant (Claude, ChatGPT, Gemini, Qwen or another) and any person working on these products should follow them. Nothing here depends on one AI.
+
+Rules 1 to 18 are written for single-file HTML apps. A product of another kind follows them too, except where its own section at the end of this file changes one. Each repository's `AGENTS.md` says which section applies to it. This file is the same in every repository that carries it and in RIT Drive `Claude Apps`: change it in one place, then copy it to the others.
 
 ## The app
 
@@ -29,3 +31,32 @@ These are the rules for FIG, BIG and every app made with HTML App Generator. Any
 16. **Phones and tablets use a web address.** iPhones and iPads can't run an app from a file, so the public copies live on GitHub Pages, on the site *Web & Mobile Apps* (repository `web-mobile-apps`), one folder per app, built with the generator's `site` command. That repository is public: apps only, no notes or plans. Each app shows the taps that put it on the Home Screen, and its spec's `homeUrl` points a phone's file preview to the right address.
 17. **Keep the site in step.** Publishing a new version of an app (to Drive, a Claude page or anywhere else) isn't finished until the site has it too. Put the new file in the repository's `src/`, rebuild, check and push, as the repository's `AGENTS.md` says. If you can't push to GitHub, hand the file to the owner with a note that the site needs it. A new app goes on the site the same way.
 18. **Private stays private.** Nothing the owner marks private, confidential or under a non-disclosure agreement goes on the site, in this repository or anywhere public, not even as a placeholder or a mention. If you aren't sure whether an app may be public, ask the owner before publishing it.
+
+## Networked games
+
+For CIG, the Critical Infrastructure Game (inspired by Jack Voltaic), and any later game where people on different devices play together. Rules 1 to 18 apply, with these changes and additions.
+
+### Changes to rules 1 to 18
+
+- **Rule 1.** The game is still one HTML file, with no outside code, fonts or pictures and no build step to run it. It may also use **one network service of its own: a small relay** that passes moves between devices in the same room. Later, its Builder may also fetch map data from OpenStreetMap. Both follow N2. The optional AI helper still works as rule 1 says.
+- **Rule 4.** Saved games, packs and settings stay in the browser. While a room is open, moves pass through the relay, which keeps none of them (N4).
+- **Rule 10.** Title Case headings, folding sections and help in labelled parts apply. The grid, Choose image and Compare parts are for picture apps and don't.
+- **Rule 13.** Testing also covers rooms (N10).
+- **Rules 16 and 17.** The game has its own repository and site instead of *Web & Mobile Apps*. Its `README.md` gives the address. Keep that site in step the same way.
+
+### Added rules
+
+- **N1. Offline first.** Solo play and play around one device never touch the network, and the file still works from a saved copy. If the relay can't be reached, the game says so and offers play around one device.
+- **N2. Network only when asked, and said plainly.** Rooms stay off until the host turns them on. Before anything is sent, the game says what goes (moves, nicknames, the room's scenario pack) and where (the relay's address). Everyone who joins sees the same notice. The map fetch works the same way.
+- **N3. One relay, ours, small enough to read.** The relay's code lives in the game's repository under the same licence, and one person can read it in a sitting. It runs on the owner's own hosting account. No other services: no analytics, ads, trackers, or code, fonts or pictures loaded from elsewhere, in the game or the relay.
+- **N4. The relay keeps nothing.** It passes messages between devices in one room and does nothing else. No accounts, logins or email addresses: players type a nickname. A room is forgotten when it closes or after 2 hours idle. The relay writes no logs of its own, and the About screen says what the hosting service logs by default.
+- **N5. The host's device holds the one true game.** The host's rules engine checks every move instead of trusting it as sent. Each device gets only what its player may see, so hidden hands stay hidden.
+- **N6. Limits against misuse.** Short room codes that expire, a cap on players per room, size and rate limits on messages. Anything malformed is dropped.
+- **N7. Secrets stay out of the repository.** Hosting tokens and keys live in the owner's accounts or in the repository's encrypted secrets, never in code, packs or notes.
+- **N8. Real places stay local.** Public packs use made-up places. A pack built from real map data stays on the device that built it unless its owner chooses to share it. It may pass through a room its owner opens, but it never goes on the site or in the repository.
+- **N9. Study data needs approval first.** Play logs stay on the device and are exported by hand. Nothing is collected through the relay. A study uses the game only under an approved IRB protocol.
+- **N10. Test rooms the way they'll be used.** Before a release: bots playing many games, then real phones on campus Wi-Fi and on a phone hotspot, with one player dropping out and rejoining, and once with the relay switched off.
+
+## Adding a kind of product
+
+A new kind of product (a server tool, a native app, a print-only game) gets its own section like Networked games. Say which products it covers, which of rules 1 to 18 it changes and why, and add only the rules it needs. Don't change rules 1 to 18 for one product.
