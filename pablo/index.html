@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2f6f3e">
 <title>Pablo vs. Oakley</title>
 <!--
-  Pablo vs. Oakley — v0.2, 2026-11-27
+  Pablo vs. Oakley — v0.3, 2026-11-27
   Game idea by Sam: Pablo, who is 14, runs a spike course with 3 lives, puts Oakley the dinosaur
   to sleep with sleepy darts, and rescues the man Oakley grabbed.
   One self-contained file: no outside code, fonts, pictures or sounds. All art is drawn
@@ -41,8 +41,9 @@ padding:calc(8px + var(--sat)) calc(10px + var(--sar)) 6px calc(10px + var(--sal
 #hearts{flex:none;display:flex;gap:3px;padding:6px 8px;border-radius:14px;background:rgba(0,0,0,.32)}
 #hearts svg{display:block}
 #hearts .off{opacity:.28}
+#hearts .lives{display:flex;align-items:center;gap:1px;margin-left:3px;padding-left:5px;border-left:1px solid rgba(255,255,255,.4);color:#fff;font-weight:900;font-size:15px;line-height:1}
 
-/* touch controls, as in Five O'Clock Shadow of the Colossus: a thumbstick that appears where the thumb lands, and round buttons */
+/* touch controls: a thumbstick that appears where the thumb lands, and round buttons */
 #touch{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
 body.touch #touch:not(.hide){display:block}
 #joyZone{position:absolute;left:0;bottom:0;width:55%;height:62%;pointer-events:auto;touch-action:none}
@@ -104,12 +105,12 @@ li{margin:0 0 7px}
     <p id="progLbl">Spike Course</p>
     <div id="bar" role="progressbar" aria-label="How far along the course" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="fill"></div></div>
   </div>
-  <div id="hearts" role="img" aria-label="Lives: 3"></div>
+  <div id="hearts" role="img" aria-label="Hearts: 4 of 4. Lives: 3."></div>
 </div>
 
 <div id="touch" class="hide" aria-hidden="true">
   <div id="joyZone" class="idle"><div id="joyBase" class="joy"></div><div id="joyKnob" class="joy"></div></div>
-  <button id="bD" class="tb" type="button" tabindex="-1"><span>DART</span></button>
+  <button id="bD" class="tb" type="button" tabindex="-1"><span>SHOOT</span></button>
   <button id="bJ" class="tb" type="button" tabindex="-1"><span>JUMP</span></button>
 </div>
 <div id="safe"></div>
@@ -121,11 +122,15 @@ li{margin:0 0 7px}
 <script>
 (() => {
 'use strict';
-const VERSION = '0.2', DATE = '27 November 2026';
+const VERSION = '0.3', DATE = '27 November 2026';
 
 /* ---------- things that are easy to change ---------- */
 const CONFIG = {
   LIVES: 3,          // lose them all and Pablo goes back to the very beginning (Sam's rule)
+  HEARTS: 4,         // hearts in each life; when they run out, Pablo loses a life
+  SPIKE_HURT: 1,     // hearts a spike takes
+  PIT_HURT: 2,       // hearts a spike pit takes (Pablo is put back on the edge)
+  OAKLEY_HURT: 2,    // hearts a chomp or a charge takes
   SLEEPY_DARTS: 10,  // sleepy darts it takes to put Oakley to sleep
   SHAKE_EVERY: 3,    // after this many darts Oakley shakes it off, roars and charges
   DART_WAIT: 0.45    // seconds between sleepy darts
@@ -143,11 +148,14 @@ const LV = {
   ground: [[-400, 860], [960, 1900], [2020, 2300], [2580, 3500], [3620, 4100], [4300, ARENA_R + 400]],
   plats: [{ x: 1450, y: 80, w: 140 }, { x: 2790, y: 90, w: 80 }, { x: 2940, y: 140, w: 90 }],
   movers: [{ x: 2330, y: 40, w: 90, ax: 120, ay: 0, per: 3.6 }, { x: 4165, y: 30, w: 70, ax: 0, ay: 70, per: 2.6 }],
-  spikes: [{ x: 420, w: 40 }, { x: 640, w: 60 }, { x: 1100, w: 40 }, { x: 1220, w: 40 }, { x: 1400, w: 230 }, { x: 2760, w: 280 },
-    { x: 4480, w: 40 }, { x: 4600, w: 40 }, { x: 4720, w: 40 }],
+  spikes: [{ x: 420, w: 40 }, { x: 640, w: 60 }, { x: 1080, w: 40 }, { x: 1240, w: 40 }, { x: 1400, w: 230 }, { x: 2760, w: 280 },
+    { x: 4500, w: 40 }, { x: 4680, w: 40 }],
   balls: [{ x: 2150, r: 18, h: 150, per: 1.5, ph: 0 }, { x: 3740, r: 18, h: 150, per: 1.3, ph: 0.5 }],
   pops: [{ x: 3300, w: 80, per: 2.0, ph: 0 }, { x: 3880, w: 90, per: 1.8, ph: 0.3 }],
   flags: [1760, 3150, 4790],
+  snacks: [{ x: 540, y: 34, k: 'apple' }, { x: 910, y: 120, k: 'carrot' }, { x: 1180, y: 34, k: 'banana' }, { x: 1520, y: 128, k: 'strawberry' },
+    { x: 2272, y: 34, k: 'broccoli' }, { x: 2440, y: 112, k: 'grapes' }, { x: 2985, y: 196, k: 'watermelon' }, { x: 3420, y: 34, k: 'apple' },
+    { x: 4200, y: 132, k: 'carrot' }, { x: 4600, y: 34, k: 'banana' }, { x: 4860, y: 34, k: 'strawberry' }],
   signs: [{ x: 300, t: 'Jump the spikes!' }, { x: 790, t: 'Jump the gap!' }, { x: 1330, t: 'Hop up!' }, { x: 2075, t: 'Wait for it…' },
     { x: 2235, t: 'Ride the log!' }, { x: 3220, t: 'Spikes pop up!' }, { x: 4890, t: 'DANGER: DINO!', red: true }]
 };
@@ -229,6 +237,7 @@ const sfx = {
   win() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => A.tone(f, f, 0.22, 'triangle', 0.3, i * 0.13)); },
   over() { [392, 330, 262].forEach((f, i) => A.tone(f, f * 0.98, 0.3, 'triangle', 0.25, i * 0.22)); },
   go() { A.tone(880, 880, 0.12, 'sine', 0.16); },
+  eat() { A.noise(0.08, 0.3, 2200); A.noise(0.06, 0.25, 2000, 0.09); A.tone(660, 990, 0.18, 'triangle', 0.2, 0.12); },
   help() { A.tone(700, 900, 0.12, 'sine', 0.07); A.tone(900, 700, 0.14, 'sine', 0.07, 0.13); }
 };
 
@@ -299,7 +308,7 @@ function movePablo(s, inp, dt, t) {
 function hazardAt(s, t) {
   if (s.y < -20) return 'pit';
   const x0 = s.x - 10, x1 = s.x + 10, y0 = s.y + 2, y1 = s.y + 48;
-  for (const k of LV.spikes) if (x1 > k.x + 4 && x0 < k.x + k.w - 4 && y0 < 15) return 'spike';
+  for (const k of LV.spikes) if (x1 > k.x + 6 && x0 < k.x + k.w - 6 && y0 < 14) return 'spike';
   for (const p of LV.pops) { const k = popK(p, t); if (k > 0.4 && x1 > p.x + 4 && x0 < p.x + p.w - 4 && y0 < 16 * k) return 'spike'; }
   for (const b of LV.balls) {
     const by = ballY(b, t), r = b.r * 0.8, cx = clamp(b.x, x0, x1), cy = clamp(by, y0, y1);
@@ -313,7 +322,7 @@ let G = null, P = newPablo(START_X), OAK = null;
 const keys = { l: false, r: false, d: false, x: 0 };
 G = { state: 'menu', t: 0, time: 0, lives: CONFIG.LIVES, cp: 0, arena: false, gateT: 0, darts: [], dartCd: 0, jumpQ: false, hurtT: 0, hurtKind: '', wonT: 0,
   key: 'collar', kx: 0, ky: 0, kvy: 0, doorT: 0, manX: CAGE_L + 38, manSay: null, manNext: 4, lockedT: 0, parts: [], texts: [], shake: 0, cam: 0,
-  flags: [], inv: 0, frozen: 0, runT: 0, shootT: 0, spin: 0, manual: false, tipped: {} };
+  flags: [], inv: 0, frozen: 0, runT: 0, shootT: 0, spin: 0, manual: false, tipped: {}, health: CONFIG.HEARTS, eaten: new Set(), tossed: [], tossT: 0, snacks: 0, safeX: START_X };
 function newOak() {
   return { x: OAK_MAX - 40, f: -1, state: 'idle', st: 0, wait: 1.5, hits: 0, mouth: 0, dip: 0, lunge: 0, crouch: 0, lie: 0, anim: 0, flash: 0, snap: false, stompT: 0, snoreT: 1, roarT: 2 };
 }
@@ -323,7 +332,8 @@ function start() {
   A.init();
   P = newPablo(START_X); OAK = newOak();
   Object.assign(G, { state: 'run', time: 0, lives: CONFIG.LIVES, cp: 0, arena: false, gateT: 0, darts: [], dartCd: 0, jumpQ: false, hurtT: 0, wonT: 0,
-    key: 'collar', doorT: 0, manX: CAGE_L + 38, manSay: null, manNext: 4, lockedT: 0, parts: [], texts: [], shake: 0, flags: [], inv: 0, frozen: 0.5, spin: 0, tipped: {} });
+    key: 'collar', doorT: 0, manX: CAGE_L + 38, manSay: null, manNext: 4, lockedT: 0, parts: [], texts: [], shake: 0, flags: [], inv: 0, frozen: 0.5, spin: 0, tipped: {},
+    health: CONFIG.HEARTS, eaten: new Set(), tossed: [], tossT: 0, snacks: 0, safeX: START_X });
   clearInput();
   zoomW = VIEW_W; layout(); G.cam = camGoal();
   showPanel(null); setLabel(); updHearts(); setProg(0, true);
@@ -335,26 +345,46 @@ function respawn() {
   const inArena = G.arena;
   P = newPablo(inArena ? ARENA_SPAWN : CPS[G.cp]);
   if (inArena) { P.lo = ARENA_L + 12; OAK.x = OAK_MAX; OAK.f = -1; OAK.lunge = 0; OAK.crouch = 0; oakWalk(1.4); }
-  G.state = 'run'; G.inv = 1.6; G.frozen = 0.35; G.spin = 0; G.darts = [];
+  G.state = 'run'; G.inv = 1.6; G.frozen = 0.35; G.spin = 0; G.darts = []; G.health = CONFIG.HEARTS; G.safeX = P.x; updHearts();
   zoomW = zoomGoal(); fitZoom(); G.cam = camGoal();
   floatText('Go!', P.x, 150, 34, '#fff');
-  say(G.lives === 1 ? 'Last life! You can do it.' : 'Try again. ' + G.lives + ' lives left.');
+  say((G.lives === 1 ? 'Last life! You can do it.' : 'Try again. ' + G.lives + ' lives left.') + ' Your hearts are full again.');
 }
-function hurt(kind) {
+function hurt(kind) {                      // spikes, pits and Oakley take hearts; a life goes only when they run out
   if (G.state !== 'run') return;
+  const dmg = kind === 'pit' ? CONFIG.PIT_HURT : (kind === 'chomp' || kind === 'charge') ? CONFIG.OAKLEY_HURT : CONFIG.SPIKE_HURT;
+  G.health = Math.max(0, G.health - dmg); updHearts();
+  if (G.health <= 0) { loseLife(kind); return; }
+  G.inv = 1.4; G.shake = 0.2; G.frozen = 0.3; G.darts = []; sfx.ouch();
+  const left = G.health === 1 ? ' One heart left. Find some fruit!' : ' ' + G.health + ' hearts left.';
+  if (kind === 'pit') {                    // back onto the last safe ground
+    P.x = G.safeX; P.y = 0; P.vx = 0; P.vy = 0; P.onG = true; P.plat = -1; G.frozen = 0.45; G.cam = camGoal();
+    floatText('Whoa! \u2212' + dmg, P.x, 100, 26, '#fff'); say('Pablo fell into the spike pit.' + left);
+    return;
+  }
+  const away = kind === 'spike' ? -P.f : (P.x < OAK.x ? -1 : 1);
+  P.vy = 520; P.vx = away * (kind === 'spike' ? 140 : 260); P.onG = false; P.plat = -1;
+  if (kind === 'chomp') {
+    floatText('CHOMP! \u2212' + dmg, P.x, P.y + 110, 28, '#fde047'); sfx.chomp();
+    setTimeout(() => floatText('Ptooey!', OAK.x + OAK.f * 70, 150, 24, '#fff'), 420);
+    say('Oakley chomped Pablo, then spat him out. Yuck!' + left);
+  } else if (kind === 'charge') { floatText('WHAM! \u2212' + dmg, P.x, P.y + 110, 28, '#fde047'); sfx.bonk(); say('Oakley ran into Pablo.' + left); }
+  else { floatText('Ouch! \u2212' + dmg, P.x, P.y + 90, 26, '#fff'); say('Pablo hit the spikes.' + left); }
+}
+function loseLife(kind) {
   G.state = 'hurt'; G.hurtT = 0; G.hurtKind = kind; G.lives--; updHearts();
   P.vx = 0; P.vy = kind === 'pit' ? 200 : 640; P.onG = false; G.darts = [];
   G.shake = 0.3; sfx.ouch();
   if (kind === 'charge') {
     floatText('WHAM!', P.x, P.y + 110, 32, '#fde047'); sfx.bonk();
-    say('Oakley ran right into Pablo. You lost a life.');
+    say('Oakley ran right into Pablo. Out of hearts, so you lost a life.');
   } else if (kind === 'chomp') {
     floatText('CHOMP!', P.x, P.y + 110, 32, '#fde047'); sfx.chomp();
     setTimeout(() => { if (G.state === 'hurt' || G.state === 'over') floatText('Ptooey!', OAK.x + OAK.f * 70, 150, 24, '#fff'); }, 420);
-    say('Oakley chomped Pablo, then spat him out. Yuck! You lost a life.');
+    say('Oakley chomped Pablo, then spat him out. Out of hearts, so you lost a life.');
   } else {
     floatText(kind === 'pit' ? 'Whoa!' : 'Ouch!', P.x, P.y + 90, 30, '#fff');
-    say((kind === 'pit' ? 'Pablo fell into the spike pit.' : 'Pablo hit the spikes.') + ' You lost a life.');
+    say((kind === 'pit' ? 'Pablo fell into the spike pit.' : 'Pablo hit the spikes.') + ' Out of hearts, so you lost a life.');
   }
 }
 function won() {
@@ -371,6 +401,16 @@ function fire() {
   G.darts.push({ x: P.x + P.f * 26, y: P.y + 33, vx: P.f * 650, life: 0.85 });
   G.dartCd = CONFIG.DART_WAIT; G.shootT = 0.12; sfx.pew();
 }
+const SNACK = { apple: 'Apple', banana: 'Banana', carrot: 'Carrot', strawberry: 'Strawberry', broccoli: 'Broccoli', grapes: 'Grapes', watermelon: 'Watermelon' };
+function eat(k, x, y) {
+  const heal = k === 'watermelon' ? 2 : 1, was = G.health;
+  G.health = Math.min(CONFIG.HEARTS, G.health + heal); G.snacks++; updHearts(); sfx.eat();
+  const got = G.health - was;
+  floatText(SNACK[k] + (got ? '! +' + got : '! Yum!'), x, y + 40, 22, '#bbf7d0');
+  for (let i = 0; i < 8; i++) G.parts.push({ type: 'conf', x, y, vx: rnd(-90, 90), vy: rnd(40, 180), life: 0, max: 0.6, size: rnd(3, 5), color: i % 2 ? '#fde047' : '#86efac', grav: 400, rot: rnd(0, 6), vr: rnd(-8, 8) });
+  say(SNACK[k] + '! ' + (got ? 'Pablo got ' + (got === 1 ? 'a heart' : got + ' hearts') + ' back.' : 'His hearts were already full.') + ' Hearts: ' + G.health + ' of ' + CONFIG.HEARTS + '.');
+}
+const snackY = (s, i) => s.y + (reduce ? 0 : Math.sin(G.t * 3 + i) * 4);
 function floatText(str, x, y, px, color) { G.texts.push({ str, x, y, px, color, life: 0, max: 1.0 }); }
 function manTalk(str, dur) { G.manSay = { str, t: dur || 2.6 }; }
 function puff(x, y, n, color) {
@@ -553,6 +593,27 @@ function update(dt) {
 
   const hz = hazardAt(P, G.t);
   if (hz === 'pit' || (hz && G.inv <= 0)) { hurt(hz); return; }
+  if (P.onG && P.y === 0 && P.plat < 0 && !hz && LV.ground.some(gs => gs[0] <= P.x - 12 && gs[1] >= P.x + 12)) G.safeX = P.x;   // somewhere safe to put him back
+
+  // fruit and veggies
+  const pcx = P.x, pcy = P.y + 26;
+  for (let i = 0; i < LV.snacks.length; i++) {
+    if (G.eaten.has(i)) continue;
+    const sn = LV.snacks[i], yy = snackY(sn, i);
+    if (Math.abs(sn.x - pcx) < 24 && Math.abs(yy - pcy) < 34) { G.eaten.add(i); eat(sn.k, sn.x, yy); }
+  }
+  // in the den, the man tosses Pablo a snack when he's low on hearts
+  G.tossT = Math.max(0, G.tossT - dt);
+  if (G.arena && oakAwake() && OAK.state !== 'intro' && G.health <= CONFIG.HEARTS - 2 && G.tossT <= 0 && !G.tossed.length) {
+    const to = clamp(P.x + rnd(-40, 40), ARENA_L + 30, CAGE_L - 40);       // he aims it at Pablo (it's in the air about 0.63 s)
+    G.tossed.push({ x: CAGE_L - 8, y: 100, vx: (to - (CAGE_L - 8)) / 0.632, vy: 300, k: ['apple', 'banana', 'carrot', 'strawberry'][Math.floor(Math.random() * 4)] });
+    G.tossT = 9; manTalk('Catch, Pablo! A snack!', 2.4); say('The man tossed Pablo a snack. Grab it to get a heart back.');
+  }
+  for (const f of G.tossed) {
+    if (f.vy || f.y > 14) { f.vy -= GRAV * 0.6 * dt; f.x += f.vx * dt; f.y += f.vy * dt; if (f.x < ARENA_L + 30) { f.x = ARENA_L + 30; f.vx = 0; } if (f.y <= 14) { f.y = 14; f.vy = 0; f.vx = 0; } }
+    if (Math.abs(f.x - pcx) < 24 && Math.abs(f.y - pcy) < 34) { f.gone = true; eat(f.k, f.x, f.y); }
+  }
+  G.tossed = G.tossed.filter(f => !f.gone);
 
   // flags
   for (let i = 0; i < LV.flags.length; i++) if (G.cp < i + 1 && P.x >= LV.flags[i]) {
@@ -866,6 +927,41 @@ function drawOakley() {
     for (let i = 0; i < 3; i++) { const a = G.t * 5 + i * 2.1; drawStar(headWX + Math.cos(a) * 30, -(headWY + 34) + Math.sin(a) * 8, 7, '#fde047'); }
   }
 }
+function drawSnack(k, x, y) {               // y is the canvas y (up is negative)
+  g.fillStyle = 'rgba(255,255,255,.35)'; circ(x, y, 16);
+  g.lineCap = 'round';
+  if (k === 'apple') {
+    g.fillStyle = '#dc2626'; circ(x - 4, y + 1, 9); circ(x + 4, y + 1, 9);
+    g.fillStyle = 'rgba(255,255,255,.5)'; circ(x - 6, y - 3, 2.6);
+    g.strokeStyle = '#7c4a1e'; g.lineWidth = 2; ln(x, y - 7, x + 1, y - 12);
+    g.fillStyle = '#22c55e'; ell(x + 5, y - 11, 5, 2.6, -0.5);
+  } else if (k === 'banana') {
+    g.strokeStyle = '#facc15'; g.lineWidth = 7; g.beginPath(); g.arc(x, y - 8, 13, 0.35, Math.PI - 0.35); g.stroke();
+    g.strokeStyle = '#a16207'; g.lineWidth = 3; ln(x + 12, y - 4, x + 14, y - 7); ln(x - 12, y - 4, x - 14, y - 7);
+  } else if (k === 'carrot') {
+    g.fillStyle = '#16a34a'; poly([x - 4, y - 8, x - 7, y - 17, x - 1, y - 9]); poly([x - 1, y - 9, x + 1, y - 19, x + 3, y - 9]); poly([x + 2, y - 8, x + 8, y - 16, x + 5, y - 7]);
+    g.fillStyle = '#f97316'; poly([x - 7, y - 8, x + 7, y - 8, x, y + 14]);
+    g.strokeStyle = '#c2410c'; g.lineWidth = 1.4; ln(x - 4, y - 2, x - 1, y - 2); ln(x + 1, y + 4, x + 4, y + 4);
+  } else if (k === 'strawberry') {
+    g.fillStyle = '#ef4444'; g.beginPath(); g.moveTo(x - 9, y - 5); g.quadraticCurveTo(x - 10, y + 6, x, y + 12); g.quadraticCurveTo(x + 10, y + 6, x + 9, y - 5); g.closePath(); g.fill();
+    g.fillStyle = '#fde68a'; for (const [a, b] of [[-4, -1], [3, -2], [0, 4], [-3, 6], [4, 4]]) circ(x + a, y + b, 1.1);
+    g.fillStyle = '#16a34a'; poly([x - 9, y - 6, x, y - 10, x + 9, y - 6, x, y - 3]);
+  } else if (k === 'broccoli') {
+    g.fillStyle = '#86c06c'; rr(x - 3, y - 2, 6, 13, 2);
+    g.fillStyle = '#15803d'; circ(x - 7, y - 4, 6); circ(x + 7, y - 4, 6); circ(x, y - 9, 7);
+    g.fillStyle = '#22a35a'; circ(x - 2, y - 6, 4); circ(x + 4, y - 9, 3);
+  } else if (k === 'grapes') {
+    g.fillStyle = '#7c3aed';
+    for (const [a, b] of [[-6, -6], [0, -6], [6, -6], [-3, 0], [3, 0], [0, 6]]) circ(x + a, y + b, 4.4);
+    g.fillStyle = 'rgba(255,255,255,.4)'; circ(x - 2, y - 7, 1.4);
+    g.strokeStyle = '#7c4a1e'; g.lineWidth = 2; ln(x, y - 10, x + 2, y - 15);
+  } else {                                  // watermelon slice
+    g.fillStyle = '#15803d'; g.beginPath(); g.arc(x, y - 5, 14, 0, Math.PI); g.closePath(); g.fill();
+    g.fillStyle = '#bbf7d0'; g.beginPath(); g.arc(x, y - 5, 11.5, 0, Math.PI); g.closePath(); g.fill();
+    g.fillStyle = '#f43f5e'; g.beginPath(); g.arc(x, y - 5, 10, 0, Math.PI); g.closePath(); g.fill();
+    g.fillStyle = '#111'; for (const a of [-5, 0, 5]) ell(x + a, y - 1 + Math.abs(a) * 0.1, 1.2, 2);
+  }
+}
 function drawStar(x, y, r, col) { g.fillStyle = col; g.beginPath(); for (let i = 0; i < 10; i++) { const rr2 = i % 2 ? r * 0.45 : r, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); } g.closePath(); g.fill(); }
 function drawKey(x, y, sc) {
   g.save(); g.translate(x, y); g.scale(sc, sc);
@@ -989,6 +1085,8 @@ function draw() {
     g.fillStyle = '#64748b'; for (let i = 0; i < p.w / 20; i++) circ(p.x + 10 + i * 20, -1, 1.6);
   }
   for (const b of LV.balls) if (vis(b.x - 40, b.x + 40)) drawBall(b, G.t);
+  for (let i = 0; i < LV.snacks.length; i++) { const sn = LV.snacks[i]; if (!G.eaten.has(i) && vis(sn.x - 20, sn.x + 20)) drawSnack(sn.k, sn.x, -snackY(sn, i)); }
+  for (const f of G.tossed) drawSnack(f.k, f.x, -f.y);
 
   if (vis(ARENA_L - 60, ARENA_R + 60)) {
     drawCage(false);
@@ -1046,7 +1144,7 @@ function draw() {
     g.globalAlpha = Math.min(1, (7 - G.time) / 1.5);
     if (touchUI) {
       if (joy.id === null) { const r = joyBase.getBoundingClientRect(); txt('Slide to run', r.left + r.width / 2, r.top + 18, 15, '#fff', OUT); }
-    } else txt('← → run    Space: jump    X: sleepy dart', W / 2, hudB + 34, 17, '#fff', OUT);
+    } else txt('\u2190 \u2192 run    Space: jump    X: shoot', W / 2, hudB + 34, 17, '#fff', OUT);
     g.globalAlpha = 1;
   }
   if (G.state === 'run' && G.arena && G.key !== 'collar') {
@@ -1070,15 +1168,17 @@ function setLabel() {
     sleepy = true;
     if (G.key === 'held') { s = 'Open the cage!'; a = 'Oakley is asleep'; }
     else if (G.key === 'drop') { s = 'Grab the key!'; a = 'Oakley is asleep'; }
-    else { s = 'Oakley’s Sleepy Meter'; a = 'Oakley’s sleepy meter'; }
+    else { s = 'Sleepy Meter'; a = 'Oakley\u2019s sleepy meter'; }
   }
   l.textContent = s; b.setAttribute('aria-label', a); b.classList.toggle('sleepy', sleepy);
 }
-const HEART = '<svg width="22" height="20" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 19S1 12.6 1 6.4A5.2 5.2 0 0 1 11 4a5.2 5.2 0 0 1 10 2.4C21 12.6 11 19 11 19z" fill="#ef4444" stroke="#fff" stroke-width="1.6"/></svg>';
+const HEART = '<svg width="19" height="18" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 19S1 12.6 1 6.4A5.2 5.2 0 0 1 11 4a5.2 5.2 0 0 1 10 2.4C21 12.6 11 19 11 19z" fill="#ef4444" stroke="#fff" stroke-width="1.6"/></svg>';
+const HEAD = '<svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="11" r="7.5" fill="#c68a5a"/><path d="M2.4 9.5A7.6 7.6 0 0 1 17.6 9.5L15 8.6 13.6 4.2 11 7.4 9.4 3 7.6 7.4 4.6 4.6 5 8.6z" fill="#2a1a0e"/><circle cx="12.6" cy="11" r="1.6" fill="#fff"/></svg>';
 function updHearts() {
-  const h = $('hearts'), n = Math.max(CONFIG.LIVES, 1);
-  let s = ''; for (let i = 0; i < n; i++) s += '<span class="' + (i < G.lives ? '' : 'off') + '">' + HEART + '</span>';
-  h.innerHTML = s; h.setAttribute('aria-label', 'Lives: ' + Math.max(0, G.lives));
+  const h = $('hearts'), n = Math.max(CONFIG.HEARTS, 1);
+  let s = ''; for (let i = 0; i < n; i++) s += '<span class="' + (i < G.health ? '' : 'off') + '">' + HEART + '</span>';
+  s += '<span class="lives">' + HEAD + '\u00d7' + Math.max(0, G.lives) + '</span>';
+  h.innerHTML = s; h.setAttribute('aria-label', 'Hearts: ' + Math.max(0, G.health) + ' of ' + n + '. Lives: ' + Math.max(0, G.lives) + '.');
 }
 function say(m) { const l = $('live'); l.textContent = ''; l.textContent = m; }
 const fmt = t => { const s = Math.round(t); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
@@ -1099,21 +1199,22 @@ function showPanel(name) {
       + '<div class="row"><button class="b go" data-a="play">Play</button></div>'
       + (best > 0 ? '<p class="muted">Fastest rescue so far: ' + fmt(best) + '.</p>' : '')
       + (store.ok ? '' : '<p class="muted">This browser isn’t saving your fastest time, so it starts over each time.</p>')
-      + det('how', 'How to Play', '<ul><li><b>Run:</b> put your thumb anywhere on the lower left of the screen and slide it left or right. The farther you slide, the faster Pablo runs.</li><li><b>Jump:</b> hop over spikes, pits and bouncing spike balls. Wait for the pop-up spikes to go down.</li>'
-        + '<li><b>' + LIV + ' lives:</b> touch spikes and you lose one, then start again at the last flag. Lose all ' + LIV + ' and Pablo goes back to the very beginning.</li>'
-        + '<li><b>Dart:</b> shoots a sleepy dart. Hit Oakley ' + N + ' times and he falls asleep. Hold the button to keep shooting. Darts bounce off him while he roars or charges. Every ' + CONFIG.SHAKE_EVERY + ' darts or so he gets mad, roars, and comes after you.</li>'
+      + det('how', 'How to Play', '<ul><li><b>Run:</b> put your thumb on the lower left of the screen and slide it left or right. The farther you slide, the faster Pablo runs.</li><li><b>Jump:</b> hop over spikes, pits and bouncing spike balls. Wait for the pop-up spikes to go down.</li>'
+        + '<li><b>Hearts:</b> a spike takes ' + CONFIG.SPIKE_HURT + ' heart, a spike pit takes ' + CONFIG.PIT_HURT + ' and Oakley takes ' + CONFIG.OAKLEY_HURT + '. Eat the fruit and veggies along the way to get hearts back (a watermelon gives 2).</li>'
+        + '<li><b>' + LIV + ' lives:</b> when your hearts run out you lose a life and start again at the last flag, with full hearts. Lose all ' + LIV + ' lives and Pablo goes back to the very beginning.</li>'
+        + '<li><b>Shoot:</b> fires a sleepy dart. Hit Oakley ' + N + ' times and he falls asleep. Hold the button to keep shooting. Darts bounce off him while he roars or charges. Every ' + CONFIG.SHAKE_EVERY + ' darts or so he gets mad, roars, and comes after you.</li>'
         + '<li><b>Don’t get chomped!</b> When a red <b>!</b> shows and Oakley opens his mouth, back away. When he crouches down, he’s about to charge, so jump over him. You can bounce off his back.</li>'
         + '<li>When he’s asleep, grab the key from his collar and open the cage.</li></ul>'
         + '<p>With a keyboard: arrow keys or A and D to run, Space, W or Up to jump, X or F for a sleepy dart, P to pause.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
       + det('facts', 'Dinosaur Facts', '<ul><li>Oakley is made up. Real dinosaurs like <i>T. rex</i> died out about 66 million years ago, long before there were people, so no dinosaur ever chased anyone.</li>'
         + '<li><i>T. rex</i> had tiny arms for its size: about as long as a grown-up’s arm, on an animal about as long as a school bus.</li>'
         + '<li>Wildlife vets really do use sleepy darts. They let a vet help a big animal, like a sick rhino, without anyone getting hurt.</li></ul>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. New touch controls, like Five O\u2019Clock Shadow of the Colossus: put your thumb anywhere on the lower left and slide it to run (the farther you slide, the faster), with big round Jump and Dart buttons on the right. On a computer, the keys do it all.</p><p>Version 0.1, 26 November 2026. The first version: a spike course with pits, bouncing spike balls, pop-up spikes and floating logs; ' + LIV + ' lives and three flags; and Oakley, who chomps, charges, bonks into walls and falls asleep after ' + N + ' sleepy darts.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Hearts: Pablo can take a few hits now. Spikes take a heart, and pits and Oakley take two. Fruit and veggies along the way give them back, and in Oakley\u2019s den the man tosses Pablo a snack when he\u2019s low. You lose a life only when your hearts run out. The thumbstick stays at the bottom and only moves side to side, DART is now SHOOT, and there\u2019s more room between the spikes that were close together.</p><p>Version 0.2, 27 November 2026. New touch controls: put your thumb anywhere on the lower left and slide it to run (the farther you slide, the faster), with big round Jump and Dart buttons on the right. On a computer, the keys do it all.</p><p>Version 0.1, 26 November 2026. The first version: a spike course with pits, bouncing spike balls, pop-up spikes and floating logs; ' + LIV + ' lives and three flags; and Oakley, who chomps, charges, bonks into walls and falls asleep after ' + N + ' sleepy darts.</p>')
       + det('credits', 'Credits', '<p>Game idea by Sam. Built by Claude, an AI from Anthropic, with Dave Schwartz.</p><p>Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing comes from another game or site. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
       + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button></div>';
   } else if (name === 'win') {
     h = '<h2 id="pt">You Saved Him!</h2><p class="lead">Oakley is taking a nice long nap. He’ll wake up in a better mood.</p>'
-      + '<p>Time: <b>' + fmt(G.time) + '</b>. Lives left: <b>' + G.lives + '</b>.' + (G.newBest ? ' That’s your fastest rescue yet!' : ' Fastest so far: ' + fmt(best) + '.') + '</p>'
+      + '<p>Time: <b>' + fmt(G.time) + '</b>. Lives left: <b>' + G.lives + '</b>. Snacks eaten: <b>' + G.snacks + '</b>.' + (G.newBest ? ' That’s your fastest rescue yet!' : ' Fastest so far: ' + fmt(best) + '.') + '</p>'
       + '<div class="row"><button class="b go" data-a="play">Play Again</button><button class="b" data-a="menu">Menu</button></div>';
   } else if (name === 'over') {
     h = '<h2 id="pt">Out of Lives!</h2><p class="lead">Pablo goes back to the very beginning. You can do it!</p>'
@@ -1147,7 +1248,7 @@ function pause() { if (G.state !== 'run' && G.state !== 'hurt') return; pausedFr
 function resume() { if (G.state !== 'paused') return; A.init(); G.state = pausedFrom; showPanel(null); last = 0; }
 
 /* ---------- controls ---------- */
-// Touch, as in Five O'Clock Shadow of the Colossus: put a thumb down anywhere on the lower left and slide it
+// Touch: put a thumb down anywhere on the lower left and slide it
 // left or right to run (the farther, the faster); round Jump and Dart buttons sit on the right.
 // Computers use the keyboard, and the touch controls appear the first time the screen is touched.
 function setTouch() { if (touchUI) return; touchUI = true; document.body.classList.add('touch'); layout(); }
@@ -1155,14 +1256,15 @@ function clearInput() { keys.l = keys.r = keys.d = false; keys.x = 0; }
 const joyZone = $('joyZone'), joyBase = $('joyBase'), joyKnob = $('joyKnob'), joy = { id: null, ox: 0, oy: 0 }, JOY_R = 54;
 function placeJoyIdle() {
   if (joy.id !== null) return;
-  const zh = H * 0.62, x = 86 + safeL, y = Math.max(70, zh - 84 - safeB);   // the zone is the lower 62% of the screen (see #joyZone); it may be hidden now
+  const x = 86 + safeL, y = joyIdleY();      // the zone is the lower 62% of the screen (see #joyZone); it may be hidden now
   joyBase.style.left = joyKnob.style.left = x + 'px'; joyBase.style.top = joyKnob.style.top = y + 'px';
 }
+function joyIdleY() { return Math.max(70, H * 0.62 - 84 - safeB); }
 function joyEnd() { joy.id = null; keys.x = 0; joyZone.classList.add('idle'); placeJoyIdle(); }
 joyZone.addEventListener('pointerdown', e => {
   if (joy.id !== null) return;
   e.preventDefault(); setTouch(); A.init();
-  joy.id = e.pointerId; const r = joyZone.getBoundingClientRect(); joy.ox = e.clientX - r.left; joy.oy = e.clientY - r.top;
+  joy.id = e.pointerId; const r = joyZone.getBoundingClientRect(); joy.ox = clamp(e.clientX - r.left, 66, Math.max(66, r.width - 66)); joy.oy = joyIdleY();   // same height every time; only left and right move
   joyBase.style.left = joyKnob.style.left = joy.ox + 'px'; joyBase.style.top = joyKnob.style.top = joy.oy + 'px';
   joyZone.classList.remove('idle'); try { joyZone.setPointerCapture(e.pointerId); } catch (er) {}
 });
