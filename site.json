@@ -198,6 +198,15 @@
       "tagline": "Help a turkey called Turkey run across the forest: jump logs, dodge trees, and lay eggs so the hunters slip.",
       "accent": "#B93C0B",
       "section": "Games"
+    },
+    {
+      "file": "src/miko.html",
+      "folder": "miko",
+      "code": "MIKO",
+      "name": "Miko Finds Hazel",
+      "tagline": "A cosy castle climb: Miko the cat swats cracked blocks, finds pies and rescues Hazel. It saves itself, and the lives never run out.",
+      "accent": "#7A3FB0",
+      "section": "Games"
     }
   ],
   "readme": [
