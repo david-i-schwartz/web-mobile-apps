@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#3b3561">
 <title>Miko Finds Hazel</title>
 <!--
-  Miko Finds Hazel — v0.2, 2026-11-26
+  Miko Finds Hazel — v0.3, 2026-11-27
   A cosy castle game: Miko the cat climbs an old castle to find Hazel, another cat.
   Game idea by Sam, Beth and Dave. Inspired by the feel of an old NES castle game they loved
   (Milon's Secret Castle, Hudson Soft, 1986). No code, pictures, sounds, music or levels come
@@ -42,19 +42,22 @@ padding:calc(8px + var(--sat)) calc(10px + var(--sar)) 6px calc(10px + var(--sal
 #sKey[hidden],#sBell[hidden]{display:none}
 .ib svg{display:block}
 
-#pad{position:fixed;left:0;right:0;bottom:0;z-index:3;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;max-width:640px;margin:0 auto;
-padding:8px calc(10px + var(--sar)) calc(10px + var(--sab)) calc(10px + var(--sal));touch-action:none;pointer-events:none}
-.grp{display:flex;gap:8px;pointer-events:auto;touch-action:none}
-.pb{position:relative;width:78px;height:70px;min-width:44px;border-radius:20px;border:2px solid var(--padLine);background:var(--pad);color:var(--padInk);
-font-weight:800;font-size:18px;line-height:1.05;padding:0 4px;display:grid;place-items:center;touch-action:none;box-shadow:0 3px 0 rgba(0,0,0,.3)}
-.pb.down{transform:translateY(3px);box-shadow:none;filter:brightness(.88)}
-#bJ{background:var(--jump);color:#2a2338;border-color:rgba(42,35,56,.6)}
-#bA{background:var(--act);color:#10233a;border-color:rgba(16,35,58,.55)}
-@media (prefers-color-scheme:dark){#bA{color:#f3ecfa}}
-.pb svg{display:block}
-@media (max-width:360px){.pb{width:68px}}
-@media (max-height:520px) and (orientation:landscape){.pb{width:70px;height:58px;opacity:.88}}
-
+/* touch controls, as in Five O'Clock Shadow: slide anywhere on the left to walk; round buttons on the right */
+#touch{position:fixed;inset:0;pointer-events:none;z-index:3;display:none}
+body.touch.playing #touch{display:block}
+#joyZone{position:absolute;left:0;bottom:0;width:56%;height:62%;pointer-events:auto;touch-action:none}
+.joy{position:absolute;border-radius:50%;pointer-events:none}
+#joyBase{width:124px;height:124px;margin:-62px 0 0 -62px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.45);box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+#joyBase::before,#joyBase::after{content:"";position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border:solid rgba(255,255,255,.75);border-width:0 0 4px 4px;border-radius:2px}
+#joyBase::before{left:14px;transform:rotate(45deg)}
+#joyBase::after{right:14px;transform:rotate(-135deg)}
+#joyKnob{width:58px;height:58px;margin:-29px 0 0 -29px;background:rgba(255,255,255,.6);border:2px solid rgba(42,35,56,.35);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+#joyZone.idle .joy{opacity:.6}
+.tb{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;
+font-weight:900;font-size:17px;line-height:1.05;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#bJ{right:calc(16px + var(--sar));bottom:calc(26px + var(--sab));width:100px;height:100px;background:rgba(251,191,36,.92);color:#2a2338;border:3px solid rgba(255,255,255,.75);font-size:19px}
+#bA{right:calc(126px + var(--sar));bottom:calc(14px + var(--sab));width:80px;height:80px;background:rgba(165,216,255,.92);color:#10233a;border:3px solid rgba(255,255,255,.7)}
+.tb.down{transform:scale(.92);filter:brightness(1.15)}
 #hint,#talk{position:fixed;left:0;right:0;z-index:4;margin:0 auto;max-width:520px;padding:0 calc(10px + var(--sar)) 0 calc(10px + var(--sal));pointer-events:none}
 #hint[hidden],#talk[hidden]{display:none}
 .bub{background:var(--panel);color:var(--ink);border:2px solid var(--padLine);border-radius:18px;padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:17px;line-height:1.35}
@@ -134,15 +137,10 @@ li{margin:0 0 7px}
   <button class="ib" id="bM" aria-label="Castle map"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4 3 6v14l5-2 8 2 5-2V4l-5 2Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M8 4v14M16 6v14" stroke="currentColor" stroke-width="2.2"/></svg></button>
 </div>
 
-<div id="pad" class="hide">
-  <div class="grp">
-    <button class="pb" id="bL" data-k="l" aria-label="Walk left"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M19 5 8 15l11 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <button class="pb" id="bR" data-k="r" aria-label="Walk right"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="m11 5 11 10-11 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-  </div>
-  <div class="grp">
-    <button class="pb" id="bA" data-k="a">Swat</button>
-    <button class="pb" id="bJ" data-k="j">Jump</button>
-  </div>
+<div id="touch">
+  <div id="joyZone" class="idle" aria-hidden="true"><div id="joyBase" class="joy"></div><div id="joyKnob" class="joy"></div></div>
+  <button class="tb" id="bA" type="button">Swat</button>
+  <button class="tb" id="bJ" type="button">Jump</button>
 </div>
 
 <div id="hint" hidden><p class="bub" id="hintTxt"></p></div>
@@ -247,12 +245,16 @@ function newMiko(tx, ty) {
 /* One frame of movement. inp: {l, r, jump (held), jumpHit (pressed this frame)}. Returns a list of events. */
 function stepMiko(m, inp, r) {
   const ev = [];
-  const dir = (inp.r ? 1 : 0) - (inp.l ? 1 : 0);
+  // arrows give -1 or 1; a thumb stick gives anything between, and a small push walks slowly
+  let ax = (inp.r ? 1 : 0) - (inp.l ? 1 : 0);
+  if (typeof inp.ax === 'number' && Math.abs(inp.ax) > Math.abs(ax)) ax = inp.ax;
+  const dir = ax > 0.2 ? 1 : ax < -0.2 ? -1 : 0;
+  const speed = dir ? PH.RUN * Math.min(1, 0.4 + Math.abs(ax) * 0.75) : 0;
   if (m.lock > 0) m.lock--;
   else {
     if (dir) {
       const acc = m.onGround ? PH.ACC_G : PH.ACC_A;
-      m.vx += Math.max(-acc, Math.min(acc, dir * PH.RUN - m.vx));
+      m.vx += Math.max(-acc, Math.min(acc, dir * speed - m.vx));
       m.face = dir;
     } else if (m.onGround) {
       m.vx = Math.abs(m.vx) <= PH.DEC_G ? 0 : m.vx - Math.sign(m.vx) * PH.DEC_G;
@@ -376,10 +378,10 @@ const ROOM_DEFS = [
 }
 ],
 "signs": [
-"A door with a lock needs this room’s key. Stand at the door and tap Go In.",
-"Tap Jump again in the air for a cat twist. It takes you higher!",
-"Hi, Miko! Hazel climbed all the way up this castle and can’t get down. Walk with the arrows. Tap Jump to hop.",
-"See the cracked blocks? Tap Swat to break them. Things hide inside!"
+"A door with a lock needs this room’s key. {door}.",
+"{jump} again in the air for a cat twist. It takes you higher!",
+"Hi, Miko! Hazel climbed all the way up this castle and can’t get down. {walk}. {jump} to hop.",
+"See the cracked blocks? {swat} to break them. Things hide inside!"
 ]
 },
 {
@@ -433,7 +435,7 @@ const ROOM_DEFS = [
 ],
 "signs": [
 "Dust bunnies! Swat them, or pounce on them from above.",
-"Cats can climb! Jump at a wall, hold the arrow toward it, and keep tapping Jump."
+"Cats can climb! {climb}."
 ]
 },
 {
@@ -772,7 +774,7 @@ const ROOM_DEFS = [
 ];
 
 /* ================= Miko Finds Hazel: the game ================= */
-const VERSION = '0.2', DATE = '26 November 2026';
+const VERSION = '0.3', DATE = '27 November 2026';
 const PIES_TOTAL = 10;
 const $ = id => document.getElementById(id);
 const cv = $('c'), g = cv.getContext('2d');
@@ -1072,7 +1074,16 @@ function toast(t, small) {
   el.classList.add('on'); toastT = 130;
   say(t + (small ? ' ' + small : ''));
 }
+const WORDS = {
+  walk: ['Slide your thumb on the left side of the screen to walk', 'Walk with the arrow keys'],
+  jump: ['Tap Jump', 'Press Space'],
+  swat: ['Tap Swat', 'Press X'],
+  door: ['Stand at the door and push up, or tap Go In', 'Stand at the door and press Up'],
+  climb: ['Jump at a wall, keep pushing toward it, and keep tapping Jump', 'Jump at a wall, hold the arrow toward it, and keep pressing Space']
+};
+const words = t => t.replace(/\{(\w+)\}/g, (m, k) => WORDS[k] ? WORDS[k][touchUI ? 0 : 1] : m);
 function showHint(text) {
+  text = words(text);
   if (hintFor === text) { hintT = 30; return; }
   hintFor = text; hintT = 30;
   $('hintTxt').textContent = text; $('hint').hidden = false; placeBubbles(); say(text);
@@ -1317,7 +1328,7 @@ function step() {
     stepParts(); followCam(); return;
   }
 
-  const inp = { l: P.l, r: P.r, jump: P.j || P.jHits > 0, jumpHit: P.jHits > 0 };
+  const inp = { l: P.l, r: P.r, ax: joy.id !== null ? joy.x : undefined, jump: P.j || P.jHits > 0, jumpHit: P.jHits > 0 };
   P.jHits = 0;
   const act = P.aHits > 0; P.aHits = 0;
   if (W.startle > 0) { W.startle--; inp.l = inp.r = false; }
@@ -1610,20 +1621,21 @@ function talkPierre() {
 }
 
 /* ---------- drawing ---------- */
-let T = 32, dpr = 1, VW = 0, VH = 0, VX = 0, VY = 0, Z = 2;
+let T = 32, dpr = 1, VW = 0, VH = 0, VX = 0, VY = 0, Z = 2, overTop = 0;
 let tileCache = {};
 const viewW = () => VW / Z, viewH = () => VH / Z;
 function resize() {
   dpr = Math.min(window.devicePixelRatio || 1, 3);
   const w = window.innerWidth, h = window.innerHeight;
   cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
-  const hud = $('hud').getBoundingClientRect(), pad = $('pad').getBoundingClientRect();
-  let top = hud.bottom, bottom = pad.top;
   const playing = !$('hud').classList.contains('hide');
-  if (!playing) { top = 0; bottom = h; }
-  if (bottom - top < h * 0.55 || (w > h && h < 600)) { top = 0; bottom = h; }   // sideways phones and short screens: the buttons sit over the game
+  let top = playing ? $('hud').getBoundingClientRect().bottom : 0, bottom = h;
+  const side = w > h && h < 600;
+  overTop = 0;
+  if (side && playing) { overTop = Math.round(top * dpr); top = 0; }   // sideways phones: the HUD sits over the game too
+  placeJoyIdle();
   VX = 0; VY = Math.round(top * dpr); VW = cv.width; VH = Math.max(50, Math.round((bottom - top) * dpr));
-  T = Math.max(12, Math.floor(Math.min(VW / 12.5, VH / 10.5)));
+  T = Math.max(12, Math.floor(Math.min(VW / 12.5, VH / (side && touchUI ? 14 : 10.5))));   // sideways: see more rows
   Z = T / TS;
   tileCache = {};
   placeBubbles();
@@ -1638,9 +1650,11 @@ function camTarget() {
   const vw = viewW(), vh = viewH(), rw = R.w * TS, rh = R.h * TS;
   let fx = M.x + M.w / 2 + M.face * 14, fy = M.y + M.h / 2;
   if (state === 'talk' && W.focus) { fx = fx * 0.3 + W.focus.x * 0.7; fy = fy * 0.3 + W.focus.y * 0.7; }   // look mostly at whoever is talking
-  let x = fx - vw / 2, y = fy - vh * 0.56;
+  // the part of the screen not covered by thumbs (and, sideways, by the HUD)
+  const top = overTop / Z, eh = (touchUI ? vh * clamp(1 - 165 * dpr / VH, 0.55, 0.85) : vh) - top;
+  let x = fx - vw / 2, y = fy - top - eh * 0.55;
   x = rw <= vw ? (rw - vw) / 2 : clamp(x, 0, rw - vw);
-  y = rh <= vh ? (rh - vh) / 2 : clamp(y, 0, rh - vh);
+  y = rh <= eh ? (rh - eh) / 2 - top : clamp(y, -top, rh - eh - top);
   return { x, y };
 }
 function snapCam() { if (!R || !M) return; const t = camTarget(); cam.x = t.x; cam.y = t.y; }
@@ -2016,7 +2030,8 @@ function drawSplat(a) {
 function catPose(m) {
   if (m.nap) return 'nap';
   if (m.swatT > 4) return 'swat';
-  if (!m.onGround && m.wall && (P.l && m.wall < 0 || P.r && m.wall > 0) && m.vy >= -1) return 'cling';
+  const hx = joy.id !== null ? joy.x : (P.r ? 1 : 0) - (P.l ? 1 : 0);
+  if (!m.onGround && m.wall && hx * m.wall > 0.2 && m.vy >= -1) return 'cling';
   if (!m.onGround) return m.vy < 0 ? 'up' : 'down';
   if (Math.abs(m.vx) > 0.25) return 'run';
   if (m.idle > 600) return 'sit';
@@ -2380,7 +2395,7 @@ const fmtTime = s => { s = Math.round(s); const m = Math.floor(s / 60); return m
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const MAP_POS = { roof: [1, 0], clock: [1, 1], laundry: [1, 2], toys: [1, 3], bonus: [2, 3], well: [1, 4], kitchen: [1, 5], library: [1, 6], shop: [0, 6], hall: [1, 7] };
 function setPlaying(on) {
-  $('hud').classList.toggle('hide', !on); $('pad').classList.toggle('hide', !on);
+  $('hud').classList.toggle('hide', !on); document.body.classList.toggle('playing', on);
   resize();
 }
 function showOverlay(name, focusId) {
@@ -2397,10 +2412,10 @@ function showOverlay(name, focusId) {
       + '<div class="row">' + (has ? '<button class="b go" data-a="cont">Keep Playing</button><button class="b" data-a="new">New Game</button>' : '<button class="b go" data-a="start">Start</button>') + '</div>'
       + (has ? '<p class="muted">Saved: ' + esc(ROOMS_BY_ID[SAVE.room].name) + ' · ' + pieCount() + ' of ' + PIES_TOTAL + ' pies' + (SAVE.hazel ? ' · Hazel is safe!' : '') + '. Your game saves by itself.</p>' : '<p class="muted">Your game saves by itself, so you can stop any time and keep going later.</p>')
       + (store.ok ? '' : '<p class="muted"><b>This browser isn’t keeping saved games</b> (private browsing can do this), so progress is lost when you close it.</p>')
-      + det('how', 'How to Play', '<ul><li><b>Arrows</b> walk. <b>Jump</b> hops. Tap Jump again in the air for a cat twist that goes higher.</li><li><b>Climb walls:</b> jump at a wall, hold the arrow toward it, and keep tapping Jump.</li><li><b>Swat</b> breaks cracked blocks. Keys, fish, pies and surprises hide inside. It also boops dust bunnies and ghosts. You can pounce on them from above, too.</li><li>A locked door needs that room’s key. Stand at a door and tap <b>Go In</b>.</li><li>Pies are bonus treats. There are ' + PIES_TOTAL + ' in the castle.</li><li>Bumps cost a heart. With no hearts left, Miko takes a cat nap at the last door and wakes up with full hearts. Nothing is lost, ever.</li></ul><p>With a keyboard: arrow keys or A and D to walk, Space or Z to jump, X to swat, Up to go in a door, P to pause, M for the map.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
+      + det('how', 'How to Play', '<ul><li><b>Walk:</b> on a phone or tablet, put your thumb anywhere on the left side of the screen and slide it left or right. The further you slide, the faster Miko goes. Push up at a door to go in.</li><li><b>Jump</b> hops. Tap Jump again in the air for a cat twist that goes higher.</li><li><b>Climb walls:</b> jump at a wall, keep pushing toward it, and keep tapping Jump.</li><li><b>Swat</b> breaks cracked blocks. Keys, fish, pies and surprises hide inside. It also boops dust bunnies and ghosts. You can pounce on them from above, too.</li><li>A locked door needs that room’s key. Stand at a door and push up, or tap <b>Go In</b>.</li><li>Pies are bonus treats. There are ' + PIES_TOTAL + ' in the castle.</li><li>Bumps cost a heart. With no hearts left, Miko takes a cat nap at the last door and wakes up with full hearts. Nothing is lost, ever.</li></ul><p>With a keyboard: arrow keys or A and D to walk, Space or Z to jump, X to swat, Up to go in a door, P to pause, M for the map.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
       + det('coats', 'Cat Colours', coatPicker())
       + det('facts', 'Cat Facts', '<ul><li>Cats can jump about five times their own height, and they twist in the air to land on their feet.</li><li>A cat’s claws hook into bark and wood, so climbing up is easy. Climbing down is harder, which is why cats get stuck up high, like Hazel.</li><li>Whiskers feel tiny changes in the air, which helps cats find their way in the dark.</li><li>Many cats leap away from a cucumber that appears behind them. Nobody is quite sure why.</li><li>Cats sleep 12 to 16 hours a day. Cat naps are serious business.</li></ul>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Pierre is now a hamster with stuffed cheeks, and the credits name Sam, Beth and Dave, who came up with the game.</p><p>Version 0.1, 26 November 2026. The first version: ten rooms to climb, Pierre’s pie fight, Olive’s hidden shop, Fish Rain, ' + PIES_TOTAL + ' pies, six surprises, cat colours, and a game that saves itself.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Easier walking on phones, like Five O\u2019Clock Shadow: slide your thumb anywhere on the left side of the screen, and push up at a door to go in. Jump and Swat are big round buttons on the right, and the game fills the screen.</p><p>Version 0.2, 26 November 2026. Pierre is now a hamster with stuffed cheeks, and the credits name Sam, Beth and Dave, who came up with the game.</p><p>Version 0.1, 26 November 2026. The first version: ten rooms to climb, Pierre’s pie fight, Olive’s hidden shop, Fish Rain, ' + PIES_TOTAL + ' pies, six surprises, cat colours, and a game that saves itself.</p>')
       + det('credits', 'Credits', '<p>Game idea by Sam, Beth and Dave: a cat named Miko rescues a cat named Hazel, pies to find, Pierre the hamster as a boss, no final boss, and lives that never run out.</p><p>Inspired by the feel of <i>Milon’s Secret Castle</i> (Hudson Soft, 1986), a castle full of secrets they loved playing. Nothing comes from that game: the code, pictures, sounds, music and rooms are all new.</p><p>Built by Claude, an AI from Anthropic, with Dave Schwartz. Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
       + sndRow;
   } else if (name === 'paused') {
@@ -2502,44 +2517,65 @@ function begin(fresh) {
 }
 function pause() { if (state !== 'play') return; SAVE.hearts = M.hearts; save(); showOverlay('paused'); }
 
-/* ---------- controls ---------- */
-const pad = $('pad');
-const touches = new Map();
-const btnKey = { bL: 'l', bR: 'r', bJ: 'j', bA: 'a' };
+/* ---------- controls ----------
+   Touch works like Five O'Clock Shadow's: put a thumb anywhere on the left side of the screen and slide it
+   (the further, the faster Miko goes; push up at a door to go in). Jump and Swat are round buttons on the right. */
+let touchUI = false;
+function setTouch() { if (touchUI) return; touchUI = true; document.body.classList.add('touch'); resize(); }
+if (window.matchMedia && matchMedia('(pointer: coarse)').matches) { touchUI = true; document.body.classList.add('touch'); }
+addEventListener('touchstart', () => { setTouch(); A.init(); }, { passive: true });
+const joy = { id: null, ox: 0, oy: 0, x: 0, y: 0, up: false };
+const joyZone = $('joyZone'), joyBase = $('joyBase'), joyKnob = $('joyKnob');
+function placeJoyIdle() {
+  if (joy.id !== null || !joyZone) return;
+  const r = joyZone.getBoundingClientRect(), x = 92, y = Math.max(70, r.height - 92);
+  joyBase.style.left = joyKnob.style.left = x + 'px'; joyBase.style.top = joyKnob.style.top = y + 'px';
+}
+function joyEnd() { joy.id = null; joy.x = joy.y = 0; joy.up = false; joyZone.classList.add('idle'); placeJoyIdle(); }
+joyZone.addEventListener('pointerdown', e => {
+  e.preventDefault(); A.init();
+  if (state === 'talk') { nextTalk(); return; }
+  if (joy.id !== null) return;
+  joy.id = e.pointerId; const r = joyZone.getBoundingClientRect(); joy.ox = e.clientX - r.left; joy.oy = e.clientY - r.top;
+  joyBase.style.left = joyKnob.style.left = joy.ox + 'px'; joyBase.style.top = joyKnob.style.top = joy.oy + 'px';
+  joyZone.classList.remove('idle'); try { joyZone.setPointerCapture(e.pointerId); } catch (_) {}
+});
+joyZone.addEventListener('pointermove', e => {
+  if (e.pointerId !== joy.id) return;
+  const r = joyZone.getBoundingClientRect(), R = 54;
+  let dx = e.clientX - r.left - joy.ox, dy = e.clientY - r.top - joy.oy; const d = Math.hypot(dx, dy);
+  if (d > R) { dx *= R / d; dy *= R / d; }
+  joyKnob.style.left = (joy.ox + dx) + 'px'; joyKnob.style.top = (joy.oy + dy) + 'px';
+  let jx = dx / R, jy = dy / R; if (Math.hypot(jx, jy) < 0.18) jx = jy = 0;
+  joy.x = jx; joy.y = jy;
+  const up = jy < -0.7 && Math.abs(jx) < 0.55;          // a push straight up goes in a door
+  if (up && !joy.up) P.up++;
+  joy.up = up;
+});
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => joyZone.addEventListener(t, e => { if (e.pointerId === joy.id) joyEnd(); }));
+joyZone.addEventListener('contextmenu', e => e.preventDefault());
+const held = { j: new Set(), a: new Set() };
+function holdBtn(el, k) {
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault(); A.init();
+    if (state === 'talk') { nextTalk(); return; }
+    held[k].add(e.pointerId); el.classList.add('down'); try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    padSync();
+  });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => el.addEventListener(t, e => { if (held[k].delete(e.pointerId)) { if (!held[k].size) el.classList.remove('down'); padSync(); } }));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  // keyboard and switch users pressing the on-screen button
+  el.addEventListener('click', e => { if (e.detail !== 0) return; if (state === 'talk') { nextTalk(); return; } if (k === 'j') P.jHits++; else P.aHits++; });
+}
+holdBtn($('bJ'), 'j'); holdBtn($('bA'), 'a');
 function padSync() {
-  const held = new Set(touches.values());
-  const was = { l: P.l, r: P.r, j: P.j, a: P.a };
-  P.l = held.has('l') || keys.l; P.r = held.has('r') || keys.r;
-  const j = held.has('j') || keys.j, a = held.has('a') || keys.a;
+  const was = { j: P.j, a: P.a };
+  P.l = keys.l; P.r = keys.r;
+  const j = held.j.size > 0 || keys.j, a = held.a.size > 0 || keys.a;
   if (j && !was.j) P.jHits++;
   if (a && !was.a) P.aHits++;
   P.j = j; P.a = a;
-  for (const id in btnKey) $(id).classList.toggle('down', held.has(btnKey[id]));
 }
-function btnAt(x, y) { const el = document.elementFromPoint(x, y); const b = el && el.closest && el.closest('.pb'); return b ? btnKey[b.id] : null; }
-pad.addEventListener('pointerdown', e => {
-  if (!e.target.closest('.pb')) return;
-  e.preventDefault(); A.init();
-  if (state === 'talk') { const k = btnKey[e.target.closest('.pb').id]; if (k === 'j' || k === 'a') { nextTalk(); return; } }
-  touches.set(e.pointerId, btnAt(e.clientX, e.clientY) || btnKey[e.target.closest('.pb').id]);
-  padSync();
-});
-pad.addEventListener('pointermove', e => {
-  if (!touches.has(e.pointerId)) return;
-  const k = btnAt(e.clientX, e.clientY);
-  if (k && k !== touches.get(e.pointerId) && (k === 'l' || k === 'r') && (touches.get(e.pointerId) === 'l' || touches.get(e.pointerId) === 'r')) { touches.set(e.pointerId, k); padSync(); }
-});
-const lift = e => { if (touches.delete(e.pointerId)) padSync(); };
-pad.addEventListener('pointerup', lift); pad.addEventListener('pointercancel', lift); pad.addEventListener('lostpointercapture', lift);
-pad.addEventListener('contextmenu', e => e.preventDefault());
-// keyboard users pressing the on-screen buttons
-for (const id in btnKey) $(id).addEventListener('click', e => {
-  if (e.detail !== 0) return;
-  const k = btnKey[id];
-  if (k === 'j') P.jHits++;
-  else if (k === 'a') P.aHits++;
-  else { keys[k] = true; padSync(); setTimeout(() => { keys[k] = false; padSync(); }, 220); }
-});
 const keys = { l: false, r: false, j: false, a: false };
 const KEYMAP = { ArrowLeft: 'l', KeyA: 'l', ArrowRight: 'r', KeyD: 'r', Space: 'j', KeyZ: 'j', KeyK: 'j', KeyX: 'a', KeyJ: 'a', KeyC: 'a' };
 addEventListener('keydown', e => {
@@ -2557,7 +2593,7 @@ addEventListener('keydown', e => {
   if (!e.repeat) { keys[k] = true; padSync(); }
 });
 addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) { keys[k] = false; padSync(); } });
-addEventListener('blur', () => { touches.clear(); keys.l = keys.r = keys.j = keys.a = false; padSync(); });
+addEventListener('blur', () => { held.j.clear(); held.a.clear(); $('bJ').classList.remove('down'); $('bA').classList.remove('down'); keys.l = keys.r = keys.j = keys.a = false; joyEnd(); padSync(); });
 $('bP').addEventListener('click', pause);
 $('bM').addEventListener('click', () => { if (state === 'play') { SAVE.hearts = M.hearts; showOverlay('map'); } });
 cv.addEventListener('pointerdown', () => { A.init(); if (state === 'talk') nextTalk(); });
@@ -2588,7 +2624,7 @@ resize();
 showOverlay('menu');
 requestAnimationFrame(loop);
 // for automated checks only: a read-only look at the game, and a way to place Miko
-window.MikoTest = { get state() { return state; }, get room() { return R && R.id; }, get miko() { return M && { x: M.x, y: M.y, hearts: M.hearts, onGround: M.onGround }; }, get save() { return SAVE; },
+window.MikoTest = { get touch() { return touchUI; }, get state() { return state; }, get room() { return R && R.id; }, get miko() { return M && { x: M.x, y: M.y, hearts: M.hearts, onGround: M.onGround }; }, get save() { return SAVE; },
   rooms: ROOM_DEFS.map(d => d.id), go(id, door) { SAVE.hearts = M ? M.hearts : SAVE.max; M = null; loadRoom(id, door); }, place(tx, ty) { Object.assign(M, newMiko(tx, ty), { hearts: M.hearts, inv: 0, swatT: 0, swatCd: 0, spin: 0, nap: 0, hurtT: 0, idle: 0, sq: 0 }); snapCam(); },
   get pierre() { return W && W.pierre && { st: W.pierre.st, hp: W.pierre.hp, x: W.pierre.x }; }, get foes() { return W ? W.foes.filter(f => !f.gone).length : 0; }, items() { return W ? W.items.map(i => i.kind + (i.vis ? '' : '?')) : []; } };
 
