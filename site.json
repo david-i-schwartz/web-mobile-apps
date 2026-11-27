@@ -165,15 +165,6 @@
       ]
     },
     {
-      "file": "src/five-oclock.html",
-      "folder": "five-oclock",
-      "code": "SHAVE",
-      "name": "Five O'Clock Shadow of the Colossus",
-      "tagline": "A tiny barber climbs three stubbly giants and shaves them before 5:00 PM.",
-      "accent": "#B8432B",
-      "section": "Games"
-    },
-    {
       "file": "src/site-shortcuts.html",
       "folder": "site-shortcuts",
       "code": "SITE",

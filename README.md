@@ -19,7 +19,6 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`seventh/`](https://david-i-schwartz.github.io/web-mobile-apps/seventh/): SEV, Seventh
 - [`one-way/`](https://david-i-schwartz.github.io/web-mobile-apps/one-way/): ONE, One Way
 - [`ipar/`](https://david-i-schwartz.github.io/web-mobile-apps/ipar/): IPAR, Image, Preserve, Analyze, Report
-- [`five-oclock/`](https://david-i-schwartz.github.io/web-mobile-apps/five-oclock/): SHAVE, Five O'Clock Shadow of the Colossus
 - [`turkey/`](https://david-i-schwartz.github.io/web-mobile-apps/turkey/): TURKEY, Turkey Gets Away
 - [`miko/`](https://david-i-schwartz.github.io/web-mobile-apps/miko/): MIKO, Miko Finds Hazel
 - [`pablo/`](https://david-i-schwartz.github.io/web-mobile-apps/pablo/): PABLO, Pablo vs. Oakley
