@@ -22,6 +22,7 @@ Site: https://david-i-schwartz.github.io/web-mobile-apps/
 - [`five-oclock/`](https://david-i-schwartz.github.io/web-mobile-apps/five-oclock/): SHAVE, Five O'Clock Shadow of the Colossus
 - [`turkey/`](https://david-i-schwartz.github.io/web-mobile-apps/turkey/): TURKEY, Turkey Gets Away
 - [`miko/`](https://david-i-schwartz.github.io/web-mobile-apps/miko/): MIKO, Miko Finds Hazel
+- [`pablo/`](https://david-i-schwartz.github.io/web-mobile-apps/pablo/): PABLO, Pablo vs. Oakley
 
 ### Crafts
 

@@ -1,0 +1,28 @@
+{
+  "name": "PABLO: Pablo vs. Oakley",
+  "short_name": "PABLO",
+  "description": "Run Pablo through a spike course, put Oakley the dinosaur to sleep with sleepy darts, and free the man he grabbed.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F5F8",
+  "theme_color": "#3F8A33",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

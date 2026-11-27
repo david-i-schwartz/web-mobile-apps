@@ -207,6 +207,15 @@
       "tagline": "A cosy castle climb: Miko the cat swats cracked blocks, finds pies and rescues Hazel. It saves itself, and the lives never run out.",
       "accent": "#7A3FB0",
       "section": "Games"
+    },
+    {
+      "file": "src/pablo.html",
+      "folder": "pablo",
+      "code": "PABLO",
+      "name": "Pablo vs. Oakley",
+      "tagline": "Run Pablo through a spike course, put Oakley the dinosaur to sleep with sleepy darts, and free the man he grabbed.",
+      "accent": "#3F8A33",
+      "section": "Games"
     }
   ],
   "readme": [
