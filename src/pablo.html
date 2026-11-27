@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2f6f3e">
 <title>Pablo vs. Oakley</title>
 <!--
-  Pablo vs. Oakley — v0.3, 2026-11-27
+  Pablo vs. Oakley — v0.4, 2026-11-27
   Game idea by Sam: Pablo, who is 14, runs a spike course with 3 lives, puts Oakley the dinosaur
   to sleep with sleepy darts, and rescues the man Oakley grabbed.
   One self-contained file: no outside code, fonts, pictures or sounds. All art is drawn
@@ -88,6 +88,11 @@ details[open]>summary::after{content:"\2212"}
 details>div{padding:0 0 6px}
 ul{margin:0 0 12px;padding-left:22px}
 li{margin:0 0 7px}
+.links{list-style:none;padding:0;margin:0 0 12px}
+.links li{margin:0 0 8px}
+.links a{display:block;min-height:48px;padding:9px 12px;border:2px solid var(--line);border-radius:14px;color:var(--ink);text-decoration:none}
+.links b{display:block;color:var(--accent);text-decoration:underline;font-size:18px}
+.links small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
 @media (prefers-reduced-motion:reduce){#bD.hot{animation:none;border-color:#fde047}}
 </style>
 </head>
@@ -117,7 +122,7 @@ li{margin:0 0 7px}
 <script>
 (() => {
 'use strict';
-const VERSION = '0.3', DATE = '27 November 2026';
+const VERSION = '0.4', DATE = '27 November 2026';
 
 /* ---------- things that are easy to change ---------- */
 const CONFIG = {
@@ -176,7 +181,7 @@ const store = {
 store.set('v', VERSION);
 let best = parseFloat(store.get('best')); if (!(best > 5 && best < 36000)) best = 0;   // fastest rescue, in seconds
 let soundOn = store.get('sound') !== '0';
-let fold = { how: true, facts: false, about: false, credits: false };
+let fold = { how: true, facts: false, make: false, about: false, credits: false };
 try { const f = JSON.parse(store.get('fold') || '{}'); for (const k in fold) if (typeof f[k] === 'boolean') fold[k] = f[k]; } catch (e) {}
 
 /* ---------- sound: everything is made here, nothing is loaded ---------- */
@@ -1176,6 +1181,17 @@ function updHearts() {
   h.innerHTML = s; h.setAttribute('aria-label', 'Hearts: ' + Math.max(0, G.health) + ' of ' + n + '. Lives: ' + Math.max(0, G.lives) + '.');
 }
 function say(m) { const l = $('live'); l.textContent = ''; l.textContent = m; }
+// Free tools for making a game without an AI. Links only: nothing is loaded from them. Checked 27 Nov 2026.
+const TOOLS = [
+  ['Scratch', 'https://scratch.mit.edu/', 'Snap blocks together to make games and stories. Made for ages 8 to 16. Best on a computer or tablet.'],
+  ['OctoStudio', 'https://octostudio.org/', 'Make games right on a phone or tablet, with your own photos and sounds. A free app from the people who made Scratch.'],
+  ['ScratchJr', 'https://www.scratchjr.org/', 'For younger kids, ages 5 to 7. A free app for tablets.'],
+  ['Sprite Lab', 'https://code.org/spritelab', 'Blocks for simple games with characters, from Code.org. For ages 5 to 12.'],
+  ['MakeCode Arcade', 'https://arcade.makecode.com/', 'Build old-style arcade games with blocks. Best on a computer.'],
+  ['Bitsy', 'https://bitsy.org/', 'A little tool for little worlds, where you walk around and talk to things.'],
+  ['Twine', 'https://twinery.org/', 'Write a story where the reader chooses what happens next.'],
+  ['GDevelop', 'https://gdevelop.io/', 'A bigger game maker that needs no code. For older kids and grown-ups.']
+];
 const fmt = t => { const s = Math.round(t); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
 let panelName = 'menu';
@@ -1204,7 +1220,10 @@ function showPanel(name) {
       + det('facts', 'Dinosaur Facts', '<ul><li>Oakley is made up. Real dinosaurs like <i>T. rex</i> died out about 66 million years ago, long before there were people, so no dinosaur ever chased anyone.</li>'
         + '<li><i>T. rex</i> had tiny arms for its size: about as long as a grown-up’s arm, on an animal about as long as a school bus.</li>'
         + '<li>Wildlife vets really do use sleepy darts. They let a vet help a big animal, like a sick rhino, without anyone getting hurt.</li></ul>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Hearts: Pablo can take a few hits now. Spikes take a heart, and pits and Oakley take two. Fruit and veggies along the way give them back, and in Oakley\u2019s den the man tosses Pablo a snack when he\u2019s low. You lose a life only when your hearts run out. The thumbstick stays at the bottom and only moves side to side, DART is now SHOOT, and there\u2019s more room between the spikes that were close together.</p><p>Version 0.2, 27 November 2026. New touch controls: put your thumb anywhere on the lower left and slide it to run (the farther you slide, the faster), with big round Jump and Dart buttons on the right. On a computer, the keys do it all.</p><p>Version 0.1, 26 November 2026. The first version: a spike course with pits, bouncing spike balls, pop-up spikes and floating logs; ' + LIV + ' lives and three flags; and Oakley, who chomps, charges, bonks into walls and falls asleep after ' + N + ' sleepy darts.</p>')
+      + det('make', 'Make Your Own Game', '<p>An AI helped build this game. You don’t need one to make your own. These tools are free to start with, and you build with blocks or simple pieces, with little or no code to type.</p><ul class="links">'
+        + TOOLS.map(t => '<li><a href="' + t[1] + '" target="_blank" rel="noopener noreferrer"><b>' + t[0] + '</b>' + t[2] + '<small>Opens ' + t[1].replace(/^https:\/\/(www\.)?/, '').replace(/\/$/, '') + '</small></a></li>').join('')
+        + '</ul><p class="muted">These links go to other websites, run by other people. Ask a grown-up before you open one.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. New: Make Your Own Game, with links to free tools for making games with blocks and little or no code.</p><p>Version 0.3, 27 November 2026. Hearts: Pablo can take a few hits now. Spikes take a heart, and pits and Oakley take two. Fruit and veggies along the way give them back, and in Oakley\u2019s den the man tosses Pablo a snack when he\u2019s low. You lose a life only when your hearts run out. The thumbstick stays at the bottom and only moves side to side, DART is now SHOOT, and there\u2019s more room between the spikes that were close together.</p><p>Version 0.2, 27 November 2026. New touch controls: put your thumb anywhere on the lower left and slide it to run (the farther you slide, the faster), with big round Jump and Dart buttons on the right. On a computer, the keys do it all.</p><p>Version 0.1, 26 November 2026. The first version: a spike course with pits, bouncing spike balls, pop-up spikes and floating logs; ' + LIV + ' lives and three flags; and Oakley, who chomps, charges, bonks into walls and falls asleep after ' + N + ' sleepy darts.</p>')
       + det('credits', 'Credits', '<p>Game idea by Sam. Built by Claude, an AI from Anthropic, with Dave Schwartz.</p><p>Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing comes from another game or site. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
       + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button></div>';
   } else if (name === 'win') {
