@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#3f7d4a">
 <title>Turkey Gets Away</title>
 <!--
-  Turkey Gets Away — v0.4, 2026-11-27
+  Turkey Gets Away — v0.5, 2026-11-27
   Game idea by Evelyn: a turkey called Turkey runs across the forest, away from the hunters.
   One self-contained file: no outside code, fonts, pictures or sounds. All art is drawn
   and all sound is made in the browser. Built by Claude with Dave Schwartz. GPL-3.0.
@@ -52,6 +52,26 @@ font-weight:800;font-size:20px;line-height:1;padding:0 6px;display:grid;place-it
 #bE.hot{animation:hot .45s ease-in-out infinite alternate}
 @keyframes hot{to{transform:scale(1.05);border-color:#dc2626}}
 .pb svg,.ib svg{display:block}
+
+/* thumb stick controls: a stick that stays in the bottom-left corner, and round buttons on the right */
+#touch{position:fixed;inset:0;z-index:3;pointer-events:none}
+#touch.hide{display:none}
+#joyZone{position:absolute;left:0;bottom:0;width:min(50%,250px);height:calc(230px + var(--sab));pointer-events:auto;touch-action:none}
+.joy{position:absolute;border-radius:50%;pointer-events:none}
+#joyBase{width:124px;height:124px;margin:-62px 0 0 -62px;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.7);box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+#joyBase::before,#joyBase::after{content:"";position:absolute;top:50%;margin-top:-9px;border:9px solid transparent}
+#joyBase::before{left:9px;border-left:0;border-right:12px solid rgba(255,255,255,.8)}
+#joyBase::after{right:9px;border-right:0;border-left:12px solid rgba(255,255,255,.8)}
+#joyKnob{width:58px;height:58px;margin:-29px 0 0 -29px;background:rgba(255,255,255,.8);border:2px solid rgba(43,29,18,.3);box-shadow:0 2px 10px rgba(0,0,0,.35)}
+#joyZone.idle .joy{opacity:.65}
+.tb{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;letter-spacing:.03em;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#tJ{right:calc(16px + var(--sar));bottom:calc(30px + var(--sab));width:100px;height:100px;background:rgba(251,191,36,.95);color:#2b1d12;border:3px solid rgba(255,255,255,.85)}
+#tE{right:calc(128px + var(--sar));bottom:calc(14px + var(--sab));width:80px;height:80px;background:rgba(253,224,71,.96);color:#2b1d12;border:3px solid rgba(255,255,255,.85)}
+#tE.wait{background:rgba(231,220,198,.92);color:#5b4a3a;font-size:28px}
+#tE.hot{animation:hot .45s ease-in-out infinite alternate}
+#tG{right:calc(22px + var(--sar));bottom:calc(138px + var(--sab));width:66px;height:66px;font-size:13px;letter-spacing:0;background:rgba(254,202,202,.95);color:#5b1414;border:3px solid rgba(255,255,255,.85)}
+.tb.down{transform:scale(.92);filter:brightness(1.12)}
+#safe{position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 
 #overlay{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
 padding:calc(12px + var(--sat)) calc(14px + var(--sar)) calc(12px + var(--sab)) calc(14px + var(--sal));pointer-events:none}
@@ -100,7 +120,7 @@ legend{font-weight:800;padding:0 8px 0 0}
 .links small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
 #rot{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:var(--panel);color:var(--ink);padding:24px;text-align:center;font-weight:800;font-size:22px}
 #rot[hidden]{display:none}
-@media (prefers-reduced-motion:reduce){#bE.hot{animation:none;border-color:#dc2626}}
+@media (prefers-reduced-motion:reduce){#bE.hot,#tE.hot{animation:none;border-color:#dc2626}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -130,6 +150,14 @@ legend{font-weight:800;padding:0 8px 0 0}
   <button class="pb" id="bJ">Jump</button>
 </div>
 
+<div id="touch" class="hide">
+  <div id="joyZone" class="idle" aria-hidden="true"><div id="joyBase" class="joy"></div><div id="joyKnob" class="joy"></div></div>
+  <button class="tb" id="tG">Gobble</button>
+  <button class="tb" id="tE"><span id="tEggTxt">EGG</span></button>
+  <button class="tb" id="tJ">JUMP</button>
+</div>
+<div id="safe"></div>
+
 <div id="overlay"><div class="panel" id="panel" tabindex="-1"></div></div>
 <div id="rot" hidden><p>Turn your phone upright to play.</p></div>
 <p id="live" class="sr" aria-live="polite"></p>
@@ -138,7 +166,7 @@ legend{font-weight:800;padding:0 8px 0 0}
 <script>
 (() => {
 'use strict';
-const VERSION = '0.4', DATE = '27 November 2026';
+const VERSION = '0.5', DATE = '27 November 2026';
 const EGG_WAIT = 10;            // seconds before Turkey can lay another egg
 const JUMP = 0.62;              // seconds in the air
 const $ = id => document.getElementById(id);
@@ -161,6 +189,7 @@ const store = {
 store.set('v', VERSION);
 let best = parseInt(store.get('best'), 10); if (!(best >= 0 && best < 1000)) best = 0;   // forests crossed
 let soundOn = store.get('sound') !== '0';
+let ctl = store.get('ctl') === 'stick' ? 'stick' : 'pad';     // touch controls: the bar of buttons, or the thumb stick with round buttons
 let fold = { pick: false, how: true, facts: false, make: false, about: false, credits: false };
 try { const f = JSON.parse(store.get('fold') || '{}'); for (const k in fold) if (typeof f[k] === 'boolean') fold[k] = f[k]; } catch (e) {}
 
@@ -256,12 +285,14 @@ const sfx = {
 /* ---------- layout ---------- */
 let W = 0, H = 0, DPR = 1, S = 1, fieldX = 0, fieldW = 0, laneW = 0, hudB = 60, padT = 500, maxGap = 160, ty = 300, ahead = 300, CATCH = 30;
 const laneX = i => fieldX + laneW * (i + 0.5);
+function safePad() { const cs = getComputedStyle($('safe')); return { b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 }; }
 function layout() {
   DPR = Math.min(window.devicePixelRatio || 1, 2.5);
   W = window.innerWidth; H = window.innerHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   hudB = $('hud').getBoundingClientRect().bottom || 60;
-  padT = $('pad').getBoundingClientRect().top || H - 150;
+  const sp = safePad();
+  padT = ctl === 'stick' ? H - 200 - sp.b : ($('pad').getBoundingClientRect().top || H - 150);     // the thumb stick and round buttons sit on the ground below the hunters
   fieldW = Math.min(W - 28, 440); laneW = fieldW / 3; fieldX = (W - fieldW) / 2;
   S = clamp(laneW / 117, 0.8, 1.25);
   maxGap = clamp((padT - hudB) * 0.3, 105, 190);
@@ -269,6 +300,7 @@ function layout() {
   ahead = Math.max(120, ty - hudB);
   CATCH = 30 * S;
   if (G) { G.x = laneX(G.lane); if (G.state === 'run') tune(); }
+  placeJoy(0);
   const tiny = W > H && H < 430;
   $('rot').hidden = !tiny;
   if (tiny && G && G.state === 'run') pause();
@@ -813,20 +845,25 @@ function setProg(p, force) {
 }
 let eggShown = '';
 function updEgg() {
-  const b = $('bE'), cd = G.eggCd, lab = cd > 0 ? 'Egg in ' + Math.ceil(cd) : 'Lay Egg';
+  const b = $('bE'), t = $('tE'), cd = G.eggCd, lab = cd > 0 ? 'Egg in ' + Math.ceil(cd) : 'Lay Egg';
   b.style.setProperty('--p', (cd > 0 ? 1 - cd / EGG_WAIT : 1).toFixed(3));
-  if (lab !== eggShown) { eggShown = lab; $('eggTxt').textContent = lab; b.classList.toggle('wait', cd > 0); b.setAttribute('aria-disabled', cd > 0 ? 'true' : 'false'); }
-  b.classList.toggle('hot', G.state === 'run' && cd <= 0 && G.hState === 'chase' && G.gap < maxGap * 0.5);
+  if (lab !== eggShown) {
+    eggShown = lab; $('eggTxt').textContent = lab; b.classList.toggle('wait', cd > 0); b.setAttribute('aria-disabled', cd > 0 ? 'true' : 'false');
+    $('tEggTxt').textContent = cd > 0 ? Math.ceil(cd) : 'EGG'; t.classList.toggle('wait', cd > 0); t.setAttribute('aria-label', lab); t.setAttribute('aria-disabled', cd > 0 ? 'true' : 'false');
+  }
+  const hot = G.state === 'run' && cd <= 0 && G.hState === 'chase' && G.gap < maxGap * 0.5;
+  b.classList.toggle('hot', hot); t.classList.toggle('hot', hot);
 }
 function say(m) { const l = $('live'); l.textContent = ''; l.textContent = m; }
 
 let panelName = 'menu';
 const soundLabel = () => 'Sound: ' + (soundOn ? 'On' : 'Off');
+const ctlLabel = () => 'Controls: ' + (ctl === 'stick' ? 'Thumb Stick' : 'Buttons');
 function showPanel(name) {
   panelName = name;
   const ov = $('overlay'), pn = $('panel'), on = !!name;
   ov.hidden = !on; ov.classList.toggle('top', on && name !== 'menu');
-  $('hud').classList.toggle('hide', on); $('pad').classList.toggle('hide', on);
+  $('hud').classList.toggle('hide', on); $('pad').classList.toggle('hide', on || ctl === 'stick'); $('touch').classList.toggle('hide', on || ctl !== 'stick');
   if (!on) { pn.innerHTML = ''; return; }
   const det = (id, title, body) => '<details data-k="' + id + '"' + (fold[id] ? ' open' : '') + '><summary>' + title + '</summary><div>' + body + '</div></details>';
   let h = '';
@@ -839,14 +876,14 @@ function showPanel(name) {
         : best + seeds > 0 ? '<p class="muted">Your game saves by itself on this phone or computer: ' + plural(best, 'forest') + ' crossed, ' + seedLine() + '</p>'
         : '<p class="muted">Your game saves by itself on this phone or computer. Pick up seeds to get new looks for Turkey. The first one comes at 10 seeds.</p>')
       + det('pick', 'Pick a Forest', '<p>Start at any forest you have reached.</p><div class="grid">' + lv + '</div>')
-      + det('how', 'How to Play', '<ul><li><b>Arrows:</b> go side to side. Run around trees and big rocks. When a hunter shows a red <b>!</b>, get out of that lane.</li><li><b>Jump:</b> hop over logs, mud puddles and creeks.</li><li><b>Lay Egg:</b> the hunters step on it and slip! A new egg takes ' + EGG_WAIT + ' seconds.</li><li><b>Seeds:</b> run over them to pick them up. Seeds open new tails, colors and hats in My Turkey.</li><li><b>Gobble:</b> just for fun.</li></ul><p>Your forests, seeds and turkey are saved by themselves. They stay on this phone or computer until its browser’s saved data is cleared.</p><p>You can swipe on the forest too: left, right, up to jump, down to lay an egg. A tap jumps.</p><p>With a keyboard: arrow keys to move, Space to jump, E for an egg, G to gobble, P to pause.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
+      + det('how', 'How to Play', '<ul><li><b>Arrows:</b> go side to side. Run around trees and big rocks. When a hunter shows a red <b>!</b>, get out of that lane.</li><li><b>Jump:</b> hop over logs, mud puddles and creeks.</li><li><b>Lay Egg:</b> the hunters step on it and slip! A new egg takes ' + EGG_WAIT + ' seconds.</li><li><b>Seeds:</b> run over them to pick them up. Seeds open new tails, colors and hats in My Turkey.</li><li><b>Gobble:</b> just for fun.</li><li><b>Thumb Stick:</b> if you like a stick better than arrows, change Controls to Thumb Stick, here or on the pause screen. Slide the stick a little to go one lane over, or all the way to cross two. Round buttons jump, lay an egg and gobble.</li></ul><p>Your forests, seeds and turkey are saved by themselves. They stay on this phone or computer until its browser’s saved data is cleared.</p><p>You can swipe on the forest too: left, right, up to jump, down to lay an egg. A tap jumps.</p><p>With a keyboard: arrow keys to move, Space to jump, E for an egg, G to gobble, P to pause.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
       + det('facts', 'Turkey Facts', '<ul><li>Wild turkeys can run faster than most people, and they can fly a short way.</li><li>Male turkeys do most of the gobbling, and only hens lay eggs. Turkey does both, because this is her game.</li><li>Raw egg is slippery. It gets between a boot and the ground, so the boot slides and can’t grip.</li></ul>')
       + det('make', 'Make Your Own Game', '<p>An AI helped build this game. You don’t need one to make your own. These tools are free to start with, and you build with blocks or simple pieces, with little or no code to type.</p><ul class="links">'
         + TOOLS.map(t => '<li><a href="' + t[1] + '" target="_blank" rel="noopener noreferrer"><b>' + t[0] + '</b>' + t[2] + '<small>Opens ' + t[1].replace(/^https:\/\/(www\.)?/, '').replace(/\/$/, '') + '</small></a></li>').join('')
         + '</ul><p class="muted">These links go to other websites, run by other people. Ask a grown-up before you open one.</p>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. New: Make Your Own Game, with links to free tools for making games with blocks and little or no code.</p><p>Version 0.3.1, 26 November 2026. Fixed the My Turkey title, which was cut off along the bottom.</p><p>Version 0.3, 26 November 2026. Seeds to pick up along the way. My Turkey: change her tail, body and hat, with new looks that open as the seeds add up. Pick a Forest: start at any forest you have reached. The menu shows what is saved.</p><p>Version 0.2, 26 November 2026. More to get past: mud puddles and creeks to jump, and big rocks to run around.</p><p>Version 0.1, 26 November 2026. The first version: three lanes, logs to jump, trees to run around, hunters who aim, eggs with a ' + EGG_WAIT + '-second timer, and forests that get a little faster each time.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. New: a thumb stick, if you want one. Change Controls to Thumb Stick on the menu or the pause screen. The arrow buttons are still there, and they are what you get unless you switch.</p><p>Version 0.4, 27 November 2026. New: Make Your Own Game, with links to free tools for making games with blocks and little or no code.</p><p>Version 0.3.1, 26 November 2026. Fixed the My Turkey title, which was cut off along the bottom.</p><p>Version 0.3, 26 November 2026. Seeds to pick up along the way. My Turkey: change her tail, body and hat, with new looks that open as the seeds add up. Pick a Forest: start at any forest you have reached. The menu shows what is saved.</p><p>Version 0.2, 26 November 2026. More to get past: mud puddles and creeks to jump, and big rocks to run around.</p><p>Version 0.1, 26 November 2026. The first version: three lanes, logs to jump, trees to run around, hunters who aim, eggs with a ' + EGG_WAIT + '-second timer, and forests that get a little faster each time.</p>')
       + det('credits', 'Credits', '<p>Game idea by Evelyn. Built by Claude, an AI from Anthropic, with Dave Schwartz.</p><p>Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing comes from another game or site. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
-      + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button></div>';
+      + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button><button class="b" data-a="ctl">' + ctlLabel() + '</button></div>';
   } else if (name === 'win') {
     h = '<h2 id="pt">Turkey got away!</h2><p class="lead">You crossed Forest ' + G.level + '. The hunters slipped ' + plural(G.slips, 'time') + ', and you picked up ' + plural(G.seedsRun, 'seed') + '.</p>' + fresh
       + '<div class="row"><button class="b go" data-a="next">Next Forest</button><button class="b" data-a="look">My Turkey</button><button class="b" data-a="menu">Menu</button></div><p class="muted">Saved. You have ' + seedLine() + ' The next forest is a little faster.</p>';
@@ -865,7 +902,7 @@ function showPanel(name) {
       + '<div class="row"><button class="b go" data-a="lookdone">Done</button></div>';
   } else if (name === 'paused') {
     h = '<h2 id="pt">Paused</h2><div class="row"><button class="b go" data-a="resume">Keep Playing</button></div>'
-      + '<div class="row"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button><button class="b" data-a="menu">Menu</button></div>';
+      + '<div class="row"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button><button class="b" data-a="ctl">' + ctlLabel() + '</button><button class="b" data-a="menu">Menu</button></div>';
   }
   pn.classList.toggle('lookp', name === 'look');
   pn.innerHTML = h; pn.setAttribute('role', 'dialog'); pn.setAttribute('aria-labelledby', 'pt'); pn.scrollTop = 0;
@@ -891,6 +928,7 @@ $('panel').addEventListener('click', e => {
   else if (a === 'again') start(G.level);
   else if (a === 'resume') resume();
   else if (a === 'menu') { G.state = 'menu'; G.obs = []; G.eggs = []; G.pel = []; G.seedList = []; G.newLooks = []; G.aim = null; G.jumpT = -1; G.stumT = 0; G.inv = 0; G.gobT = 0; G.lane = 1; showPanel('menu'); }
+  else if (a === 'ctl') { ctl = ctl === 'stick' ? 'pad' : 'stick'; store.set('ctl', ctl); b.textContent = ctlLabel(); say(ctlLabel() + '.'); }
   else if (a === 'sound') { soundOn = !soundOn; store.set('sound', soundOn ? '1' : '0'); b.textContent = soundLabel(); b.setAttribute('aria-pressed', soundOn); if (soundOn) { A.init(); sfx.ready(); } }
 });
 $('panel').addEventListener('toggle', e => {
@@ -898,8 +936,8 @@ $('panel').addEventListener('toggle', e => {
   if (k && k in fold) { fold[k] = e.target.open; store.set('fold', JSON.stringify(fold)); }
 }, true);
 
-function pause() { if (G.state !== 'run') return; G.state = 'paused'; showPanel('paused'); say('Paused.'); }
-function resume() { if (G.state !== 'paused') return; A.init(); G.state = 'run'; showPanel(null); last = 0; }
+function pause() { if (G.state !== 'run') return; G.state = 'paused'; joyEnd(); showPanel('paused'); say('Paused.'); }
+function resume() { if (G.state !== 'paused') return; A.init(); G.state = 'run'; showPanel(null); layout(); last = 0; }
 
 /* ---------- controls ---------- */
 function bind(id, fn) {
@@ -911,6 +949,32 @@ function bind(id, fn) {
   b.addEventListener('contextmenu', e => e.preventDefault());
 }
 bind('bL', () => moveLane(-1)); bind('bR', () => moveLane(1)); bind('bJ', jump); bind('bE', layEgg); bind('bG', gobble);
+bind('tJ', jump); bind('tE', layEgg); bind('tG', gobble);
+
+// The thumb stick stays in its corner. Sliding it a little way moves Turkey one lane that way, and all the way out
+// moves her one more. Letting it spring back does nothing, so she never moves against the thumb.
+const joyZone = $('joyZone'), joyBase = $('joyBase'), joyKnob = $('joyKnob'), joy = { id: null, step: 0 }, JOY_R = 54;
+function joyHome() { const sp = safePad(); return { x: 92 + sp.l, y: Math.max(70, joyZone.getBoundingClientRect().height - 92 - sp.b) }; }
+function placeJoy(dx) { const h = joyHome(); joyBase.style.left = h.x + 'px'; joyBase.style.top = joyKnob.style.top = h.y + 'px'; joyKnob.style.left = (h.x + dx) + 'px'; }
+function joyEnd() { joy.id = null; joy.step = 0; joyZone.classList.add('idle'); placeJoy(0); }
+function joyAt(e) {
+  const dx = clamp(e.clientX - joyZone.getBoundingClientRect().left - joyHome().x, -JOY_R, JOY_R), j = dx / JOY_R, m = Math.abs(j), was = Math.abs(joy.step);
+  placeJoy(dx);
+  const step = (m >= (was >= 2 ? 0.78 : 0.86) ? 2 : m >= (was >= 1 ? 0.22 : 0.3) ? 1 : 0) * Math.sign(j);     // a little slack, so it doesn't flicker at the edges
+  if (step === joy.step) return;
+  const more = Math.sign(step) === Math.sign(joy.step) ? Math.abs(step) - was : Math.abs(step);
+  joy.step = step;
+  if (step && more > 0) moveLane(Math.sign(step) * more);
+}
+joyZone.addEventListener('pointerdown', e => {
+  if (joy.id !== null) return;
+  e.preventDefault(); A.init(); joy.id = e.pointerId; joy.step = 0; joyZone.classList.remove('idle');
+  try { joyZone.setPointerCapture(e.pointerId); } catch (er) {}
+  joyAt(e);                              // a touch to one side of the stick moves her at once
+});
+joyZone.addEventListener('pointermove', e => { if (e.pointerId === joy.id) joyAt(e); });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => joyZone.addEventListener(t, e => { if (e.pointerId === joy.id) joyEnd(); }));
+joyZone.addEventListener('contextmenu', e => e.preventDefault());
 $('bP').addEventListener('click', pause);
 
 let sw = null;
@@ -959,7 +1023,7 @@ function frame(ts) {
 layout(); G.x = laneX(1);
 showPanel('menu');
 requestAnimationFrame(frame);
-window.__turkey = { G, maxGap: () => maxGap, seeds: () => seeds, look };     // for tests
+window.__turkey = { G, maxGap: () => maxGap, seeds: () => seeds, look, ctl: () => ctl, joyHome: () => { const r = joyZone.getBoundingClientRect(), h = joyHome(); return { x: r.left + h.x, y: r.top + h.y }; } };     // for tests
 })();
 </script>
 <script id="hh-helper">/* Home Screen helper from HTML App Generator 1.6 */
