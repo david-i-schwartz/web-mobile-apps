@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2f6f3e">
 <title>Pablo vs. Oakley</title>
 <!--
-  Pablo vs. Oakley — v0.1, 2026-11-26
+  Pablo vs. Oakley — v0.2, 2026-11-27
   Game idea by Sam: Pablo, who is 14, runs a spike course with 3 lives, puts Oakley the dinosaur
   to sleep with sleepy darts, and rescues the man Oakley grabbed.
   One self-contained file: no outside code, fonts, pictures or sounds. All art is drawn
@@ -42,24 +42,27 @@ padding:calc(8px + var(--sat)) calc(10px + var(--sar)) 6px calc(10px + var(--sal
 #hearts svg{display:block}
 #hearts .off{opacity:.28}
 
-#pad{position:fixed;left:0;right:0;bottom:0;z-index:3;display:flex;justify-content:space-between;gap:18px;max-width:560px;margin:0 auto;
-padding:8px calc(10px + var(--sar)) calc(10px + var(--sab)) calc(10px + var(--sal));touch-action:none}
-.grp{display:flex;gap:8px;flex:1 1 0;min-width:0}
-.pb{flex:1 1 0;position:relative;min-height:68px;min-width:48px;border-radius:18px;border:2px solid var(--padLine);background:var(--pad);color:var(--padInk);
-font-weight:800;font-size:20px;line-height:1;padding:0 6px;display:grid;place-items:center;touch-action:none;box-shadow:0 3px 0 rgba(0,0,0,.28)}
-.pb.down{transform:translateY(3px);box-shadow:none;filter:brightness(.9)}
-#bJ{background:#fbbf24;color:#2b1d12;border-color:rgba(43,29,18,.6)}
-#bD{background:#c4b5fd;color:#221447;border-color:rgba(34,20,71,.55)}
+/* touch controls, as in Five O'Clock Shadow of the Colossus: a thumbstick that appears where the thumb lands, and round buttons */
+#touch{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
+body.touch #touch:not(.hide){display:block}
+#joyZone{position:absolute;left:0;bottom:0;width:55%;height:62%;pointer-events:auto;touch-action:none}
+.joy{position:absolute;border-radius:50%;pointer-events:none}
+#joyBase{width:124px;height:124px;margin:-62px 0 0 -62px;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.6)}
+#joyBase::before,#joyBase::after{content:"";position:absolute;top:50%;margin-top:-9px;border:9px solid transparent}
+#joyBase::before{left:9px;border-left:0;border-right:12px solid rgba(255,255,255,.7)}
+#joyBase::after{right:9px;border-right:0;border-left:12px solid rgba(255,255,255,.7)}
+#joyKnob{width:58px;height:58px;margin:-29px 0 0 -29px;background:rgba(255,255,255,.75);box-shadow:0 2px 10px rgba(0,0,0,.35)}
+#joyZone.idle .joy{opacity:.6}
+.tb{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;letter-spacing:.04em;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#bJ{right:calc(16px + var(--sar));bottom:calc(30px + var(--sab));width:100px;height:100px;background:rgba(251,191,36,.92);color:#2b1d12;border:3px solid rgba(255,255,255,.8)}
+#bD{right:calc(128px + var(--sar));bottom:calc(14px + var(--sab));width:80px;height:80px;background:rgba(167,139,250,.92);color:#1e1240;border:3px solid rgba(255,255,255,.7)}
+.tb.on{transform:scale(.92);filter:brightness(1.15)}
 #bD.hot{animation:hot .5s ease-in-out infinite alternate}
-@keyframes hot{to{transform:scale(1.05);border-color:#7c3aed}}
-.pb svg,.ib svg{display:block;pointer-events:none}
-.pb span{pointer-events:none}
-@media (orientation:landscape) and (max-height:520px){
-  #pad{max-width:none;padding-top:0}
-  .grp{flex:0 0 auto}
-  .pb{width:78px;flex:none;min-height:60px}
-  #hud{max-width:620px}
-}
+@keyframes hot{to{transform:scale(1.07);border-color:#fde047}}
+.ib svg{display:block;pointer-events:none}
+.tb span{pointer-events:none}
+#safe{position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+@media (orientation:landscape) and (max-height:520px){#hud{max-width:620px}}
 
 #overlay{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
 padding:calc(12px + var(--sat)) calc(14px + var(--sar)) calc(12px + var(--sab)) calc(14px + var(--sal));pointer-events:none}
@@ -84,7 +87,7 @@ details[open]>summary::after{content:"\2212"}
 details>div{padding:0 0 6px}
 ul{margin:0 0 12px;padding-left:22px}
 li{margin:0 0 7px}
-@media (prefers-reduced-motion:reduce){#bD.hot{animation:none;border-color:#7c3aed}}
+@media (prefers-reduced-motion:reduce){#bD.hot{animation:none;border-color:#fde047}}
 </style>
 </head>
 <body>
@@ -99,16 +102,12 @@ li{margin:0 0 7px}
   <div id="hearts" role="img" aria-label="Lives: 3"></div>
 </div>
 
-<div id="pad" class="hide">
-  <div class="grp">
-    <button class="pb" id="bL" aria-label="Run left"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M19 5 8 15l11 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <button class="pb" id="bR" aria-label="Run right"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="m11 5 11 10-11 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-  </div>
-  <div class="grp">
-    <button class="pb" id="bJ"><span>Jump</span></button>
-    <button class="pb" id="bD" aria-label="Sleepy dart"><span>Dart</span></button>
-  </div>
+<div id="touch" class="hide" aria-hidden="true">
+  <div id="joyZone" class="idle"><div id="joyBase" class="joy"></div><div id="joyKnob" class="joy"></div></div>
+  <button id="bD" class="tb" type="button" tabindex="-1"><span>DART</span></button>
+  <button id="bJ" class="tb" type="button" tabindex="-1"><span>JUMP</span></button>
 </div>
+<div id="safe"></div>
 
 <div id="overlay"><div class="panel" id="panel" tabindex="-1"></div></div>
 <p id="live" class="sr" aria-live="polite"></p>
@@ -117,7 +116,7 @@ li{margin:0 0 7px}
 <script>
 (() => {
 'use strict';
-const VERSION = '0.1', DATE = '26 November 2026';
+const VERSION = '0.2', DATE = '27 November 2026';
 
 /* ---------- things that are easy to change ---------- */
 const CONFIG = {
@@ -229,16 +228,19 @@ const sfx = {
 };
 
 /* ---------- layout ---------- */
-let W = 0, H = 0, DPR = 1, S = 1, vw = VIEW_W, hudB = 60, groundY = 600, wide = false;
+let W = 0, H = 0, DPR = 1, S = 1, vw = VIEW_W, hudB = 60, groundY = 600, wide = false, safeB = 0, safeL = 0, touchUI = false;
 function layout() {
   DPR = Math.min(window.devicePixelRatio || 1, 2.5);
   W = window.innerWidth; H = window.innerHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   hudB = $('hud').getBoundingClientRect().bottom || 60;
   wide = W > H && H < 520;
-  const sab = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0;
-  if (wide) groundY = H - 30 - sab;                 // buttons sit in the corners, over the ground
-  else groundY = ($('pad').getBoundingClientRect().top || H - 100) - 6;
+  const sf = getComputedStyle($('safe'));
+  safeB = parseFloat(sf.paddingBottom) || 0; safeL = parseFloat(sf.paddingLeft) || 0;
+  if (!touchUI) groundY = H - 36 - safeB;          // keyboard: no buttons on screen
+  else if (wide) groundY = H - 30 - safeB;         // sideways: the controls sit in the corners, over the ground
+  else groundY = H - 150 - safeB;                  // upright: thumbs rest on the ground below Pablo
+  placeJoyIdle();
   fitZoom();
   if (G && G.state !== 'menu') G.cam = camGoal();
 }
@@ -262,8 +264,9 @@ function popK(p, t) {                    // 0 = hidden, 1 = all the way up
 /* ---------- Pablo's movement and what hurts him (also used by the test bot) ---------- */
 function newPablo(x) { return { x, y: 0, vx: 0, vy: 0, py: 0, onG: true, plat: -1, coy: 0, jb: 0, f: 1, lo: -20, hi: CAGE_L - 12, jumped: false, landed: false }; }
 function movePablo(s, inp, dt, t) {
-  const want = (inp.r ? 1 : 0) - (inp.l ? 1 : 0);
-  if (want) s.f = want;
+  let want = (inp.r ? 1 : 0) - (inp.l ? 1 : 0);
+  if (inp.x) want = clamp(want + inp.x, -1, 1);          // the thumbstick: the farther, the faster
+  if (want) s.f = want > 0 ? 1 : -1;
   const tv = want * RUN, a = (s.onG ? ACC : AIR) * dt;
   s.vx = s.vx < tv ? Math.min(tv, s.vx + a) : Math.max(tv, s.vx - a);
   if (s.onG && s.plat >= 0) { const m = LV.movers[s.plat], a0 = moverAt(m, t - dt), a1 = moverAt(m, t); s.x += a1.x - a0.x; s.y = a1.y; }
@@ -302,7 +305,7 @@ function hazardAt(s, t) {
 
 /* ---------- the game ---------- */
 let G = null, P = newPablo(START_X), OAK = null;
-const keys = { l: false, r: false, d: false };
+const keys = { l: false, r: false, d: false, x: 0 };
 G = { state: 'menu', t: 0, time: 0, lives: CONFIG.LIVES, cp: 0, arena: false, gateT: 0, darts: [], dartCd: 0, jumpQ: false, hurtT: 0, hurtKind: '', wonT: 0,
   key: 'collar', kx: 0, ky: 0, kvy: 0, doorT: 0, manX: CAGE_L + 38, manSay: null, manNext: 4, lockedT: 0, parts: [], texts: [], shake: 0, cam: 0,
   flags: [], inv: 0, frozen: 0, runT: 0, shootT: 0, spin: 0, manual: false, tipped: {} };
@@ -316,7 +319,7 @@ function start() {
   P = newPablo(START_X); OAK = newOak();
   Object.assign(G, { state: 'run', time: 0, lives: CONFIG.LIVES, cp: 0, arena: false, gateT: 0, darts: [], dartCd: 0, jumpQ: false, hurtT: 0, wonT: 0,
     key: 'collar', doorT: 0, manX: CAGE_L + 38, manSay: null, manNext: 4, lockedT: 0, parts: [], texts: [], shake: 0, flags: [], inv: 0, frozen: 0.5, spin: 0, tipped: {} });
-  keys.l = keys.r = keys.d = false;
+  clearInput();
   zoomW = VIEW_W; layout(); G.cam = camGoal();
   showPanel(null); setLabel(); updHearts(); setProg(0, true);
   floatText('Go!', P.x, 150, 40, '#fff');
@@ -350,7 +353,7 @@ function hurt(kind) {
   }
 }
 function won() {
-  G.state = 'won'; G.wonT = 0; keys.l = keys.r = keys.d = false;
+  G.state = 'won'; G.wonT = 0; clearInput();
   sfx.open();
   manTalk('Thanks, Pablo! I was almost a dino snack!', 4);
   const t = G.time; G.newBest = !best || t < best;
@@ -534,7 +537,7 @@ function update(dt) {
   // ---- running ----
   G.time += dt;
   G.inv = Math.max(0, G.inv - dt); G.dartCd = Math.max(0, G.dartCd - dt); G.shootT = Math.max(0, G.shootT - dt);
-  let inp = { l: keys.l, r: keys.r, j: G.jumpQ }; G.jumpQ = false;
+  let inp = { l: keys.l, r: keys.r, x: keys.x, j: G.jumpQ }; G.jumpQ = false;
   if (G.frozen > 0) { G.frozen -= dt; inp = { l: false, r: false, j: false }; }
   P.lo = G.arena ? ARENA_L + 12 : -20; P.hi = CAGE_L - 12;
   movePablo(P, inp, dt, G.t);
@@ -1034,6 +1037,13 @@ function draw() {
       g.save(); g.beginPath(); g.rect(bx, by, bw, bh); g.clip(); txt(G.manSay.str, bx + bw / 2, by + bh / 2 + 1, Math.round(15 * TS), '#0f3b47'); g.restore();
     }
   }
+  if (G.state === 'run' && !G.arena && G.cp === 0 && G.time < 7) {        // a reminder of the controls at the start
+    g.globalAlpha = Math.min(1, (7 - G.time) / 1.5);
+    if (touchUI) {
+      if (joy.id === null) { const r = joyBase.getBoundingClientRect(); txt('Slide to run', r.left + r.width / 2, r.top + 18, 15, '#fff', OUT); }
+    } else txt('← → run    Space: jump    X: sleepy dart', W / 2, hudB + 34, 17, '#fff', OUT);
+    g.globalAlpha = 1;
+  }
   if (G.state === 'run' && G.arena && G.key !== 'collar') {
     const tx = G.key === 'drop' ? G.kx : CAGE_L - 20, tyy = G.key === 'drop' ? 80 : 140, ax = sx(tx), ay = sy(tyy) + (reduce ? 0 : Math.sin(G.t * 6) * 5);
     g.fillStyle = '#fde047'; poly([ax - 12, ay - 16, ax + 12, ay - 16, ax, ay]);
@@ -1074,7 +1084,7 @@ function showPanel(name) {
   panelName = name;
   const ov = $('overlay'), pn = $('panel'), on = !!name;
   ov.hidden = !on; ov.classList.toggle('top', on && name !== 'menu');
-  $('hud').classList.toggle('hide', on); $('pad').classList.toggle('hide', on);
+  $('hud').classList.toggle('hide', on); $('touch').classList.toggle('hide', on);
   if (!on) { pn.innerHTML = ''; try { cv.focus({ preventScroll: true }); } catch (e) {} return; }
   const det = (id, title, body) => '<details data-k="' + id + '"' + (fold[id] ? ' open' : '') + '><summary>' + title + '</summary><div>' + body + '</div></details>';
   const N = CONFIG.SLEEPY_DARTS, LIV = CONFIG.LIVES;
@@ -1084,7 +1094,7 @@ function showPanel(name) {
       + '<div class="row"><button class="b go" data-a="play">Play</button></div>'
       + (best > 0 ? '<p class="muted">Fastest rescue so far: ' + fmt(best) + '.</p>' : '')
       + (store.ok ? '' : '<p class="muted">This browser isn’t saving your fastest time, so it starts over each time.</p>')
-      + det('how', 'How to Play', '<ul><li><b>Arrows:</b> run left and right.</li><li><b>Jump:</b> hop over spikes, pits and bouncing spike balls. Wait for the pop-up spikes to go down.</li>'
+      + det('how', 'How to Play', '<ul><li><b>Run:</b> put your thumb anywhere on the lower left of the screen and slide it left or right. The farther you slide, the faster Pablo runs.</li><li><b>Jump:</b> hop over spikes, pits and bouncing spike balls. Wait for the pop-up spikes to go down.</li>'
         + '<li><b>' + LIV + ' lives:</b> touch spikes and you lose one, then start again at the last flag. Lose all ' + LIV + ' and Pablo goes back to the very beginning.</li>'
         + '<li><b>Dart:</b> shoots a sleepy dart. Hit Oakley ' + N + ' times and he falls asleep. Hold the button to keep shooting. Darts bounce off him while he roars or charges. Every ' + CONFIG.SHAKE_EVERY + ' darts or so he gets mad, roars, and comes after you.</li>'
         + '<li><b>Don’t get chomped!</b> When a red <b>!</b> shows and Oakley opens his mouth, back away. When he crouches down, he’s about to charge, so jump over him. You can bounce off his back.</li>'
@@ -1093,7 +1103,7 @@ function showPanel(name) {
       + det('facts', 'Dinosaur Facts', '<ul><li>Oakley is made up. Real dinosaurs like <i>T. rex</i> died out about 66 million years ago, long before there were people, so no dinosaur ever chased anyone.</li>'
         + '<li><i>T. rex</i> had tiny arms for its size: about as long as a grown-up’s arm, on an animal about as long as a school bus.</li>'
         + '<li>Wildlife vets really do use sleepy darts. They let a vet help a big animal, like a sick rhino, without anyone getting hurt.</li></ul>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. The first version: a spike course with pits, bouncing spike balls, pop-up spikes and floating logs; ' + LIV + ' lives and three flags; and Oakley, who chomps, charges, bonks into walls and falls asleep after ' + N + ' sleepy darts.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. New touch controls, like Five O\u2019Clock Shadow of the Colossus: put your thumb anywhere on the lower left and slide it to run (the farther you slide, the faster), with big round Jump and Dart buttons on the right. On a computer, the keys do it all.</p><p>Version 0.1, 26 November 2026. The first version: a spike course with pits, bouncing spike balls, pop-up spikes and floating logs; ' + LIV + ' lives and three flags; and Oakley, who chomps, charges, bonks into walls and falls asleep after ' + N + ' sleepy darts.</p>')
       + det('credits', 'Credits', '<p>Game idea by Sam. Built by Claude, an AI from Anthropic, with Dave Schwartz.</p><p>Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing comes from another game or site. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
       + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button></div>';
   } else if (name === 'win') {
@@ -1112,7 +1122,7 @@ function showPanel(name) {
 }
 function toMenu() {
   G.state = 'menu'; P = newPablo(START_X); OAK = newOak(); G.arena = false; G.gateT = 0; G.key = 'collar'; G.doorT = 0; G.manX = CAGE_L + 38; G.darts = []; G.manSay = null; G.cp = 0;
-  keys.l = keys.r = keys.d = false; zoomW = VIEW_W; fitZoom(); setProg(0, true); showPanel('menu');
+  clearInput(); zoomW = VIEW_W; fitZoom(); setProg(0, true); showPanel('menu');
 }
 $('panel').addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return;
@@ -1128,46 +1138,46 @@ $('panel').addEventListener('toggle', e => {
 }, true);
 
 let pausedFrom = 'run';
-function pause() { if (G.state !== 'run' && G.state !== 'hurt') return; pausedFrom = G.state; G.state = 'paused'; keys.l = keys.r = keys.d = false; showPanel('paused'); say('Paused.'); }
+function pause() { if (G.state !== 'run' && G.state !== 'hurt') return; pausedFrom = G.state; G.state = 'paused'; clearInput(); showPanel('paused'); say('Paused.'); }
 function resume() { if (G.state !== 'paused') return; A.init(); G.state = pausedFrom; showPanel(null); last = 0; }
 
 /* ---------- controls ---------- */
-// Touch: each finger is tracked over the buttons, so you can slide from one arrow to the other.
-const pad = $('pad'), fingers = new Map(), BTN = { bL: 'l', bR: 'r', bJ: 'j', bD: 'd' };
-function btnAt(x, y) { const el = document.elementFromPoint(x, y); const b = el && el.closest && el.closest('.pb'); return b && BTN[b.id] ? b.id : null; }
-function refreshHeld() {
-  const on = new Set(fingers.values());
-  keys.l = on.has('bL'); keys.r = on.has('bR'); keys.d = on.has('bD');
-  for (const id in BTN) $(id).classList.toggle('down', on.has(id));
+// Touch, as in Five O'Clock Shadow of the Colossus: put a thumb down anywhere on the lower left and slide it
+// left or right to run (the farther, the faster); round Jump and Dart buttons sit on the right.
+// Computers use the keyboard, and the touch controls appear the first time the screen is touched.
+function setTouch() { if (touchUI) return; touchUI = true; document.body.classList.add('touch'); layout(); }
+function clearInput() { keys.l = keys.r = keys.d = false; keys.x = 0; }
+const joyZone = $('joyZone'), joyBase = $('joyBase'), joyKnob = $('joyKnob'), joy = { id: null, ox: 0, oy: 0 }, JOY_R = 54;
+function placeJoyIdle() {
+  if (joy.id !== null) return;
+  const zh = H * 0.62, x = 86 + safeL, y = Math.max(70, zh - 84 - safeB);   // the zone is the lower 62% of the screen (see #joyZone); it may be hidden now
+  joyBase.style.left = joyKnob.style.left = x + 'px'; joyBase.style.top = joyKnob.style.top = y + 'px';
 }
-function fingerTo(id, b) {
-  b = b || '';
-  if (fingers.get(id) === b) return;
-  fingers.set(id, b);                    // keep following the finger even between buttons
-  if (b === 'bJ') G.jumpQ = G.state === 'run';
-  if (b === 'bD') fire();
-  A.init();
-  refreshHeld();
+function joyEnd() { joy.id = null; keys.x = 0; joyZone.classList.add('idle'); placeJoyIdle(); }
+joyZone.addEventListener('pointerdown', e => {
+  if (joy.id !== null) return;
+  e.preventDefault(); setTouch(); A.init();
+  joy.id = e.pointerId; const r = joyZone.getBoundingClientRect(); joy.ox = e.clientX - r.left; joy.oy = e.clientY - r.top;
+  joyBase.style.left = joyKnob.style.left = joy.ox + 'px'; joyBase.style.top = joyKnob.style.top = joy.oy + 'px';
+  joyZone.classList.remove('idle'); try { joyZone.setPointerCapture(e.pointerId); } catch (er) {}
+});
+joyZone.addEventListener('pointermove', e => {
+  if (e.pointerId !== joy.id) return;
+  const r = joyZone.getBoundingClientRect(), dx = clamp(e.clientX - r.left - joy.ox, -JOY_R, JOY_R);
+  joyKnob.style.left = (joy.ox + dx) + 'px';
+  const j = dx / JOY_R, m = Math.abs(j);
+  keys.x = m < 0.18 ? 0 : Math.sign(j) * Math.min(1, (m - 0.18) / 0.57);   // full speed three-quarters of the way out
+});
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => joyZone.addEventListener(t, e => { if (e.pointerId === joy.id) joyEnd(); }));
+function holdBtn(el, on, off) {
+  el.addEventListener('pointerdown', e => { e.preventDefault(); setTouch(); A.init(); el.classList.add('on'); try { el.setPointerCapture(e.pointerId); } catch (er) {} on(); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => el.addEventListener(t, () => { el.classList.remove('on'); off(); }));
 }
-pad.addEventListener('pointerdown', e => {
-  e.preventDefault();
-  try { if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) e.target.releasePointerCapture(e.pointerId); } catch (er) {}
-  lastPointer = performance.now();
-  fingerTo(e.pointerId, btnAt(e.clientX, e.clientY));
-});
-window.addEventListener('pointermove', e => { if (fingers.has(e.pointerId)) fingerTo(e.pointerId, btnAt(e.clientX, e.clientY)); });
-const lift = e => { fingers.delete(e.pointerId); refreshHeld(); };
-window.addEventListener('pointerup', lift); window.addEventListener('pointercancel', lift);
-pad.addEventListener('contextmenu', e => e.preventDefault());
-// Keyboard and switch users can press the buttons too.
-let lastPointer = -1e9;
-for (const id in BTN) $(id).addEventListener('click', () => {
-  if (performance.now() - lastPointer < 700 || G.state !== 'run') return;
-  const k = BTN[id];
-  if (k === 'j') G.jumpQ = true;
-  else if (k === 'd') fire();
-  else { keys[k] = true; setTimeout(() => { keys[k] = false; }, 260); }
-});
+holdBtn($('bJ'), () => { if (G.state === 'run') G.jumpQ = true; }, () => {});
+holdBtn($('bD'), () => { keys.d = true; fire(); }, () => { keys.d = false; });
+$('touch').addEventListener('contextmenu', e => e.preventDefault());
+if (window.matchMedia && matchMedia('(pointer: coarse)').matches) { touchUI = true; document.body.classList.add('touch'); }
+window.addEventListener('touchstart', () => { setTouch(); A.init(); }, { passive: true });
 $('bP').addEventListener('click', pause);
 cv.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -1191,7 +1201,7 @@ window.addEventListener('keyup', e => {
   else if (k === 'ArrowRight' || k === 'd' || k === 'D') keys.r = false;
   else if (k === 'x' || k === 'X' || k === 'f' || k === 'F') keys.d = false;
 });
-window.addEventListener('blur', () => { keys.l = keys.r = keys.d = false; fingers.clear(); refreshHeld(); });
+window.addEventListener('blur', () => { clearInput(); joyEnd(); for (const b of document.querySelectorAll('.tb')) b.classList.remove('on'); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('resize', layout);
 window.addEventListener('orientationchange', () => setTimeout(layout, 250));
@@ -1217,6 +1227,7 @@ window.__pablo = {
   manual(on) { G.manual = !!on; },
   tick(dt, n) { for (let i = 0; i < (n || 1); i++) update(dt); },
   jump() { G.jumpQ = true; },
+  ground() { return groundY; },
   warp(x, cp) { P.x = x; P.y = 0; P.vx = 0; P.vy = 0; P.onG = true; if (cp != null) G.cp = cp; zoomW = zoomGoal(); fitZoom(); G.cam = camGoal(); }
 };
 })();
