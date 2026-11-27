@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#3f7d4a">
 <title>Turkey Gets Away</title>
 <!--
-  Turkey Gets Away — v0.2, 2026-11-26
+  Turkey Gets Away — v0.3, 2026-11-26
   Game idea by Evelyn: a turkey called Turkey runs across the forest, away from the hunters.
   One self-contained file: no outside code, fonts, pictures or sounds. All art is drawn
   and all sound is made in the browser. Built by Claude with Dave Schwartz. GPL-3.0.
@@ -22,7 +22,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 body{position:fixed;inset:0;font:17px/1.45 var(--font);color:var(--ink)}
-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
 button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 :focus-visible{outline:3px solid #2563eb;outline-offset:2px}
 @media (prefers-color-scheme:dark){:focus-visible{outline-color:#93c5fd}}
@@ -76,6 +76,21 @@ details[open]>summary::after{content:"\2212"}
 details>div{padding:0 0 6px}
 ul{margin:0 0 12px;padding-left:22px}
 li{margin:0 0 7px}
+#seedBox{flex:none;margin:0;display:flex;align-items:center;gap:5px;min-width:56px;height:40px;padding:0 11px 0 8px;border-radius:14px;background:rgba(0,0,0,.42);border:2px solid rgba(255,255,255,.85);color:#fff;font-weight:800;font-size:17px;line-height:1}
+.pvw{position:sticky;top:0;z-index:1;margin:0 0 10px;background:var(--panel);box-shadow:0 -22px 0 var(--panel)}
+.pv{display:block;width:100%;height:196px;border-radius:16px;background:#84c06f;box-shadow:0 8px 10px -8px rgba(0,0,0,.4)}
+@media (prefers-color-scheme:dark){.pv{background:#244431}}
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:8px 0 12px;min-width:0}
+legend{font-weight:800;padding:0 8px 0 0}
+.chips,.grid{display:flex;flex-wrap:wrap;gap:8px}
+.grid{margin:0 0 12px}
+.chip{min-height:48px;min-width:48px;display:inline-flex;align-items:center;gap:8px;border-radius:14px;border:2px solid var(--line);background:transparent;color:var(--ink);font-weight:700;font-size:16px;padding:6px 12px}
+.chip[aria-pressed=true]{border-color:var(--accent);background:var(--chip)}
+.chip.lock{border-style:dashed;color:var(--muted)}
+.chip small{font-size:13px}
+.dot{flex:none;width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(0,0,0,.35)}
+.lv{min-width:52px;min-height:48px;border-radius:14px;border:2px solid var(--btn);background:transparent;color:var(--ink);font-weight:800;font-size:18px}
+.new{font-weight:800;color:var(--accent)}
 #rot{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:var(--panel);color:var(--ink);padding:24px;text-align:center;font-weight:800;font-size:22px}
 #rot[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){#bE.hot{animation:none;border-color:#dc2626}}
@@ -95,6 +110,7 @@ li{margin:0 0 7px}
     <p id="progLbl">Forest 1</p>
     <div id="bar" role="progressbar" aria-label="How far across the forest" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="fill"></div></div>
   </div>
+  <p id="seedBox"><span class="sr">Seeds: </span><svg width="16" height="20" viewBox="0 0 16 20" aria-hidden="true"><path d="M8 1C13 7 13 14 8 19C3 14 3 7 8 1Z" fill="#fde68a" stroke="#7a5a12" stroke-width="1.6"/><path d="M8 5.5v9" stroke="#7a5a12" stroke-width="1.4" stroke-linecap="round"/></svg><span id="seedN">0</span></p>
 </div>
 
 <div id="pad" class="hide">
@@ -115,11 +131,11 @@ li{margin:0 0 7px}
 <script>
 (() => {
 'use strict';
-const VERSION = '0.2', DATE = '26 November 2026';
+const VERSION = '0.3', DATE = '26 November 2026';
 const EGG_WAIT = 10;            // seconds before Turkey can lay another egg
 const JUMP = 0.62;              // seconds in the air
 const $ = id => document.getElementById(id);
-const cv = $('c'), g = cv.getContext('2d');
+const cv = $('c'); let g = cv.getContext('2d');
 const FONT = 'ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -138,8 +154,37 @@ const store = {
 store.set('v', VERSION);
 let best = parseInt(store.get('best'), 10); if (!(best >= 0 && best < 1000)) best = 0;   // forests crossed
 let soundOn = store.get('sound') !== '0';
-let fold = { how: true, facts: false, about: false, credits: false };
+let fold = { pick: false, how: true, facts: false, about: false, credits: false };
 try { const f = JSON.parse(store.get('fold') || '{}'); for (const k in fold) if (typeof f[k] === 'boolean') fold[k] = f[k]; } catch (e) {}
+
+/* ---------- Turkey's looks: each one opens at a number of seeds ---------- */
+const TAILS = [
+  { n: 'Classic', at: 0, c: ['#4f2b12', '#e9d4a3', '#8f4f24', '#5a3216'] },
+  { n: 'Sunset', at: 25, c: ['#7c2d12', '#fdba74', '#ea580c', '#9a3412'] },
+  { n: 'Bubblegum', at: 100, c: ['#9d174d', '#fbcfe8', '#ec4899', '#831843'] },
+  { n: 'Snowy', at: 200, c: ['#8fa0b5', '#ffffff', '#dfe7f0', '#8fa0b5'] },
+  { n: 'Peacock', at: 330, c: ['#134e4a', '#22d3ee', '#1d4ed8', '#0f766e'], eyes: true },
+  { n: 'Rainbow', at: 495, c: ['#3b1d0f', '#facc15', '#fff7ed', '#5a3216'], rainbow: true },
+  { n: 'Golden', at: 630, c: ['#a16207', '#fde047', '#eab308', '#854d0e'] }
+];
+const BODIES = [
+  { n: 'Brown', at: 0, c: ['#6e3b1a', '#84481f', '#5a3216'] },
+  { n: 'White', at: 45, c: ['#e8edf3', '#ffffff', '#c3ccd8'] },
+  { n: 'Black', at: 130, c: ['#2b2b30', '#45454d', '#17171a'] },
+  { n: 'Blue', at: 240, c: ['#1d4ed8', '#3b82f6', '#1e3a8a'] },
+  { n: 'Pink', at: 380, c: ['#db2777', '#f472b6', '#9d174d'] },
+  { n: 'Golden', at: 560, c: ['#ca8a04', '#facc15', '#a16207'] }
+];
+const HATS = [{ n: 'No Hat', at: 0 }, { n: 'Party Hat', at: 10 }, { n: 'Bow', at: 70 }, { n: 'Pilgrim Hat', at: 165 }, { n: 'Cowboy Hat', at: 285 }, { n: 'Crown', at: 435 }];
+const PARTS = { tail: TAILS, body: BODIES, hat: HATS };
+const UNLOCKS = [];
+for (const k in PARTS) PARTS[k].forEach(p => { if (p.at > 0) UNLOCKS.push({ at: p.at, label: k === 'hat' ? p.n : p.n + ' ' + k }); });
+UNLOCKS.sort((a, b) => a.at - b.at);
+let seeds = parseInt(store.get('seeds'), 10); if (!(seeds >= 0 && seeds < 1e7)) seeds = 0;      // every seed ever picked up
+const look = { tail: 0, body: 0, hat: 0 };
+try { const l = JSON.parse(store.get('look') || '{}'); for (const k in look) { const i = l[k]; if (Number.isInteger(i) && PARTS[k][i] && PARTS[k][i].at <= seeds) look[k] = i; } } catch (e) {}
+const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+function seedLine() { const u = UNLOCKS.find(u => u.at > seeds); return plural(seeds, 'seed') + (u ? '. Next new look at ' + u.at + ' seeds.' : '. You have every look!'); }
 
 /* ---------- sound: everything is made here, nothing is loaded ---------- */
 const A = {
@@ -185,7 +230,9 @@ const sfx = {
   win() { [523, 659, 784, 1047].forEach((f, i) => A.tone(f, f, 0.24, 'triangle', 0.3, i * 0.13)); },
   caught() { A.tone(420, 150, 0.6, 'sawtooth', 0.16); },
   ready() { A.tone(1040, 1040, 0.12, 'sine', 0.16); },
-  step() { A.tone(420, 520, 0.05, 'sine', 0.1); }
+  step() { A.tone(420, 520, 0.05, 'sine', 0.1); },
+  seed() { A.tone(1180, 1580, 0.07, 'sine', 0.15); },
+  unlock() { [784, 988, 1319].forEach((f, i) => A.tone(f, f, 0.16, 'triangle', 0.28, i * 0.09)); }
 };
 
 /* ---------- layout ---------- */
@@ -213,7 +260,7 @@ function layout() {
 let G = null;
 G = { state: 'menu', level: 1, t: 0, dist: 0, total: 1, speed: 200, slow: 0, lane: 1, x: 0, jumpT: -1, jbuf: 0, stumT: 0, inv: 0, runT: 0, gobT: 0, autoGob: 9,
   gap: 300, dGap: 300, hState: 'chase', hT: 0, slipLane: 1, slips: 0, eggCd: 0, eggs: [], obs: [], rowN: 0, nextRow: 0, pel: [], aim: null, shotT: 7,
-  parts: [], texts: [], hintLog: 0, hintTree: 0, endT: 0, readyT: 0, shake: 0, runTime: 42, catchTime: 24, rowGap: [1.2, 1.65], shotGap: [6.5, 9.5], aimTime: 1.05 };
+  parts: [], texts: [], seedList: [], seedsRun: 0, newLooks: [], endT: 0, readyT: 0, shake: 0, runTime: 42, catchTime: 24, rowGap: [1.2, 1.65], shotGap: [6.5, 9.5], aimTime: 1.05 };
 
 function tune() {                      // how hard this forest is
   const L = G.level;
@@ -227,14 +274,14 @@ function tune() {                      // how hard this forest is
 function start(level) {
   A.init();
   Object.assign(G, { state: 'run', level, dist: 0, slow: 0, lane: 1, jumpT: -1, jbuf: 0, stumT: 0, inv: 0, gobT: 0, autoGob: rnd(9, 15),
-    hState: 'chase', hT: 0, slips: 0, eggCd: 0, eggs: [], obs: [], rowN: 0, pel: [], aim: null, parts: [], texts: [], hintLog: 0, hintTree: 0, endT: 0, readyT: 1.5, shake: 0 });
+    hState: 'chase', hT: 0, slips: 0, eggCd: 0, eggs: [], obs: [], rowN: 0, pel: [], aim: null, parts: [], texts: [], seedList: [], seedsRun: 0, newLooks: [], endT: 0, readyT: 1.5, shake: 0 });
   layout(); tune();
   G.x = laneX(1); G.gap = G.dGap = maxGap + 90;
   G.total = G.speed * G.runTime;
   G.nextRow = ahead + G.speed * 1.3;
   G.shotT = rnd(6, 8);
   showPanel(null);
-  $('progLbl').textContent = 'Forest ' + level;
+  $('progLbl').textContent = 'Forest ' + level; $('seedN').textContent = seeds;
   eggShown = ''; updEgg(); setProg(0, true);
   say('Forest ' + level + '. Ready, go!');
   sfx.ready();
@@ -292,7 +339,13 @@ function feathers(x, y, n) {
   for (let i = 0; i < n; i++) G.parts.push({ type: 'leaf', x, y, vx: rnd(-130, 130), vy: rnd(-200, -40), rot: rnd(0, 6), vr: rnd(-7, 7), life: 0, max: rnd(0.6, 1.1), size: rnd(5, 8) * S, color: cols[i % 3], grav: 380 });
 }
 function puff(x, y) { G.parts.push({ type: 'puff', x, y, vx: 0, vy: 0, rot: 0, vr: 0, life: 0, max: 0.35, size: 12 * S, color: '#fff', grav: 0 }); }
-function floatText(str, x, y, px, color) { G.texts.push({ str, x: clamp(x, 60, W - 60), y, px: px * Math.max(1, S), color, life: 0, max: 0.95 }); }
+function floatText(str, x, y, px, color, max) { G.texts.push({ str, x: clamp(x, 60, W - 60), y, px: px * Math.max(1, S), color, life: 0, max: max || 0.95 }); }
+function gotSeed(x) {                   // seeds are kept the moment they're picked up, even if Turkey is caught later
+  seeds++; G.seedsRun++; store.set('seeds', seeds); $('seedN').textContent = seeds; sfx.seed();
+  G.parts.push({ type: 'star', x, y: ty - 8 * S, vx: rnd(-30, 30), vy: -150, rot: rnd(0, 6), vr: 5, life: 0, max: 0.45, size: 6 * S, color: '#fde68a', grav: 200 });
+  const u = UNLOCKS.find(u => u.at === seeds);
+  if (u) { G.newLooks.push(u.label); sfx.unlock(); floatText('New: ' + u.label + '!', W / 2, hudB + (ty - hudB) * 0.3, 24, '#fde047', 1.9); say('New for your turkey: ' + u.label + '.'); }
+}
 
 function spawnRow() {
   const wy = G.nextRow, L = G.level, lanes = [0, 1, 2].sort(() => Math.random() - 0.5);
@@ -313,8 +366,14 @@ function spawnRow() {
     else if (p === 4) { add('tree', lanes[0]); add('log', lanes[1]); }
     else { add('tree', lanes[0]); add('tree', lanes[1]); add('log', lanes[2]); }
   }
+  const gapPx = G.speed * rnd(G.rowGap[0], G.rowGap[1]);
+  if (gapPx > 150 * S && Math.random() < 0.8) {          // a short line of seeds before the next row, never in a lane a tree or rock is hiding
+    const blocked = G.obs.filter(o => o.wy === wy && o.type === 'tree').map(o => o.lane), free = [0, 1, 2].filter(l => !blocked.includes(l));
+    const lane = free[Math.floor(Math.random() * free.length)], step = 30 * S, n = Math.min(2 + Math.floor(Math.random() * 3), Math.floor(gapPx * 0.5 / step));
+    for (let i = 0; i < n; i++) G.seedList.push({ wy: wy + gapPx * 0.42 + (i - (n - 1) / 2) * step, lane, got: false });
+  }
   G.rowN++;
-  G.nextRow += G.speed * rnd(G.rowGap[0], G.rowGap[1]);
+  G.nextRow += gapPx;
 }
 function forcedSoon(pelV) {            // don't shoot when two trees leave Turkey only one lane
   const tArr = G.aimTime + G.dGap / pelV, a = G.dist + G.speed * (tArr - 0.55), b = G.dist + G.speed * (tArr + 0.55), n = {};
@@ -373,6 +432,10 @@ function update(dt) {
     }
   }
   G.obs = G.obs.filter(o => o.wy > G.dist - (H - ty) - 140);
+
+  // seeds
+  for (const sd of G.seedList) if (Math.abs(sd.wy - G.dist) < 20 * S && Math.abs(G.x - laneX(sd.lane)) < laneW * 0.45) { sd.got = true; gotSeed(laneX(sd.lane)); }
+  G.seedList = G.seedList.filter(sd => !sd.got && sd.wy > G.dist - (H - ty) - 40);
 
   // eggs
   const hy = ty + G.dGap;
@@ -440,8 +503,32 @@ function txt(str, x, y, px, fill, stroke) {
   g.fillStyle = fill; g.fillText(str, x, y);
 }
 
+function drawHat(i, hx, hy) {            // drawn on Turkey's head, in her own scale
+  if (i === 1) {                        // party hat
+    g.fillStyle = '#ec4899'; g.beginPath(); g.moveTo(hx - 6.5, hy - 5); g.lineTo(hx + 6.5, hy - 5.5); g.lineTo(hx - 1, hy - 22); g.closePath(); g.fill();
+    g.strokeStyle = '#fde047'; g.lineWidth = 1.8; ln(hx - 4.2, hy - 10.5, hx + 3.6, hy - 11.5); ln(hx - 2.6, hy - 16, hx + 1.2, hy - 16.6);
+    g.fillStyle = '#fde047'; circ(hx - 1, hy - 22.5, 2.6);
+  } else if (i === 2) {                 // bow
+    g.fillStyle = '#ec4899';
+    g.beginPath(); g.moveTo(hx - 2, hy - 8); g.lineTo(hx - 10, hy - 13.5); g.lineTo(hx - 10, hy - 3.5); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(hx - 2, hy - 8); g.lineTo(hx + 6, hy - 13.5); g.lineTo(hx + 6, hy - 3.5); g.closePath(); g.fill();
+    g.fillStyle = '#be185d'; circ(hx - 2, hy - 8, 2.5);
+  } else if (i === 3) {                 // pilgrim hat
+    g.fillStyle = '#1f1f23'; rr(hx - 11, hy - 8.8, 22, 3.6, 1.6);
+    g.beginPath(); g.moveTo(hx - 6.4, hy - 8); g.lineTo(hx + 6.4, hy - 8); g.lineTo(hx + 4.8, hy - 20); g.lineTo(hx - 4.8, hy - 20); g.closePath(); g.fill();
+    g.fillStyle = '#7a4a22'; g.fillRect(hx - 6, hy - 12.6, 12, 3.2);
+    g.fillStyle = '#facc15'; g.fillRect(hx - 2.5, hy - 13.4, 5, 4.8); g.fillStyle = '#1f1f23'; g.fillRect(hx - 1.1, hy - 12, 2.2, 2);
+  } else if (i === 4) {                 // cowboy hat
+    g.fillStyle = '#b7791f'; ell(hx, hy - 7.6, 13.5, 3.8); rr(hx - 6.8, hy - 18.5, 13.6, 11.5, 4.5);
+    g.fillStyle = '#7c2d12'; g.fillRect(hx - 6.8, hy - 11.4, 13.6, 2.6);
+    g.strokeStyle = '#8a5a14'; g.lineWidth = 1.3; ln(hx, hy - 18, hx, hy - 14.5);
+  } else if (i === 5) {                 // crown
+    g.fillStyle = '#facc15'; g.beginPath(); g.moveTo(hx - 7.5, hy - 6.5); g.lineTo(hx - 7.5, hy - 18); g.lineTo(hx - 3.7, hy - 13); g.lineTo(hx, hy - 19.5); g.lineTo(hx + 3.7, hy - 13); g.lineTo(hx + 7.5, hy - 18); g.lineTo(hx + 7.5, hy - 6.5); g.closePath(); g.fill();
+    g.fillStyle = '#ef4444'; circ(hx, hy - 9.6, 1.7); g.fillStyle = '#3b82f6'; circ(hx - 4.6, hy - 9.6, 1.3); circ(hx + 4.6, hy - 9.6, 1.3);
+  }
+}
 function drawTurkey(x, y, sc, o) {
-  const h = o.h || 0;
+  const h = o.h || 0, lk = o.look || look, tl = TAILS[lk.tail] || TAILS[0], T = tl.c, B = (BODIES[lk.body] || BODIES[0]).c;
   g.fillStyle = P.shadow; ell(x, y + 15 * sc, (24 - 9 * h) * sc, (8 - 3 * h) * sc);
   g.save(); g.translate(x, y - h * 48 * sc); const k = sc * (1 + 0.16 * h); g.scale(k, k);
   if (o.stum > 0) g.rotate(Math.sin(o.stum * 40) * 0.28);
@@ -458,13 +545,20 @@ function drawTurkey(x, y, sc, o) {
   g.strokeStyle = '#b8402e'; g.lineWidth = 7; ln(0, -20, hx * 0.6, hy + 6);
   // tail fan
   const a0 = Math.PI - 0.32, a1 = Math.PI * 2 + 0.32, fan = (r, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(0, -2); g.arc(0, -2, r, a0, a1); g.closePath(); g.fill(); };
-  fan(31 + 3 * h, '#4f2b12'); fan(27 + 3 * h, '#e9d4a3'); fan(22 + 2 * h, '#8f4f24'); fan(13, '#5a3216');
-  g.strokeStyle = 'rgba(60,30,10,.55)'; g.lineWidth = 1.4;
+  fan(31 + 3 * h, T[0]);
+  if (tl.rainbow) {
+    const RB = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#06b6d4', '#3b82f6', '#a855f7', '#ec4899'];
+    for (let i = 0; i < 8; i++) { g.fillStyle = RB[i]; g.beginPath(); g.moveTo(0, -2); g.arc(0, -2, 28 + 3 * h, a0 + (a1 - a0) * i / 8, a0 + (a1 - a0) * (i + 1) / 8 + 0.01); g.closePath(); g.fill(); }
+    fan(16, T[2]);
+  } else { fan(27 + 3 * h, T[1]); fan(22 + 2 * h, T[2]); }
+  fan(13, T[3]);
+  g.strokeStyle = 'rgba(45,25,12,.5)'; g.lineWidth = 1.4;
   for (let i = 0; i <= 8; i++) { const a = a0 + (a1 - a0) * i / 8; ln(Math.cos(a) * 12, -2 + Math.sin(a) * 12, Math.cos(a) * (30 + 3 * h), -2 + Math.sin(a) * (30 + 3 * h)); }
+  if (tl.eyes) for (let i = 0; i < 8; i++) { const a = a0 + (a1 - a0) * (i + 0.5) / 8, r = 24.6 + 2.5 * h; g.fillStyle = '#fde047'; circ(Math.cos(a) * r, -2 + Math.sin(a) * r, 2.5); g.fillStyle = '#1e3a8a'; circ(Math.cos(a) * r, -2 + Math.sin(a) * r, 1.2); }
   // body and wings
-  g.fillStyle = '#6e3b1a'; ell(0, 6, 15, 13);
-  g.fillStyle = '#84481f'; ell(-3, 3, 8, 6);
-  g.fillStyle = '#5a3216';
+  g.fillStyle = B[0]; ell(0, 6, 15, 13);
+  g.fillStyle = B[1]; ell(-3, 3, 8, 6);
+  g.fillStyle = B[2];
   const flap = h > 0 ? 0.9 + Math.sin(o.t * 30) * 0.35 : 0.25;
   ell(-15 - 4 * h, 4, 6, 11 + 3 * h, flap); ell(15 + 4 * h, 4, 6, 11 + 3 * h, -flap);
   // head: looking back over her shoulder
@@ -474,7 +568,28 @@ function drawTurkey(x, y, sc, o) {
   else { g.beginPath(); g.moveTo(hx + 6, hy - 3); g.lineTo(hx + 15, hy); g.lineTo(hx + 6, hy + 3); g.fill(); }
   g.fillStyle = '#e02d2a'; ell(hx + 6, hy + 7, 2.6, 4.6, o.gob > 0 ? Math.sin(o.gob * 60) * 0.5 : 0);
   g.fillStyle = '#fff'; circ(hx + 2, hy - 2, 3); g.fillStyle = '#1b1208'; circ(hx + 2.8, hy - 1.2, 1.5);
+  drawHat(lk.hat, hx, hy);
   g.restore();
+}
+function drawSeed(x, y, sc) {
+  const bob = reduce ? 0 : Math.sin(G.t * 5 + x) * 1.6 * sc;
+  g.fillStyle = 'rgba(255,255,255,.3)'; circ(x, y - 3 * sc, 14 * sc);            // a soft ring, so seeds don't look like fallen leaves
+  g.fillStyle = P.shadow; ell(x, y + 6 * sc, 6 * sc, 2.4 * sc);
+  g.save(); g.translate(x, y - 4 * sc + bob); g.rotate(0.45);
+  g.beginPath(); g.moveTo(0, -10 * sc); g.quadraticCurveTo(8 * sc, -1 * sc, 0, 9 * sc); g.quadraticCurveTo(-8 * sc, -1 * sc, 0, -10 * sc); g.closePath();
+  g.fillStyle = '#fde68a'; g.fill(); g.strokeStyle = '#6b4a10'; g.lineWidth = 1.8 * sc; g.stroke();
+  g.lineWidth = 1.4 * sc; ln(0, -5 * sc, 0, 5 * sc);
+  g.restore();
+}
+function drawPreview() {                // the big turkey on the My Turkey screen
+  const c = $('pv'); if (!c) return;
+  const d = Math.min(window.devicePixelRatio || 1, 2.5), w = c.clientWidth, hh = c.clientHeight;
+  if (c.width !== Math.round(w * d)) { c.width = Math.round(w * d); c.height = Math.round(hh * d); }
+  const pg = c.getContext('2d'), keep = g;
+  pg.setTransform(d, 0, 0, d, 0, 0); pg.clearRect(0, 0, w, hh);
+  g = pg; P = dark ? PAL.dark : PAL.light;
+  drawTurkey(w / 2, hh * 0.74, 2.05, { run: reduce ? 0 : G.t * 0.4, h: 0, stum: 0, gob: 0, blink: false, t: G.t, look });
+  g = keep;
 }
 
 function drawHunter(x, y, sc, i, o) {
@@ -590,6 +705,7 @@ function draw() {
     g.fillRect(fieldX + laneW * G.aim.lane + 4, -30, laneW - 8, hy + 30);
   }
   for (const e of G.eggs) drawEgg(e, ty + (G.dist - e.wy), S);
+  for (const sd of G.seedList) { const y = ty - (sd.wy - G.dist); if (y > -20 && y < H + 20) drawSeed(laneX(sd.lane), y, S); }
 
   // everything that stands up, drawn back to front
   const list = [];
@@ -696,38 +812,63 @@ function showPanel(name) {
   if (!on) { pn.innerHTML = ''; return; }
   const det = (id, title, body) => '<details data-k="' + id + '"' + (fold[id] ? ' open' : '') + '><summary>' + title + '</summary><div>' + body + '</div></details>';
   let h = '';
+  const fresh = G.newLooks.length ? '<p class="new">New in My Turkey: ' + G.newLooks.join(', ') + '!</p>' : '';
   if (name === 'menu') {
+    let lv = ''; for (let n = Math.max(1, best - 58); n <= best + 1; n++) lv += '<button class="lv" data-a="go" data-n="' + n + '" aria-label="Forest ' + n + '">' + n + '</button>';
     h = '<h1 id="pt">Turkey Gets Away</h1><p class="lead">Help Turkey run across the forest. Lay eggs so the hunters slip!</p>'
-      + '<div class="row"><button class="b go" data-a="play">Play</button>' + (best > 0 ? '<button class="b" data-a="cont">Play Forest ' + (best + 1) + '</button>' : '') + '</div>'
-      + (best > 0 ? '<p class="muted">Forests crossed so far: ' + best + '.</p>' : '')
-      + (store.ok ? '' : '<p class="muted">This browser isn’t saving your forests, so the count starts over each time.</p>')
-      + det('how', 'How to Play', '<ul><li><b>Arrows:</b> go side to side. Run around trees and big rocks. When a hunter shows a red <b>!</b>, get out of that lane.</li><li><b>Jump:</b> hop over logs, mud puddles and creeks.</li><li><b>Lay Egg:</b> the hunters step on it and slip! A new egg takes ' + EGG_WAIT + ' seconds.</li><li><b>Gobble:</b> just for fun.</li></ul><p>You can swipe on the forest too: left, right, up to jump, down to lay an egg. A tap jumps.</p><p>With a keyboard: arrow keys to move, Space to jump, E for an egg, G to gobble, P to pause.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
+      + '<div class="row"><button class="b go" data-a="cont">' + (best > 0 ? 'Play Forest ' + (best + 1) : 'Play') + '</button><button class="b" data-a="look">My Turkey</button></div>'
+      + (!store.ok ? '<p class="muted">This browser isn’t saving your game, so forests, seeds and looks start over each time.</p>'
+        : best + seeds > 0 ? '<p class="muted">Your game saves by itself on this phone or computer: ' + plural(best, 'forest') + ' crossed, ' + seedLine() + '</p>'
+        : '<p class="muted">Your game saves by itself on this phone or computer. Pick up seeds to get new looks for Turkey. The first one comes at 10 seeds.</p>')
+      + det('pick', 'Pick a Forest', '<p>Start at any forest you have reached.</p><div class="grid">' + lv + '</div>')
+      + det('how', 'How to Play', '<ul><li><b>Arrows:</b> go side to side. Run around trees and big rocks. When a hunter shows a red <b>!</b>, get out of that lane.</li><li><b>Jump:</b> hop over logs, mud puddles and creeks.</li><li><b>Lay Egg:</b> the hunters step on it and slip! A new egg takes ' + EGG_WAIT + ' seconds.</li><li><b>Seeds:</b> run over them to pick them up. Seeds open new tails, colors and hats in My Turkey.</li><li><b>Gobble:</b> just for fun.</li></ul><p>Your forests, seeds and turkey are saved by themselves. They stay on this phone or computer until its browser’s saved data is cleared.</p><p>You can swipe on the forest too: left, right, up to jump, down to lay an egg. A tap jumps.</p><p>With a keyboard: arrow keys to move, Space to jump, E for an egg, G to gobble, P to pause.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
       + det('facts', 'Turkey Facts', '<ul><li>Wild turkeys can run faster than most people, and they can fly a short way.</li><li>Male turkeys do most of the gobbling, and only hens lay eggs. Turkey does both, because this is her game.</li><li>Raw egg is slippery. It gets between a boot and the ground, so the boot slides and can’t grip.</li></ul>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. More to get past: mud puddles and creeks to jump, and big rocks to run around.</p><p>Version 0.1, ' + DATE + '. The first version: three lanes, logs to jump, trees to run around, hunters who aim, eggs with a ' + EGG_WAIT + '-second timer, and forests that get a little faster each time.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Seeds to pick up along the way. My Turkey: change her tail, body and hat, with new looks that open as the seeds add up. Pick a Forest: start at any forest you have reached. The menu shows what is saved.</p><p>Version 0.2, 26 November 2026. More to get past: mud puddles and creeks to jump, and big rocks to run around.</p><p>Version 0.1, 26 November 2026. The first version: three lanes, logs to jump, trees to run around, hunters who aim, eggs with a ' + EGG_WAIT + '-second timer, and forests that get a little faster each time.</p>')
       + det('credits', 'Credits', '<p>Game idea by Evelyn. Built by Claude, an AI from Anthropic, with Dave Schwartz.</p><p>Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing comes from another game or site. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
       + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button></div>';
   } else if (name === 'win') {
-    h = '<h2 id="pt">Turkey got away!</h2><p class="lead">You crossed Forest ' + G.level + '. The hunters slipped ' + G.slips + (G.slips === 1 ? ' time.' : ' times.') + '</p>'
-      + '<div class="row"><button class="b go" data-a="next">Next Forest</button><button class="b" data-a="menu">Menu</button></div><p class="muted">The next forest is a little faster.</p>';
+    h = '<h2 id="pt">Turkey got away!</h2><p class="lead">You crossed Forest ' + G.level + '. The hunters slipped ' + plural(G.slips, 'time') + ', and you picked up ' + plural(G.seedsRun, 'seed') + '.</p>' + fresh
+      + '<div class="row"><button class="b go" data-a="next">Next Forest</button><button class="b" data-a="look">My Turkey</button><button class="b" data-a="menu">Menu</button></div><p class="muted">Saved. You have ' + seedLine() + ' The next forest is a little faster.</p>';
   } else if (name === 'caught') {
-    h = '<h2 id="pt">Caught!</h2><p class="lead">The hunters caught up with Turkey. Try again, and remember your eggs!</p>'
-      + '<div class="row"><button class="b go" data-a="again">Try Again</button><button class="b" data-a="menu">Menu</button></div>';
+    h = '<h2 id="pt">Caught!</h2><p class="lead">The hunters caught up with Turkey. Try again, and remember your eggs!</p>' + fresh
+      + '<div class="row"><button class="b go" data-a="again">Try Again</button><button class="b" data-a="look">My Turkey</button><button class="b" data-a="menu">Menu</button></div><p class="muted">You keep your seeds. You have ' + seedLine() + '</p>';
+  } else if (name === 'look') {
+    const chips = k => PARTS[k].map((p, i) => {
+      const open = p.at <= seeds, dot = k === 'hat' ? '' : '<span class="dot" style="background:' + (p.rainbow ? 'linear-gradient(90deg,#ef4444,#facc15,#22c55e,#3b82f6,#a855f7)' : k === 'tail' ? p.c[1] : p.c[0]) + '"></span>';
+      return '<button class="chip' + (open ? '' : ' lock') + '" data-a="part" data-k="' + k + '" data-i="' + i + '" aria-pressed="' + (open && look[k] === i) + '"' + (open ? '' : ' aria-disabled="true"') + '>' + dot + p.n + (open ? '' : ' <small>' + p.at + ' seeds</small>') + '</button>';
+    }).join('');
+    h = '<h2 id="pt">My Turkey</h2><div class="pvw"><canvas id="pv" class="pv" role="img" aria-label="Your turkey"></canvas></div><p class="muted" id="lookMsg">You have ' + seedLine() + '</p>'
+      + '<fieldset><legend>Tail</legend><div class="chips">' + chips('tail') + '</div></fieldset>'
+      + '<fieldset><legend>Body</legend><div class="chips">' + chips('body') + '</div></fieldset>'
+      + '<fieldset><legend>Hat</legend><div class="chips">' + chips('hat') + '</div></fieldset>'
+      + '<div class="row"><button class="b go" data-a="lookdone">Done</button></div>';
   } else if (name === 'paused') {
     h = '<h2 id="pt">Paused</h2><div class="row"><button class="b go" data-a="resume">Keep Playing</button></div>'
       + '<div class="row"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button><button class="b" data-a="menu">Menu</button></div>';
   }
   pn.innerHTML = h; pn.setAttribute('role', 'dialog'); pn.setAttribute('aria-labelledby', 'pt'); pn.scrollTop = 0;
   const first = pn.querySelector('.go'); if (first) { try { first.focus({ preventScroll: true }); } catch (e) {} }
+  if (name === 'look') drawPreview();
 }
+let lookBack = 'menu';
 $('panel').addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b) return;
   const a = b.dataset.a;
-  if (a === 'play') start(1);
-  else if (a === 'cont') start(best + 1);
+  if (a === 'cont') start(best + 1);
+  else if (a === 'go') start(clamp(parseInt(b.dataset.n, 10) || 1, 1, best + 1));
+  else if (a === 'look') { lookBack = panelName || 'menu'; showPanel('look'); }
+  else if (a === 'lookdone') showPanel(lookBack);
+  else if (a === 'part') {
+    const k = b.dataset.k, i = parseInt(b.dataset.i, 10), part = PARTS[k] && PARTS[k][i]; if (!part) return;
+    if (part.at > seeds) { const m = part.n + ' needs ' + part.at + ' seeds. You have ' + seeds + '.'; $('lookMsg').textContent = m; say(m); return; }
+    look[k] = i; store.set('look', JSON.stringify(look));
+    b.parentNode.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+    $('lookMsg').textContent = 'You have ' + seedLine(); say(part.n + ' picked.');
+  }
   else if (a === 'next') start(G.level + 1);
   else if (a === 'again') start(G.level);
   else if (a === 'resume') resume();
-  else if (a === 'menu') { G.state = 'menu'; G.obs = []; G.eggs = []; G.pel = []; G.aim = null; G.jumpT = -1; G.stumT = 0; G.inv = 0; G.gobT = 0; G.lane = 1; showPanel('menu'); }
+  else if (a === 'menu') { G.state = 'menu'; G.obs = []; G.eggs = []; G.pel = []; G.seedList = []; G.newLooks = []; G.aim = null; G.jumpT = -1; G.stumT = 0; G.inv = 0; G.gobT = 0; G.lane = 1; showPanel('menu'); }
   else if (a === 'sound') { soundOn = !soundOn; store.set('sound', soundOn ? '1' : '0'); b.textContent = soundLabel(); b.setAttribute('aria-pressed', soundOn); if (soundOn) { A.init(); sfx.ready(); } }
 });
 $('panel').addEventListener('toggle', e => {
@@ -790,12 +931,13 @@ function frame(ts) {
   const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts;
   if (G.state !== 'paused') update(dt);
   draw();
+  if (panelName === 'look') drawPreview();
   requestAnimationFrame(frame);
 }
 layout(); G.x = laneX(1);
 showPanel('menu');
 requestAnimationFrame(frame);
-window.__turkey = { G, maxGap: () => maxGap };     // for tests
+window.__turkey = { G, maxGap: () => maxGap, seeds: () => seeds, look };     // for tests
 })();
 </script>
 <script id="hh-helper">/* Home Screen helper from HTML App Generator 1.6 */
