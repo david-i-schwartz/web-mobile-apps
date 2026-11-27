@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#3b3561">
 <title>Miko Finds Hazel</title>
 <!--
-  Miko Finds Hazel — v0.3, 2026-11-27
+  Miko Finds Hazel — v0.3.1, 2026-11-27
   A cosy castle game: Miko the cat climbs an old castle to find Hazel, another cat.
   Game idea by Sam, Beth and Dave. Inspired by the feel of an old NES castle game they loved
   (Milon's Secret Castle, Hudson Soft, 1986). No code, pictures, sounds, music or levels come
@@ -42,7 +42,7 @@ padding:calc(8px + var(--sat)) calc(10px + var(--sar)) 6px calc(10px + var(--sal
 #sKey[hidden],#sBell[hidden]{display:none}
 .ib svg{display:block}
 
-/* touch controls, as in Five O'Clock Shadow: slide anywhere on the left to walk; round buttons on the right */
+/* touch controls: a thumbstick (slide anywhere on the left to walk) and round buttons on the right */
 #touch{position:fixed;inset:0;pointer-events:none;z-index:3;display:none}
 body.touch.playing #touch{display:block}
 #joyZone{position:absolute;left:0;bottom:0;width:56%;height:62%;pointer-events:auto;touch-action:none}
@@ -769,7 +769,7 @@ const ROOM_DEFS = [
 ];
 
 /* ================= Miko Finds Hazel: the game ================= */
-const VERSION = '0.3', DATE = '27 November 2026';
+const VERSION = '0.3.1', DATE = '27 November 2026';
 const PIES_TOTAL = 10;
 const $ = id => document.getElementById(id);
 const cv = $('c'), g = cv.getContext('2d');
@@ -2410,7 +2410,7 @@ function showOverlay(name, focusId) {
       + det('how', 'How to Play', '<ul><li><b>Walk:</b> on a phone or tablet, put your thumb anywhere on the left side of the screen and slide it left or right. The further you slide, the faster Miko goes. Push up at a door to go in.</li><li><b>Jump</b> hops. Tap Jump again in the air for a cat twist that goes higher.</li><li><b>Climb walls:</b> jump at a wall, keep pushing toward it, and keep tapping Jump.</li><li><b>Swat</b> breaks cracked blocks. Keys, fish, pies and surprises hide inside. It also boops dust bunnies and ghosts. You can pounce on them from above, too.</li><li>A locked door needs that room’s key. Stand at a door and push up, or tap <b>Go In</b>.</li><li>Pies are bonus treats. There are ' + PIES_TOTAL + ' in the castle.</li><li>Bumps cost a heart. With no hearts left, Miko takes a cat nap at the last door and wakes up with full hearts. Nothing is lost, ever.</li></ul><p>With a keyboard: arrow keys or A and D to walk, Space or Z to jump, X to swat, Up to go in a door, P to pause, M for the map.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
       + det('coats', 'Cat Colours', coatPicker())
       + det('facts', 'Cat Facts', '<ul><li>Cats can jump about five times their own height, and they twist in the air to land on their feet.</li><li>A cat’s claws hook into bark and wood, so climbing up is easy. Climbing down is harder, which is why cats get stuck up high, like Hazel.</li><li>Whiskers feel tiny changes in the air, which helps cats find their way in the dark.</li><li>Many cats leap away from a cucumber that appears behind them. Nobody is quite sure why.</li><li>Cats sleep 12 to 16 hours a day. Cat naps are serious business.</li></ul>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Easier walking on phones, like Five O\u2019Clock Shadow: slide your thumb anywhere on the left side of the screen, and push up at a door to go in. Jump and Swat are big round buttons on the right, and the game fills the screen.</p><p>Version 0.2, 26 November 2026. Pierre is now a hamster with stuffed cheeks, and the credits name Sam, Beth and Dave, who came up with the game.</p><p>Version 0.1, 26 November 2026. The first version: ten rooms to climb, Pierre’s pie fight, Olive’s hidden shop, Fish Rain, ' + PIES_TOTAL + ' pies, six surprises, cat colours, and a game that saves itself.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Small wording changes in these notes.</p><p>Version 0.3, 27 November 2026. Easier walking on phones, with a thumbstick: slide your thumb anywhere on the left side of the screen, and push up at a door to go in. Jump and Swat are big round buttons on the right, and the game fills the screen.</p><p>Version 0.2, 26 November 2026. Pierre is now a hamster with stuffed cheeks, and the credits name Sam, Beth and Dave, who came up with the game.</p><p>Version 0.1, 26 November 2026. The first version: ten rooms to climb, Pierre’s pie fight, Olive’s hidden shop, Fish Rain, ' + PIES_TOTAL + ' pies, six surprises, cat colours, and a game that saves itself.</p>')
       + det('credits', 'Credits', '<p>Game idea by Sam, Beth and Dave: a cat named Miko rescues a cat named Hazel, pies to find, Pierre the hamster as a boss, no final boss, and lives that never run out.</p><p>Inspired by the feel of <i>Milon’s Secret Castle</i> (Hudson Soft, 1986), a castle full of secrets they loved playing. Nothing comes from that game: the code, pictures, sounds, music and rooms are all new.</p><p>Built by Claude, an AI from Anthropic, with Dave Schwartz. Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
       + sndRow;
   } else if (name === 'paused') {
@@ -2513,7 +2513,7 @@ function begin(fresh) {
 function pause() { if (state !== 'play') return; SAVE.hearts = M.hearts; save(); showOverlay('paused'); }
 
 /* ---------- controls ----------
-   Touch works like Five O'Clock Shadow's: put a thumb anywhere on the left side of the screen and slide it
+   Touch uses a thumbstick: put a thumb anywhere on the left side of the screen and slide it
    (the further, the faster Miko goes; push up at a door to go in). Jump and Swat are round buttons on the right. */
 let touchUI = false;
 function setTouch() { if (touchUI) return; touchUI = true; document.body.classList.add('touch'); resize(); }
