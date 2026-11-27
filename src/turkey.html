@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#3f7d4a">
 <title>Turkey Gets Away</title>
 <!--
-  Turkey Gets Away — v0.3, 2026-11-26
+  Turkey Gets Away — v0.3.1, 2026-11-26
   Game idea by Evelyn: a turkey called Turkey runs across the forest, away from the hunters.
   One self-contained file: no outside code, fonts, pictures or sounds. All art is drawn
   and all sound is made in the browser. Built by Claude with Dave Schwartz. GPL-3.0.
@@ -77,7 +77,9 @@ details>div{padding:0 0 6px}
 ul{margin:0 0 12px;padding-left:22px}
 li{margin:0 0 7px}
 #seedBox{flex:none;margin:0;display:flex;align-items:center;gap:5px;min-width:56px;height:40px;padding:0 11px 0 8px;border-radius:14px;background:rgba(0,0,0,.42);border:2px solid rgba(255,255,255,.85);color:#fff;font-weight:800;font-size:17px;line-height:1}
-.pvw{position:sticky;top:0;z-index:1;margin:0 0 10px;background:var(--panel);box-shadow:0 -22px 0 var(--panel)}
+.panel.lookp{padding-top:0}
+.panel.lookp h2{margin:0;padding-top:20px}
+.pvw{position:sticky;top:0;z-index:1;margin:0 0 10px;padding-top:10px;background:var(--panel)}
 .pv{display:block;width:100%;height:196px;border-radius:16px;background:#84c06f;box-shadow:0 8px 10px -8px rgba(0,0,0,.4)}
 @media (prefers-color-scheme:dark){.pv{background:#244431}}
 fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:8px 0 12px;min-width:0}
@@ -126,7 +128,7 @@ legend{font-weight:800;padding:0 8px 0 0}
 <script>
 (() => {
 'use strict';
-const VERSION = '0.3', DATE = '26 November 2026';
+const VERSION = '0.3.1', DATE = '26 November 2026';
 const EGG_WAIT = 10;            // seconds before Turkey can lay another egg
 const JUMP = 0.62;              // seconds in the air
 const $ = id => document.getElementById(id);
@@ -818,7 +820,7 @@ function showPanel(name) {
       + det('pick', 'Pick a Forest', '<p>Start at any forest you have reached.</p><div class="grid">' + lv + '</div>')
       + det('how', 'How to Play', '<ul><li><b>Arrows:</b> go side to side. Run around trees and big rocks. When a hunter shows a red <b>!</b>, get out of that lane.</li><li><b>Jump:</b> hop over logs, mud puddles and creeks.</li><li><b>Lay Egg:</b> the hunters step on it and slip! A new egg takes ' + EGG_WAIT + ' seconds.</li><li><b>Seeds:</b> run over them to pick them up. Seeds open new tails, colors and hats in My Turkey.</li><li><b>Gobble:</b> just for fun.</li></ul><p>Your forests, seeds and turkey are saved by themselves. They stay on this phone or computer until its browser’s saved data is cleared.</p><p>You can swipe on the forest too: left, right, up to jump, down to lay an egg. A tap jumps.</p><p>With a keyboard: arrow keys to move, Space to jump, E for an egg, G to gobble, P to pause.</p><p class="muted">No sound on a phone? Turn off its silent switch.</p>')
       + det('facts', 'Turkey Facts', '<ul><li>Wild turkeys can run faster than most people, and they can fly a short way.</li><li>Male turkeys do most of the gobbling, and only hens lay eggs. Turkey does both, because this is her game.</li><li>Raw egg is slippery. It gets between a boot and the ground, so the boot slides and can’t grip.</li></ul>')
-      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Seeds to pick up along the way. My Turkey: change her tail, body and hat, with new looks that open as the seeds add up. Pick a Forest: start at any forest you have reached. The menu shows what is saved.</p><p>Version 0.2, 26 November 2026. More to get past: mud puddles and creeks to jump, and big rocks to run around.</p><p>Version 0.1, 26 November 2026. The first version: three lanes, logs to jump, trees to run around, hunters who aim, eggs with a ' + EGG_WAIT + '-second timer, and forests that get a little faster each time.</p>')
+      + det('about', 'About This Version', '<p>Version ' + VERSION + ', ' + DATE + '. Fixed the My Turkey title, which was cut off along the bottom.</p><p>Version 0.3, 26 November 2026. Seeds to pick up along the way. My Turkey: change her tail, body and hat, with new looks that open as the seeds add up. Pick a Forest: start at any forest you have reached. The menu shows what is saved.</p><p>Version 0.2, 26 November 2026. More to get past: mud puddles and creeks to jump, and big rocks to run around.</p><p>Version 0.1, 26 November 2026. The first version: three lanes, logs to jump, trees to run around, hunters who aim, eggs with a ' + EGG_WAIT + '-second timer, and forests that get a little faster each time.</p>')
       + det('credits', 'Credits', '<p>Game idea by Evelyn. Built by Claude, an AI from Anthropic, with Dave Schwartz.</p><p>Every picture is drawn by the game’s own code, and every sound is made in your browser. Nothing comes from another game or site. Nothing you do here is sent anywhere.</p><p class="muted">Code licensed under GPL-3.0.</p>')
       + '<div class="row" style="margin-top:12px"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button></div>';
   } else if (name === 'win') {
@@ -841,6 +843,7 @@ function showPanel(name) {
     h = '<h2 id="pt">Paused</h2><div class="row"><button class="b go" data-a="resume">Keep Playing</button></div>'
       + '<div class="row"><button class="b" data-a="sound" aria-pressed="' + soundOn + '">' + soundLabel() + '</button><button class="b" data-a="menu">Menu</button></div>';
   }
+  pn.classList.toggle('lookp', name === 'look');
   pn.innerHTML = h; pn.setAttribute('role', 'dialog'); pn.setAttribute('aria-labelledby', 'pt'); pn.scrollTop = 0;
   const first = pn.querySelector('.go'); if (first) { try { first.focus({ preventScroll: true }); } catch (e) {} }
   if (name === 'look') drawPreview();
