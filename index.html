@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#3D4FB5">
-<title>Web &amp; Mobile Apps</title>
+<title>Dave&#39;s Interesting Stuff</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="DIS">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="icon-192.png" sizes="192x192">
 <link rel="icon" href="icon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -214,51 +217,70 @@ details.group>summary::-webkit-details-marker{color:var(--muted)}
 .dev[open]>summary::before{transform:rotate(45deg)}
 .dev .this{font-weight:400;font-size:13px;color:var(--muted);margin-left:auto}
 .dev ol{margin:0;padding:0 14px 4px 36px}.dev li{margin:6px 0}.dev>.sub{padding:0 14px 12px}
+.dev li ul{margin:4px 0 0;padding-left:18px}.dev .show{display:inline-flex;align-items:center;min-height:44px;font-weight:650;color:var(--ink)}.dev>.sub:has(.show){padding-bottom:0}
 .howto summary:focus-visible,.more a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.dis{max-width:760px;margin:22px auto 0;padding:0 16px}.dis>details{margin:0 0 12px}
+.dis summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none}.dis summary::-webkit-details-marker{display:none}
+.dis summary h2{margin:0;flex:1}.dis summary::after{content:"";flex:none;width:9px;height:9px;margin-right:6px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.dis details[open]>summary::after{transform:rotate(-135deg)}.dis details>*{box-sizing:border-box}
+.dis h3{margin:16px 0 4px}.dis select{min-height:44px;max-width:100%;font:inherit;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.dis .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.dis .btn{display:inline-flex;align-items:center}
+.dis .pick input{font-size:16px}.dis .msg{min-height:1.5em;margin:4px 0}.inst{max-width:760px;margin:6px auto;padding:0 16px}
 .more{max-width:760px;margin:22px auto 0;padding:0 16px}.more a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink)}
 header,.foot{max-width:760px}
 </style>
 </head>
 <body>
 <header>
-  <h1>Web &amp; Mobile Apps</h1>
+  <h1>Dave&#39;s Interesting Stuff</h1>
   <p>Small apps that run in any browser, on a phone, tablet or computer.</p>
 </header>
 <main>
   <details class="howto" id="instructions">
     <summary><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor"/></svg></span>Instructions</summary>
     <div class="howto-body group">
-      <p>Tap an app to open it. To keep one on your phone or tablet, add it to your Home Screen: it then opens like any other app, with its own icon, and works without a connection.</p>
+      <p>Tap an app to open it. To keep them all on your phone or tablet, add this page to your Home Screen once: it gets one icon, DIS, and every app opens from it.</p>
       <details class="dev" data-dev="ios">
         <summary>iPhone or iPad</summary>
         <ol>
-          <li>Open the app in <b>Safari</b>. If the link opened inside Messages, Mail, Gmail or another app, tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/></svg></span> or <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/></svg></span> and choose <b>Open in Safari</b> first.</li>
-          <li>Tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/></svg></span> <b>Share</b>. No Share button? Tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/></svg></span> first. On an iPad, it’s at the top right.</li>
-          <li>Tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg></span> <b>Add to Home Screen</b>. You may need to scroll down to see it.</li>
+          <li>Open this page in <b>Safari</b> or <b>Chrome</b>. If it opened inside Gmail, Facebook, Instagram or another app, tap that app’s menu (<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/></svg></span> three dots or <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/></svg></span> a compass) and choose <b>Open in Safari</b>. It may say Open in Browser.</li>
+          <li>Find <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/></svg></span> <b>Share</b>, a square with an arrow pointing up.
+            <ul>
+              <li>In the bar at the bottom? Tap it.</li>
+              <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/></svg></span> Three dots to the right of the address bar instead? Tap them, then tap <b>Share</b>.</li>
+              <li><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="12" height="12" rx="2.5"/><path d="M4.5 8.5v9A2.5 2.5 0 0 0 7 20h9"/></svg></span> A Tabs button there instead? Tap the small button at the left end of the address bar, then tap <b>Share</b>.</li>
+              <li>On an iPad, Share is at the top right. Tap it, then tap <b>View More</b>.</li>
+              <li>Using Chrome? Share is at the right end of Chrome’s address bar.</li>
+            </ul>
+          </li>
+          <li>Scroll down the list and tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg></span> <b>Add to Home Screen</b>. Not there? Scroll to the bottom, tap <b>Edit Actions</b> and add it.</li>
+          <li>If you see <b>Open as Web App</b>, make sure it is switched on.</li>
           <li>Tap <b>Add</b>.</li>
         </ol>
+        <p class="sub"><a class="show" href="install/">Not sure which screen you have? Show me how, with pictures</a></p>
         <p class="sub">Best done before you start: on an iPhone or iPad, the Home Screen app keeps its own copy of your work, separate from Safari’s.</p>
       </details>
       <details class="dev" data-dev="android">
         <summary>Android</summary>
         <ol>
-          <li>Open the app in <b>Chrome</b>. If the link opened inside another app, tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/></svg></span> and choose <b>Open in Chrome</b> first.</li>
+          <li>Open this page in <b>Chrome</b>. If the link opened inside another app, tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/></svg></span> and choose <b>Open in Chrome</b> first.</li>
           <li>Tap <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/></svg></span> (top right).</li>
           <li>Tap <b>Add to Home screen</b> or <b>Install app</b>.</li>
           <li>Tap <b>Install</b> or <b>Add</b>.</li>
         </ol>
-        <p class="sub">If the app shows an <b>Install</b> button at the bottom, tapping it does the same.</p>
+        <p class="sub">If you see an <b>Install</b> button near the top of this page, tapping it does the same.</p>
       </details>
       <details class="dev" data-dev="computer">
         <summary>Computer</summary>
         <ol>
-          <li>Open the app and bookmark it.</li>
+          <li>Bookmark this page.</li>
           <li>In Chrome or Edge you can also install it as an app, from the browser’s menu.</li>
         </ol>
       </details>
-      <p class="sub">On a phone, each app also shows the steps for that phone the first time it opens. Everything runs on your device: pictures and work you make are never uploaded. When an app is updated, you get the new version the next time you open it online.</p>
+      <p class="sub">Just want one app? Open it and do the same taps there: it gets its own icon, with its own saves. On a phone, each app also shows the steps the first time it opens. Everything runs on your device: pictures and work you make are never uploaded. When an app is updated, you get the new version the next time you open it online.</p>
     </div>
   </details>
+  <p class="inst" id="installRow" hidden><button type="button" class="btn primary" id="installBtn">Install DIS</button></p>
   <nav class="jump" aria-label="Sections">
     <a href="#websites">Websites <span class="n">4<span class="sr"> apps</span></span></a>
     <a href="#games">Games <span class="n">6<span class="sr"> apps</span></span></a>
@@ -398,11 +420,90 @@ header,.foot{max-width:760px}
       </a>
     </div>
   </section>
+  <section class="dis" aria-label="On this device">
+    <details class="group" id="dis-device" data-ui="device">
+      <summary><h2>Your Saves and Settings</h2></summary>
+      <p class="sub">These stay on this device. A Home Screen icon keeps its own saves and settings, apart from Safari’s, so do this in the place you play.</p>
+      <h3><label for="disStart">Start Straight In</label></h3>
+      <p class="sub">Open one app as soon as DIS starts from the Home Screen, for example on a child’s phone. Its ‹ DIS button, at the top left, still brings you here.</p>
+      <div class="row"><select id="disStart"><option value="">No, show the list of apps</option><option value="fig">FIG: Fusebead Image Generator</option><option value="big">BIG: Brick Image Generator</option><option value="tig">TIG: Tile Image Generator</option><option value="generator">GEN: HTML App Generator</option><option value="iso-lab">PIL: Pegboard Iso Lab</option><option value="milspeak">MIL: The Civilian&#39;s Guide to Milspeak</option><option value="smils">SMILS: SMILS — Searchable Military Speak</option><option value="torah-tutor">TORAH: Torah Tutor</option><option value="torah-teacher">TTEACH: Torah Tutor Teacher</option><option value="seventh">SEV: Seventh</option><option value="one-way">ONE: One Way</option><option value="hex-cubes">HEX: Hex Bead Cubes</option><option value="iso-designer">ISO: Iso Bead Designer</option><option value="year-planner">YRP: RIT Department Year Planner</option><option value="ipar">IPAR: Image, Preserve, Analyze, Report</option><option value="site-shortcuts">SITE: Site Shortcuts</option><option value="jam">JAM: Jam Cutter</option><option value="shopping-list">SHOP: Shopping List</option><option value="turkey">TURKEY: Turkey Gets Away</option><option value="miko">MIKO: Miko Finds Hazel</option><option value="pablo">PABLO: Pablo vs. Oakley</option></select></div>
+      <p class="msg sub" id="disStartMsg" role="status"></p>
+      <h3>Back Up My Saves</h3>
+      <p class="sub">Puts every app’s saved games and settings on this device into one file. Restore it in DIS on the Home Screen, or on another phone, to carry on there. Torah Tutor lessons aren’t included: keep their lesson files.</p>
+      <div class="row"><button type="button" class="btn primary" id="disBackup">Back Up My Saves</button></div>
+      <p class="msg sub" id="disBackupMsg" role="status"></p>
+      <h3>Restore</h3>
+      <div class="row"><label class="btn pick">Choose a Saves File<input type="file" id="disFile" accept=".json,application/json"></label></div>
+      <div class="row" id="disConfirm" hidden><button type="button" class="btn primary" id="disRestore">Restore</button><button type="button" class="btn" id="disCancel">Cancel</button></div>
+      <p class="msg sub" id="disRestoreMsg" role="status"></p>
+    </details>
+    <details class="group" id="dis-about" data-ui="about">
+      <summary><h2>About This Version</h2></summary>
+      <p><b>DIS 0.1</b>, 28 Nov 2026. First version. The front page becomes DIS: add it to your Home Screen once and every app opens from it. New: Show Me How pictures for iPhone and iPad, in Safari and Chrome, Start Straight In, Back Up My Saves and Restore, and an Install button on Android.</p>
+      <p class="sub">DIS is Dave&#39;s Interesting Stuff, made by Dave Schwartz with Claude.</p>
+    </details>
+  </section>
   <p class="more"><a href="#instructions">How to put an app on your phone or tablet</a></p>
 </main>
 <p class="foot">Each app is one HTML file that runs in your browser. Nothing you make is uploaded. Code licensed under GPL-3.0.</p>
 <script>
 (function(){
+  var ua=navigator.userAgent||'',iosD=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  var standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches}catch(x){}
+  var get=function(k){try{return localStorage.getItem(k)}catch(x){return null}},put=function(k,v){try{localStorage.setItem(k,v);return true}catch(x){return false}};
+  if(standalone)try{sessionStorage.setItem('dis:in','1')}catch(x){}
+  var folders=[].map.call(document.querySelectorAll('.app'),function(a){return a.getAttribute('href').replace(/\/$/,'')});
+  /* Start Straight In: only when opened from the Home Screen, once per launch, and never when ?stay is in the address */
+  var start=get('dis:start');
+  if(standalone&&start&&folders.indexOf(start)>=0&&!/[?&]stay\b/.test(location.search)){
+    var once=null;try{once=sessionStorage.getItem('dis:started')}catch(x){}
+    if(!once){try{sessionStorage.setItem('dis:started','1')}catch(x){}location.replace(start+'/');return}
+  }
+  var $=function(id){return document.getElementById(id)};
+  var sel=$('disStart');if(sel){if(folders.indexOf(start)>=0)sel.value=start;
+    sel.addEventListener('change',function(){var ok=sel.value?put('dis:start',sel.value):(function(){try{localStorage.removeItem('dis:start');return true}catch(x){return false}})();
+      $('disStartMsg').textContent=!ok?'This browser isn’t keeping settings, so this won’t be remembered.':sel.value?'Saved. Next time DIS starts from the Home Screen, it opens '+sel.options[sel.selectedIndex].text+'.':'Saved. DIS will open on the list of apps.';
+      try{sessionStorage.setItem('dis:started','1')}catch(x){}})}
+  /* Back Up My Saves: every localStorage key on this site, in one file */
+  var stamp=function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+  var bk=$('disBackup');if(bk)bk.addEventListener('click',function(){
+    var m=$('disBackupMsg'),saves={},n=0;
+    try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);saves[k]=localStorage.getItem(k);n++}}catch(x){m.textContent='This browser isn’t letting DIS read saves, so there’s nothing to back up.';return}
+    var name='dis-saves-'+stamp()+'.json',blob=new Blob([JSON.stringify({kind:'dis-saves',version:1,made:new Date().toISOString(),saves:saves},null,1)],{type:'application/json'});
+    var done=function(){m.textContent='Saved '+n+' item'+(n===1?'':'s')+' as '+name+'.'+(iosD?' It’s in Files, in Downloads, unless you chose somewhere else.':'')};
+    var file=null;try{file=new File([blob],name,{type:'application/json'})}catch(x){}
+    if(iosD&&file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:name}).then(function(){m.textContent='Saved '+n+' item'+(n===1?'':'s')+' in '+name+'. Choose Save to Files if you haven’t.'},function(e){if(e&&e.name==='AbortError')m.textContent='Not saved.';else download()});return}
+    download();
+    function download(){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);done()}
+  });
+  /* Restore: read the file here, check it, and ask before writing */
+  var pending=null,f=$('disFile');if(f)f.addEventListener('change',function(){
+    var m=$('disRestoreMsg'),file=f.files&&f.files[0];pending=null;$('disConfirm').hidden=true;if(!file)return;
+    file.text().then(function(t){
+      var o=null;try{o=JSON.parse(t)}catch(x){}
+      var s=o&&o.kind==='dis-saves'&&o.saves&&typeof o.saves==='object'&&!Array.isArray(o.saves)?o.saves:null,clean={},n=0;
+      if(s)for(var k in s)if(Object.prototype.hasOwnProperty.call(s,k)&&typeof s[k]==='string'&&k.length<=200){clean[k]=s[k];n++}
+      if(!n){m.textContent='That isn’t a DIS saves file, or it’s empty. Nothing was changed.';f.value='';return}
+      pending=clean;var when=new Date(o.made);
+      m.textContent='This file has '+n+' saved item'+(n===1?'':'s')+(isNaN(when)?'':', made '+when.toLocaleDateString())+'. Restoring replaces saves with the same names on this device.';
+      $('disConfirm').hidden=false;$('disRestore').focus();
+    },function(){m.textContent='Couldn’t read that file. Nothing was changed.'});
+  });
+  var rs=$('disRestore');if(rs)rs.addEventListener('click',function(){
+    if(!pending)return;var ok=0,bad=0;for(var k in pending){if(put(k,pending[k]))ok++;else bad++}
+    pending=null;$('disConfirm').hidden=true;f.value='';
+    $('disRestoreMsg').textContent='Restored '+ok+' item'+(ok===1?'':'s')+'.'+(bad?' '+bad+' didn’t fit: this browser is out of room.':'')+' Open an app to carry on.';
+  });
+  var cn=$('disCancel');if(cn)cn.addEventListener('click',function(){pending=null;$('disConfirm').hidden=true;f.value='';$('disRestoreMsg').textContent='Nothing was changed.'});
+  /* Android: Chrome's own install prompt, as a button */
+  var prompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();prompt=e;$('installRow').hidden=standalone});
+  var ib=$('installBtn');if(ib)ib.addEventListener('click',function(){if(!prompt)return;prompt.prompt();prompt.userChoice.then(function(){$('installRow').hidden=true;prompt=null},function(){})});
+  window.addEventListener('appinstalled',function(){$('installRow').hidden=true});
+  /* the folding sections stay as you left them */
+  var ui={};try{ui=JSON.parse(get('dis:ui')||'{}')||{}}catch(x){ui={}}if(typeof ui!=='object'||Array.isArray(ui))ui={};
+  [].forEach.call(document.querySelectorAll('.dis details[data-ui]'),function(el){var k=el.getAttribute('data-ui');if(typeof ui[k]==='boolean')el.open=ui[k];
+    el.addEventListener('toggle',function(){ui[k]=el.open;put('dis:ui',JSON.stringify(ui))})});
+
   /* open the steps for this device, and open Instructions when a link goes to it */
   var u=navigator.userAgent,ios=/iPad|iPhone|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1);
   var d=document.querySelector('.dev[data-dev="'+(ios?'ios':/Android/.test(u)?'android':'computer')+'"]');

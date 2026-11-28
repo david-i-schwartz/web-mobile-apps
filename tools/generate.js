@@ -5,7 +5,7 @@
    brief(spec) -> text                                     the build brief to hand to Claude or another AI with the app */
 (function(root){
 'use strict';
-const GEN_VERSION='1.6',CORE_VERSION='1.4';
+const GEN_VERSION='1.7',CORE_VERSION='1.5';
 const MODULES=['base','home','board','picture','edit','progress','project','export'];
 const FEATURES=['board','picture','edit','progress','project','export'];
 const NEEDS_BOARD=['picture','edit','progress','export'];
@@ -267,7 +267,7 @@ function testBrief(specIn){
   if(F.project)checks.push(`Project files: save one (${spec.ext}), reload the page, open it: everything comes back. Also open a damaged file, an empty file and a file from another app: each gives a clear message and nothing breaks.`);
   if(F.export)checks.push('Export: Save picture gives a PNG; each list shows, copies and saves.');
   checks.push('The work is still there after reloading the page; if storage is blocked (private window), the app says it isn\u2019t keeping work.');
-  checks.push(`On a phone, from the web address${spec.homeUrl?' ('+spec.homeUrl+')':''}: a card shows the taps that put the app on the Home Screen (Share, Add to Home Screen, Add on iPhone and iPad), "Not now" hides it, and On your phone keeps the steps. With scripts turned off (as in a phone\u2019s file preview), only a note with the web address shows.`);
+  checks.push(`On a phone, from the web address${spec.homeUrl?' ('+spec.homeUrl+')':''}: a card shows the taps that put the app on the Home Screen (Share, Add to Home Screen, Add on iPhone and iPad; on a site with a launcher such as DIS, the iPhone and iPad card offers the launcher instead), "Not now" hides it, and On your phone keeps the steps and a Get the Newest Version button. With scripts turned off (as in a phone\u2019s file preview), only a note with the web address shows.`);
   return`Please test ${spec.code}: ${spec.name} (version ${spec.version}), a single-file HTML app (attached), made with HTML App Generator ${GEN_VERSION}.
 Another AI may have built or changed it. You are the independent tester: check it against the rules and the checklist below rather than trusting it, and don't change the file. Report what you find.
 

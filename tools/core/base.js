@@ -155,5 +155,5 @@ function start(){
   for(const f of HOOK.start)f();
   if(APP.onStart)APP.onStart();
   rebuild();
-  homeHint({code:SPEC.code,name:SPEC.name,url:SPEC.homeUrl||'',key:KEY,mount:$('homeHow')});
+  homeHint({code:SPEC.code,name:SPEC.name,url:SPEC.homeUrl||'',key:KEY,mount:$('homeHow'),version:SPEC.version});
 }

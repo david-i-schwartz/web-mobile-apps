@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3D4FB5">
+<title>Put DIS on Your Home Screen</title>
+<!-- DIS install helper 0.2 (28 Nov 2026). One file: no outside code, fonts or pictures, and no network calls.
+     It lives one folder below the DIS front page (install/), so every link to DIS is "../" and nothing names a web address.
+     SITE HEAD: when the site is built, DIS's manifest and Home Screen icon links go here, so that adding this page
+     to the Home Screen adds DIS itself (the manifest's start_url is the front page). -->
+<style>
+:root{--bg:#EEF1F5;--panel:#FFFFFF;--ink:#1D2230;--muted:#5B6375;--line:#D5DAE3;--accent:#3D4FB5;--accent-ink:#FFFFFF;--chip:#E3E8EF;--edge:#6F7888;
+  --tap:#C2410C;--tap-ink:#FFFFFF;--tapbg:#FBE4D8;--frame:#272C3A;--glass:#F8F9FB;--ph:#C9CFDA;--on:#2E9E5B;--wall:#CFD8E6;
+  color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#14171E;--panel:#1C2029;--ink:#E7EAF0;--muted:#9AA3B5;--line:#2E3442;--accent:#3FB8B6;--accent-ink:#0B1F1F;--chip:#262B36;--edge:#8B95A7;
+    --tap:#FF9A5C;--tap-ink:#2A1203;--tapbg:#4A2A18;--frame:#0B0D12;--glass:#232834;--ph:#3A4251;--on:#45C47A;--wall:#1F2531;color-scheme:dark}
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:calc(8px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+header,main,.foot{max-width:760px;margin:0 auto;padding-left:16px;padding-right:16px}
+header{padding-top:8px}
+h1{font-size:clamp(26px,6vw,36px);line-height:1.1;margin:4px 0 6px;letter-spacing:-0.01em;font-weight:800}
+header p{margin:0;color:var(--muted);max-width:62ch}
+h2{font-size:19px;margin:0 0 6px;line-height:1.25;font-weight:750}
+p{margin:6px 0}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,summary:focus-visible,h2:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+.back{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 8px;margin-left:-8px;font-weight:650;text-decoration:none}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0;min-width:0}
+.sub{font-size:14.5px;color:var(--muted)}
+.notice{border:2px solid var(--accent);border-radius:14px;background:var(--panel);padding:12px 14px;margin:14px 0}
+.notice b{display:block}
+.ic{display:inline-block;width:22px;height:22px;vertical-align:-5px;margin:0 1px;color:var(--accent)}
+
+/* the pictures to choose from */
+.cards{display:grid;gap:12px;grid-template-columns:minmax(0,1fr);margin:12px 0 4px}
+@media (min-width:620px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{display:block;position:relative;min-height:44px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);text-decoration:none;padding:10px 12px 12px}
+.card:hover,.card[aria-current="true"]{border-color:var(--accent)}
+.card[aria-current="true"]{background:var(--panel)}
+.card .thumb{display:block;width:100%;max-width:300px;height:auto;margin:0 auto 6px}
+.card-t{display:block;font-weight:750;font-size:17px}
+.card-s{display:block;color:var(--muted);font-size:14.5px}
+.tag{display:inline-block;margin:0 0 8px;background:var(--accent);color:var(--accent-ink);font-size:12.5px;font-weight:700;border-radius:999px;padding:2px 10px}
+.none,.again{display:inline-flex;align-items:center;min-height:44px;font-weight:650}
+
+/* one set of steps at a time, once the script is running */
+.js .flow{display:none}.js .flow.on{display:block}
+.flow h2{scroll-margin-top:12px}
+.flowgrid{display:grid;gap:6px 20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:720px){.flowgrid{grid-template-columns:minmax(0,320px) minmax(0,1fr);align-items:start}.flow[data-kind="t"] .flowgrid{grid-template-columns:minmax(0,400px) minmax(0,1fr)}}
+ol.steps{margin:6px 0;padding-left:1.7em}
+ol.steps>li{margin:2px 0;padding:7px 8px;border-radius:10px}
+ol.steps>li::marker{font-weight:750}
+ol.steps>li.now,.then.now{background:var(--tapbg)}
+.then{padding:7px 8px;border-radius:10px;font-weight:650}
+.btn{min-height:44px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:15px;font-weight:650;padding:6px 14px;border-radius:999px;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.quiet{background:transparent}
+
+/* the short film */
+.film{max-width:320px;margin:0 auto}
+.flow[data-kind="t"] .film{max-width:400px}
+.stage svg,.strip svg{display:block;width:100%;height:auto}
+.stage svg{animation:fade .25s both}
+.cap{min-height:4.6em;margin:8px 0;font-size:15.5px}
+.ctl{display:flex;gap:8px}.ctl .btn{flex:1;padding:6px 8px}
+.mode{margin:8px 0 0;text-align:center}
+.strip{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);max-width:300px;margin:0 auto}
+.flow[data-kind="t"] .strip{max-width:400px}
+.strip figure{margin:0}.strip figcaption{font-size:15px;margin-top:4px}
+
+/* the sketches: every colour comes from the page, so they follow light and dark mode */
+.s-body{fill:var(--frame);stroke:var(--edge);stroke-width:2}
+.s-screen{fill:var(--bg)}
+.s-chrome{fill:var(--glass)}
+.s-edge{stroke:var(--line);stroke-width:1;fill:none}
+.s-pill,.s-field{fill:var(--chip)}
+.s-ln{fill:var(--ph)}
+.s-ln.d{fill:var(--muted);opacity:.7}
+.s-card{fill:var(--panel);stroke:var(--line);stroke-width:1}
+.s-t{fill:var(--ink)}.s-t.b{font-weight:650}.s-t.link{fill:var(--accent)}.s-t.onaccent{fill:#FFFFFF}.s-t.onhot{fill:var(--tap-ink)}
+.scene use,.thumb use{color:var(--ink)}
+.scene use.dim,.thumb use.dim{color:var(--muted)}
+.scene use.hot,.thumb use.hot{color:var(--tap)}
+.scene use.okk{color:#FFFFFF}
+.s-sheet{fill:var(--panel);stroke:var(--line);stroke-width:1}
+.s-dimmer{fill:#000000;opacity:.3}
+.s-hi{fill:var(--tapbg)}
+.s-div{stroke:var(--line);stroke-width:1}
+.s-row{fill:var(--chip);opacity:.55}
+.s-tog,.s-okc{fill:var(--on)}.s-knob{fill:#FFFFFF}
+.s-b{fill:var(--chip)}.s-bhot{fill:var(--tap)}
+.s-wall{fill:var(--wall)}.s-app{fill:var(--ph)}.s-dock{fill:var(--panel);opacity:.75}
+.s-t0{fill:#3D4FB5}.s-t1{fill:#0E7C7B}.s-t2{fill:#D99A12}.s-t3{fill:#A8149A}
+.s-tap{animation:appear .25s both;animation-delay:var(--d,0s)}
+.s-halo{fill:none;stroke:var(--panel);stroke-width:7;opacity:.85}
+.s-ring0{fill:none;stroke:var(--tap);stroke-width:3}
+.s-ring{fill:none;stroke:var(--tap);stroke-width:3.5;transform-box:fill-box;transform-origin:center;animation:pulse 1.5s ease-out infinite;animation-delay:var(--d,0s)}
+.s-list.scroll{animation:scroll 1.1s ease-in-out .5s both}
+@keyframes pulse{0%{transform:scale(.6);opacity:1}75%{transform:scale(1.5);opacity:0}100%{transform:scale(1.5);opacity:0}}
+@keyframes appear{from{opacity:0}to{opacity:1}}
+@keyframes fade{from{opacity:.4}to{opacity:1}}
+@keyframes scroll{from{transform:translateY(0)}to{transform:translateY(var(--off))}}
+.strip .s-tap,.strip .s-ring,.strip .s-list.scroll{animation:none}
+.strip .s-ring{opacity:0}.strip .s-list.scroll{transform:translateY(var(--off))}
+@media (prefers-reduced-motion:reduce){
+  .s-tap,.s-ring,.s-list.scroll,.stage svg{animation:none}
+  .s-ring{opacity:0}.s-list.scroll{transform:translateY(var(--off))}
+}
+
+/* sections that fold up */
+details.fold>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary h2{margin:0;flex:1}
+details.fold>summary::after{content:"";flex:none;width:9px;height:9px;margin-right:6px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg)}
+details.fold[open]>summary::after{transform:rotate(-135deg)}
+details.fold>*{box-sizing:border-box}
+.notes{margin:4px 0;padding-left:1.2em}.notes li{margin:8px 0}
+.foot{color:var(--muted);font-size:14px;padding-top:4px;padding-bottom:28px}
+</style>
+</head>
+<body>
+<!-- The buttons, drawn once here and reused in the words and the sketches. They are drawn for this page, not taken from any system. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="g-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M8 7l4-4 4 4"/><path d="M7.5 10.5H6v10h12v-10h-1.5"/></g></symbol>
+  <symbol id="g-dots" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></g></symbol>
+  <symbol id="g-tabs" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="12" height="12" rx="2.5"/><path d="M4.5 8.5v9A2.5 2.5 0 0 0 7 20h9"/></g></symbol>
+  <symbol id="g-back" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></g></symbol>
+  <symbol id="g-fwd" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></g></symbol>
+  <symbol id="g-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 5.2 7.7 4.9 5 5v12c2.7-.1 5 .2 7 1.5 2-1.3 4.3-1.6 7-1.5V5c-2.7-.1-5 .2-7 1.5zM12 6.5v12"/></g></symbol>
+  <symbol id="g-reload" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.5 12a6.5 6.5 0 1 1-2-4.7"/><path d="M18.6 4.2v4.3h-4.3"/></g></symbol>
+  <symbol id="g-pagemenu" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="8.5" rx="2"/><path d="M5 16.5h14M5 20.2h9"/></g></symbol>
+  <symbol id="g-plus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></g></symbol>
+  <symbol id="g-new" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></g></symbol>
+  <symbol id="g-sidebar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M9.5 5v14"/></g></symbol>
+  <symbol id="g-compass" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/></g></symbol>
+  <symbol id="g-check" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></g></symbol>
+  <symbol id="g-x" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></g></symbol>
+</svg>
+
+<header>
+  <a class="back" href="../"><span aria-hidden="true">‹</span> Back to DIS</a>
+  <h1>Put DIS on Your Home Screen</h1>
+  <p>DIS is Dave’s Interesting Stuff: every app and game behind one icon. Add it once, and it opens like any other app on your iPhone or iPad.</p>
+</header>
+
+<main>
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="group" id="pick" aria-labelledby="h-pick">
+    <h2 id="h-pick">Which Screen Looks Like Yours?</h2>
+    <p>Open this page in Safari. Look at Safari’s bar of buttons: it is at the bottom on an iPhone and at the top on an iPad. Then tap the picture that matches.</p>
+    <div class="cards" id="cards">
+      <a class="card" href="#a" data-flow="a">
+        <svg class="thumb" viewBox="0 0 300 104" aria-hidden="true" focusable="false">
+          <rect x="8" y="-80" width="284" height="178" rx="40" class="s-body"/><rect x="18" y="-70" width="264" height="158" rx="30" class="s-chrome"/>
+          <rect x="32" y="8" width="236" height="28" rx="14" class="s-pill"/><rect x="118" y="19" width="64" height="6" rx="3" class="s-ln"/>
+          <use href="#g-back" x="43" y="49" width="22" height="22"/><use href="#g-fwd" x="91" y="49" width="22" height="22" class="dim"/>
+          <circle cx="150" cy="60" r="19" class="s-hi"/><circle cx="150" cy="60" r="19" class="s-ring0"/><use href="#g-share" x="138" y="47" width="24" height="24" class="hot"/>
+          <use href="#g-book" x="187" y="49" width="22" height="22"/><use href="#g-tabs" x="235" y="49" width="22" height="22"/>
+        </svg>
+        <span class="card-t">A Share button</span>
+        <span class="card-s">A square with an arrow pointing up, in the bar at the bottom.</span>
+      </a>
+      <a class="card" href="#b" data-flow="b">
+        <svg class="thumb" viewBox="0 0 300 104" aria-hidden="true" focusable="false">
+          <rect x="8" y="-80" width="284" height="178" rx="40" class="s-body"/><rect x="18" y="-70" width="264" height="158" rx="30" class="s-chrome"/>
+          <circle cx="46" cy="48" r="18" class="s-pill"/><use href="#g-back" x="35" y="38" width="20" height="20"/>
+          <rect x="72" y="30" width="156" height="36" rx="18" class="s-pill"/><use href="#g-pagemenu" x="81" y="39" width="18" height="18" class="dim"/><rect x="112" y="45" width="76" height="6" rx="3" class="s-ln"/><use href="#g-reload" x="204" y="40" width="16" height="16" class="dim"/>
+          <circle cx="254" cy="48" r="19" class="s-hi"/><circle cx="254" cy="48" r="19" class="s-ring0"/><use href="#g-dots" x="243" y="37" width="22" height="22" class="hot"/>
+        </svg>
+        <span class="card-t">Three dots on the right</span>
+        <span class="card-s">No Share button. Three dots sit to the right of the address bar.</span>
+      </a>
+      <a class="card" href="#c" data-flow="c">
+        <svg class="thumb" viewBox="0 0 300 104" aria-hidden="true" focusable="false">
+          <rect x="8" y="-80" width="284" height="178" rx="40" class="s-body"/><rect x="18" y="-70" width="264" height="158" rx="30" class="s-chrome"/>
+          <circle cx="46" cy="48" r="18" class="s-pill"/><use href="#g-back" x="35" y="38" width="20" height="20"/>
+          <rect x="72" y="30" width="156" height="36" rx="18" class="s-pill"/><use href="#g-pagemenu" x="81" y="39" width="18" height="18" class="dim"/><rect x="112" y="45" width="76" height="6" rx="3" class="s-ln"/><use href="#g-reload" x="204" y="40" width="16" height="16" class="dim"/>
+          <circle cx="254" cy="48" r="19" class="s-hi"/><circle cx="254" cy="48" r="19" class="s-ring0"/><use href="#g-tabs" x="243" y="37" width="22" height="22" class="hot"/>
+        </svg>
+        <span class="card-t">A Tabs button on the right</span>
+        <span class="card-s">No Share button and no dots. Two overlapping squares sit to the right of the address bar.</span>
+      </a>
+      <a class="card" href="#ipad" data-flow="ipad">
+        <svg class="thumb" viewBox="0 0 300 104" aria-hidden="true" focusable="false">
+          <rect x="8" y="8" width="284" height="170" rx="22" class="s-body"/><rect x="18" y="18" width="264" height="150" rx="12" class="s-screen"/>
+          <path d="M18 60V30a12 12 0 0 1 12-12h240a12 12 0 0 1 12 12v30z" class="s-chrome"/>
+          <use href="#g-sidebar" x="27" y="30" width="18" height="18" class="dim"/><use href="#g-back" x="49" y="30" width="18" height="18" class="dim"/>
+          <rect x="76" y="26" width="128" height="26" rx="13" class="s-pill"/><rect x="108" y="36" width="64" height="6" rx="3" class="s-ln"/>
+          <circle cx="226" cy="39" r="15" class="s-hi"/><circle cx="226" cy="39" r="15" class="s-ring0"/><use href="#g-share" x="216" y="28" width="20" height="20" class="hot"/>
+          <use href="#g-new" x="245" y="31" width="16" height="16" class="dim"/><use href="#g-tabs" x="264" y="31" width="16" height="16" class="dim"/>
+          <rect x="32" y="72" width="110" height="7" rx="3.5" class="s-ln d"/><rect x="32" y="88" width="170" height="6" rx="3" class="s-ln"/>
+        </svg>
+        <span class="card-t">An iPad</span>
+        <span class="card-s">The Share button is at the top right, beside the address bar.</span>
+      </a>
+    </div>
+    <a class="none" href="#chrome">I’m using Chrome</a><br>
+    <a class="none" href="#other">None of these, or I’m inside another app</a>
+  </section>
+
+  <section class="group flow" id="a" data-kind="p" aria-labelledby="h-a">
+    <h2 id="h-a" tabindex="-1">Screen With a Share Button</h2>
+    <p class="sub">Watch it through once first: the list of options covers this page while you work.</p>
+    <div class="flowgrid">
+      <div class="filmslot"></div>
+      <div>
+        <ol class="steps">
+          <li>Tap <svg class="ic" aria-hidden="true" focusable="false"><use href="#g-share"/></svg> <b>Share</b>, the square with an arrow pointing up, in the bar at the bottom.</li>
+          <li>Scroll down the list and tap <b>Add to Home Screen</b>.</li>
+          <li>If you see <b>Open as Web App</b>, make sure it is switched on. Leave the name as DIS.</li>
+          <li>Tap <b>Add</b>.</li>
+        </ol>
+        <p class="then">DIS is now on your Home Screen. Open it from there from now on.</p>
+        <p class="sub"><b>No Add to Home Screen in the list?</b> Scroll to the very bottom, tap <b>Edit Actions</b>, then tap the plus beside Add to Home Screen.</p>
+        <a class="again" href="#pick"><span aria-hidden="true">‹</span>&nbsp;Pick a different screen</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="group flow" id="b" data-kind="p" aria-labelledby="h-b">
+    <h2 id="h-b" tabindex="-1">Screen With Three Dots</h2>
+    <p class="sub">Watch it through once first: the list of options covers this page while you work.</p>
+    <div class="flowgrid">
+      <div class="filmslot"></div>
+      <div>
+        <ol class="steps">
+          <li>Tap the <b>three dots</b> <svg class="ic" aria-hidden="true" focusable="false"><use href="#g-dots"/></svg> to the right of the address bar.</li>
+          <li>Tap <b>Share</b>.</li>
+          <li>Scroll down the list and tap <b>Add to Home Screen</b>.</li>
+          <li>If you see <b>Open as Web App</b>, make sure it is switched on. Leave the name as DIS.</li>
+          <li>Tap <b>Add</b>.</li>
+        </ol>
+        <p class="then">DIS is now on your Home Screen. Open it from there from now on.</p>
+        <p class="sub"><b>No Add to Home Screen in the list?</b> Scroll to the very bottom, tap <b>Edit Actions</b>, then tap the plus beside Add to Home Screen.</p>
+        <a class="again" href="#pick"><span aria-hidden="true">‹</span>&nbsp;Pick a different screen</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="group flow" id="c" data-kind="p" aria-labelledby="h-c">
+    <h2 id="h-c" tabindex="-1">Screen With a Tabs Button</h2>
+    <p class="sub">Watch it through once first: the list of options covers this page while you work.</p>
+    <div class="flowgrid">
+      <div class="filmslot"></div>
+      <div>
+        <ol class="steps">
+          <li>Tap the small button at the <b>left end of the address bar</b>. Apple calls it the Page Menu.</li>
+          <li>Tap <b>Share</b>.</li>
+          <li>Scroll down the list and tap <b>Add to Home Screen</b>.</li>
+          <li>If you see <b>Open as Web App</b>, make sure it is switched on. Leave the name as DIS.</li>
+          <li>Tap <b>Add</b>.</li>
+        </ol>
+        <p class="then">DIS is now on your Home Screen. Open it from there from now on.</p>
+        <p class="sub"><b>Another way to reach Share:</b> press and hold the address bar, then tap Share.</p>
+        <p class="sub"><b>No Add to Home Screen in the list?</b> Scroll to the very bottom, tap <b>Edit Actions</b>, then tap the plus beside Add to Home Screen.</p>
+        <a class="again" href="#pick"><span aria-hidden="true">‹</span>&nbsp;Pick a different screen</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="group flow" id="ipad" data-kind="t" aria-labelledby="h-ipad">
+    <h2 id="h-ipad" tabindex="-1">Steps for an iPad</h2>
+    <p class="sub">Watch it through once first: the list of options covers part of this page while you work.</p>
+    <div class="flowgrid">
+      <div class="filmslot"></div>
+      <div>
+        <ol class="steps">
+          <li>Tap <svg class="ic" aria-hidden="true" focusable="false"><use href="#g-share"/></svg> <b>Share</b>, the square with an arrow pointing up, at the top right beside the address bar.</li>
+          <li>Tap <b>View More</b>. It may say More. If the list is already long, skip this step.</li>
+          <li>Tap <b>Add to Home Screen</b>.</li>
+          <li>If you see <b>Open as Web App</b>, make sure it is switched on. Leave the name as DIS.</li>
+          <li>Tap <b>Add</b>.</li>
+        </ol>
+        <p class="then">DIS is now on your Home Screen. Open it from there from now on.</p>
+        <p class="sub"><b>No Add to Home Screen in the list?</b> Scroll to the very bottom, tap <b>Edit Actions</b>, then tap the plus beside Add to Home Screen.</p>
+        <a class="again" href="#pick"><span aria-hidden="true">‹</span>&nbsp;Pick a different screen</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="group flow" id="chrome" data-kind="p" aria-labelledby="h-chrome">
+    <h2 id="h-chrome" tabindex="-1">Steps for Chrome</h2>
+    <p class="sub">Watch it through once first: the list of options covers this page while you work.</p>
+    <div class="flowgrid">
+      <div class="filmslot"></div>
+      <div>
+        <ol class="steps">
+          <li>Tap <svg class="ic" aria-hidden="true" focusable="false"><use href="#g-share"/></svg> <b>Share</b>, the square with an arrow pointing up, at the right end of Chrome’s address bar.</li>
+          <li>Scroll down the list and tap <b>Add to Home Screen</b>.</li>
+          <li>If you see <b>Open as Web App</b>, make sure it is switched on. Leave the name as DIS.</li>
+          <li>Tap <b>Add</b>.</li>
+        </ol>
+        <p class="then">DIS is now on your Home Screen. Open it from there from now on.</p>
+        <p class="sub"><b>Address bar at the bottom?</b> Chrome lets you move it there. Share is still at its right end. On an iPad, it is the same: Share is to the right of the address bar.</p>
+        <p class="sub"><b>No Add to Home Screen in the list?</b> Scroll to the very bottom, tap <b>Edit Actions</b>, then tap the plus beside Add to Home Screen.</p>
+        <a class="again" href="#pick"><span aria-hidden="true">‹</span>&nbsp;Pick a different screen</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="group flow" id="other" aria-labelledby="h-other">
+    <h2 id="h-other" tabindex="-1">Open This Page in Safari First</h2>
+    <p>Gmail, Facebook, Instagram, the Google app and some others open links inside themselves. Their list of options has no Add to Home Screen, so the page has to move to Safari.</p>
+    <ol class="steps">
+      <li>Find that app’s menu button: <svg class="ic" aria-hidden="true" focusable="false"><use href="#g-dots"/></svg> <b>three dots</b> or <svg class="ic" aria-hidden="true" focusable="false"><use href="#g-compass"/></svg> a <b>compass</b>, in a corner of the screen.</li>
+      <li>Tap it, then tap <b>Open in Safari</b>. It may say Open in Browser or Open in External Browser.</li>
+      <li>No menu? Copy this page’s link, open Safari, and paste the link into the address bar.</li>
+      <li>When this page opens in Safari, pick the picture that matches your screen.</li>
+    </ol>
+    <p><button type="button" class="btn" id="copy" hidden>Copy Link</button> <span id="copyMsg" class="sub" role="status"></span></p>
+    <a class="none" href="#chrome">Using Chrome? It has its own steps</a>
+    <p class="sub"><b>Using Edge or Firefox?</b> Look in that browser’s menu for <b>Share</b> or <b>Add to Home Screen</b>. Or open this page in Safari and follow the pictures.</p>
+    <a class="again" href="#pick"><span aria-hidden="true">‹</span>&nbsp;Back to the pictures</a>
+  </section>
+
+  <details class="group fold" id="notes" open>
+    <summary><h2>Good to Know</h2></summary>
+    <ul class="notes">
+      <li><b>Saves stay where they were made.</b> A game you played in Safari or Chrome keeps its save in that browser, and the DIS icon starts fresh. It is best to add DIS before you start playing. <span data-if="backup" hidden>To bring saves across: open DIS in the browser you played in and tap Back Up My Saves, then open DIS from the Home Screen and tap Restore.</span></li>
+      <li><b>Just want one app?</b> Open that app’s own page and do the same taps there. It gets its own icon, with its own saves, separate from DIS.</li>
+      <li><b>Got the link in an email or a message?</b> Mail and Messages open links in your usual browser, Safari or Chrome, so you can go straight to the steps. Gmail, Facebook and Instagram keep links inside themselves: use <a href="#other">Open This Page in Safari First</a>.</li>
+      <li><b>Everything stays on your device.</b> Nothing you make or play is uploaded.</li>
+    </ul>
+  </details>
+
+  <details class="group fold" id="about">
+    <summary><h2>About This Version</h2></summary>
+    <p><b>0.2</b>, 28 November 2026. Steps and a short film for Chrome on iPhone and iPad. Chrome now opens its own steps instead of being sent to Safari, and Edge and Firefox get a line of their own.</p>
+    <p><b>0.1</b>, 28 November 2026. First version: three iPhone screens and the iPad, each as a short film, as pictures you can see all at once, and as plain steps.</p>
+    <p>The pictures are sketches drawn for this page, not screenshots, so your screen will look a little different. The steps follow Apple’s iPhone and iPad User Guides for iOS 18, 26 and 27 and Google’s Chrome Help, read on 28 November 2026.</p>
+    <p class="sub">Direction by Dave Schwartz. Pictures and code by Claude.</p>
+  </details>
+</main>
+<p class="foot">Part of Dave’s Interesting Stuff. This page runs in your browser and sends nothing anywhere. Code licensed under GPL-3.0.</p>
+
+<script>
+(function(){
+'use strict';
+var d=document,root=d.documentElement,ua=navigator.userAgent||'';
+/* What the site offers. backup turns on the Back Up My Saves sentence once DIS has that button. */
+var SITE={home:'../',backup:false};
+
+/* ---------- where this page is running ---------- */
+var ipad=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),ios=ipad||/iPhone|iPod/.test(ua),android=/Android/.test(ua);
+var standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches}catch(x){}
+var inApp=/GSA\/|FBAN|FBAV|FB_IAB|Instagram|Line\/|LinkedInApp|Twitter|Snapchat|Pinterest/.test(ua)||(ios&&!/Safari\//.test(ua));
+/* Chrome has its own steps (Google's Chrome Help: Share at the right of the address bar). Edge, Firefox and Opera get a line in "other". */
+var chrome=ios&&/CriOS\//.test(ua),otherBrowser=!chrome&&/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+/* From iOS 26 Safari stops raising the iOS number in its name, so go by Safari's own Version/ number. */
+var m=/Version\/(\d+)/.exec(ua),safari=m?+m[1]:0;
+var likely=!ios?'':(inApp||otherBrowser)?'other':chrome?'chrome':ipad?'ipad':!safari?'':safari>=27?'c':safari>=26?'b':'a';
+/* If the Home Screen icon ever starts here instead of at the front page, go to the front page. */
+if(standalone&&!d.referrer&&!location.hash){location.replace(SITE.home);return}
+root.className='js';
+root.setAttribute('data-where',standalone?'installed':!ios?(android?'android':'computer'):inApp?'ios-app':chrome?'ios-chrome':otherBrowser?'ios-other':ipad?'ipad':'iphone');
+var calm=false;try{calm=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(x){}
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var tidy=function(s){return String(s).replace(/\s+/g,' ').trim()};
+
+/* ---------- a line at the top for people these pictures don't fit ---------- */
+var notice=d.getElementById('notice'),say=function(head,body){notice.innerHTML='<b>'+head+'</b>'+body;notice.hidden=false};
+if(standalone)say('You are in DIS right now.','It is already on this Home Screen. The steps below are here in case you are helping someone else.');
+else if(ios&&inApp)say('This page looks like it is open inside another app.','Move it to Safari first: the steps are just below.');
+else if(chrome)say('This page is open in Chrome.','Chrome has its own steps, just below the pictures.');
+else if(ios&&otherBrowser)say('These pictures show Safari.','In Edge or Firefox, look in the browser’s menu for Share or Add to Home Screen. Or open this page in Safari and follow the pictures.');
+else if(android)say('These pictures are for iPhone and iPad.','On an Android phone, open DIS in Chrome, tap the three dots at the top right, then tap Add to Home screen or Install app.');
+else if(!ios)say('These pictures are for iPhone and iPad.','On a computer, bookmark DIS instead. You can still look through the steps here.');
+[].forEach.call(d.querySelectorAll('[data-if="backup"]'),function(el){el.hidden=!SITE.backup});
+
+/* ---------- the likely screen goes first, and people still choose ---------- */
+var cardsBox=d.getElementById('cards'),cards=[].slice.call(d.querySelectorAll('.card'));
+cards.forEach(function(c){if(c.getAttribute('data-flow')===likely){cardsBox.insertBefore(c,cardsBox.firstChild);c.insertAdjacentHTML('afterbegin','<span class="tag">Probably yours</span>')}});
+
+/* ---------- drawing the sketches ---------- */
+var uid=0;
+var use=function(id,cx,cy,s,cls){s=s||22;return'<use href="#g-'+id+'" x="'+(cx-s/2)+'" y="'+(cy-s/2)+'" width="'+s+'" height="'+s+'"'+(cls?' class="'+cls+'"':'')+'/>'};
+var bar=function(x,y,w,cls){return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="6" rx="3" class="s-ln'+(cls?' '+cls:'')+'"/>'};
+var txt=function(x,y,size,t,cls,anchor){return'<text x="'+x+'" y="'+y+'" font-size="'+size+'" text-anchor="'+(anchor||'start')+'" class="s-t'+(cls?' '+cls:'')+'">'+esc(t)+'</text>'};
+var tap=function(x,y,delay,r){r=r||19;return'<g class="s-tap" style="--d:'+(delay||0)+'s" transform="translate('+x+' '+y+')"><circle r="'+r+'" class="s-halo"/><circle r="'+r+'" class="s-ring0"/><circle r="'+r+'" class="s-ring"/></g>'};
+function wrap(kind,inner,label){
+  var id='k'+(++uid),t=kind==='t';
+  return'<svg class="scene" viewBox="'+(t?'0 0 400 300':'0 0 300 380')+'" role="img" aria-label="'+esc(label)+'"><defs>'+
+    (t?'<clipPath id="'+id+'s"><rect x="18" y="18" width="364" height="330" rx="14"/></clipPath>'
+      :'<clipPath id="'+id+'s"><rect x="18" y="-60" width="264" height="424" rx="34"/></clipPath><clipPath id="'+id+'l"><rect x="18" y="146" width="264" height="218"/></clipPath>'+
+       '<clipPath id="'+id+'t"><rect x="18" y="18" width="264" height="424" rx="34"/></clipPath>')+
+    '</defs>'+inner.replace(/#CS/g,'#'+id+'s').replace(/#CL/g,'#'+id+'l').replace(/#CT/g,'#'+id+'t')+'</svg>';
+}
+/* an iPhone, seen from the middle down, because Safari's buttons are at the bottom */
+var phone=function(inner){return'<rect x="8" y="-70" width="284" height="444" rx="44" class="s-body"/><g clip-path="url(#CS)"><rect x="18" y="-60" width="264" height="424" class="s-screen"/>'+inner+'</g>'};
+/* the same iPhone seen from the top down, for Chrome, whose address bar and Share button are at the top */
+var phoneTop=function(inner){return'<rect x="8" y="8" width="284" height="444" rx="44" class="s-body"/><g clip-path="url(#CT)"><rect x="18" y="18" width="264" height="424" class="s-screen"/>'+inner+'</g>'};
+function chromePage(){
+  var s='<rect x="18" y="18" width="264" height="86" class="s-chrome"/><path d="M18 104h264" class="s-edge"/><rect x="120" y="28" width="60" height="18" rx="9" class="s-body"/>'+
+    '<rect x="30" y="58" width="240" height="36" rx="18" class="s-pill"/>'+bar(102,73,84)+use('share',248,76,22,'hot')+txt(34,128,13,'Dave’s Interesting Stuff','b');
+  for(var i=0;i<4;i++){var y=140+i*52;s+='<rect x="30" y="'+y+'" width="240" height="44" rx="10" class="s-card"/><rect x="38" y="'+(y+8)+'" width="28" height="28" rx="7" class="s-t'+i+'"/>'+bar(76,y+13,[96,120,84,108][i],'d')+bar(76,y+26,[150,132,160,140][i])}
+  return s;
+}
+function page(){
+  var s=txt(34,24,13,'Dave’s Interesting Stuff','b');
+  for(var i=0;i<4;i++){var y=36+i*52;s+='<rect x="30" y="'+y+'" width="240" height="44" rx="10" class="s-card"/><rect x="38" y="'+(y+8)+'" width="28" height="28" rx="7" class="s-t'+i+'"/>'+bar(76,y+13,[96,120,84,108][i],'d')+bar(76,y+26,[150,132,160,140][i])}
+  return s;
+}
+/* Share in the bar: iOS 18 and older, and the Bottom and Top layouts */
+function barA(hot){
+  return'<rect x="18" y="246" width="264" height="120" class="s-chrome"/><path d="M18 246h264" class="s-edge"/><rect x="32" y="256" width="236" height="32" rx="16" class="s-pill"/>'+bar(118,269,64)+
+    use('back',54,318)+use('fwd',102,318,22,'dim')+use('share',150,318,24,hot?'hot':'')+use('book',198,318)+use('tabs',246,318);
+}
+/* the Compact layout: iOS 26 has three dots on the right, iOS 27 has Tabs there */
+function barBC(right,hot){
+  return'<rect x="18" y="288" width="264" height="78" class="s-chrome"/><path d="M18 288h264" class="s-edge"/><circle cx="46" cy="322" r="18" class="s-pill"/>'+use('back',45,322,20)+
+    '<rect x="72" y="304" width="156" height="36" rx="18" class="s-pill"/>'+use('pagemenu',90,322,18,hot==='menu'?'hot':'dim')+bar(112,319,76)+use('reload',212,322,16,'dim')+
+    '<circle cx="254" cy="322" r="18" class="s-pill"/>'+use(right,254,322,22,hot==='right'?'hot':'');
+}
+/* a small menu with one named row; the grey rows stand for whatever else the menu holds */
+function menu(x,y,w,rows,named,glyph){
+  var h=rows*36+12,s='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="14" class="s-sheet"/>';
+  for(var i=0;i<rows;i++){var ry=y+6+i*36;
+    if(i===named.at)s+='<rect x="'+(x+5)+'" y="'+(ry+2)+'" width="'+(w-10)+'" height="32" rx="9" class="s-hi"/>'+txt(x+16,ry+23,14,named.label,'b')+use(glyph||'fwd',x+w-24,ry+18,glyph?18:14,'hot');
+    else s+=bar(x+16,ry+15,[w*.5,w*.38,w*.56,w*.44,w*.5,w*.4][i%6])+'<rect x="'+(x+w-32)+'" y="'+(ry+10)+'" width="16" height="16" rx="4" class="s-ln"/>';
+    if(i<rows-1)s+='<path d="M'+(x+14)+' '+(ry+36)+'h'+(w-28)+'" class="s-div"/>'}
+  return s;
+}
+/* the list of options that slides up after Share; Add to Home Screen is below the fold, so the list scrolls */
+function sheet(){
+  var top=84,s='<rect x="18" y="-60" width="264" height="424" class="s-dimmer"/><rect x="18" y="'+top+'" width="264" height="300" rx="22" class="s-sheet"/><rect x="134" y="'+(top+8)+'" width="32" height="5" rx="2.5" class="s-ln"/>'+
+    '<rect x="34" y="'+(top+22)+'" width="30" height="30" rx="8" class="s-t0"/>'+txt(74,top+35,12,'Dave’s Interesting Stuff','b')+bar(74,top+43,90),list='';
+  for(var i=0;i<11;i++){var y=top+66+i*34;
+    if(i===7)list+='<rect x="28" y="'+(y+1)+'" width="244" height="32" rx="9" class="s-hi"/>'+txt(42,y+22,13.5,'Add to Home Screen','b')+use('plus',254,y+17,18,'hot');
+    else if(i===10)list+=txt(42,y+22,13.5,'Edit Actions…','link');
+    else list+=bar(42,y+14,[96,120,84,132,104,90,112,0,100,124][i])+'<rect x="246" y="'+(y+9)+'" width="16" height="16" rx="4" class="s-ln"/>';
+    list+='<path d="M42 '+(y+34)+'h222" class="s-div"/>'}
+  return s+'<g clip-path="url(#CL)"><g class="s-list scroll" style="--off:-150px">'+list+'</g></g>';
+}
+/* the Add to Home Screen screen: the icon, its name, the Open as Web App switch and Add */
+function dialog(x,y,w,h,hot){
+  var r=x+w,s='<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="22" class="s-sheet"/><circle cx="'+(x+26)+'" cy="'+(y+28)+'" r="13" class="s-pill"/>'+use('x',x+26,y+28,13,'dim')+
+    txt(x+46,y+33,13,'Add to Home Screen','b')+'<rect x="'+(r-60)+'" y="'+(y+14)+'" width="48" height="28" rx="14" class="'+(hot==='add'?'s-bhot':'s-b')+'"/>'+txt(r-36,y+33,13.5,'Add',hot==='add'?'onhot b':'b','middle')+
+    '<rect x="'+(x+16)+'" y="'+(y+62)+'" width="52" height="52" rx="13" class="s-t0"/>'+txt(x+42,y+93,15,'DIS','onaccent b','middle')+
+    '<rect x="'+(x+80)+'" y="'+(y+70)+'" width="'+(w-96)+'" height="36" rx="10" class="s-field"/>'+txt(x+92,y+93,14,'DIS','b')+bar(x+16,y+130,Math.min(150,w-60))+
+    '<rect x="'+(x+10)+'" y="'+(y+150)+'" width="'+(w-20)+'" height="44" rx="12" class="'+(hot==='toggle'?'s-hi':'s-row')+'"/>'+txt(x+24,y+177,13.5,'Open as Web App','b')+
+    '<rect x="'+(r-64)+'" y="'+(y+160)+'" width="42" height="24" rx="12" class="s-tog"/><circle cx="'+(r-34)+'" cy="'+(y+172)+'" r="10" class="s-knob"/>';
+  return s;
+}
+var phoneDialog=function(hot){return'<rect x="18" y="-60" width="264" height="424" class="s-dimmer"/>'+dialog(18,30,264,340,hot)};
+function icons(x0,y0,cols,rows,dx,dy,size,at){
+  var s='';for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){var x=x0+c*dx,y=y0+r*dy;
+    if(r===at[0]&&c===at[1])s+='<rect x="'+x+'" y="'+y+'" width="'+size+'" height="'+size+'" rx="'+size/4+'" class="s-t0"/>'+txt(x+size/2,y+size/2+5,14,'DIS','onaccent b','middle')+txt(x+size/2,y+size+14,11,'DIS','b','middle')+
+      '<circle cx="'+(x+size)+'" cy="'+y+'" r="11" class="s-okc"/>'+use('check',x+size,y,14,'okk');
+    else s+='<rect x="'+x+'" y="'+y+'" width="'+size+'" height="'+size+'" rx="'+size/4+'" class="s-app"/>'+bar(x+size/2-16,y+size+8,32)}
+  return s;
+}
+var phoneHome=function(){return'<rect x="18" y="-60" width="264" height="424" class="s-wall"/>'+icons(34,22,4,3,61,80,48,[1,2])+'<rect x="30" y="284" width="240" height="66" rx="24" class="s-dock"/>'+[0,1,2,3].map(function(i){return'<rect x="'+(41+i*57)+'" y="293" width="48" height="48" rx="12" class="s-app"/>'}).join('')};
+/* an iPad, seen from the top down, because its buttons are at the top */
+var pad=function(inner){return'<rect x="6" y="6" width="388" height="340" rx="26" class="s-body"/><g clip-path="url(#CS)"><rect x="18" y="18" width="364" height="330" class="s-screen"/>'+inner+'</g>'};
+function padPage(hot){
+  var s='<rect x="18" y="18" width="364" height="46" class="s-chrome"/><path d="M18 64h364" class="s-edge"/>'+use('sidebar',40,41,18,'dim')+use('back',66,41,18,'dim')+'<rect x="90" y="27" width="190" height="28" rx="14" class="s-pill"/>'+bar(149,38,72)+
+    use('share',306,41,22,hot?'hot':'')+use('new',336,41,17,'dim')+use('tabs',362,41,18,'dim')+txt(34,90,14,'Dave’s Interesting Stuff','b');
+  for(var i=0;i<6;i++){var x=30+(i%2)*174,y=102+Math.floor(i/2)*56;s+='<rect x="'+x+'" y="'+y+'" width="166" height="46" rx="10" class="s-card"/><rect x="'+(x+8)+'" y="'+(y+9)+'" width="28" height="28" rx="7" class="s-t'+(i%4)+'"/>'+bar(x+46,y+14,[70,88,60,80,74,66][i],'d')+bar(x+46,y+27,[100,92,104,96,88,102][i])}
+  return s;
+}
+var padDim='<rect x="18" y="18" width="364" height="330" class="s-dimmer"/>';
+var padHome=function(){return'<rect x="18" y="18" width="364" height="330" class="s-wall"/>'+icons(52,44,5,3,64,78,44,[1,3])};
+
+/* ---------- each film: one picture per step, then the Home Screen ---------- */
+var P=function(inner){return function(){return phone(inner())}},T=function(inner){return function(){return pad(inner())}};
+var tail=function(b){return[
+  {li:b,tap:[254,255,1.7],ms:4800,draw:P(function(){return page()+sheet()})},
+  {li:b+1,tap:[239,202,0,25],draw:P(function(){return page()+phoneDialog('toggle')})},
+  {li:b+2,tap:[246,58,0,27],draw:P(function(){return page()+phoneDialog('add')})},
+  {li:'done',ms:3800,draw:P(phoneHome)}]};
+var SCENES={
+  a:[{li:0,tap:[150,318],draw:P(function(){return page()+barA(true)})}].concat(tail(1)),
+  chrome:[{li:0,tap:[248,76],draw:function(){return phoneTop(chromePage())}}].concat(tail(1)),
+  b:[{li:0,tap:[254,322],draw:P(function(){return page()+barBC('dots','right')})},
+     {li:1,tap:[250,148],draw:P(function(){return page()+barBC('dots')+menu(112,124,162,4,{at:0,label:'Share'},'share')})}].concat(tail(2)),
+  c:[{li:0,tap:[90,322],draw:P(function(){return page()+barBC('tabs','menu')})},
+     {li:1,tap:[164,148],draw:P(function(){return page()+barBC('tabs')+menu(26,124,162,4,{at:0,label:'Share'},'share')})}].concat(tail(2)),
+  ipad:[{li:0,tap:[306,41],draw:T(function(){return padPage(true)})},
+     {li:1,tap:[348,202],draw:T(function(){return padPage()+menu(192,70,180,4,{at:3,label:'View More'})})},
+     {li:2,tap:[348,166],draw:T(function(){return padPage()+menu(172,70,200,6,{at:2,label:'Add to Home Screen'},'plus')})},
+     {li:3,tap:[279,226,0,25],draw:T(function(){return padPage()+padDim+dialog(78,54,244,210,'toggle')})},
+     {li:4,tap:[286,82,0,27],draw:T(function(){return padPage()+padDim+dialog(78,54,244,210,'add')})},
+     {li:'done',ms:3800,draw:T(padHome)}]
+};
+var films={};
+function makeFilm(id){
+  var sec=d.getElementById(id),slot=sec.querySelector('.filmslot'),lis=[].slice.call(sec.querySelectorAll('ol.steps>li')),then=sec.querySelector('.then');
+  var sc=SCENES[id],kind=sec.getAttribute('data-kind'),i=0,playing=false,timer=0,asStrip=calm,built=false;
+  slot.innerHTML='<div class="film"><div class="stage"></div><p class="cap"><b class="num"></b> <span class="capt"></span></p><div class="ctl">'+
+    '<button type="button" class="btn" data-f="prev" aria-label="Previous step"><span aria-hidden="true">‹</span> Back</button>'+
+    '<button type="button" class="btn primary" data-f="play">Play</button>'+
+    '<button type="button" class="btn" data-f="next" aria-label="Next step">Next <span aria-hidden="true">›</span></button></div></div>'+
+    '<div class="strip" hidden></div><p class="mode"><button type="button" class="btn quiet" data-f="mode"></button></p>';
+  var film=slot.querySelector('.film'),stage=slot.querySelector('.stage'),cap=slot.querySelector('.cap'),num=slot.querySelector('.num'),capt=slot.querySelector('.capt'),
+    playBtn=slot.querySelector('[data-f="play"]'),modeBtn=slot.querySelector('[data-f="mode"]'),strip=slot.querySelector('.strip');
+  var words=function(s){return tidy(s.li==='done'?then.textContent:lis[s.li].textContent)};
+  var numOf=function(s){return s.li==='done'?'Done':'Step '+(s.li+1)+' of '+lis.length};
+  var svgOf=function(s){return wrap(kind,s.draw()+(s.tap?tap(s.tap[0],s.tap[1],s.tap[2],s.tap[3]):''),'Sketch. '+numOf(s)+': '+words(s))};
+  function mark(s){lis.forEach(function(li,n){li.classList.toggle('now',!!s&&s.li===n)});then.classList.toggle('now',!!s&&s.li==='done')}
+  function show(k){i=(k+sc.length)%sc.length;var s=sc[i];stage.innerHTML=svgOf(s);num.textContent=numOf(s)+'.';capt.textContent=words(s);mark(s)}
+  function tick(){clearTimeout(timer);if(playing)timer=setTimeout(function(){show(i+1);tick()},sc[i].ms||3200)}
+  function play(on){playing=on;playBtn.textContent=on?'Pause':'Play';cap.setAttribute('aria-live',on?'off':'polite');tick()}
+  function layout(){
+    film.hidden=asStrip;strip.hidden=!asStrip;modeBtn.textContent=asStrip?'Play one at a time':'Show all the pictures';
+    if(asStrip){play(false);mark(null);if(!built){built=true;strip.innerHTML=sc.map(function(s){return'<figure>'+svgOf(s)+'<figcaption><b>'+numOf(s)+'.</b> '+esc(words(s))+'</figcaption></figure>'}).join('')}}
+    else show(i);
+  }
+  slot.addEventListener('click',function(ev){
+    var b=ev.target.closest('[data-f]');if(!b)return;var f=b.getAttribute('data-f');
+    if(f==='prev'){play(false);show(i-1)}else if(f==='next'){play(false);show(i+1)}else if(f==='play'){play(!playing)}
+    else if(f==='mode'){asStrip=!asStrip;layout();if(!asStrip&&!calm)play(true)}
+  });
+  d.addEventListener('visibilitychange',function(){if(d.hidden)clearTimeout(timer);else tick()});
+  return{start:function(){i=0;layout();if(!asStrip&&!calm)play(true)},stop:function(){play(false)}};
+}
+
+/* ---------- choosing a screen: the address ends in #a, #b, #c, #ipad or #other ----------
+   Taps are handled here rather than left to the address alone, so the page also works inside viewers that block address changes. */
+var flows=['a','b','c','ipad','chrome','other'];
+function render(id,move){
+  if(flows.indexOf(id)<0)id='';
+  flows.forEach(function(f){d.getElementById(f).classList.toggle('on',f===id);if(films[f])films[f].stop()});
+  cards.forEach(function(c){if(c.getAttribute('data-flow')===id)c.setAttribute('aria-current','true');else c.removeAttribute('aria-current')});
+  if(id&&SCENES[id]){if(!films[id])films[id]=makeFilm(id);films[id].start()}
+  if(!move)return;
+  if(!id){d.getElementById('pick').scrollIntoView();return}
+  var h=d.getElementById('h-'+id);d.getElementById(id).scrollIntoView();try{h.focus({preventScroll:true})}catch(x){h.focus()}
+}
+d.addEventListener('click',function(ev){
+  var a=ev.target.closest?ev.target.closest('a[href^="#"]'):null;if(!a)return;
+  var id=a.getAttribute('href').slice(1);ev.preventDefault();
+  try{if(location.hash!=='#'+id)history.pushState(null,'','#'+id)}catch(x){}
+  render(id,true);
+});
+window.addEventListener('popstate',function(){render(location.hash.slice(1),true)});
+/* inside another app or in Edge or Firefox, the Safari steps open by themselves; in Chrome, Chrome's steps do */
+var first=standalone||!ios?'':(inApp||otherBrowser)?'other':chrome?'chrome':'';
+if(!location.hash&&first){try{history.replaceState(null,'','#'+first)}catch(x){}render(first,false)}
+else render(location.hash.slice(1),!!location.hash);
+
+/* ---------- copy this page's link, for pasting into Safari ---------- */
+var copy=d.getElementById('copy'),msg=d.getElementById('copyMsg'),link=location.href.split('#')[0];
+if(/^https?:$/.test(location.protocol)){
+  copy.hidden=false;
+  copy.addEventListener('click',function(){
+    var done=function(ok){msg.textContent=ok?'Link copied. Now open Safari and paste it.':'Copy this link: '+link};
+    try{navigator.clipboard.writeText(link).then(function(){done(true)},function(){done(false)})}catch(x){done(false)}
+  });
+}
+
+/* ---------- the two folding sections stay as you left them ---------- */
+var KEY='dis:help',ui={};try{ui=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(x){}
+if(!ui||typeof ui!=='object'||Array.isArray(ui))ui={};
+[].forEach.call(d.querySelectorAll('details.fold'),function(el){
+  if(typeof ui[el.id]==='boolean')el.open=ui[el.id];
+  el.addEventListener('toggle',function(){ui[el.id]=el.open;try{localStorage.setItem(KEY,JSON.stringify(ui))}catch(x){}});
+});
+})();
+</script>
+</body>
+</html>

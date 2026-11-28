@@ -108,9 +108,11 @@ function webFolder(html,given,files){
 homeHint({code:${JSON.stringify(info.code)},name:${JSON.stringify(info.name)},url:${JSON.stringify(info.url)},key:${JSON.stringify(info.code.toLowerCase()+':')}});})();
 </script>
 `;
+  /* a site with a launcher (DIS) tells each app where it is, so the Home Screen helper can offer it and lead back to it */
+  const hub=given&&given.hub?`<script>window.HOME_HUB=${JSON.stringify(given.hub).replace(/</g,'\\u003c')};</script>\n`:'';
   const sw=`<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});</script>\n`;
   let page=html;
-  page=page.includes('</head>')?page.replace('</head>',head+'</head>'):head+page;
+  page=page.includes('</head>')?page.replace('</head>',head+hub+'</head>'):head+hub+page;
   const at=page.lastIndexOf('</body>');page=at<0?page+helper+sw:page.slice(0,at)+helper+sw+page.slice(at);
   const manifest={name:`${info.code}: ${info.name}`,short_name:info.code,description:info.tagline||undefined,start_url:'./',scope:'./',display:'standalone',
     background_color:'#F3F5F8',theme_color:info.accent,icons:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'},
@@ -144,9 +146,110 @@ function groupApps(sections,apps){
   return groups.filter(g=>g.apps.length);
 }
 
+/* ---------- DIS: the front page as a launcher (site.json "app": {name, short, version, date, changes}) ----------
+   Added to the Home Screen once, it opens every app inside it. Everything here stays on the device: settings are kept
+   under dis: keys, and a saves file is made and read in the browser. */
+function device(app,apps){
+  const opts=apps.map(a=>`<option value="${esc(a.folder)}">${esc(a.code)}: ${esc(a.name)}</option>`).join('');
+  return`  <section class="dis" aria-label="On this device">
+    <details class="group" id="dis-device" data-ui="device">
+      <summary><h2>Your Saves and Settings</h2></summary>
+      <p class="sub">These stay on this device. A Home Screen icon keeps its own saves and settings, apart from Safari’s, so do this in the place you play.</p>
+      <h3><label for="disStart">Start Straight In</label></h3>
+      <p class="sub">Open one app as soon as ${esc(app.short)} starts from the Home Screen, for example on a child’s phone. Its ‹ ${esc(app.short)} button, at the top left, still brings you here.</p>
+      <div class="row"><select id="disStart"><option value="">No, show the list of apps</option>${opts}</select></div>
+      <p class="msg sub" id="disStartMsg" role="status"></p>
+      <h3>Back Up My Saves</h3>
+      <p class="sub">Puts every app’s saved games and settings on this device into one file. Restore it in ${esc(app.short)} on the Home Screen, or on another phone, to carry on there. Torah Tutor lessons aren’t included: keep their lesson files.</p>
+      <div class="row"><button type="button" class="btn primary" id="disBackup">Back Up My Saves</button></div>
+      <p class="msg sub" id="disBackupMsg" role="status"></p>
+      <h3>Restore</h3>
+      <div class="row"><label class="btn pick">Choose a Saves File<input type="file" id="disFile" accept=".json,application/json"></label></div>
+      <div class="row" id="disConfirm" hidden><button type="button" class="btn primary" id="disRestore">Restore</button><button type="button" class="btn" id="disCancel">Cancel</button></div>
+      <p class="msg sub" id="disRestoreMsg" role="status"></p>
+    </details>
+    <details class="group" id="dis-about" data-ui="about">
+      <summary><h2>About This Version</h2></summary>
+      <p><b>${esc(app.short)} ${esc(app.version||'')}</b>${app.date?', '+esc(app.date):''}. ${esc(app.changes||'')}</p>
+      <p class="sub">${esc(app.short)} is ${esc(app.name)}, made by Dave Schwartz with Claude.</p>
+    </details>
+  </section>`;
+}
+const LAUNCHER_JS=String.raw`
+  var ua=navigator.userAgent||'',iosD=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  var standalone=navigator.standalone===true;try{standalone=standalone||matchMedia('(display-mode: standalone)').matches}catch(x){}
+  var get=function(k){try{return localStorage.getItem(k)}catch(x){return null}},put=function(k,v){try{localStorage.setItem(k,v);return true}catch(x){return false}};
+  if(standalone)try{sessionStorage.setItem('dis:in','1')}catch(x){}
+  var folders=[].map.call(document.querySelectorAll('.app'),function(a){return a.getAttribute('href').replace(/\/$/,'')});
+  /* Start Straight In: only when opened from the Home Screen, once per launch, and never when ?stay is in the address */
+  var start=get('dis:start');
+  if(standalone&&start&&folders.indexOf(start)>=0&&!/[?&]stay\b/.test(location.search)){
+    var once=null;try{once=sessionStorage.getItem('dis:started')}catch(x){}
+    if(!once){try{sessionStorage.setItem('dis:started','1')}catch(x){}location.replace(start+'/');return}
+  }
+  var $=function(id){return document.getElementById(id)};
+  var sel=$('disStart');if(sel){if(folders.indexOf(start)>=0)sel.value=start;
+    sel.addEventListener('change',function(){var ok=sel.value?put('dis:start',sel.value):(function(){try{localStorage.removeItem('dis:start');return true}catch(x){return false}})();
+      $('disStartMsg').textContent=!ok?'This browser isn’t keeping settings, so this won’t be remembered.':sel.value?'Saved. Next time DIS starts from the Home Screen, it opens '+sel.options[sel.selectedIndex].text+'.':'Saved. DIS will open on the list of apps.';
+      try{sessionStorage.setItem('dis:started','1')}catch(x){}})}
+  /* Back Up My Saves: every localStorage key on this site, in one file */
+  var stamp=function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+  var bk=$('disBackup');if(bk)bk.addEventListener('click',function(){
+    var m=$('disBackupMsg'),saves={},n=0;
+    try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);saves[k]=localStorage.getItem(k);n++}}catch(x){m.textContent='This browser isn’t letting DIS read saves, so there’s nothing to back up.';return}
+    var name='dis-saves-'+stamp()+'.json',blob=new Blob([JSON.stringify({kind:'dis-saves',version:1,made:new Date().toISOString(),saves:saves},null,1)],{type:'application/json'});
+    var done=function(){m.textContent='Saved '+n+' item'+(n===1?'':'s')+' as '+name+'.'+(iosD?' It’s in Files, in Downloads, unless you chose somewhere else.':'')};
+    var file=null;try{file=new File([blob],name,{type:'application/json'})}catch(x){}
+    if(iosD&&file&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:name}).then(function(){m.textContent='Saved '+n+' item'+(n===1?'':'s')+' in '+name+'. Choose Save to Files if you haven’t.'},function(e){if(e&&e.name==='AbortError')m.textContent='Not saved.';else download()});return}
+    download();
+    function download(){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);done()}
+  });
+  /* Restore: read the file here, check it, and ask before writing */
+  var pending=null,f=$('disFile');if(f)f.addEventListener('change',function(){
+    var m=$('disRestoreMsg'),file=f.files&&f.files[0];pending=null;$('disConfirm').hidden=true;if(!file)return;
+    file.text().then(function(t){
+      var o=null;try{o=JSON.parse(t)}catch(x){}
+      var s=o&&o.kind==='dis-saves'&&o.saves&&typeof o.saves==='object'&&!Array.isArray(o.saves)?o.saves:null,clean={},n=0;
+      if(s)for(var k in s)if(Object.prototype.hasOwnProperty.call(s,k)&&typeof s[k]==='string'&&k.length<=200){clean[k]=s[k];n++}
+      if(!n){m.textContent='That isn’t a DIS saves file, or it’s empty. Nothing was changed.';f.value='';return}
+      pending=clean;var when=new Date(o.made);
+      m.textContent='This file has '+n+' saved item'+(n===1?'':'s')+(isNaN(when)?'':', made '+when.toLocaleDateString())+'. Restoring replaces saves with the same names on this device.';
+      $('disConfirm').hidden=false;$('disRestore').focus();
+    },function(){m.textContent='Couldn’t read that file. Nothing was changed.'});
+  });
+  var rs=$('disRestore');if(rs)rs.addEventListener('click',function(){
+    if(!pending)return;var ok=0,bad=0;for(var k in pending){if(put(k,pending[k]))ok++;else bad++}
+    pending=null;$('disConfirm').hidden=true;f.value='';
+    $('disRestoreMsg').textContent='Restored '+ok+' item'+(ok===1?'':'s')+'.'+(bad?' '+bad+' didn’t fit: this browser is out of room.':'')+' Open an app to carry on.';
+  });
+  var cn=$('disCancel');if(cn)cn.addEventListener('click',function(){pending=null;$('disConfirm').hidden=true;f.value='';$('disRestoreMsg').textContent='Nothing was changed.'});
+  /* Android: Chrome's own install prompt, as a button */
+  var prompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();prompt=e;$('installRow').hidden=standalone});
+  var ib=$('installBtn');if(ib)ib.addEventListener('click',function(){if(!prompt)return;prompt.prompt();prompt.userChoice.then(function(){$('installRow').hidden=true;prompt=null},function(){})});
+  window.addEventListener('appinstalled',function(){$('installRow').hidden=true});
+  /* the folding sections stay as you left them */
+  var ui={};try{ui=JSON.parse(get('dis:ui')||'{}')||{}}catch(x){ui={}}if(typeof ui!=='object'||Array.isArray(ui))ui={};
+  [].forEach.call(document.querySelectorAll('.dis details[data-ui]'),function(el){var k=el.getAttribute('data-ui');if(typeof ui[k]==='boolean')el.open=ui[k];
+    el.addEventListener('toggle',function(){ui[k]=el.open;put('dis:ui',JSON.stringify(ui))})});
+`;
+/* DIS's manifest: one icon for the whole site, opening the front page, with every app folder inside its scope */
+function siteManifest(site){
+  const app=site.app;
+  return{name:app.name,short_name:app.short,start_url:'./',scope:'./',display:'standalone',background_color:'#EEF1F5',theme_color:site.accent||'#3D4FB5',
+    icons:[{src:'icon-192.png',sizes:'192x192',type:'image/png'},{src:'icon-512.png',sizes:'512x512',type:'image/png'},{src:'apple-touch-icon.png',sizes:'180x180',type:'image/png'}]};
+}
+/* the Show Me How page, at install/: it links DIS's manifest and icon so that adding it adds DIS */
+function installPage(html,site){
+  const app=site.app,mark='SITE HEAD:';
+  if(!html.includes(mark))throw new Error('html/install.html has lost its SITE HEAD comment');
+  const head=`\n<link rel="manifest" href="../manifest.webmanifest">\n<meta name="apple-mobile-web-app-title" content="${esc(app.short)}">\n<meta name="mobile-web-app-capable" content="yes">\n<link rel="icon" href="../icon-192.png" sizes="192x192">\n<link rel="apple-touch-icon" href="../apple-touch-icon.png">`;
+  const end=html.indexOf('-->',html.indexOf(mark))+3;
+  return(html.slice(0,end)+head+html.slice(end)).replace("var SITE={home:'../',backup:false};","var SITE={home:'../',backup:true};");
+}
+
 /* ---------- the front page that lists the apps ---------- */
 function siteIndex(site,apps,files){
-  const css=files['core/core.css'];
+  const css=files['core/core.css'],app=site.app&&site.app.name&&site.app.short?site.app:null;
   const cardsOf=list=>list.map(a=>`      <a class="app" href="${esc(a.folder)}/">
         <img src="${esc(a.folder)}/icon-192.png" alt="" width="64" height="64">
         <span><b>${esc(a.code)}: ${esc(a.name)}</b><span class="sub">${esc(a.tagline||'')}</span></span>
@@ -168,39 +271,49 @@ ${cardsOf(g.apps)}
   const ic=p=>`<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></span>`;
   const I={share:ic('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M7 11H6v9h12v-9h-1"/>'),dots:ic('<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>'),
     plus:ic('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>'),kebab:ic('<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'),
-    compass:ic('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>'),info:ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor"/>')};
+    compass:ic('<circle cx="12" cy="12" r="8.5"/><path d="M15 9l-2 4-4 2 2-4z" fill="currentColor"/>'),tabs:ic('<rect x="8" y="4" width="12" height="12" rx="2.5"/><path d="M4.5 8.5v9A2.5 2.5 0 0 0 7 20h9"/>'),info:ic('<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor"/>')};
   const help=`  <details class="howto" id="instructions">
     <summary>${I.info}Instructions</summary>
     <div class="howto-body group">
-      <p>Tap an app to open it. To keep one on your phone or tablet, add it to your Home Screen: it then opens like any other app, with its own icon, and works without a connection.</p>
+      <p>Tap an app to open it. To keep them all on your phone or tablet, add this page to your Home Screen once: ${app?`it gets one icon, ${esc(app.short)}, and every app opens from it.`:'every app then opens from its icon.'}</p>
       <details class="dev" data-dev="ios">
         <summary>iPhone or iPad</summary>
         <ol>
-          <li>Open the app in <b>Safari</b>. If the link opened inside Messages, Mail, Gmail or another app, tap ${I.dots} or ${I.compass} and choose <b>Open in Safari</b> first.</li>
-          <li>Tap ${I.share} <b>Share</b>. No Share button? Tap ${I.dots} first. On an iPad, it’s at the top right.</li>
-          <li>Tap ${I.plus} <b>Add to Home Screen</b>. You may need to scroll down to see it.</li>
+          <li>Open this page in <b>Safari</b> or <b>Chrome</b>. If it opened inside Gmail, Facebook, Instagram or another app, tap that app’s menu (${I.dots} three dots or ${I.compass} a compass) and choose <b>Open in Safari</b>. It may say Open in Browser.</li>
+          <li>Find ${I.share} <b>Share</b>, a square with an arrow pointing up.
+            <ul>
+              <li>In the bar at the bottom? Tap it.</li>
+              <li>${I.dots} Three dots to the right of the address bar instead? Tap them, then tap <b>Share</b>.</li>
+              <li>${I.tabs} A Tabs button there instead? Tap the small button at the left end of the address bar, then tap <b>Share</b>.</li>
+              <li>On an iPad, Share is at the top right. Tap it, then tap <b>View More</b>.</li>
+              <li>Using Chrome? Share is at the right end of Chrome’s address bar.</li>
+            </ul>
+          </li>
+          <li>Scroll down the list and tap ${I.plus} <b>Add to Home Screen</b>. Not there? Scroll to the bottom, tap <b>Edit Actions</b> and add it.</li>
+          <li>If you see <b>Open as Web App</b>, make sure it is switched on.</li>
           <li>Tap <b>Add</b>.</li>
         </ol>
+        <p class="sub"><a class="show" href="install/">Not sure which screen you have? Show me how, with pictures</a></p>
         <p class="sub">Best done before you start: on an iPhone or iPad, the Home Screen app keeps its own copy of your work, separate from Safari’s.</p>
       </details>
       <details class="dev" data-dev="android">
         <summary>Android</summary>
         <ol>
-          <li>Open the app in <b>Chrome</b>. If the link opened inside another app, tap ${I.kebab} and choose <b>Open in Chrome</b> first.</li>
+          <li>Open this page in <b>Chrome</b>. If the link opened inside another app, tap ${I.kebab} and choose <b>Open in Chrome</b> first.</li>
           <li>Tap ${I.kebab} (top right).</li>
           <li>Tap <b>Add to Home screen</b> or <b>Install app</b>.</li>
           <li>Tap <b>Install</b> or <b>Add</b>.</li>
         </ol>
-        <p class="sub">If the app shows an <b>Install</b> button at the bottom, tapping it does the same.</p>
+        <p class="sub">If you see an <b>Install</b> button near the top of this page, tapping it does the same.</p>
       </details>
       <details class="dev" data-dev="computer">
         <summary>Computer</summary>
         <ol>
-          <li>Open the app and bookmark it.</li>
+          <li>Bookmark this page.</li>
           <li>In Chrome or Edge you can also install it as an app, from the browser’s menu.</li>
         </ol>
       </details>
-      <p class="sub">On a phone, each app also shows the steps for that phone the first time it opens. Everything runs on your device: pictures and work you make are never uploaded. When an app is updated, you get the new version the next time you open it online.</p>
+      <p class="sub">Just want one app? Open it and do the same taps there: it gets its own icon, with its own saves. On a phone, each app also shows the steps the first time it opens. Everything runs on your device: pictures and work you make are never uploaded. When an app is updated, you get the new version the next time you open it online.</p>
     </div>
   </details>`;
   return`<!DOCTYPE html>
@@ -209,7 +322,10 @@ ${cardsOf(g.apps)}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="${esc(site.accent)}">
-<title>${esc(site.title)}</title>
+<title>${esc(app?app.name:site.title)}</title>${app?`
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="${esc(app.short)}">
+<meta name="mobile-web-app-capable" content="yes">`:''}
 <link rel="icon" href="icon-192.png" sizes="192x192">
 <link rel="icon" href="icon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -241,24 +357,34 @@ ${css.trim()}
 .dev[open]>summary::before{transform:rotate(45deg)}
 .dev .this{font-weight:400;font-size:13px;color:var(--muted);margin-left:auto}
 .dev ol{margin:0;padding:0 14px 4px 36px}.dev li{margin:6px 0}.dev>.sub{padding:0 14px 12px}
+.dev li ul{margin:4px 0 0;padding-left:18px}.dev .show{display:inline-flex;align-items:center;min-height:44px;font-weight:650;color:var(--ink)}.dev>.sub:has(.show){padding-bottom:0}
 .howto summary:focus-visible,.more a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.dis{max-width:760px;margin:22px auto 0;padding:0 16px}.dis>details{margin:0 0 12px}
+.dis summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none}.dis summary::-webkit-details-marker{display:none}
+.dis summary h2{margin:0;flex:1}.dis summary::after{content:"";flex:none;width:9px;height:9px;margin-right:6px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.dis details[open]>summary::after{transform:rotate(-135deg)}.dis details>*{box-sizing:border-box}
+.dis h3{margin:16px 0 4px}.dis select{min-height:44px;max-width:100%;font:inherit;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.dis .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.dis .btn{display:inline-flex;align-items:center}
+.dis .pick input{font-size:16px}.dis .msg{min-height:1.5em;margin:4px 0}.inst{max-width:760px;margin:6px auto;padding:0 16px}
 .more{max-width:760px;margin:22px auto 0;padding:0 16px}.more a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink)}
 header,.foot{max-width:760px}
 </style>
 </head>
 <body>
 <header>
-  <h1>${esc(site.title)}</h1>
+  <h1>${esc(app?app.name:site.title)}</h1>
   <p>${esc(site.tagline)}</p>
 </header>
 <main>
-${help}
+${help}${app?`
+  <p class="inst" id="installRow" hidden><button type="button" class="btn primary" id="installBtn">Install ${esc(app.short)}</button></p>`:''}
 ${listing}
+${app?device(app,apps):''}
   <p class="more"><a href="#instructions">How to put an app on your phone or tablet</a></p>
 </main>
 <p class="foot">${esc(site.foot||'')}</p>
 <script>
-(function(){
+(function(){${app?LAUNCHER_JS:''}
   /* open the steps for this device, and open Instructions when a link goes to it */
   var u=navigator.userAgent,ios=/iPad|iPhone|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1);
   var d=document.querySelector('.dev[data-dev="'+(ios?'ios':/Android/.test(u)?'android':'computer')+'"]');
@@ -275,7 +401,7 @@ ${listing}
 }
 
 const SITE_ICONS=[{name:'icon-192.png',size:192},{name:'icon-512.png',size:512},{name:'apple-touch-icon.png',size:180}];
-const api={iconPixels,siteIconPixels,SITE_ICONS,pngFrom,zip,crc32,webFolder,siteIndex,groupApps,infoOf,inkFor,HOME_JS_NAME};
+const api={iconPixels,siteIconPixels,SITE_ICONS,siteManifest,installPage,pngFrom,zip,crc32,webFolder,siteIndex,groupApps,infoOf,inkFor,HOME_JS_NAME};
 root.AppWeb=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -37,16 +37,24 @@ function site(cfg,dir,out){
     if(!/^[a-z0-9][a-z0-9-]{0,40}$/.test(f)||['src','tools','tests','node_modules'].includes(f))fail(`"${f}" can't be a folder name: use lowercase letters, digits and hyphens, and not src, tools or tests.`);
     if(apps.some(x=>x.folder===f))fail(`Two apps want the folder "${f}". Give one a different "folder" in site.json.`);
     if(!r0.error&&url){const s={...r0.spec,homeUrl:url};html=G.generate(s,files,r0.regions).html}
-    const r=writeWeb(html,path.join(out,f),{...a,url});apps.push({...r.info,folder:f,section:a.section});
+    const hub=cfg.app?{name:cfg.app.name,short:cfg.app.short,url:'../',how:'../install/',flag:'dis:in'}:null;
+    const r=writeWeb(html,path.join(out,f),{...a,url,hub});apps.push({...r.info,folder:f,section:a.section});
     if(a.keep)fs.writeFileSync(path.join(out,f,a.keep),html);
     console.log(`  ${f}/  ${r.info.code}: ${r.info.name}${r.info.generated?'':' (Home Screen helper added)'}`);
   }
   const groups=W.groupApps(cfg.sections,apps);
   for(const g of groups)if(g.id==='more-apps')console.error(`Note: ${g.apps.map(x=>x.folder).join(', ')} ${g.apps.length===1?'has':'have'} no "section" from the "sections" list in site.json, so ${g.apps.length===1?'it goes':'they go'} under More Apps.`);
-  fs.writeFileSync(path.join(out,'index.html'),W.siteIndex({title:cfg.title||'Apps',tagline:cfg.tagline||'',accent:cfg.accent||'#3D4FB5',foot:cfg.foot||'',sections:cfg.sections},apps,files));
+  fs.writeFileSync(path.join(out,'index.html'),W.siteIndex({title:cfg.title||'Apps',tagline:cfg.tagline||'',accent:cfg.accent||'#3D4FB5',foot:cfg.foot||'',sections:cfg.sections,app:cfg.app},apps,files));
   /* the front page's own Home Screen icons, so it doesn't use the first app's */
   for(const ic of W.SITE_ICONS)fs.writeFileSync(path.join(out,ic.name),W.pngFrom(W.siteIconPixels(ic.size,cfg.accent||'#3D4FB5'),ic.size,b=>zlib.deflateSync(b,{level:9})));
   fs.writeFileSync(path.join(out,'.nojekyll'),'');
+  /* DIS: with "app" in site.json, the front page is a launcher with its own manifest and a Show Me How page at install/ */
+  if(cfg.app){
+    fs.writeFileSync(path.join(out,'manifest.webmanifest'),JSON.stringify(W.siteManifest({...cfg,accent:cfg.accent||'#3D4FB5'}),null,2));
+    const how=path.join(here,'html','install.html');
+    if(fs.existsSync(how)){fs.mkdirSync(path.join(out,'install'),{recursive:true});fs.writeFileSync(path.join(out,'install','index.html'),W.installPage(read(how),cfg))}
+    console.log(`  ./  ${cfg.app.short}: ${cfg.app.name} (front page, manifest${fs.existsSync(how)?', install/':''})`);
+  }
   /* the README's app list follows site.json: a line "__APPS__" becomes one line per app, under a heading per section if there are sections */
   const line=x=>`- [\`${x.folder}/\`](${base?base+x.folder+'/':x.folder+'/'}): ${x.code}, ${x.name}`;
   const list=groups.length?groups.map(g=>`### ${g.name}\n\n${g.apps.map(line).join('\n')}`).join('\n\n'):apps.map(line).join('\n');

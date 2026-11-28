@@ -3,7 +3,7 @@ Serves a built site (node cli.js site ...) over http and opens it as an iPhone, 
 browser on iPhone and Android, Android Chrome (with and without an install prompt), a computer, an app already on the
 Home Screen, a file, a page inside another page, and a phone's file preview (no scripts). Chromium stands in for each:
 it checks the app's logic and wording, not Safari itself, so a real iPhone and iPad check is still needed."""
-import http.server, json, os, socketserver, sys, threading, functools, zipfile, io
+import http.server, json, os, re, socketserver, sys, threading, functools, zipfile, io
 from playwright.sync_api import sync_playwright
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE); OUT = os.path.join(HERE, 'out'); os.makedirs(OUT, exist_ok=True)
 SITE = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, '..', 'web-mobile-apps'))
@@ -22,6 +22,8 @@ OTHERS = [f for f in FOLDERS if f != 'tig' and 'id="hh-helper"' in open(os.path.
 UA = {
   'iphone': 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1',
   'ipad': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Safari/605.1.15',
+  'iphone-27': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1',
+  'iphone-18': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1',
   'iphone-chrome': 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/131.0.6778.73 Mobile/15E148 Safari/604.1',
   'iphone-gmail': 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
   'android': 'Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
@@ -42,7 +44,8 @@ with sync_playwright() as p:
     print('== the front page')
     ctx, pg, errs = open_as(br, 'iphone', '')
     hrefs = pg.eval_on_selector_all('.app', 'els => els.map(e => e.getAttribute("href").replace(/\\/$/, ""))')
-    check(pg.title() == 'Web & Mobile Apps' and sorted(set(hrefs)) == sorted(FOLDERS), f'front page lists the {len(FOLDERS)} apps')
+    TITLE = (json.load(open(CFG)).get('app') or {}).get('name') or 'Web & Mobile Apps' if os.path.exists(CFG) else 'Web & Mobile Apps'
+    check(pg.title() == TITLE and sorted(set(hrefs)) == sorted(FOLDERS), f'front page lists the {len(FOLDERS)} apps')
     icons = pg.eval_on_selector_all('link[rel~="icon"], link[rel="apple-touch-icon"]', 'els => els.map(e => e.getAttribute("href"))')
     check(sorted(icons) == ['apple-touch-icon.png', 'icon-192.png', 'icon-512.png'] and all(open(os.path.join(SITE, f), 'rb').read(4) == b'\x89PNG' for f in icons),
           'the front page has its own Home Screen icon, not an app\'s')
@@ -75,35 +78,91 @@ with sync_playwright() as p:
     check(pg.url.endswith('/' + first + '/'), 'tapping an app opens it')
     pg.screenshot(path=os.path.join(OUT, 'site-iphone-fig.png')); ctx.close()
 
-    print('== iPhone Safari (TIG, made by the generator)')
-    ctx, pg, errs = open_as(br, 'iphone', 'tig/')
-    check(card(pg).is_visible(), 'the Home Screen card shows')
-    t = card(pg).inner_text()
-    check('Put TIG on your Home Screen' in t and 'Share' in t and 'Add to Home Screen' in t and 'Add' in t, 'it says Share, Add to Home Screen, Add')
-    check('Best done before you start' in t, 'it says to do it before starting (the Home Screen app keeps its own copy)')
-    pg.screenshot(path=os.path.join(OUT, 'phone-iphone-tig.png'))
-    card(pg).locator('[data-hh="later"]').click(); pg.wait_for_timeout(100)
-    check(card(pg).count() == 0, 'Not now hides it')
-    pg.reload(); pg.wait_for_timeout(500)
-    check(card(pg).count() == 0, 'and it stays hidden after a reload')
-    check('Share' in pg.locator('#homeHow').text_content(), 'the steps are still under On your phone')
-    check(not errs, 'no console errors: ' + '; '.join(errs[:3])); ctx.close()
-
-    print('== iPad (reports itself as a Mac with a touch screen)')
-    ctx, pg, errs = open_as(br, 'ipad', 'tig/', 1024, 1366, init="Object.defineProperty(navigator,'maxTouchPoints',{get:()=>5})")
-    t = card(pg).inner_text() if card(pg).count() else ''
-    check('top right' in t and 'Add to Home Screen' in t, 'iPad steps point to the Share button at the top right')
-    pg.screenshot(path=os.path.join(OUT, 'phone-ipad-tig.png')); ctx.close()
-
-    print('== iPhone Chrome')
-    ctx, pg, errs = open_as(br, 'iphone-chrome', 'tig/')
-    t = card(pg).inner_text(); check('address bar' in t and 'Add to Home Screen' in t, 'Chrome on iPhone: Share is in the address bar or the menu'); ctx.close()
-
-    print('== inside another app on iPhone (for example Gmail)')
-    ctx, pg, errs = open_as(br, 'iphone-gmail', 'tig/')
-    t = card(pg).inner_text()
-    check('inside another app' in t and 'Open in Safari' in t and card(pg).locator('[data-hh="copy"]').count() == 1, 'says to open it in Safari, with Copy link')
-    pg.screenshot(path=os.path.join(OUT, 'phone-iphone-inapp-tig.png')); ctx.close()
+    HUB = (json.load(open(CFG)).get('app') or None) if os.path.exists(CFG) else None
+    TIGV = json.loads(re.search(r'<script type="application/json" id="app-spec">(.*?)</script>', open(os.path.join(SITE, 'tig', 'index.html'), encoding='utf-8').read(), re.S).group(1))['version']
+    how = lambda pg: ' '.join(pg.locator('#homeHow').text_content().split())
+    if not HUB:
+        print('== iPhone Safari (TIG, made by the generator)')
+        ctx, pg, errs = open_as(br, 'iphone', 'tig/')
+        check(card(pg).is_visible(), 'the Home Screen card shows')
+        t = card(pg).inner_text()
+        check('Put TIG on your Home Screen' in t and 'Share' in t and 'Add to Home Screen' in t and 'Add' in t, 'it says Share, Add to Home Screen, Add')
+        check('Best done before you start' in t, 'it says to do it before starting (the Home Screen app keeps its own copy)')
+        pg.screenshot(path=os.path.join(OUT, 'phone-iphone-tig.png'))
+        card(pg).locator('[data-hh="later"]').click(); pg.wait_for_timeout(100)
+        check(card(pg).count() == 0, 'Not now hides it')
+        pg.reload(); pg.wait_for_timeout(500)
+        check(card(pg).count() == 0, 'and it stays hidden after a reload')
+        check('Share' in pg.locator('#homeHow').text_content(), 'the steps are still under On your phone')
+        check(not errs, 'no console errors: ' + '; '.join(errs[:3])); ctx.close()
+        print('== iPad (reports itself as a Mac with a touch screen)')
+        ctx, pg, errs = open_as(br, 'ipad', 'tig/', 1024, 1366, init="Object.defineProperty(navigator,'maxTouchPoints',{get:()=>5})")
+        t = card(pg).inner_text() if card(pg).count() else ''
+        check('top right' in t and 'Add to Home Screen' in t, 'iPad steps point to the Share button at the top right')
+        pg.screenshot(path=os.path.join(OUT, 'phone-ipad-tig.png')); ctx.close()
+        print('== iPhone Chrome')
+        ctx, pg, errs = open_as(br, 'iphone-chrome', 'tig/')
+        t = card(pg).inner_text(); check('address bar' in t and 'Add to Home Screen' in t, 'Chrome on iPhone: Share is in the address bar or the menu'); ctx.close()
+        print('== inside another app on iPhone (for example Gmail)')
+        ctx, pg, errs = open_as(br, 'iphone-gmail', 'tig/')
+        t = card(pg).inner_text()
+        check('inside another app' in t and 'Open in Safari' in t and card(pg).locator('[data-hh="copy"]').count() == 1, 'says to open it in Safari, with Copy link')
+        pg.screenshot(path=os.path.join(OUT, 'phone-iphone-inapp-tig.png')); ctx.close()
+    else:
+        S, N = HUB['short'], HUB['name']
+        print(f'== iPhone Safari (TIG), on a site with a launcher ({S})')
+        ctx, pg, errs = open_as(br, 'iphone', 'tig/')
+        check(card(pg).is_visible(), 'the card shows')
+        t = card(pg).inner_text(); go = card(pg).locator('a.hh-go')
+        check(f'Get All of {N}' in t and f'Put {S} on your Home Screen' in t and 'No Share button? Open this page in Safari first.' in t, f'it offers {S}: every app behind one icon, and says to use Safari')
+        check(go.inner_text() == 'Show Me How' and go.get_attribute('href') == '../install/', 'Show Me How goes to the pictures, by a relative link')
+        check(all(card(pg).locator(f'[data-hh="{b}"]').count() == 1 for b in ('done', 'later')), 'it has Already Did It and Not Now')
+        r = [b.bounding_box() for b in card(pg).locator('a, button').all()]; check(all(b['height'] >= 43.5 and b['width'] >= 43.5 for b in r), 'its buttons are at least 44 px')
+        pg.screenshot(path=os.path.join(OUT, 'phone-iphone-tig.png'))
+        t = how(pg)
+        check('to the right of the address bar' in t and 'Add to Home Screen' in t and 'Edit Actions' in t and 'Open as Web App' in t and 'Best done before you start' in t,
+              'On Your Phone has the steps for this Safari (26: the three dots), Edit Actions and Open as Web App')
+        check(pg.locator('#homeHow a[href="../install/"]').count() == 1 and pg.locator('#homeHow a[href="../"]').count() == 1, f'and offers {S} instead, with Show me how')
+        check(pg.locator('#homeHow [data-hh="fresh"]').count() == 1, 'On Your Phone has Get the Newest Version')
+        card(pg).locator('[data-hh="later"]').click(); pg.wait_for_timeout(100); pg.reload(); pg.wait_for_timeout(500)
+        check(card(pg).count() == 0, 'Not Now hides it, also after a reload')
+        check(not errs, 'no console errors: ' + '; '.join(errs[:3])); ctx.close()
+        ctx, pg, errs = open_as(br, 'iphone', 'tig/')
+        card(pg).locator('[data-hh="done"]').click(); pg.wait_for_timeout(100)
+        check(pg.evaluate("localStorage.getItem('tig:homeHint')") == 'done', 'Already Did It is remembered for good, under the app\'s own key')
+        pg.evaluate("localStorage.setItem('tig:homeHint','done')"); pg.reload(); pg.wait_for_timeout(400); check(card(pg).count() == 0, 'and the card stays away'); ctx.close()
+        for ua, want, what in [('iphone-27', 'left end of the address bar', 'Safari 27: the button at the left end of the address bar'),
+                               ('iphone-18', 'Tap Share.', 'Safari 18: Share in the bar')]:
+            ctx, pg, errs = open_as(br, ua, 'tig/'); check(want in how(pg), what); ctx.close()
+        print('== iPad (reports itself as a Mac with a touch screen)')
+        ctx, pg, errs = open_as(br, 'ipad', 'tig/', 1024, 1366, init="Object.defineProperty(navigator,'maxTouchPoints',{get:()=>5})")
+        t = how(pg); check('top right' in t and 'View More' in t and card(pg).count() == 1 and f'Get All of {N}' in card(pg).inner_text(), f'iPad: Share at the top right, then View More; the card offers {S}')
+        pg.screenshot(path=os.path.join(OUT, 'phone-ipad-tig.png')); ctx.close()
+        print('== iPhone Chrome')
+        ctx, pg, errs = open_as(br, 'iphone-chrome', 'tig/')
+        check('address bar' in how(pg) and 'Add to Home Screen' in how(pg), 'Chrome on iPhone: Share is in the address bar or the menu'); ctx.close()
+        print('== inside another app on iPhone (for example Gmail)')
+        ctx, pg, errs = open_as(br, 'iphone-gmail', 'tig/')
+        t = card(pg).inner_text()
+        check('open inside another app' in t and 'Open in Safari' in t and card(pg).locator('a.hh-go').count() == 1, 'says to open it in Safari first, with Show Me How')
+        check(pg.locator('#homeHow [data-hh="copy"]').count() == 1, 'On Your Phone has Copy link')
+        pg.screenshot(path=os.path.join(OUT, 'phone-iphone-inapp-tig.png')); ctx.close()
+        print(f'== opened from inside the installed {S}')
+        flag = "Object.defineProperty(navigator,'standalone',{get:()=>true});sessionStorage.setItem('dis:in','1');"
+        for f in ['tig', 'fig', 'miko']:
+            ctx, pg, errs = open_as(br, 'iphone', f + '/', init=flag)
+            bar = pg.locator('#hh-bar'); back = bar.locator('a')
+            check(bar.is_visible() and back.inner_text() == '‹ ' + S and back.get_attribute('href') == '../' and card(pg).count() == 0, f'{f}: ‹ {S} at the top left, no card')
+            r = [b.bounding_box() for b in bar.locator('a, button').all()]; check(all(b['height'] >= 43.5 and b['width'] >= 43.5 for b in r), f'{f}: ‹ {S} and ↻ are at least 44 px')
+            if f == 'tig':
+                pg.screenshot(path=os.path.join(OUT, 'phone-in-dis-tig.png'))
+                bar.locator('button').click(); pg.wait_for_timeout(900)
+                check(pg.locator('#hh-toast').count() == 1 and f'TIG is up to date: version {TIGV}.' in pg.locator('#hh-toast').inner_text(), f'↻ reloads, then says TIG is up to date: version {TIGV}')
+            if f == 'miko':
+                back.click(); pg.wait_for_timeout(500); check(pg.url == BASE, f'‹ {S} goes back to the list')
+            check(not errs, f'{f}: no console errors: ' + '; '.join(errs[:3])); ctx.close()
+        ctx, pg, errs = open_as(br, 'iphone', 'tig/', init="Object.defineProperty(navigator,'standalone',{get:()=>true});")
+        check(pg.locator('#hh-bar').count() == 0, f'installed on its own (not from {S}): no ‹ {S} button, since it would leave the app'); ctx.close()
 
     print('== Android Chrome')
     ctx, pg, errs = open_as(br, 'android', 'tig/')
